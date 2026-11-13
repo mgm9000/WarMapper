@@ -6,10 +6,15 @@ This repository holds the proof-of-concept work: battle data for three pilot bat
 
 **Status: prototype. None of the history here has been checked by a historian.** Every position cites a source and states how sure it is, but treat all of it as unreviewed.
 
+## Website
+
+The playbacks are served with GitHub Pages at https://mgm9000.github.io/WarMapper/ once Pages is switched on for this repository (Settings, Pages, deploy from the `main` branch, root folder). `index.html` at the top of the repository is the landing page.
+
 ## What is here
 
 | Folder | Contents |
 | --- | --- |
+| `index.html`, `assets/` | The landing page for the website and its three preview images. |
 | `playbacks/` | One folder per battle. `index.html` is the playback; open it in a browser. |
 | `data/` | The pilot workbook (all three battles as linked tables), the Gettysburg source workbook, and the OpenStreetMap extracts used to draw the base maps. |
 | `pipeline/` | The scripts and data modules that build the workbook and run its checks. |
