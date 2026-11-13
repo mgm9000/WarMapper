@@ -1,0 +1,443 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>Gettysburg Day 1 Playback</title><style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one-screen map table. Header (title + clock), map with a source panel beside it (below it on a phone), timeline along the bottom edge. */
+:root{
+  --bg:#e9edf2; --surface:#ffffff; --surface-2:#f3f5f8; --fg:#17202f; --muted:#566275; --line:#d3d9e2;
+  --accent:#8a5a10; --accent-fg:#ffffff; --accent-soft:#f4ead6;
+  --us:#1d5c9e; --us-soft:#dce9f7; --cs:#b5382a; --cs-soft:#f8dfdb;
+  --good:#2f7a45; --good-soft:#dff1e3; --warn:#96690a; --warn-soft:#fbefcc; --bad:#ab3a2c; --bad-soft:#f9dfda;
+  /* drawn on the paper map, so the same in both themes */
+  --m-us:#124f93; --m-us-fill:#e3eefb; --m-cs:#b02a1c; --m-cs-fill:#fde6e1; --m-ink:#141a24; --m-halo:#fdf8ea; --m-paper:#e8dcc0; --m-sel:#f2a900;
+  --display:"Zilla Slab",Rockwell,Georgia,serif; --body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  --map-filter:none;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
+  --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
+  --us:#7fb2ea; --us-soft:#1c3350; --cs:#f0897c; --cs-soft:#4a211c;
+  --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
+  --map-filter:brightness(.88) contrast(1.03); color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
+  --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
+  --us:#7fb2ea; --us-soft:#1c3350; --cs:#f0897c; --cs-soft:#4a211c;
+  --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
+  --map-filter:brightness(.88) contrast(1.03); color-scheme:dark }
+
+html,body{height:100%}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.45;overflow:hidden}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.app{height:100%;display:flex;flex-direction:column;min-height:0}
+
+/* header */
+.bar{background:var(--surface);border-bottom:1px solid var(--line);padding-block:10px;display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.ttl{min-width:0;flex:1 1 220px}
+.ttl h1{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.15;margin:0;text-wrap:balance}
+.ttl p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
+.clock{text-align:right;flex:0 0 auto}
+.clock .t{font-family:var(--display);font-weight:600;font-size:30px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.01em}
+.clock .d{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+
+/* stage */
+.stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 372px}
+.mapwrap{position:relative;overflow:hidden;background:var(--m-paper);touch-action:none;cursor:grab;min-height:0;user-select:none;-webkit-user-select:none}
+.mapwrap.drag{cursor:grabbing}
+#mapimg{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;filter:var(--map-filter);-webkit-user-drag:none;pointer-events:none}
+#mapimg.fade{opacity:.5}
+#ov{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#ov text{font-family:var(--body);paint-order:stroke;stroke:var(--m-halo);stroke-linejoin:round}
+#ov .u{cursor:pointer}
+.lm{font-size:11px;font-style:italic;fill:var(--m-ink);stroke-width:3px;opacity:.85}
+.ulab{font-size:12.5px;font-weight:600;fill:var(--m-ink);stroke-width:3.5px}
+.ech{font-size:9px;font-weight:700;fill:var(--m-ink);stroke-width:2.5px;letter-spacing:.06em}
+
+.ctl{position:absolute;display:flex;gap:6px;z-index:3}
+.ctl.c-l{top:10px;left:max(10px,env(safe-area-inset-left,0px));flex-wrap:wrap;max-width:calc(100% - 70px)}
+.ctl.c-r{top:10px;right:max(10px,env(safe-area-inset-right,0px));flex-direction:column}
+.chipbtn,.sq{background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.18);cursor:pointer}
+.chipbtn{padding:6px 10px;font-size:12.5px;font-weight:500;display:inline-flex;align-items:center;gap:6px}
+.chipbtn .dot{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--muted);flex:none}
+.chipbtn[aria-pressed="true"]{border-color:var(--accent)}
+.chipbtn[aria-pressed="true"] .dot{background:var(--accent);border-color:var(--accent)}
+.sq{width:34px;height:34px;font-size:18px;line-height:1;display:grid;place-items:center}
+.scale{position:absolute;left:max(12px,env(safe-area-inset-left,0px));bottom:10px;z-index:3;font-size:11px;color:var(--m-ink);pointer-events:none;text-shadow:0 0 3px var(--m-halo),0 0 3px var(--m-halo)}
+.scale i{display:block;height:6px;border:1.5px solid var(--m-ink);border-top:0;margin-top:2px}
+.hint{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:10px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:11.5px;color:var(--muted);pointer-events:none;max-width:60%}
+
+/* panel */
+.panel{background:var(--surface);border-left:1px solid var(--line);overflow:auto;min-height:0;min-width:0;padding:14px 16px 20px;-webkit-overflow-scrolling:touch}
+.panel h2{font-family:var(--display);font-size:18px;font-weight:700;margin:0;line-height:1.2;text-wrap:balance}
+.panel h3{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;margin:16px 0 6px}
+.panel p{margin:0 0 8px}
+.eyebrow{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:4px}
+.phase{font-size:14.5px}
+.ulist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:2px}
+.ulist button{width:100%;text-align:left;background:none;border:0;border-radius:5px;padding:5px 6px;display:flex;gap:8px;align-items:baseline;cursor:pointer;min-width:0}
+.ulist button:hover{background:var(--surface-2)}
+.ulist .nm{font-weight:600;flex:none}
+.ulist .ac{color:var(--muted);font-size:12.5px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sd{width:9px;height:9px;border-radius:2px;flex:none;align-self:center}
+.sd.US{background:var(--us)} .sd.CS{background:var(--cs)}
+.nd{color:var(--muted);font-size:12.5px;margin:0;padding-left:16px}
+.nd li{margin-bottom:4px}
+.back{background:none;border:0;padding:0;color:var(--accent);font-weight:600;cursor:pointer;font-size:12.5px;margin-bottom:10px}
+.who{display:flex;gap:10px;align-items:flex-start}
+.who .side{font-size:12px;font-weight:600}
+.who .side.US{color:var(--us)} .who .side.CS{color:var(--cs)}
+.meta{color:var(--muted);font-size:12.5px;margin-top:2px}
+.state{margin:12px 0 0;padding:9px 11px;border-radius:6px;font-size:13px;border:1px solid var(--line);background:var(--surface-2)}
+.state b{display:block;font-size:13px}
+.state.stated{border-color:var(--good);background:var(--good-soft)}
+.state.inferred{border-color:var(--warn);background:var(--warn-soft)}
+.state.moving,.state.after,.state.unplaced{border-style:dashed;border-color:var(--muted)}
+blockquote{margin:0;padding:8px 12px;border-left:3px solid var(--accent);background:var(--accent-soft);font-family:var(--display);font-size:15px;line-height:1.4;border-radius:0 6px 6px 0}
+dl{margin:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:5px 12px;font-size:13px}
+dt{color:var(--muted)} dd{margin:0;min-width:0;overflow-wrap:anywhere}
+.chip{display:inline-block;padding:1px 8px;border-radius:999px;font-size:11.5px;font-weight:600;border:1px solid transparent}
+.chip.high{background:var(--good-soft);color:var(--good);border-color:var(--good)}
+.chip.medium{background:var(--warn-soft);color:var(--warn);border-color:var(--warn)}
+.chip.low{background:var(--bad-soft);color:var(--bad);border-color:var(--bad)}
+.chip.na{background:var(--surface-2);color:var(--muted);border-color:var(--line)}
+.srcs{list-style:none;margin:0;padding:0;font-size:12.5px;display:flex;flex-direction:column;gap:5px}
+.srcs code,.rid{font-family:var(--mono);font-size:11.5px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400}
+a{color:var(--accent)}
+details{margin-top:18px;border-top:1px solid var(--line);padding-top:10px;font-size:12.5px;color:var(--muted)}
+details summary{cursor:pointer;font-weight:600;color:var(--fg)}
+details p{margin:8px 0 0}
+
+/* timeline */
+.tlbar{background:var(--surface);border-top:1px solid var(--line);padding-block:8px 10px;display:flex;gap:12px;align-items:center}
+.play{flex:none;width:42px;height:42px;border-radius:50%;border:0;background:var(--accent);color:var(--accent-fg);cursor:pointer;display:grid;place-items:center}
+.play svg{width:16px;height:16px;fill:currentColor}
+.tl{flex:1;min-width:0;position:relative;height:54px}
+.tl .win{position:absolute;top:22px;height:10px;background:var(--accent-soft);border:1px solid var(--line);border-radius:5px}
+.tl .rail{position:absolute;left:0;right:0;top:22px;height:10px;border-radius:5px;background:var(--surface-2);border:1px solid var(--line)}
+.tl .done{position:absolute;left:0;top:22px;height:10px;border-radius:5px 0 0 5px;background:var(--accent);opacity:.55}
+.tl .tick{position:absolute;top:34px;width:1px;height:5px;background:var(--muted)}
+.tl .tk{position:absolute;top:40px;transform:translateX(-50%);font-size:10.5px;color:var(--muted);font-variant-numeric:tabular-nums;white-space:nowrap}
+.tl .ev{position:absolute;top:0;transform:translateX(-50%);font-size:10.5px;font-weight:600;white-space:nowrap;color:var(--muted);background:none;border:0;padding:0 2px;cursor:pointer}
+.tl .ev::after{content:"";position:absolute;left:50%;top:15px;width:1.5px;height:9px;background:var(--muted)}
+.tl .ev.on{color:var(--fg)}
+.tl input{position:absolute;left:-10px;width:calc(100% + 20px);top:14px;height:26px;margin:0;background:none;-webkit-appearance:none;appearance:none;cursor:pointer}
+.tl input::-webkit-slider-runnable-track{height:26px;background:transparent}
+.tl input::-moz-range-track{height:26px;background:transparent}
+.tl input::-webkit-slider-thumb{-webkit-appearance:none;width:20px;height:26px;border-radius:5px;background:var(--fg);border:2px solid var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.35)}
+.tl input::-moz-range-thumb{width:16px;height:22px;border-radius:5px;background:var(--fg);border:2px solid var(--surface);box-shadow:0 1px 4px rgba(0,0,0,.35)}
+
+@media (max-width:860px){
+  .stage{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1.5fr) minmax(0,1fr)}
+  .panel{border-left:0;border-top:1px solid var(--line);padding:12px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
+  .ttl h1{font-size:16.5px} .ttl p{display:none} .clock .t{font-size:24px} .bar{padding-block:8px;gap:10px}
+  .ttl{flex:1 1 150px}
+  .hint{display:none}
+  .tl .ev{font-size:0;width:14px;height:22px} .tl .ev::after{top:12px;height:12px;width:2px}
+  .tl .tk.minor{display:none}
+  .chipbtn{padding:5px 8px;font-size:12px}
+  .chipbtn .long{display:none}
+  .sq{width:32px;height:32px}
+}
+@media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+</style>
+
+<div class="app">
+  <header class="bar gut">
+    <div class="ttl">
+      <h1>Gettysburg, the first morning</h1>
+      <p>Buford's cavalry against Heth's division on the Chambersburg Pike</p>
+    </div>
+    <div class="clock" aria-live="off">
+      <div class="t" id="clock">7:15 a.m.</div>
+      <div class="d">Wednesday 1 July 1863</div>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Battle map. Scroll to move time, drag to pan, pinch or Ctrl plus scroll to zoom.">
+      <img id="mapimg" src="map.jpg" alt="Bachelder's 1876 map of the first day's battle" draggable="false">
+      <svg id="ov" aria-hidden="true"></svg>
+      <div class="ctl c-l">
+        <button class="chipbtn" id="bFollow" aria-pressed="true"><span class="dot"></span><span>Follow<span class="long"> the action</span></span></button>
+        <button class="chipbtn" id="bReg" aria-pressed="true"><span class="dot"></span>Regiments</button>
+        <button class="chipbtn" id="bFade" aria-pressed="false"><span class="dot"></span>Fade map</button>
+      </div>
+      <div class="ctl c-r">
+        <button class="sq" id="zin" aria-label="Zoom in">+</button>
+        <button class="sq" id="zout" aria-label="Zoom out">&minus;</button>
+      </div>
+      <div class="scale" id="scale"></div>
+      <div class="hint" id="hint">Scroll to move time &middot; drag to pan &middot; Ctrl + scroll or pinch to zoom</div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </main>
+
+  <footer class="tlbar gut">
+    <button class="play" id="play" aria-label="Play"><svg viewBox="0 0 16 16" id="playico"><path d="M3 1.5v13l11-6.5z"/></svg></button>
+    <div class="tl" id="tl">
+      <div class="rail"></div><div class="win" id="win"></div><div class="done" id="done"></div>
+      <input type="range" id="time" min="435" max="630" step="0.25" value="435" aria-label="Time of day">
+    </div>
+  </footer>
+</div>
+
+<script id="data" type="application/json">{"w":3680,"h":2176,"mpp":1.53975,"tracks":[{"id":"US-8IL-pk","unit":"US-8IL","name":"8th Illinois Cavalry","label":"8 IL Cav picket","side":"US","ech":"company","branch":"cav","cmd":"Maj. John L. Beveridge","str":"","k":[{"id":"P02","t0":450,"t1":450,"ts":"07:30","te":"07:30","g":[[522.9,316.6]],"act":"Picket: first shot","place":"Picket post on the Chambersburg Pike at Knoxlyn Road, about 3 miles west of Gettysburg","tb":"Marker (1886)","cb":"Marker or tablet site coordinates (Historical Marker Database)","cc":"high","oc":"medium","src":"S14; S02","say":"Marker: \"First shot / Gettysburg / July 1st 1863 / 7:30 a.m.\"","method":"stated","notes":"Company E, Lt. Marcellus Jones. Time rests on a marker placed in 1886 by the participants. S02 has the enemy approaching the pickets \"about 3 miles distant\".","status":"Accepted","lat":39.850964,"lon":-77.280727}],"hideAfter":true,"hold":480},{"id":"US-B1","unit":"US-B1","name":"1st Brigade, 1st Cavalry Division","label":"Gamble","side":"US","ech":"brigade","branch":"cav","cmd":"Col. William Gamble","str":"About 1,600 strong","k":[{"id":"P01","t0":0,"t1":480,"ts":"Jun 30 eve","te":"08:00","g":[[2559.8,1635.0]],"act":"Camp","place":"In camp at the Lutheran seminary building, Seminary Ridge","tb":"Source states","cb":"Estimated by Claude from the place description; not measured on a map","cc":"medium","oc":"high","src":"S02","say":"\"while in camp at the seminary building\"","method":"stated","notes":"","status":"Accepted","lat":39.8322,"lon":-77.2445},{"id":"P04","t0":480,"t1":615,"ts":"08:00","te":"10:15","g":[[2432.1,1128.1],[2188.0,1743.8]],"act":"Line of battle (dismounted)","place":"McPherson Ridge: right resting on the railroad bed, left near the Fairfield (Hagerstown) road","tb":"Start: source states. End: inferred","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = right flank (3rd Indiana, north of the railroad bed); line_end = left flank (8th New York).","cc":"medium","oc":"medium","src":"S02; S01; S09; S18","say":"S02: \"placed in line of battle about 1 mile in front of the seminary\", \"the right resting on the railroad track and the left near the Middletown or Fairfax [Fairfield] road\"","method":"stated","notes":"Regiment order within the line is not given. \"About 1 mile\" from the seminary would reach Willoughby Run; the tablet and S15 put the line on McPherson Ridge (see Conflicts). Map check: the four regiments are drawn (labels \"Morning\" and \"9 A.M.\") on the eastern arm of McPherson Ridge, about 540 m (0.34 mile) in front of the seminary and about 300 m behind Calef's guns on the pike. That is much closer in than Gamble's \"about 1 mile\". See C05.","status":"Needs review","lat":39.83926,"lon":-77.24664},{"id":"P05","t0":615,"t1":640,"ts":"10:15","te":"10:40","g":null,"act":"Fall back, relieved by First Corps","place":"About 200 yards behind the first line, on the next ridge east","tb":"Inferred; cross-checked with S16","cb":"No coordinates in v2: the v1 point falls on the line the map draws for the morning position (P04), so it no longer shows a fall-back. The fall-back line is not drawn on the map.","cc":"n/a","oc":"low","src":"S02; S01","say":"S02: \"compelled to fall back about 200 yards to the next ridge\". S01: \"dragged back a few hundred yards\"","method":"stated","notes":"Position is stated; the time is not. S01 says the brigade held \"for more than two hours\"; S02 says \"several hours\".","status":"Needs review","lat":null,"lon":null}]},{"id":"US-B1-sk","unit":"US-B1","name":"1st Brigade, 1st Cavalry Division","label":"Gamble skirmishers","side":"US","ech":"squadrons","branch":"cav","cmd":"Col. William Gamble","str":"About 1,600 strong","k":[{"id":"P03","t0":480,"t1":600,"ts":"08:00","te":"10:00","g":[[1322.3,805.2]],"act":"Skirmish line","place":"Three squadrons sent forward as skirmishers to support the picket squadron; fighting back along the pike from Knoxlyn Road toward Herr Ridge","tb":"Inferred from sequence","cb":"Estimated by Claude from the place description; not measured on a map. Point is Herr Ridge at the pike, the likely last skirmish position.","cc":"low","oc":"low","src":"S02; S06","say":"S02: \"Three squadrons, part dismounted, were ordered to the front, and deployed as skirmishers\". S06: pickets \"gradually fell back before us for about 3 miles\"","method":"inferred","notes":"No source read so far names the ground the skirmishers held. A moving line; needs several timed points.","status":"Accepted","lat":39.844,"lon":-77.2665}],"hideAfter":true,"loose":true},{"id":"US-3IN","unit":"US-3IN","name":"3rd Indiana Cavalry (part)","label":"3 IN Cav","side":"US","ech":"regiment","branch":"cav","cmd":"","str":"Three squadrons (S02); 6 companies (S09)","k":[{"id":"P28","t0":480,"t1":615,"ts":"08:00","te":"10:15","g":[[2432.1,1128.1],[2384.3,1224.1]],"act":"Line of battle (dismounted)","place":"Right of Gamble's line, north of the railroad bed","tb":"As P04","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = north end; line_end = south end.","cc":"medium","oc":"medium","src":"S18; S02","say":"Map label: \"3' Ind. Cav.\"","method":"stated","notes":"Part of the P04 line. Whether this is the first line or the fall-back line is open (C05).","status":"Needs review","lat":39.83926,"lon":-77.24664}],"parent":"US-B1","hideAfter":true},{"id":"US-12IL","unit":"US-12IL","name":"12th Illinois Cavalry (part)","label":"12 IL Cav","side":"US","ech":"regiment","branch":"cav","cmd":"","str":"Two squadrons (S02); 4 companies (S09)","k":[{"id":"P29","t0":480,"t1":615,"ts":"08:00","te":"10:15","g":[[2336.1,1304.2],[2317.4,1345.7]],"act":"Line of battle (dismounted)","place":"Between the railroad bed and the Chambersburg Pike","tb":"As P04","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = north end; line_end = south end.","cc":"medium","oc":"medium","src":"S18; S02","say":"Map label: \"12' Ill. Cav.\"","method":"stated","notes":"Part of the P04 line. Whether this is the first line or the fall-back line is open (C05).","status":"Needs review","lat":39.83684,"lon":-77.24842}],"parent":"US-B1","hideAfter":true},{"id":"US-8IL","unit":"US-8IL","name":"8th Illinois Cavalry","label":"8 IL Cav","side":"US","ech":"regiment","branch":"cav","cmd":"Maj. John L. Beveridge","str":"","k":[{"id":"P30","t0":480,"t1":615,"ts":"08:00","te":"10:15","g":[[2296.2,1376.3],[2260.2,1481.5]],"act":"Line of battle (dismounted)","place":"South of the Chambersburg Pike","tb":"As P04","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = north end; line_end = south end.","cc":"medium","oc":"medium","src":"S18; S02","say":"Map label: \"8' Ill. Cav.\"","method":"stated","notes":"Part of the P04 line. The Gamble brigade tablet (S09) stands close to this bar. Whether this is the first line or the fall-back line is open (C05).","status":"Needs review","lat":39.83585,"lon":-77.24916}],"parent":"US-B1","hideAfter":true},{"id":"US-8NY","unit":"US-8NY","name":"8th New York Cavalry","label":"8 NY Cav","side":"US","ech":"regiment","branch":"cav","cmd":"Lt. Col. William L. Markell","str":"","k":[{"id":"P31","t0":480,"t1":615,"ts":"08:00","te":"10:15","g":[[2238.5,1608.1],[2188.0,1743.8]],"act":"Line of battle (dismounted)","place":"Left of Gamble's line, south of McPherson (Herbst) Woods","tb":"As P04","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = north end; line_end = south end.","cc":"medium","oc":"medium","src":"S18; S02","say":"Map label: \"8' N.Y. Cav.\"","method":"stated","notes":"Part of the P04 line. Bar is marked \"Morning\". Whether this is the first line or the fall-back line is open (C05).","status":"Needs review","lat":39.83265,"lon":-77.25027}],"parent":"US-B1","hideAfter":true},{"id":"US-B2","unit":"US-B2","name":"2nd Brigade, 1st Cavalry Division","label":"Devin","side":"US","ech":"brigade","branch":"cav","cmd":"Col. Thomas C. Devin","str":"","k":[{"id":"P06","t0":480,"t1":640,"ts":"08:00","te":"10:40","g":[[2441.6,873.3],[2608.2,535.8]],"act":"Line of battle","place":"Crest of the ridge on the right of Gamble, from the railroad bed north to the Mummasburg road","tb":"Inferred from sequence","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = left flank; line_end = right flank, at the Mummasburg Road.","cc":"medium","oc":"medium","src":"S03; S10; S18","say":"S03: \"form on the crest of the hill on the right of the First Brigade\", \"my right resting on the road to Mummasburg\"","method":"stated","notes":"Time not given in S03; it follows the pickets being driven in. Map check: \"Devin's Brigade ... Morning\" is drawn as bars running north-north-east to the Mummasburg Road. Its left is about 390 m north of the 3rd Indiana's right, so the map leaves a gap between the two brigades. The brigade tablet (S10) stands about 140 m west of the map line.","status":"Needs review","lat":39.84279,"lon":-77.24639}]},{"id":"US-6NY","unit":"US-6NY","name":"6th New York Cavalry","label":"6 NY Cav sqn","side":"US","ech":"squadrons","branch":"cav","cmd":"","str":"","k":[{"id":"P07","t0":480,"t1":640,"ts":"08:00","te":"10:40","g":[[1685.5,907.2]],"act":"Skirmishers","place":"One squadron deployed to join the skirmishers of the 1st Brigade","tb":"Inferred from sequence","cb":"Estimated by Claude from the place description; not measured on a map. Placed north of the pike beyond Willoughby Run.","cc":"low","oc":"low","src":"S03","say":"\"deployed a squadron of the Sixth New York to those of the First Brigade\"","method":"stated","notes":"Location relative to Gamble's skirmishers only.","status":"Accepted","lat":39.8425,"lon":-77.26}],"loose":true},{"id":"US-B2-sk","unit":"US-B2","name":"2nd Brigade, 1st Cavalry Division","label":"Devin skirmishers","side":"US","ech":"squadrons","branch":"cav","cmd":"Col. Thomas C. Devin","str":"","k":[{"id":"P08","t0":480,"t1":640,"ts":"08:00","te":"10:40","g":[[2852.0,878.4],[3212.0,806.4],[3552.0,596.0]],"act":"Picket and vedette line","place":"Continuous line of skirmishers and vedettes across the three roads leading toward Carlisle, round to the York road on the extreme right","tb":"Inferred from sequence","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = west end; line_end = east end, at the woods by Rock Creek. The line bends at 39.84354, -77.23251. Only the stretch the map draws; vedettes farther out on the roads are not shown.","cc":"medium","oc":"low","src":"S03; S18","say":"\"connecting by skirmishers and vedettes with my pickets on the three roads on the right leading toward Carlisle\"; \"York road, on the extreme right\"","method":"stated","notes":"Needs a line traced on a period map. Map check: a dotted line labelled \"Skirmishers of Devin's Cavalry\", marked \"Morning\", runs north of Pennsylvania College and then east-north-east to Rock Creek. The map does not say when in the morning.","status":"Needs review","lat":39.84262,"lon":-77.23901}],"loose":true},{"id":"US-A2","unit":"US-A2","name":"Battery A, 2nd U.S. Artillery (Tidball's battery)","label":"Calef","side":"US","ech":"battery","branch":"art","cmd":"Lt. John H. Calef","str":"Six 3-inch rifles","k":[{"id":"P09","t0":0,"t1":480,"ts":"Jun 30 eve","te":"08:00","g":[[2155.2,1227.3]],"act":"In position overnight","place":"On the Chambersburg Pike","tb":"Tablet","cb":"Crest at the pike: Buford memorial site (S15). The overnight position may have been behind it.","cc":"low","oc":"low","src":"S08; S15","say":"S08: arrived \"in the evening from Emmitsburg\" and took position on the Chambersburg Pike","method":"stated","notes":"S17 says the overnight position was about 600 yards from the morning position.","status":"Accepted","lat":39.83795,"lon":-77.25165}],"hideAfter":true},{"id":"US-A2-R","unit":"US-A2-R","name":"Battery A, right section","label":"Roder","side":"US","ech":"section","branch":"art","cmd":"Lt. Roder","str":"Two guns","k":[{"id":"P10","t0":480,"t1":615,"ts":"08:00","te":"10:15","g":[[2155.2,1227.3]],"act":"In battery","place":"On the Chambersburg Pike at the crest of McPherson Ridge","tb":"Inferred from sequence","cb":"Marker or tablet site coordinates (Historical Marker Database) (Buford memorial, S15)","cc":"medium","oc":"medium","src":"S08; S15; S17","say":"S08: right and left sections on the Chambersburg Pike. S15: the \"opening gun\" was fired from this crest.","method":"stated","notes":"Which side of the pike is not stated in the sources read.","status":"Accepted","lat":39.83795,"lon":-77.25165}],"nudge":[-20,-14]},{"id":"US-A2-N","unit":"US-A2-N","name":"Battery A, section under Sgt. Newman","label":"Newman","side":"US","ech":"section","branch":"art","cmd":"1st Sgt. Newman","str":"Two guns","k":[{"id":"P11","t0":480,"t1":615,"ts":"08:00","te":"10:15","g":[[2141.5,1238.3]],"act":"In battery","place":"On the Chambersburg Pike at the crest of McPherson Ridge, beside the other pike section","tb":"Inferred from sequence","cb":"Estimated by Claude from the place description; not measured on a map; offset slightly from P10","cc":"low","oc":"low","src":"S08; S17","say":"S08: two sections on the Chambersburg Pike","method":"stated","notes":"Which sergeant held which section is in dispute (see Conflicts).","status":"Accepted","lat":39.8378,"lon":-77.2519}],"nudge":[20,14]},{"id":"US-A2-P","unit":"US-A2-P","name":"Battery A, section under Sgt. Pergel","label":"Pergel","side":"US","ech":"section","branch":"art","cmd":"Sgt. Charles Pergel","str":"Two guns","k":[{"id":"P12","t0":480,"t1":615,"ts":"08:00","te":"10:15","g":[[2190.9,1657.2]],"act":"In battery","place":"With the 1st Brigade south of McPherson (Herbst) Woods","tb":"Inferred from sequence","cb":"Marker or tablet site coordinates (Historical Marker Database) (tablet S08)","cc":"medium","oc":"medium","src":"S08; S17","say":"S08: section under \"Sergt. Chas. Pergel\" with the First Brigade, helped repulse an infantry attack, then withdrew","method":"stated","notes":"S17 reports woods held by the enemy \"within 200 yards of the right of the section\", which led to its withdrawal.","status":"Accepted","lat":39.83198,"lon":-77.25114}]},{"id":"CS-ARCH","unit":"CS-ARCH","name":"Archer's Brigade","label":"Archer","side":"CS","ech":"brigade","branch":"inf","cmd":"Brig. Gen. James J. Archer","str":"","k":[{"id":"P14","t0":450,"t1":450,"ts":"07:30","te":"07:30","g":[[115.5,140.7]],"act":"Head of column meets pickets","place":"On the Chambersburg Pike near Marsh Creek, about 3 miles from Gettysburg","tb":"Marker (1886); cross-checked with S16","cb":"Estimated by Claude from the place description; not measured on a map (pike just west of the First Shot marker)","cc":"low","oc":"medium","src":"S07; S06; S14","say":"S07: \"About 3 miles from Gettysburg, Heth's advance brigade (Archer's) encountered the advance of the enemy.\"","method":"stated","notes":"S06 places first contact \"about 3 miles\" from camp instead (see Conflicts).","status":"Accepted","lat":39.8535,"lon":-77.288},{"id":"P16","t0":540,"t1":570,"ts":"09:00","te":"09:30","g":[[1383.8,826.5]],"act":"Halt in column","place":"Herr Ridge, in sight of the enemy on a slight rise ahead and to the right of the road","tb":"Inferred; S04 mentions 9 o'clock","cb":"Derived: on the pike beside the map position of Marye's guns (P15). The halt itself is not drawn on the map.","cc":"low","oc":"low","src":"S06; S04","say":"S06: \"General Archer halted for a short time while a section of a battery opened fire upon them.\"","method":"inferred","notes":"The map times Archer's line at 9 a.m., which leaves no room for a 9:00 to 9:30 halt. Times not changed; see C03.","status":"Needs review","lat":39.84369,"lon":-77.2654},{"id":"P17","t0":570,"t1":600,"ts":"09:30","te":"10:00","g":[[1658.6,996.3],[1435.8,1361.5]],"act":"Line of battle","place":"Herr Ridge, on the right (south) of the turnpike","tb":"Inferred; cross-checked with S16","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = left flank (7th Tennessee, just south of the pike); line_end = right flank (1st Tennessee).","cc":"medium","oc":"low","src":"S04; S06; S18","say":"S04: \"Archer's brigade in line of battle on the right of the turnpike\". S06: \"deployed the brigade in line, and advanced directly upon the enemy through an open field\"","method":"stated","notes":"Regiment order not given for 1 July. Line length is a guess. Map check: line labelled \"Archer 9 A.M.\" starts about 185 m east of Herr Tavern and runs south-south-west about 660 m. The map says 9 a.m.; this row still says 09:30 (see C03).","status":"Needs review","lat":39.84127,"lon":-77.26051},{"id":"P18","t0":600,"t1":615,"ts":"10:00","te":"10:15","g":[[1861.5,1445.0]],"act":"Crossing Willoughby Run","place":"Willoughby Run south of the pike, in front of Herbst (McPherson) Woods","tb":"Tablet","cb":"Estimated by Claude from the place description; not measured on a map. Tablet S11 stands just east at 39.83488, -77.25465.","cc":"medium","oc":"medium","src":"S11; S06","say":"S11: reached Willoughby Run about 10 a.m. S06: \"a small creek with a fence and undergrowth\"; \"the brigade rushed across with a cheer\"","method":"stated","notes":"End of the pilot window: the brigade meets First Corps infantry just beyond the run.","status":"Accepted","lat":39.835,"lon":-77.257}]},{"id":"CS-7TN","unit":"CS-7TN","name":"7th Tennessee Infantry","label":"7 TN","side":"CS","ech":"regiment","branch":"inf","cmd":"Lt. Col. Samuel G. Shepard","str":"","k":[{"id":"P32","t0":570,"t1":600,"ts":"09:30","te":"10:00","g":[[1658.6,996.3],[1624.1,1057.5]],"act":"Line of battle","place":"Herr Ridge, south of the Chambersburg Pike","tb":"As P17 (map label says 9 A.M.; see C03)","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = north end; line_end = south end.","cc":"medium","oc":"medium","src":"S18","say":"Map label: \"7' Tenn.\"","method":"stated","notes":"Part of the P17 line. Left of the brigade, next to the pike.","status":"Needs review","lat":39.84127,"lon":-77.26051}],"parent":"CS-ARCH","hideAfter":true},{"id":"CS-14TN","unit":"CS-14TN","name":"14th Tennessee Infantry","label":"14 TN","side":"CS","ech":"regiment","branch":"inf","cmd":"","str":"","k":[{"id":"P33","t0":570,"t1":600,"ts":"09:30","te":"10:00","g":[[1612.1,1072.1],[1575.9,1131.9]],"act":"Line of battle","place":"Herr Ridge, south of the Chambersburg Pike","tb":"As P17 (map label says 9 A.M.; see C03)","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = north end; line_end = south end.","cc":"medium","oc":"medium","src":"S18","say":"Map label: \"14' Tenn.\"","method":"stated","notes":"Part of the P17 line.","status":"Needs review","lat":39.84023,"lon":-77.26137}],"parent":"CS-ARCH","hideAfter":true},{"id":"CS-5ALB","unit":"CS-5ALB","name":"5th Alabama Battalion","label":"5 AL Bn","side":"CS","ech":"battalion","branch":"inf","cmd":"","str":"","k":[{"id":"P34","t0":570,"t1":600,"ts":"09:30","te":"10:00","g":[[1572.1,1139.9],[1539.8,1200.3]],"act":"Line of battle","place":"Herr Ridge, south of the Chambersburg Pike","tb":"As P17 (map label says 9 A.M.; see C03)","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = north end; line_end = south end.","cc":"medium","oc":"medium","src":"S18","say":"Map label: \"5' Ala. Batt'n\"","method":"stated","notes":"Part of the P17 line.","status":"Needs review","lat":39.8393,"lon":-77.26211}],"parent":"CS-ARCH","hideAfter":true},{"id":"CS-13AL","unit":"CS-13AL","name":"13th Alabama Infantry","label":"13 AL","side":"CS","ech":"regiment","branch":"inf","cmd":"Col. Birkett D. Fry","str":"","k":[{"id":"P35","t0":570,"t1":600,"ts":"09:30","te":"10:00","g":[[1527.8,1214.2],[1489.4,1278.3]],"act":"Line of battle","place":"Herr Ridge, south of the Chambersburg Pike","tb":"As P17 (map label says 9 A.M.; see C03)","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = north end; line_end = south end.","cc":"medium","oc":"medium","src":"S18","say":"Map label: \"13' Ala.\"","method":"stated","notes":"Part of the P17 line. Label partly hidden by the woodland symbols.","status":"Needs review","lat":39.83828,"lon":-77.26293}],"parent":"CS-ARCH","hideAfter":true},{"id":"CS-1TN","unit":"CS-1TN","name":"1st Tennessee Infantry","label":"1 TN","side":"CS","ech":"regiment","branch":"inf","cmd":"","str":"","k":[{"id":"P36","t0":570,"t1":600,"ts":"09:30","te":"10:00","g":[[1475.8,1294.4],[1435.8,1361.5]],"act":"Line of battle","place":"Herr Ridge, south of the Chambersburg Pike","tb":"As P17 (map label says 9 A.M.; see C03)","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = north end; line_end = south end.","cc":"medium","oc":"low","src":"S18","say":"Map label: \"Tenn. (number hidden)\"","method":"stated","notes":"Part of the P17 line. Right of the brigade. Only \"Tenn.\" is legible; taken as the 1st Tennessee because the 7th and 14th are labelled elsewhere in the line.","status":"Needs review","lat":39.83718,"lon":-77.26389}],"parent":"CS-ARCH","hideAfter":true},{"id":"CS-DAV","unit":"CS-DAV","name":"Davis's Brigade","label":"Davis","side":"CS","ech":"brigade","branch":"inf","cmd":"Brig. Gen. Joseph R. Davis","str":"Three regiments present","k":[{"id":"P19","t0":300,"t1":540,"ts":"05:00","te":"09:00","g":null,"act":"March","place":"On the turnpike from Cashtown, in rear of Archer's brigade","tb":"Source states","cb":"No coordinates: moving column","cc":"n/a","oc":"high","src":"S05","say":"\"I moved in rear of Archer's brigade, with three regiments of my command\"","method":"stated","notes":"","status":"Needs review","lat":null,"lon":null},{"id":"P20","t0":570,"t1":600,"ts":"09:30","te":"10:00","g":[[1679.8,967.8],[1831.8,720.0]],"act":"Line of battle","place":"West of Herr's Tavern, on the left (north) of the turnpike with the right resting on it","tb":"Disputed: see Conflicts","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = right flank (42nd Mississippi, nearest the pike); line_end = left flank (55th North Carolina).","cc":"medium","oc":"low","src":"S05; S04; S12; S18","say":"S05: \"take position on the left of the turnpike, and with the right resting on it\". S12: formed line west of Herr's Tavern","method":"stated","notes":"S05 says the line formed \"About 10.30 o'clock\"; S12 says the brigade crossed the run about 10 a.m. Map check: line labelled \"Davis 9 A.M.\" is drawn about 220 m east of Herr Tavern, not west of it as tablet S12 says (see C04). The map says 9 a.m.; this row still says 09:30 (see C03).","status":"Needs review","lat":39.84166,"lon":-77.26012},{"id":"P24","t0":600,"t1":615,"ts":"10:00","te":"10:15","g":[[1859.8,1020.3]],"act":"Crossing Willoughby Run","place":"Willoughby Run north of the pike","tb":"Tablet","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. Willoughby Run between the pike and the railroad bed.","cc":"medium","oc":"low","src":"S12; S05; S18","say":"S12: crossed the run about 10 a.m. S05: \"the brigade moved forward about 1 mile, driving in the enemy's skirmishers\"","method":"stated","notes":"End of the pilot window. Map check: the map draws Davis's next line just east of the run here, from 39.83978, -77.25663 to 39.8411, -77.25538, and a line labelled 10.15 A.M. farther east (P37).","status":"Needs review","lat":39.84089,"lon":-77.2569},{"id":"P37","t0":615,"t1":615,"ts":"10:15","te":"10:15","g":[[2269.6,1024.1],[2470.1,946.4]],"act":"Line of battle, engaged","place":"East of Willoughby Run and north of the railroad bed, facing Cutler's brigade","tb":"Map label \"10.15 A.M.\" (S18)","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = right end of the bar labelled 2nd Mississippi; line_end = left end of the bar labelled 55th North Carolina.","cc":"medium","oc":"medium","src":"S18","say":"Map labels: \"Davis Miss. 10.15 A.M.\", \"2' Miss.\", \"55' N.C.\"","method":"stated","notes":"Snapshot at the end of the pilot window. A third bar to the south-west (39.83986, -77.2503 to 39.84058, -77.24966) is labelled only \"Miss.\" and is probably the 42nd Mississippi; it is not included in the line.","status":"Needs review","lat":39.84074,"lon":-77.24953},{"id":"P38","t0":630,"t1":630,"ts":"after 10:15","te":"","g":[[2206.6,1174.5],[2351.8,1278.7]],"act":"In the unfinished railroad cut","place":"Unfinished railroad cut north of the Chambersburg Pike, eastern arm of McPherson Ridge","tb":"Outside the pilot window. The map gives these bars no time; the 95th New York beside them is labelled 10.30 A.M.","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = west end (42nd Mississippi); line_end = east end (2nd Mississippi).","cc":"medium","oc":"low","src":"S18","say":"Map labels: \"42' Miss.\" and \"2' Miss.\" along the cut","method":"stated","notes":"Added to keep your P19 correction. Your point (39.838, -77.2483, credited to Gemini) is about 90 m from the east end of these bars, so the location holds up against the map. The time does not belong in the 7:30 to 10:15 window.","status":"Needs review","lat":39.83867,"lon":-77.25071}]},{"id":"CS-42MS","unit":"CS-42MS","name":"42nd Mississippi Infantry","label":"42 MS","side":"CS","ech":"regiment","branch":"inf","cmd":"Col. H. R. Miller","str":"","k":[{"id":"P21","t0":570,"t1":600,"ts":"09:30","te":"10:00","g":[[1679.8,967.8],[1719.8,900.1]],"act":"Line of battle","place":"Right of Davis's line, next to the turnpike","tb":"As P20","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = south end; line_end = north end. Bar drawn between the pike and the railroad bed.","cc":"medium","oc":"low","src":"S05; S18","say":"\"with the Forty-second Mississippi ... on the right\"","method":"stated","notes":"Order in line is stated; the point is interpolated.","status":"Needs review","lat":39.84166,"lon":-77.26012}],"parent":"CS-DAV","hideAfter":true},{"id":"CS-2MS","unit":"CS-2MS","name":"2nd Mississippi Infantry","label":"2 MS","side":"CS","ech":"regiment","branch":"inf","cmd":"Col. J. M. Stone","str":"","k":[{"id":"P22","t0":570,"t1":600,"ts":"09:30","te":"10:00","g":[[1727.9,887.7],[1768.0,822.1]],"act":"Line of battle","place":"Centre of Davis's line","tb":"As P20","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = south end; line_end = north end. Bar drawn across the railroad bed.","cc":"medium","oc":"low","src":"S05; S18","say":"\"Second Mississippi ... in the center\"","method":"stated","notes":"","status":"Needs review","lat":39.84276,"lon":-77.25923}],"parent":"CS-DAV","hideAfter":true},{"id":"CS-55NC","unit":"CS-55NC","name":"55th North Carolina Infantry","label":"55 NC","side":"CS","ech":"regiment","branch":"inf","cmd":"Col. J. K. Connally","str":"","k":[{"id":"P23","t0":570,"t1":600,"ts":"09:30","te":"10:00","g":[[1776.1,808.3],[1831.8,720.0]],"act":"Line of battle","place":"Left of Davis's line","tb":"As P20","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. lat/lon = south end; line_end = north end. Bar drawn north of the railroad bed.","cc":"medium","oc":"low","src":"S05; S18","say":"\"Fifty-fifth North Carolina ... on the left\"","method":"stated","notes":"","status":"Needs review","lat":39.84385,"lon":-77.25834}],"parent":"CS-DAV","hideAfter":true},{"id":"CS-MARYE","unit":"CS-MARYE","name":"Marye's Battery (Fredericksburg Artillery)","label":"Marye","side":"CS","ech":"battery","branch":"art","cmd":"Capt. Marye","str":"Two Napoleons, two 10-pounder Parrotts","k":[{"id":"P15","t0":540,"t1":600,"ts":"09:00","te":"10:00","g":[[1383.8,826.5]],"act":"In battery, opens fire","place":"Ridge west of Herr's Tavern, near the south side of the Chambersburg Pike","tb":"Inferred; cross-checked with S16","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. Gun symbol on the Chambersburg Pike labelled \"Opening Guns of the Battle. Marye's Art'y\".","cc":"medium","oc":"low","src":"S13; S04; S05; S06; S18","say":"S04: \"A few shot from Pegram's battalion (Marye's battery) scattered the cavalry vedettes.\" S05: \"When within about 2 miles from town, our artillery was put in position\"","method":"stated","notes":"\"Ridge west of Herr's Tavern\" may mean Herr Ridge itself or the next ridge west. S06 mentions \"a section of a battery\". Map check: guns drawn on the pike about 290 m west-north-west of Herr Tavern.","status":"Needs review","lat":39.84369,"lon":-77.2654}],"nudge":[0,-26]},{"id":"CS-PETT","unit":"CS-PETT","name":"Pettigrew's Brigade","label":"Pettigrew","side":"CS","ech":"brigade","branch":"inf","cmd":"Brig. Gen. J. Johnston Pettigrew","str":"","k":[{"id":"P26","t0":570,"t1":615,"ts":"09:30","te":"10:15","g":[[1291.9,1140.3]],"act":"Reserve","place":"Held in reserve behind Archer and Davis","tb":"Inferred from sequence","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. Centre of four column symbols labelled \"Pettigrew N.C.\"; no time label.","cc":"medium","oc":"low","src":"S04; S18","say":"\"Pettigrew's brigade and Heth's old brigade (Colonel Brockenbrough commanding), were held in reserve.\"","method":"stated","notes":"Map check: drawn about 500 m south-west of Herr Tavern, behind Archer's line. The map does not time this symbol.","status":"Needs review","lat":39.83936,"lon":-77.26715}]},{"id":"CS-BROCK","unit":"CS-BROCK","name":"Brockenbrough's Brigade (Heth's old brigade)","label":"Brockenbrough","side":"CS","ech":"brigade","branch":"inf","cmd":"Col. Brockenbrough","str":"","k":[{"id":"P27","t0":570,"t1":615,"ts":"09:30","te":"10:15","g":[[1403.9,927.8]],"act":"Reserve","place":"Held in reserve behind Archer and Davis","tb":"Inferred from sequence","cb":"Read from the Bachelder 1876 first-day map (S18), georeferenced; good to about 20-40 m. Centre of four column symbols labelled \"Brockenbrough Va. (in Reserve)\"; no time label.","cc":"medium","oc":"low","src":"S04; S18","say":"As P26","method":"stated","notes":"Map check: drawn about 200 m west of Herr Tavern, just south of the pike. The map does not time this symbol.","status":"Needs review","lat":39.84228,"lon":-77.26507}]},{"id":"CS-11MS","unit":"CS-11MS","name":"11th Mississippi Infantry","label":"11 MS","side":"CS","ech":"regiment","branch":"inf","cmd":"","str":"","k":[{"id":"P25","t0":300,"t1":615,"ts":"05:00","te":"10:15","g":null,"act":"Detached: train guard","place":"With the division wagon train, near Cashtown","tb":"Source states","cb":"Estimated by Claude from the place description; not measured on a map (Cashtown village); train position not stated","cc":"low","oc":"medium","src":"S05","say":"\"the Eleventh Mississippi being left as a guard for the division wagon train\"","method":"stated","notes":"","status":"Accepted","lat":39.8845,"lon":-77.3597}],"offmap":"With the division wagon train near Cashtown, about 8 miles west of Gettysburg."}],"sources":{"S01":{"title":"Report of Brig. Gen. John Buford, 1st Division, Cavalry Corps","cite":"Official Records, ser. I, vol. 27, pt. 1","type":"Primary: official report","url":"https://ironbrigader.com/2015/06/22/general-john-bufords-report-cavalrys-action-gettysburg/2/"},"S02":{"title":"Report of Col. William Gamble, 1st Brigade","cite":"Official Records, ser. I, vol. 27, pt. 1, p. 934","type":"Primary: official report","url":"https://civilwar.com/official-record/930-gettysburg-campaign-part-i/189556-934-series-i-volume-xxvii-i-serial-43-gettysburg-campaign-part-i.html"},"S03":{"title":"Report of Col. Thomas C. Devin, 2nd Brigade","cite":"Official Records, ser. I, vol. 27, pt. 1, pp. 938-939","type":"Primary: official report","url":"https://www.civilwar.com/official-record/930-gettysburg-campaign-part-i/189560-938-series-i-volume-xxvii-i-serial-43-gettysburg-campaign-part-i.html"},"S04":{"title":"Report of Maj. Gen. Henry Heth","cite":"Official Records, ser. I, vol. 27, pt. 2, p. 637 ff.","type":"Primary: official report","url":"https://www.nps.gov/gett/learn/historyculture/official-report-of-maj-general-henry-heth.htm"},"S05":{"title":"Reports of Brig. Gen. Joseph R. Davis","cite":"Official Records, ser. I, vol. 27, pt. 2, pp. 648-650","type":"Primary: official report","url":"https://www.nps.gov/gett/learn/historyculture/official-reports-of-brig-general-joseph-r-davis.htm"},"S06":{"title":"Report of Lt. Col. Samuel G. Shepard, 7th Tennessee (Archer's Brigade)","cite":"Official Records, ser. I, vol. 27, pt. 2","type":"Primary: official report","url":"https://www.nps.gov/gett/learn/historyculture/official-report-of-lt-col-samuel-g-shepard.htm"},"S07":{"title":"Report of Lt. Gen. Ambrose P. Hill, Third Corps","cite":"Official Records, ser. I, vol. 27, pt. 2, p. 607","type":"Primary: official report","url":"https://www.nps.gov/gett/learn/historyculture/official-report-of-lt-general-ambrose-p-hill.htm"},"S08":{"title":"Tablet: Battery A, Second U.S. Artillery","cite":"Reynolds Avenue, south of McPherson Woods","type":"Early secondary: War Department tablet","url":"https://www.hmdb.org/m.asp?m=15272"},"S09":{"title":"Tablet: 1st Brigade, 1st Division, Cavalry Corps (Gamble)","cite":"Reynolds Avenue, north of McPherson Woods","type":"Early secondary: War Department tablet","url":"https://www.hmdb.org/m.asp?m=15260"},"S10":{"title":"Tablet: 2nd Brigade, 1st Division, Cavalry Corps (Devin)","cite":"Buford Avenue","type":"Early secondary: War Department tablet","url":"https://www.hmdb.org/m.asp?m=15391"},"S11":{"title":"Tablet: Archer's Brigade","cite":"Meredith Avenue, Herbst (McPherson) Woods","type":"Early secondary: War Department tablet","url":"https://www.hmdb.org/m.asp?m=12643"},"S12":{"title":"Tablets: Davis's Brigade (two)","cite":"Reynolds Avenue; West Confederate Avenue","type":"Early secondary: War Department tablet","url":"https://www.hmdb.org/m.asp?m=15356"},"S13":{"title":"Tablet: Marye's Battery, Pegram's Battalion","cite":"West Confederate Avenue","type":"Early secondary: War Department tablet","url":"https://www.hmdb.org/m.asp?m=11520"},"S14":{"title":"First Shot marker","cite":"Chambersburg Pike at Knoxlyn Road","type":"Participant marker","url":"https://gettysburg.stonesentinels.com/other-monuments/first-shot-at-gettysburg/"},"S15":{"title":"Buford memorial marker","cite":"Chambersburg Pike at Stone Avenue","type":"Reference: coordinates","url":"https://www.hmdb.org/m.asp?m=12669"},"S16":{"title":"Gettysburg timeline, July 1","cite":"jfepperson.org","type":"Modern secondary: cross-check only","url":"https://jfepperson.org/gettys1.htm"},"S17":{"title":"Forum thread: Calef at Gettysburg, Battery A","cite":null,"type":"Modern secondary: cross-check only","url":"https://civilwartalk.com/threads/calef-at-gettysburg-battery-a.213428/"},"S18":{"title":"Map of the battle field of Gettysburg: First day's battle","cite":"Scale 1:12,000. Boston Public Library (Leventhal Map Center) copy; scan supplied by Morgan, 7,814 x 9,310 pixels","type":"Primary-era map: troop positions compiled by Bachelder from participants","url":"https://collections.leventhalmap.org/search/commonwealth:q524n5888"},"S19":{"title":"Control-point and check coordinates","cite":"Schmucker Hall, Pennsylvania Hall, Lincoln Square, Big Round Top; Buford memorial and First Shot marker as checks","type":"Reference: coordinates","url":""}},"landmarks":{"Herr Tavern":[1539.2,932.0],"Lutheran Seminary":[2548.0,1642.4],"Willoughby Run":[1866.4,1264.0],"Chambersburg Pike":[1072.0,668.0],"Unfinished railroad":[2048.0,1008.0],"McPherson farm":[2084.0,1328.0],"Pennsylvania College":[3107.2,1430.4],"Mummasburg Road":[2696.0,464.0]}}</script>
+<script>
+(function(){
+"use strict";
+var D=JSON.parse(document.getElementById('data').textContent);
+var T0=435,T1=630,WIN0=450,WIN1=615;
+var EVENTS=[
+ [450,'First shot',"A picket of the 8th Illinois Cavalry fires on the head of Archer's column on the Chambersburg Pike at Knoxlyn Road."],
+ [480,'Buford forms',"Gamble and Devin form line of battle and Calef's guns go into battery on the pike."],
+ [540,'Guns open',"Marye's battery opens from Herr Ridge while Archer's brigade halts on the pike."],
+ [570,'Heth deploys',"Archer forms south of the pike and Davis north of it. The spreadsheet says 9:30; Bachelder's map says 9 a.m."],
+ [600,'Across the run',"Both Confederate brigades cross Willoughby Run."],
+ [615,'Infantry arrives',"Davis is in line against Cutler's brigade of the First Corps, and the cavalry is relieved."]
+];
+var BEFORE="Before the first shot. Gamble's brigade is in camp at the seminary and Calef's battery is on the pike.";
+var $=function(id){return document.getElementById(id)};
+var wrap=$('mapwrap'),img=$('mapimg'),ov=$('ov'),panel=$('panel'),range=$('time');
+var view={s:0.25,x:0,y:0},t=T0,sel=null,follow=true,regOn=true,playing=false,raf=0,lastTs=0,userMoved=false;
+var LOD=0.36; // screen px per map px above which regiments replace brigades
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function fmt(m){m=Math.round(m);var h=Math.floor(m/60),mm=m%60;return ((h+11)%12+1)+':'+(mm<10?'0':'')+mm+(h<12?' a.m.':' p.m.')}
+function byId(id){for(var i=0;i<D.tracks.length;i++)if(D.tracks[i].id===id)return D.tracks[i]}
+
+/* ---------- where is a unit at time t ---------- */
+function pad(g,n){g=g.slice();while(g.length<n)g.push(g[g.length-1]);return g}
+function lerpG(a,b,f){var n=Math.max(a.length,b.length);a=pad(a,n);b=pad(b,n);var o=[];for(var i=0;i<n;i++)o.push([a[i][0]+(b[i][0]-a[i][0])*f,a[i][1]+(b[i][1]-a[i][1])*f]);return o}
+function stateAt(tr,tt){
+  var ks=tr.k,n=ks.length; if(tt<ks[0].t0) return null;
+  if(tr.offmap) return (tt<=ks[n-1].t1)?{k:ks[0],g:null,kind:'offmap'}:null;
+  for(var i=0;i<n;i++){
+    var k=ks[i],nx=ks[i+1],end=k.t1; if(i===n-1&&tr.hold) end=Math.max(end,tr.hold);
+    if(tt>=k.t0&&tt<=end){
+      if(!k.g){var pg=null;for(var j=i-1;j>=0;j--)if(ks[j].g){pg=ks[j].g;break} return {k:k,g:pg,kind:'unplaced'}}
+      if(nx&&nx.g&&nx.t0-end<0.01){var M=Math.min(4,(end-k.t0)/2); if(M>0&&tt>end-M) return {k:nx,from:k,g:lerpG(k.g,nx.g,(tt-(end-M))/M),kind:'moving'}}
+      return {k:k,g:k.g,kind:k.method==='inferred'?'inferred':'stated'};
+    }
+    if(nx&&tt>end&&tt<nx.t0){
+      if(k.g&&nx.g) return {k:nx,from:k,g:lerpG(k.g,nx.g,(tt-end)/(nx.t0-end)),kind:'moving'};
+      if(k.g) return {k:nx,g:k.g,kind:'unplaced'};
+      return {k:k,g:null,kind:'unplaced'};
+    }
+  }
+  if(tr.hideAfter) return null;
+  var last=ks[n-1],g=last.g; if(!g) for(var q=n-2;q>=0;q--) if(ks[q].g){g=ks[q].g;break}
+  return {k:last,g:g,kind:last.g?'after':'unplaced'};
+}
+function scene(){
+  var st={},showKids=regOn&&view.s>=LOD,hide={};
+  D.tracks.forEach(function(tr){st[tr.id]=stateAt(tr,t)});
+  D.tracks.forEach(function(tr){ if(tr.parent){ if(!showKids||!st[tr.id]||!st[tr.id].g) hide[tr.id]=1; else hide[tr.parent]=1; } });
+  var out=[];
+  D.tracks.forEach(function(tr){var s=st[tr.id]; if(s) out.push({tr:tr,s:s,drawn:!!s.g&&!hide[tr.id],hidden:!!hide[tr.id]})});
+  return out;
+}
+
+/* ---------- view ---------- */
+function size(){return {w:wrap.clientWidth,h:wrap.clientHeight}}
+function fitBox(b,padPx){var z=size();var s=Math.min((z.w-2*padPx)/Math.max(b[2]-b[0],1),(z.h-2*padPx)/Math.max(b[3]-b[1],1));s=Math.max(minS(),Math.min(1.6,s));return clampV({s:s,x:z.w/2-(b[0]+b[2])/2*s,y:z.h/2-(b[1]+b[3])/2*s})}
+function minS(){var z=size();return Math.min(z.w/D.w,z.h/D.h)}
+function clampV(v){var z=size();v.s=Math.max(minS(),Math.min(3,v.s));var mw=D.w*v.s,mh=D.h*v.s;
+  v.x=mw<=z.w?(z.w-mw)/2:Math.min(0,Math.max(z.w-mw,v.x));v.y=mh<=z.h?(z.h-mh)/2:Math.min(0,Math.max(z.h-mh,v.y));return v}
+function clampView(){clampV(view)}
+function actionBox(){var b=[1e9,1e9,-1e9,-1e9],any=false;
+  D.tracks.forEach(function(tr){if(tr.parent||tr.loose)return;var s=stateAt(tr,t);if(!s||!s.g)return;any=true;s.g.forEach(function(p){b[0]=Math.min(b[0],p[0]);b[1]=Math.min(b[1],p[1]);b[2]=Math.max(b[2],p[0]);b[3]=Math.max(b[3],p[1])})});
+  if(!any) return [0,0,D.w,D.h];
+  var mx=Math.max(90,(900-(b[2]-b[0]))/2),my=Math.max(90,(600-(b[3]-b[1]))/2);
+  return [b[0]-mx,b[1]-my,b[2]+mx,b[3]+my]}
+function chase(){ if(!follow) return false; var z=size(),padPx=z.w<520?40:60,tg=fitBox(actionBox(),padPx);
+  var ds=tg.s-view.s,dx=tg.x-view.x,dy=tg.y-view.y; if(Math.abs(ds)<0.0015&&Math.abs(dx)<0.6&&Math.abs(dy)<0.6){view=tg;return false}
+  view.s+=ds*0.16;view.x+=dx*0.16;view.y+=dy*0.16;return true}
+function zoomAt(f,cx,cy){var s0=view.s,s1=Math.max(minS(),Math.min(3,s0*f));view.x=cx-(cx-view.x)*s1/s0;view.y=cy-(cy-view.y)*s1/s0;view.s=s1;clampView()}
+function setFollow(v){follow=v;$('bFollow').setAttribute('aria-pressed',v?'true':'false');if(v)kick()}
+
+/* ---------- drawing ---------- */
+function S(p){return [p[0]*view.s+view.x,p[1]*view.s+view.y]}
+function mid(pts){var L=0,i,seg=[];for(i=1;i<pts.length;i++){var d=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);seg.push(d);L+=d}
+  if(L<0.5) return pts[0]; var h=L/2;for(i=0;i<seg.length;i++){if(h<=seg[i]){var f=h/seg[i];return [pts[i][0]+(pts[i+1][0]-pts[i][0])*f,pts[i][1]+(pts[i+1][1]-pts[i][1])*f]}h-=seg[i]} return pts[pts.length-1]}
+var ECH={division:'XX',brigade:'X',regiment:'III',battalion:'II',battery:'I',company:'I',section:'••',squadrons:'••'};
+function layout(sc){
+  // pass 1: screen geometry and symbol position for every drawn unit
+  var L=[];
+  sc.forEach(function(o){ if(!o.drawn) return; var tr=o.tr,pts=o.s.g.map(S),len=0;
+    for(var i=1;i<pts.length;i++)len+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]);
+    var c=mid(pts),nx=tr.nudge?tr.nudge[0]:0,ny=tr.nudge?tr.nudge[1]:0,x=c[0]+nx,y=c[1]+ny;
+    if(len>7){var a=pts[0],b=pts[pts.length-1],vx=b[0]-a[0],vy=b[1]-a[1],LL=Math.hypot(vx,vy)||1,px=-vy/LL,py=vx/LL;if(px<0){px=-px;py=-py}x+=px*20;y+=py*13}
+    var low=(o.s.k.cc==='low'&&o.s.kind!=='moving'),txt=tr.label+(low?' ?':'');
+    var pr=(tr.id===sel?0:tr.loose?4:tr.parent?3:tr.branch==='art'?2:1);
+    L.push({o:o,pts:pts,len:len,c:c,x:x,y:y,low:low,txt:txt,w:txt.length*7.1+6,pr:pr,nudged:!!(nx||ny)})});
+  var R=[]; function hit(r){for(var i=0;i<R.length;i++){var q=R[i];if(r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1])return true}return false}
+  var Z=size();
+  L.forEach(function(u){R.push([u.x-14,u.y-19,u.x+14,u.y+10]);
+    for(var i=1;i<u.pts.length&&u.len>7;i++){var a=u.pts[i-1],b=u.pts[i],d=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.round(d/11));
+      for(var j=0;j<=n;j++){var qx=a[0]+(b[0]-a[0])*j/n,qy=a[1]+(b[1]-a[1])*j/n;R.push([qx-4,qy-4,qx+4,qy+4])}}});
+  // pass 2: labels, most important units first; a crowded low-priority label is dropped (the unit stays tappable)
+  L.slice().sort(function(a,b){return a.pr-b.pr}).forEach(function(u){
+    var x=u.x,y=u.y,w=u.w,C=[[x+16,y-8,x+16+w,y+8,'start',x+17,y+4.5],[x-16-w,y-8,x-16,y+8,'end',x-17,y+4.5],[x-w/2,y+11,x+w/2,y+26,'middle',x,y+23],[x-w/2,y-35,x+w/2,y-20,'middle',x,y-23]];
+    u.lab=null; for(var i=0;i<C.length;i++){ if(C[i][0]>=3&&C[i][2]<=Z.w-3&&!hit(C[i])){u.lab=C[i];break} }
+    if(!u.lab&&u.pr<=2) u.lab=C[0];
+    if(u.lab) R.push(u.lab) });
+  return L;
+}
+function unitSvg(u){
+  var o=u.o,tr=o.tr,s=o.s,pts=u.pts,len=u.len,col=tr.side==='US'?'var(--m-us)':'var(--m-cs)',fill=tr.side==='US'?'var(--m-us-fill)':'var(--m-cs-fill)';
+  var soft=(s.kind==='moving'||s.kind==='after'||s.kind==='unplaced'),low=u.low;
+  var op=(s.kind==='after'||s.kind==='unplaced')?0.5:1, isSel=sel===tr.id, h='',x=u.x,y=u.y,c=u.c;
+  h+='<g class="u" data-id="'+tr.id+'" opacity="'+op+'">';
+  if(len>7){var d=pts.map(function(p,i){return (i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)}).join(''),w=tr.parent?4.5:6;
+    var dash=tr.loose?' stroke-dasharray="2 5" stroke-linecap="round"':(soft?' stroke-dasharray="7 5"':'');
+    if(isSel) h+='<path d="'+d+'" fill="none" stroke="var(--m-sel)" stroke-width="'+(w+9)+'" stroke-linecap="round" opacity=".75"/>';
+    h+='<path d="'+d+'" fill="none" stroke="var(--m-halo)" stroke-width="'+(w+4)+'"/>';
+    h+='<path d="'+d+'" fill="none" stroke="'+col+'" stroke-width="'+w+'"'+dash+'/>';}
+  if(u.nudged) h+='<line x1="'+c[0].toFixed(1)+'" y1="'+c[1].toFixed(1)+'" x2="'+x.toFixed(1)+'" y2="'+y.toFixed(1)+'" stroke="var(--m-ink)" stroke-width="1"/><circle cx="'+c[0].toFixed(1)+'" cy="'+c[1].toFixed(1)+'" r="2.5" fill="'+col+'"/>';
+  h+='<g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+')">';
+  if(isSel) h+='<rect x="-18" y="-14" width="36" height="28" rx="4" fill="none" stroke="var(--m-sel)" stroke-width="4"/>';
+  h+='<rect x="-13" y="-9" width="26" height="18" fill="'+fill+'" stroke="'+col+'" stroke-width="1.8"'+((soft||low)?' stroke-dasharray="3 2.5"':'')+'/>';
+  if(tr.branch==='inf') h+='<path d="M-13 -9L13 9M-13 9L13 -9" stroke="'+col+'" stroke-width="1.4"/>';
+  else if(tr.branch==='cav') h+='<path d="M-13 9L13 -9" stroke="'+col+'" stroke-width="1.4"/>';
+  else h+='<circle r="3.4" fill="'+col+'"/>';
+  h+='<text class="ech" text-anchor="middle" y="-12">'+(ECH[tr.ech]||'')+'</text>';
+  h+='<rect x="-17" y="-20" width="34" height="33" fill="transparent"/></g>';
+  if(u.lab){h+='<text class="ulab" text-anchor="'+u.lab[4]+'" x="'+u.lab[5].toFixed(1)+'" y="'+u.lab[6].toFixed(1)+'">'+esc(u.txt)+'</text>';
+    h+='<rect x="'+u.lab[0].toFixed(1)+'" y="'+u.lab[1].toFixed(1)+'" width="'+u.w.toFixed(1)+'" height="16" fill="transparent"/>'}
+  h+='</g>'; return h;
+}
+var LM=[['Herr Tavern',0,-12],['Lutheran Seminary',0,16],['Willoughby Run',8,0],['Chambersburg Pike',0,-10],['McPherson farm',0,16],['Pennsylvania College',0,16]];
+function draw(){
+  clampView();
+  img.style.transform='translate('+view.x.toFixed(2)+'px,'+view.y.toFixed(2)+'px) scale('+view.s.toFixed(5)+')';
+  var sc=scene(),h='';
+  LM.forEach(function(l){var p=D.landmarks[l[0]];if(!p)return;var q=S(p);h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="2" fill="var(--m-ink)" opacity=".7"/><text class="lm" x="'+(q[0]+l[1]+(l[1]?0:0)).toFixed(1)+'" y="'+(q[1]+l[2]).toFixed(1)+'" text-anchor="'+(l[1]?'start':'middle')+'">'+l[0]+'</text>'});
+  // lines first, selected last so it sits on top
+  var L=layout(sc); L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});
+  L.forEach(function(u){h+=unitSvg(u)});
+  ov.innerHTML=h;
+  // scale bar in yards, as on the 1876 sheet
+  var mpp=D.mpp/view.s,opts=[100,250,500,1000,1760],pick=opts[0];opts.forEach(function(y){if(y*0.9144/mpp<=150)pick=y});
+  $('scale').innerHTML=(pick===1760?'1 mile':pick+' yards')+'<i style="width:'+(pick*0.9144/mpp).toFixed(0)+'px"></i>';
+  return sc;
+}
+
+/* ---------- panel ---------- */
+function chip(v){var c=(v==='high'||v==='medium'||v==='low')?v:'na';return '<span class="chip '+c+'">'+esc(v||'n/a')+'</span>'}
+function phase(){var p=null;EVENTS.forEach(function(e){if(t>=e[0])p=e});return p}
+function srcList(ids){var out='';String(ids||'').split(';').forEach(function(id){id=id.trim();var s=D.sources[id];if(!s)return;
+  out+='<li><code>'+id+'</code> '+(s.url?'<a href="'+esc(s.url)+'" target="_blank" rel="noopener">'+esc(s.title)+'</a>':esc(s.title))+'</li>'});return out}
+var KIND={stated:['Placed by a source','A report, tablet or the 1876 map puts the unit here.'],inferred:['Inferred position','Worked out from the sequence of events, not stated by a source.'],
+  moving:['Moving: interpolated','No source records this stretch. The unit is drawn on a straight line between two recorded positions.'],
+  after:['Last recorded position','The data has nothing later for this unit.'],unplaced:['No position recorded','The sources read so far do not say where the unit was at this time.'],offmap:['Off this map','']};
+function rowHtml(k,head){
+  var osm=(k.lat!==null&&k.lat!==''&&k.lat!==undefined)?'https://www.openstreetmap.org/?mlat='+k.lat+'&mlon='+k.lon+'#map=16/'+k.lat+'/'+k.lon:'';
+  var h='<h3>'+esc(head)+' <span class="rid">row '+k.id+'</span></h3>';
+  h+='<p><b>'+esc(k.act)+'.</b> '+esc(k.place)+'</p>';
+  if(k.say) h+='<blockquote>'+esc(k.say)+'</blockquote>';
+  h+='<h3>How sure</h3><dl><dt>Time</dt><dd>'+esc(k.ts)+(k.te&&k.te!==k.ts?' to '+esc(k.te):'')+' <span class="meta">('+esc(k.tb)+')</span></dd>';
+  h+='<dt>Location</dt><dd>'+chip(k.cc)+' '+esc(k.cb)+'</dd><dt>Overall</dt><dd>'+chip(k.oc)+'</dd><dt>Review</dt><dd>'+esc(k.status)+'</dd></dl>';
+  if(k.notes) h+='<h3>Notes</h3><p>'+esc(k.notes)+'</p>';
+  var sl=srcList(k.src); if(sl) h+='<h3>Sources</h3><ul class="srcs">'+sl+'</ul>';
+  if(osm) h+='<p style="margin-top:10px"><a href="'+osm+'" target="_blank" rel="noopener">Open this spot on a modern map</a></p>';
+  return h;
+}
+function about(){return '<details><summary>About this prototype</summary>'+
+ '<p>Unit positions come from the data pilot spreadsheet (38 rows) built from the Official Records, War Department tablets and Bachelder\'s map. Nothing here has been checked by a historian.</p>'+
+ '<p>Solid symbols are positions a source gives. Dashed symbols are interpolated, inferred or the last position on record. A question mark means the location is a loose estimate.</p>'+
+ '<p>Base map: John B. Bachelder, <i>Map of the battle field of Gettysburg: First day\'s battle</i> (1876), Boston Public Library copy. Its printed red and blue bars show the whole day; the labelled symbols on top are this playback.</p>'+
+ '<p>Modern and satellite map views need the hosted version of the tool.</p></details>'}
+var panelKey='';
+function renderPanel(sc,force){
+  var key=sel?sel+'|'+(function(){var o=sc.filter(function(o){return o.tr.id===sel})[0];return o?o.s.k.id+o.s.kind:'x'})():'now|'+((phase()||[0])[0])+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(',');
+  if(key===panelKey&&!force) return; panelKey=key; var h='';
+  if(sel){
+    var tr=byId(sel),o=sc.filter(function(o){return o.tr.id===sel})[0];
+    h+='<button class="back" id="back">&larr; All units</button><div class="who"><div><div class="side '+tr.side+'">'+(tr.side==='US'?'Union':'Confederate')+'</div><h2>'+esc(tr.name)+'</h2>';
+    h+='<div class="meta">'+[tr.cmd,tr.str].filter(Boolean).map(esc).join(' &middot; ')+'</div></div></div>';
+    if(!o){h+='<div class="state unplaced"><b>Not in the data at '+fmt(t)+'</b>Move the time to see this unit.</div>'}
+    else{var K=KIND[o.s.kind];
+      h+='<div class="state '+o.s.kind+'"><b>'+K[0]+'</b>'+(o.s.kind==='offmap'?esc(tr.offmap):K[1])+'</div>';
+      if(o.s.kind==='moving'){h+=rowHtml(o.s.k,'Heading to');h+=rowHtml(o.s.from,'Coming from')}
+      else h+=rowHtml(o.s.k,o.s.kind==='after'?'Last record':'Current record');}
+  } else {
+    var p=phase(); h+='<div class="eyebrow">'+(p?'Now: '+esc(p[1]):'Before 7:30')+'</div><p class="phase">'+esc(p?p[2]:BEFORE)+'</p>';
+    ['US','CS'].forEach(function(side){var L=sc.filter(function(o){return o.tr.side===side&&o.drawn});if(!L.length)return;
+      h+='<h3>'+(side==='US'?'Union':'Confederate')+' on the map</h3><ul class="ulist">';
+      L.forEach(function(o){h+='<li><button data-pick="'+o.tr.id+'"><span class="sd '+side+'"></span><span class="nm">'+esc(o.tr.label)+'</span><span class="ac">'+esc(o.s.kind==='moving'?'Moving (interpolated)':o.s.kind==='after'?'Last recorded position':o.s.k.act)+'</span></button></li>'});h+='</ul>'});
+    var nd=sc.filter(function(o){return !o.drawn&&!o.hidden||o.s.kind==='unplaced'});
+    if(nd.length){h+='<h3>Not placed right now</h3><ul class="nd">';nd.forEach(function(o){h+='<li><b>'+esc(o.tr.label)+'</b>: '+esc(o.s.kind==='offmap'?o.tr.offmap:o.s.k.act+'. '+(o.s.k.g?'':'No position on record.'))+'</li>'});h+='</ul>'}
+    h+='<p class="meta" style="margin-top:14px">Tap a unit for its source and how sure the position is.</p>'+about();
+  }
+  panel.innerHTML=h; if(sel) panel.scrollTop=0;
+}
+
+/* ---------- time ---------- */
+function setTime(v,fromRange){t=Math.max(T0,Math.min(T1,v));if(!fromRange)range.value=t;$('clock').textContent=fmt(t);
+  $('done').style.width=((t-T0)/(T1-T0)*100)+'%';
+  var p=phase();Array.prototype.forEach.call(document.querySelectorAll('.tl .ev'),function(e){e.classList.toggle('on',p&&+e.dataset.t===p[0])});
+  kick()}
+function frame(ts){raf=0;var more=false;
+  if(playing){var dt=lastTs?Math.min(0.1,(ts-lastTs)/1000):0;lastTs=ts;var nt=t+dt*3;if(nt>=T1){nt=T1;setPlaying(false)}t=nt;range.value=t;$('clock').textContent=fmt(t);$('done').style.width=((t-T0)/(T1-T0)*100)+'%';
+    var p=phase();Array.prototype.forEach.call(document.querySelectorAll('.tl .ev'),function(e){e.classList.toggle('on',p&&+e.dataset.t===p[0])});more=playing}
+  if(chase()) more=true;
+  renderPanel(draw());
+  if(more) raf=requestAnimationFrame(frame);}
+function kick(){if(!raf)raf=requestAnimationFrame(frame)}
+function setPlaying(v){playing=v;lastTs=0;$('play').setAttribute('aria-label',v?'Pause':'Play');
+  $('playico').innerHTML=v?'<path d="M3 1.5h3.5v13H3zM9.5 1.5H13v13H9.5z"/>':'<path d="M3 1.5v13l11-6.5z"/>';
+  if(v){if(t>=T1-0.01)setTime(T0);kick()}}
+
+/* ---------- timeline furniture ---------- */
+(function(){var tl=$('tl'),pc=function(m){return ((m-T0)/(T1-T0)*100)+'%'},h='';
+  $('win').style.left=pc(WIN0);$('win').style.width=((WIN1-WIN0)/(T1-T0)*100)+'%';
+  for(var m=450;m<=630;m+=15){h+='<span class="tick" style="left:'+pc(m)+'"></span>';if(m%30===0)h+='<span class="tk'+(m%60?' minor':'')+'" style="left:'+pc(m)+'">'+fmt(m).replace(' a.m.','')+'</span>'}
+  EVENTS.forEach(function(e){h+='<button class="ev" data-t="'+e[0]+'" style="left:'+pc(e[0])+'" title="'+esc(fmt(e[0])+': '+e[1])+'">'+esc(e[1])+'</button>'});
+  tl.insertAdjacentHTML('afterbegin',h);
+  tl.addEventListener('click',function(ev){var b=ev.target.closest('.ev');if(b){setPlaying(false);setTime(+b.dataset.t)}});
+})();
+
+/* ---------- input ---------- */
+range.addEventListener('input',function(){setPlaying(false);setTime(+range.value,true)});
+$('play').addEventListener('click',function(){setPlaying(!playing)});
+$('bFollow').addEventListener('click',function(){setFollow(!follow)});
+$('bReg').addEventListener('click',function(){regOn=!regOn;this.setAttribute('aria-pressed',regOn?'true':'false');kick()});
+$('bFade').addEventListener('click',function(){var on=img.classList.toggle('fade');this.setAttribute('aria-pressed',on?'true':'false')});
+$('zin').addEventListener('click',function(){var z=size();setFollow(false);zoomAt(1.4,z.w/2,z.h/2);kick()});
+$('zout').addEventListener('click',function(){var z=size();setFollow(false);zoomAt(1/1.4,z.w/2,z.h/2);kick()});
+wrap.addEventListener('wheel',function(e){e.preventDefault();var r=wrap.getBoundingClientRect(),dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1);
+  if(e.ctrlKey||e.metaKey){setFollow(false);zoomAt(Math.exp(-dy*(Math.abs(dy)<40?0.01:0.002)),e.clientX-r.left,e.clientY-r.top);kick()}
+  else{setPlaying(false);var dd=Math.abs(e.deltaX)>Math.abs(dy)?e.deltaX:dy;setTime(t+dd*0.035)}},{passive:false});
+var ptrs={},pn=0,downId=null,moved=false,pinch0=0;
+function pts2(){var a=Object.keys(ptrs).map(function(k){return ptrs[k]});return a}
+wrap.addEventListener('pointerdown',function(e){if(e.target.closest('.ctl'))return;var u=e.target.closest('[data-id]');
+  if(pn===0){downId=u?u.getAttribute('data-id'):null;moved=false}
+  ptrs[e.pointerId]={x:e.clientX,y:e.clientY};pn=Object.keys(ptrs).length;try{wrap.setPointerCapture(e.pointerId)}catch(_){ }
+  if(pn===2){var a=pts2();pinch0=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);moved=true}
+  wrap.classList.add('drag')});
+wrap.addEventListener('pointermove',function(e){var p=ptrs[e.pointerId];if(!p)return;var dx=e.clientX-p.x,dy=e.clientY-p.y;
+  if(pn===1){if(!moved&&Math.hypot(dx,dy)<5)return;moved=true;if(follow)setFollow(false);view.x+=dx;view.y+=dy;p.x=e.clientX;p.y=e.clientY;kick()}
+  else if(pn===2){p.x=e.clientX;p.y=e.clientY;var a=pts2(),d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y),r=wrap.getBoundingClientRect();
+    if(pinch0>0){if(follow)setFollow(false);zoomAt(d/pinch0,(a[0].x+a[1].x)/2-r.left,(a[0].y+a[1].y)/2-r.top);view.x+=dx/2;view.y+=dy/2;kick()}pinch0=d}});
+function up(e){if(!ptrs[e.pointerId])return;delete ptrs[e.pointerId];pn=Object.keys(ptrs).length;
+  if(pn===0){wrap.classList.remove('drag');if(!moved){sel=downId;panelKey='';kick()}}}
+wrap.addEventListener('pointerup',up);wrap.addEventListener('pointercancel',up);
+wrap.addEventListener('dblclick',function(e){if(e.target.closest('.ctl'))return;var r=wrap.getBoundingClientRect();setFollow(false);zoomAt(1.6,e.clientX-r.left,e.clientY-r.top);kick()});
+panel.addEventListener('click',function(e){var b=e.target.closest('[data-pick]');if(b){sel=b.getAttribute('data-pick');panelKey='';kick();return}
+  if(e.target.id==='back'){sel=null;panelKey='';kick()}});
+document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON'||e.target.tagName==='SUMMARY')return;
+  if(e.key==='ArrowRight'){setPlaying(false);setTime(t+1);e.preventDefault()} else if(e.key==='ArrowLeft'){setPlaying(false);setTime(t-1);e.preventDefault()}
+  else if(e.key===' '){setPlaying(!playing);e.preventDefault()} else if(e.key==='Escape'){sel=null;panelKey='';kick()}});
+if(window.ResizeObserver) new ResizeObserver(function(){if(follow){view=fitBox(actionBox(),size().w<520?46:70)}kick()}).observe(wrap);
+if(matchMedia('(pointer:coarse)').matches) $('hint').hidden=true;
+
+/* ---------- start ---------- */
+img.width=D.w;img.height=D.h;
+view=fitBox(actionBox(),size().w<520?46:70);
+setTime(T0);
+window.__gb={setTime:setTime,get view(){return view},select:function(id){sel=id;panelKey='';kick()},setFollow:setFollow};
+})();
+</script>
+</body></html>
