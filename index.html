@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>WarMapper</title>
+<meta name="description" content="WarMapper is a battlefield study guide on a map: pick a battle, then watch it unfold over the original maps and today's terrain.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --paper: #F6F1E6;
+  --panel: #EBE3D1;
+  --ink: #1C2430;
+  --soft: #4A4436;
+  --brass: #8A5A0A;
+  --line: #D8CDB4;
+  --blue: #1F5FA8;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 17px/1.55 Inter, Arial, sans-serif; }
+a { color: var(--blue); }
+.wrap { max-width: 1120px; margin: 0 auto; padding: 0 20px; }
+header { padding: 56px 0 28px; }
+.eyebrow { margin: 0 0 10px; font-size: 13px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--brass); }
+h1 { margin: 0; font: 700 clamp(44px, 9vw, 76px)/1.02 "Zilla Slab", Georgia, serif; }
+.lead { max-width: 40em; margin: 18px 0 0; font-size: clamp(19px, 2.6vw, 23px); line-height: 1.45; }
+.note { margin: 28px 0 0; padding: 14px 18px; background: var(--panel); border-left: 4px solid var(--brass); border-radius: 4px; color: var(--soft); max-width: 46em; }
+.note b { color: var(--ink); }
+h2 { margin: 44px 0 18px; font: 600 28px/1.2 "Zilla Slab", Georgia, serif; }
+.grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 22px; }
+.card { display: flex; flex-direction: column; background: var(--panel); border-radius: 10px; overflow: hidden; color: inherit; text-decoration: none; border: 1px solid var(--line); transition: transform .15s ease, box-shadow .15s ease; }
+.card:hover, .card:focus-visible { transform: translateY(-2px); box-shadow: 0 8px 22px rgba(28, 36, 48, .14); }
+.card:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+.card img { display: block; width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; background: var(--line); }
+.cap { padding: 18px 20px 20px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+.cap h3 { margin: 0; font: 600 23px/1.2 "Zilla Slab", Georgia, serif; }
+.when { margin: 0; font-size: 14px; font-weight: 600; color: var(--brass); }
+.what { margin: 0; font-size: 15.5px; color: var(--soft); }
+.go { margin: 8px 0 0; font-weight: 600; color: var(--blue); }
+.how { display: grid; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); gap: 8px 28px; margin: 0; padding: 0; list-style: none; }
+.how li { padding: 12px 0; border-top: 1px solid var(--line); color: var(--soft); }
+.how b { display: block; color: var(--ink); font: 600 19px/1.25 "Zilla Slab", Georgia, serif; }
+footer { margin: 52px 0 0; padding: 24px 0 44px; border-top: 1px solid var(--line); font-size: 14.5px; color: var(--soft); }
+footer p { margin: 0 0 8px; max-width: 60em; }
+@media (prefers-reduced-motion: reduce) { .card { transition: none; } .card:hover, .card:focus-visible { transform: none; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Prototype</p>
+    <h1>WarMapper</h1>
+    <p class="lead">Your battlefield study guide: pick a battle, then watch it unfold over the original maps and today’s terrain.</p>
+    <p class="note"><b>These are prototypes.</b> Every position cites a source and says how sure it is, but none of the history here has been checked by a historian.</p>
+  </header>
+
+  <main>
+    <h2>Three pilot battles</h2>
+    <div class="grid">
+      <a class="card" href="playbacks/gettysburg/">
+        <img src="assets/gettysburg.jpg" width="960" height="600" alt="Cavalry and infantry regiments drawn on an 1876 map of Gettysburg, with a timeline below">
+        <div class="cap">
+          <h3>Gettysburg, the first morning</h3>
+          <p class="when">1 July 1863</p>
+          <p class="what">Buford’s cavalry against Heth’s division on the Chambersburg Pike. Regiments and batteries, minute by minute.</p>
+          <p class="go">Open the playback</p>
+        </div>
+      </a>
+      <a class="card" href="playbacks/trenton/">
+        <img src="assets/trenton.jpg" width="960" height="600" alt="American and Hessian regiments drawn over a 1776 sketch of Trenton, with a timeline below">
+        <div class="cap">
+          <h3>Trenton</h3>
+          <p class="when">25 to 26 December 1776</p>
+          <p class="what">The night crossing, the march and the fight in the town. Regiments, minute by minute.</p>
+          <p class="go">Open the playback</p>
+        </div>
+      </a>
+      <a class="card" href="playbacks/ypres/">
+        <img src="assets/ypres.jpg" width="960" height="600" alt="British, French and German corps and divisions drawn over an official-history sketch map of Ypres for 31 October 1914">
+        <div class="cap">
+          <h3>First Ypres</h3>
+          <p class="when">18 October to 22 November 1914</p>
+          <p class="what">The fight for the Ypres salient. Corps and divisions, day by day.</p>
+          <p class="go">Open the playback</p>
+        </div>
+      </a>
+    </div>
+
+    <h2>In each playback</h2>
+    <ul class="how">
+      <li><b>Time</b>Scroll, play or step through the battle. Key events are marked on the timeline.</li>
+      <li><b>Ground</b>Switch between today’s map and a map drawn at the time.</li>
+      <li><b>Units</b>Tap a unit for what it was doing and who commanded it.</li>
+      <li><b>Sources</b>See what the source says, how the position was placed and how sure it is.</li>
+    </ul>
+  </main>
+
+  <footer>
+    <p>Base-map lines and place names are derived from OpenStreetMap data, © OpenStreetMap contributors, under the Open Database License.</p>
+    <p>Period maps: John B. Bachelder’s 1876 map of the first day at Gettysburg (Boston Public Library, Leventhal Map Center); Lt. Andreas Wiederhold’s 1776 sketch of Trenton (Library of Congress); sketch maps from J. E. Edmonds, <i>Military Operations, France and Belgium, 1914</i>, volume II, 1925 (Internet Archive).</p>
+    <p>Data, sources and code: <a href="https://github.com/mgm9000/WarMapper">github.com/mgm9000/WarMapper</a></p>
+  </footer>
+</div>
+</body>
+</html>
