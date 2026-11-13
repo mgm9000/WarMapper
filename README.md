@@ -24,7 +24,7 @@ The three pilots:
 
 ## What is not here yet
 
-- **The period map images.** The playbacks can show a map drawn at the time (Bachelder's 1876 Gettysburg map, Wiederhold's 1776 sketch of Trenton, the sketch maps in the British official history for Ypres). Those scans are not in the repository, so the period-map views are blank and the Gettysburg playback shows units on an empty background. The scripts rebuild the images when the scans are placed under `maps/`.
+- **The full-resolution map scans.** The playbacks carry reduced copies of the period maps (see Credits). The original scans are too large for the repository; the scripts rebuild the reduced copies when a scan is placed under `maps/`.
 - **The scripts that georeference those scans.** Only their results (the fitted parameters) are included.
 - **The product requirements document.**
 
@@ -50,5 +50,15 @@ Positions are rows in linked tables: wars, campaigns, battles, units, assignment
 ## Credits and licence
 
 Base-map lines and place names are derived from OpenStreetMap data, © OpenStreetMap contributors, available under the Open Database License. The historical sources for each battle are listed on the `Sources` sheet of the workbook.
+
+The period maps shown in the playbacks:
+
+| Playback | Map | Scan from |
+| --- | --- | --- |
+| Gettysburg | John B. Bachelder, *Map of the battle field of Gettysburg: First day's battle*, 1876 | Boston Public Library, Norman B. Leventhal Map Center |
+| Trenton | Lt. Andreas Wiederhold, *Sketch of the engagement at Trenton, given on the 26th of December 1776* | Library of Congress, Geography and Map Division |
+| First Ypres | Sketch maps in J. E. Edmonds, *Military Operations, France and Belgium, 1914*, volume II (Macmillan, 1925) | Internet Archive |
+
+The maps themselves are old enough to be in the public domain in the United States. The terms the holding institutions set for reuse of their scans have not all been checked.
 
 No licence has been chosen for this repository yet.
