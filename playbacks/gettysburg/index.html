@@ -185,7 +185,7 @@ details p{margin:8px 0 0}
   </header>
 
   <main class="stage">
-    <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Battle map. Scroll to move time, drag to pan, pinch or Ctrl plus scroll to zoom.">
+    <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Battle map. Scroll or pinch to zoom, drag to pan. To move time, scroll over the timeline or use the arrow keys.">
       <div id="oldmaps"><img id="mapwide" src="map_wide.jpg" alt="Bachelder's 1876 map of the first day's battle, whole sheet" draggable="false"><img id="mapimg" src="map.jpg" alt="" draggable="false"></div>
       <svg id="base" aria-hidden="true" style="display:none"><defs><clipPath id="crop"><rect id="croprect" x="0" y="0" width="10" height="10"/></clipPath></defs><g id="baseg" clip-path="url(#crop)"></g></svg>
       <svg id="ov" aria-hidden="true"></svg>
@@ -203,7 +203,7 @@ details p{margin:8px 0 0}
         <button class="sq" id="zout" aria-label="Zoom out">&minus;</button>
       </div>
       <div class="scale" id="scale"></div>
-      <div class="hint" id="hint">Scroll to move time &middot; drag to pan &middot; Ctrl + scroll or pinch to zoom</div>
+      <div class="hint" id="hint">Scroll or pinch to zoom &middot; drag to pan &middot; scroll over the timeline to move time</div>
       <div class="credit" id="credit"></div>
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
@@ -477,9 +477,12 @@ $('bMod').addEventListener('click',function(){setBase('mod')});
 $('bFade').addEventListener('click',function(){var on=wrap.classList.toggle('fade');this.setAttribute('aria-pressed',on?'true':'false')});
 $('zin').addEventListener('click',function(){var z=size();setFollow(false);zoomAt(1.4,z.w/2,z.h/2);kick()});
 $('zout').addEventListener('click',function(){var z=size();setFollow(false);zoomAt(1/1.4,z.w/2,z.h/2);kick()});
-wrap.addEventListener('wheel',function(e){e.preventDefault();var r=wrap.getBoundingClientRect(),dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1);
-  if(e.ctrlKey||e.metaKey){setFollow(false);zoomAt(Math.exp(-dy*(Math.abs(dy)<40?0.01:0.002)),e.clientX-r.left,e.clientY-r.top);kick()}
-  else{setPlaying(false);var dd=Math.abs(e.deltaX)>Math.abs(dy)?e.deltaX:dy;setTime(t+dd*0.035)}},{passive:false});
+/* Over the map, scrolling or pinching zooms. Over the timeline bar, scrolling moves time. */
+function wheelY(e){return e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1)}
+wrap.addEventListener('wheel',function(e){e.preventDefault();var r=wrap.getBoundingClientRect(),dy=wheelY(e),a=Math.abs(dy),pinch=e.ctrlKey||e.metaKey;
+  setFollow(false);zoomAt(Math.exp(-dy*(pinch?(a<40?0.01:0.002):(a<40?0.006:0.003))),e.clientX-r.left,e.clientY-r.top);kick()},{passive:false});
+document.querySelector('.tlbar').addEventListener('wheel',function(e){e.preventDefault();var dy=wheelY(e),dd=Math.abs(e.deltaX)>Math.abs(dy)?e.deltaX:dy;
+  setPlaying(false);setTime(t+dd*0.035)},{passive:false});
 var ptrs={},pn=0,downId=null,moved=false,pinch0=0;
 function pts2(){var a=Object.keys(ptrs).map(function(k){return ptrs[k]});return a}
 wrap.addEventListener('pointerdown',function(e){if(e.target.closest('.ctl')||e.target.closest('.credit'))return;var u=e.target.closest('[data-id]');

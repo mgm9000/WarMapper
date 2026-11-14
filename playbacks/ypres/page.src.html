@@ -173,7 +173,7 @@ details p{margin:8px 0 0}
   </header>
 
   <main class="stage">
-    <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Battle map. Scroll to move through the days, drag to pan, pinch or Ctrl plus scroll to zoom.">
+    <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Battle map. Scroll or pinch to zoom, drag to pan. To move through the days, scroll over the timeline or use the arrow keys.">
       <svg id="base" aria-hidden="true"><g id="baseg"></g></svg>
       <img id="hist" alt="" draggable="false" hidden>
       <svg id="ov" aria-hidden="true"></svg>
@@ -195,7 +195,7 @@ details p{margin:8px 0 0}
         <button class="sq" id="zout" aria-label="Zoom out">&minus;</button>
       </div>
       <div class="scale" id="scale"></div>
-      <div class="hint" id="hint">Scroll to move through the days &middot; drag to pan &middot; Ctrl + scroll or pinch to zoom</div>
+      <div class="hint" id="hint">Scroll or pinch to zoom &middot; drag to pan &middot; scroll over the timeline to move through the days</div>
       <div class="credit" id="credit"></div>
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
@@ -469,9 +469,12 @@ $('vAll').addEventListener('click',function(){setPreset('all')});
 $('zin').addEventListener('click',function(){var z=size();setPreset(null);zoomAt(1.5,z.w/2,z.h/2);kick()});
 $('zout').addEventListener('click',function(){var z=size();setPreset(null);zoomAt(1/1.5,z.w/2,z.h/2);kick()});
 var wheelT=0;
-wrap.addEventListener('wheel',function(e){e.preventDefault();var r=wrap.getBoundingClientRect(),dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1);
-  if(e.ctrlKey||e.metaKey){setPreset(null);zoomAt(Math.exp(-dy*(Math.abs(dy)<40?0.01:0.002)),e.clientX-r.left,e.clientY-r.top);kick()}
-  else{if(playing)setPlaying(false);var dd=Math.abs(e.deltaX)>Math.abs(dy)?e.deltaX:dy;setTime(t+dd*0.007);clearTimeout(wheelT);wheelT=setTimeout(function(){setTime(Math.round(t))},350)}},{passive:false});
+/* Over the map, scrolling or pinching zooms. Over the timeline bar, scrolling moves time. */
+function wheelY(e){return e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1)}
+wrap.addEventListener('wheel',function(e){e.preventDefault();var r=wrap.getBoundingClientRect(),dy=wheelY(e),a=Math.abs(dy),pinch=e.ctrlKey||e.metaKey;
+  setPreset(null);zoomAt(Math.exp(-dy*(pinch?(a<40?0.01:0.002):(a<40?0.006:0.003))),e.clientX-r.left,e.clientY-r.top);kick()},{passive:false});
+document.querySelector('.tlbar').addEventListener('wheel',function(e){e.preventDefault();var dy=wheelY(e),dd=Math.abs(e.deltaX)>Math.abs(dy)?e.deltaX:dy;
+  if(playing)setPlaying(false);setTime(t+dd*0.007);clearTimeout(wheelT);wheelT=setTimeout(function(){setTime(Math.round(t))},350)},{passive:false});
 function seen(){$('hint').hidden=true}
 wrap.addEventListener('wheel',seen,{passive:true,once:true});wrap.addEventListener('pointerdown',seen,{once:true});
 var ptrs={},pn=0,downId=null,moved=false,pinch0=0;
