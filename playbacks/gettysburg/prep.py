@@ -1,4 +1,4 @@
-"""Build data.json for the Gettysburg playback from the v2 workbook. If the map scan is present (maps/gettysburg/map_full.png) it also cuts the base image."""
+"""Build data.json for the Gettysburg playback from the v2 workbook and the OpenStreetMap extract (data/osm/gettysburg.txt). If the map scan is present (maps/gettysburg/map_full.png) it also cuts the base image."""
 import sys, os, json, math
 W=os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0,os.path.join(W,"pipeline","georef"))
@@ -72,7 +72,78 @@ for tid,uid,rows,o in T:
 print('unused rows',sorted(set(pos)-used))
 S={k:{'title':v['title'],'cite':v['citation'],'type':v['type'],'url':v['url'] or ''} for k,v in srcs.items()}
 lm={'Herr Tavern':P(2484,2545),'Lutheran Seminary':P(3745,3433),'Willoughby Run':P(2893,2960),'Chambersburg Pike':P(1900,2215),'Unfinished railroad':P(3120,2640),'McPherson farm':P(3165,3040),'Pennsylvania College':P(4444,3168),'Mummasburg Road':P(3930,1960)}
-data={'w':round((X1-X0)*SC),'h':round((Y1-Y0)*SC),'mpp':1.2318/SC,'tracks':tracks,'sources':S,'landmarks':lm}
+# ---- current map: today's roads, streams, woods and names from the OpenStreetMap extract, in the same pixel frame as the 1876 crop ----
+CW,CH=round((X1-X0)*SC),round((Y1-Y0)*SC); MG=40
+def osm_rows():
+    for ln in open(W+'/data/osm/gettysburg.txt',encoding='utf-8'):
+        code,name,body=ln.rstrip('\n').split('|',2); la=lo=0; pts=[]
+        for i,pr in enumerate(body.split(';')):
+            a,b=pr.split(','); la,lo=(int(a),int(b)) if i==0 else (la+int(a),lo+int(b))
+            x,y=g.ll2px(la/1e5,lo/1e5); pts.append(((float(x)-X0)*SC,(float(y)-Y0)*SC))
+        yield code,name,pts
+def inside(p): return -MG<=p[0]<=CW+MG and -MG<=p[1]<=CH+MG
+def pieces(pts):
+    """Cut a line into the runs that lie on the crop (each run keeps one point beyond the edge so it reaches it)."""
+    out=[];cur=[]
+    for i,p in enumerate(pts):
+        if inside(p):
+            if not cur and i>0: cur.append(pts[i-1])
+            cur.append(p)
+        elif cur:
+            cur.append(p); out.append(cur); cur=[]
+    if len(cur)>1: out.append(cur)
+    return [c for c in out if len(c)>1]
+def path(pts,close=False): return 'M'+'L'.join(f'{x:.0f} {y:.0f}' for x,y in pts)+('Z' if close else '')
+CLS={'Hm':'m','Hp':'p','Hs':'s','Ht':'t','Hu':'u','Hr':'r','Hv':'v'}
+base={'road':[],'rail':[],'water':[],'wood':[],'lake':[]}; named={}; spots=[]
+for code,name,pts in osm_rows():
+    if code[0]=='P':
+        if inside(pts[0]): spots.append((code,name,pts[0]))
+        continue
+    if code in('Fw','Fl'):
+        if any(inside(p) for p in pts): base['wood' if code=='Fw' else 'lake'].append(path(pts,True))
+        if name and any(inside(p) for p in pts): spots.append((code,name,(sum(p[0] for p in pts)/len(pts),sum(p[1] for p in pts)/len(pts))))
+        continue
+    for run in pieces(pts):
+        d=path(run)
+        if code in CLS: base['road'].append([CLS[code],d])
+        elif code=='Rr': base['rail'].append(d)
+        elif code=='Ra': continue
+        else: base['water'].append(['r' if code=='Wr' else 's',d])
+        if name and code in('Hm','Hp','Hs','Ht','Hu','Wr','Ws'): named.setdefault((name,code[0]),[]).append((code,run))
+# one or two labels per named road or stream, laid along it
+OLD={'Chambersburg Road':'Chambersburg Pike','Fairfield Road':'Hagerstown Road'}
+LVL0={'Chambersburg Road','Fairfield Road','Mummasburg Road','Biglerville Road','Old Harrisburg Road','Herrs Ridge Road','Knoxlyn Road','Willoughby Run','Marsh Creek','Rock Creek','York Street','Baltimore Street','Old Mill Road','Table Rock Road'}
+labels=[]
+for (name,kind),runs in sorted(named.items()):
+    P_=[p for _,r in runs for p in r if 0<=p[0]<=CW and 0<=p[1]<=CH]
+    if len(P_)<2: continue
+    ax=0 if max(p[0] for p in P_)-min(p[0] for p in P_)>=max(p[1] for p in P_)-min(p[1] for p in P_) else 1
+    P_.sort(key=lambda p:p[ax]); span=math.hypot(P_[-1][0]-P_[0][0],P_[-1][1]-P_[0][1])
+    if span<150: continue
+    segs=[(r[i],r[i+1]) for _,r in runs for i in range(len(r)-1)]
+    for f in ([0.2,0.5,0.8] if span>1700 else [0.5]):
+        c=P_[0][ax]+(P_[-1][ax]-P_[0][ax])*f
+        hit=[sg for sg in segs if min(sg[0][ax],sg[1][ax])<=c<=max(sg[0][ax],sg[1][ax]) and sg[0][ax]!=sg[1][ax]]
+        if hit:
+            a_,b_=max(hit,key=lambda sg:math.hypot(sg[1][0]-sg[0][0],sg[1][1]-sg[0][1])); u=(c-a_[ax])/(b_[ax]-a_[ax])
+            m=(a_[0]+(b_[0]-a_[0])*u,a_[1]+(b_[1]-a_[1])*u)
+        else:
+            a_,b_=min(segs,key=lambda sg:abs((sg[0][ax]+sg[1][ax])/2-c)); m=((a_[0]+b_[0])/2,(a_[1]+b_[1])/2)
+        if not(70<=m[0]<=CW-70 and 30<=m[1]<=CH-30): continue
+        ang=math.degrees(math.atan2(b_[1]-a_[1],b_[0]-a_[0]))
+        if ang>90: ang-=180
+        if ang<-90: ang+=180
+        L_={'t':name,'p':[round(m[0]),round(m[1])],'a':round(ang),'l':0 if name in LVL0 else 1,'k':'w' if kind=='W' else 'r'}
+        if name in OLD: L_['s']=OLD[name]
+        labels.append(L_)
+AREAS={'Herr Ridge':0,'McPherson Ridge':0,'Oak Hill':0,'Oak Ridge':0,'Gettysburg':0,'Railroad Cut':1,"Herbst's Woods":1,'McMillan Woods':1,'Barlow Knoll':1}
+seen=set(); areas=[]
+for code,name,p in spots:
+    if name in AREAS and name not in seen and 0<=p[0]<=CW and 0<=p[1]<=CH:
+        seen.add(name); areas.append({'t':name,'p':[round(p[0]),round(p[1])],'l':AREAS[name],'k':'town' if code=='Ptow' else 'area'})
+print('current map:',{k:len(v) for k,v in base.items()},len(labels),'line labels',len(areas),'area labels')
+data={'w':CW,'h':CH,'mpp':1.2318/SC,'tracks':tracks,'sources':S,'landmarks':lm,'base':base,'labels':labels,'areas':areas}
 json.dump(data,open(W+'/playbacks/gettysburg/data.json','w'),separators=(',',':'))
 SCAN=W+'/maps/gettysburg/map_full.png'
 if os.path.exists(SCAN):

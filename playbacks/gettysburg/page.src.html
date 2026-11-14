@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: one-screen map table. Header (title + clock), map with a source panel beside it (below it on a phone), timeline along the bottom edge. */
+/* Layout: one-screen map table. Header (title + clock), map with a source panel beside it (below it on a phone), timeline along the bottom edge. Two bases in one pixel frame: the 1876 sheet and a current map drawn from OpenStreetMap. */
 :root{
   --bg:#e9edf2; --surface:#ffffff; --surface-2:#f3f5f8; --fg:#17202f; --muted:#566275; --line:#d3d9e2;
   --accent:#8a5a10; --accent-fg:#ffffff; --accent-soft:#f4ead6;
@@ -11,6 +11,8 @@
   /* drawn on the paper map, so the same in both themes */
   --m-us:#124f93; --m-us-fill:#e3eefb; --m-cs:#b02a1c; --m-cs-fill:#fde6e1; --m-ink:#141a24; --m-halo:#fdf8ea; --m-paper:#e8dcc0; --m-sel:#f2a900;
   --display:"Zilla Slab",Rockwell,Georgia,serif; --body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+  /* current map */
+  --land:#e6e9e0; --wood:#cfe0c3; --road:#ffffff; --road-major:#fbf0c9; --road-edge:#b4bcae; --rail:#8d94a0; --water:#a8cde6; --water-text:#2c6c9c; --map-text:#3b4654; --map-halo:#eef1ea; --map-ink:#141a24;
   --map-filter:none;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
@@ -18,17 +20,20 @@
   --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
   --us:#7fb2ea; --us-soft:#1c3350; --cs:#f0897c; --cs-soft:#4a211c;
   --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
+  --land:#1b232d; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
   --map-filter:brightness(.88) contrast(1.03); color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
   --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
   --us:#7fb2ea; --us-soft:#1c3350; --cs:#f0897c; --cs-soft:#4a211c;
   --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
+  --land:#1b232d; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
   --map-filter:brightness(.88) contrast(1.03); color-scheme:dark }
 
 html,body{height:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:14px;line-height:1.45;overflow:hidden}
 *{box-sizing:border-box}
+[hidden]{display:none!important}
 button{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .gut{padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -49,7 +54,22 @@ button{font:inherit;color:inherit}
 .mapwrap.drag{cursor:grabbing}
 #mapimg{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;filter:var(--map-filter);-webkit-user-drag:none;pointer-events:none}
 #mapimg.fade{opacity:.5}
-#ov{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#base,#ov{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+#base{pointer-events:none}
+.mapwrap.mod{background:var(--bg)}
+#base .land{fill:var(--land)} #base .wood{fill:var(--wood)} #base .lake{fill:var(--water)}
+#base path.ln{fill:none;vector-effect:non-scaling-stroke;stroke-linecap:round;stroke-linejoin:round}
+#base .strm{stroke:var(--water)} #base .edge{stroke:var(--road-edge)} #base .rd{stroke:var(--road)} #base .rdM{stroke:var(--road-major)}
+#base .rail{stroke:var(--rail);stroke-dasharray:7 4;stroke-linecap:butt}
+#base .far .min{display:none}
+.sl{font-size:11px;fill:var(--map-text);stroke:var(--map-halo)!important;stroke-width:3px}
+.sl.w{fill:var(--water-text);font-style:italic}
+.sl .old{font-style:italic}
+.al{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;fill:var(--map-text);stroke:var(--map-halo)!important;stroke-width:3px;opacity:.8}
+.al.town{font-size:15px;letter-spacing:.04em;text-transform:none;opacity:.9}
+.mapwrap.mod .lm{fill:var(--map-text);stroke:var(--map-halo)!important}
+.mapwrap.mod .ulab,.mapwrap.mod .ech{fill:var(--map-ink);stroke:var(--map-halo)!important}
+.mapwrap.mod .scale{color:var(--map-text);text-shadow:0 0 3px var(--map-halo),0 0 3px var(--map-halo)} .mapwrap.mod .scale i{border-color:var(--map-text)}
 #ov text{font-family:var(--body);paint-order:stroke;stroke:var(--m-halo);stroke-linejoin:round}
 #ov .u{cursor:pointer}
 .lm{font-size:11px;font-style:italic;fill:var(--m-ink);stroke-width:3px;opacity:.85}
@@ -65,9 +85,15 @@ button{font:inherit;color:inherit}
 .chipbtn[aria-pressed="true"]{border-color:var(--accent)}
 .chipbtn[aria-pressed="true"] .dot{background:var(--accent);border-color:var(--accent)}
 .sq{width:34px;height:34px;font-size:18px;line-height:1;display:grid;place-items:center}
+.seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:6px;box-shadow:0 1px 3px rgba(0,0,0,.18);overflow:hidden}
+.seg button{border:0;background:none;padding:6px 11px;font-size:12.5px;font-weight:500;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
+.seg .sm{display:none}
+.credit{position:absolute;right:max(8px,env(safe-area-inset-right,0px));bottom:6px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:10.5px;color:var(--muted);max-width:70%}
+.credit a{color:inherit}
 .scale{position:absolute;left:max(12px,env(safe-area-inset-left,0px));bottom:10px;z-index:3;font-size:11px;color:var(--m-ink);pointer-events:none;text-shadow:0 0 3px var(--m-halo),0 0 3px var(--m-halo)}
 .scale i{display:block;height:6px;border:1.5px solid var(--m-ink);border-top:0;margin-top:2px}
-.hint{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:10px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:11.5px;color:var(--muted);pointer-events:none;max-width:60%}
+.hint{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:34px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:11.5px;color:var(--muted);pointer-events:none;max-width:60%}
 
 /* panel */
 .panel{background:var(--surface);border-left:1px solid var(--line);overflow:auto;min-height:0;min-width:0;padding:14px 16px 20px;-webkit-overflow-scrolling:touch}
@@ -137,7 +163,8 @@ details p{margin:8px 0 0}
   .hint{display:none}
   .tl .ev{font-size:0;width:14px;height:22px} .tl .ev::after{top:12px;height:12px;width:2px}
   .tl .tk.minor{display:none}
-  .chipbtn{padding:5px 8px;font-size:12px}
+  .chipbtn,.seg button{padding:5px 8px;font-size:12px}
+  .seg .lg{display:none} .seg .sm{display:inline}
   .chipbtn .long{display:none}
   .sq{width:32px;height:32px}
 }
@@ -159,8 +186,13 @@ details p{margin:8px 0 0}
   <main class="stage">
     <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Battle map. Scroll to move time, drag to pan, pinch or Ctrl plus scroll to zoom.">
       <img id="mapimg" src="map.jpg" alt="Bachelder's 1876 map of the first day's battle" draggable="false">
+      <svg id="base" aria-hidden="true" style="display:none"><defs><clipPath id="crop"><rect id="croprect" x="0" y="0" width="10" height="10"/></clipPath></defs><g id="baseg" clip-path="url(#crop)"></g></svg>
       <svg id="ov" aria-hidden="true"></svg>
       <div class="ctl c-l">
+        <div class="seg" role="group" aria-label="Base map">
+          <button id="bOld" aria-pressed="true" title="Bachelder's 1876 map of the first day (M switches maps)"><span class="lg">1876 map</span><span class="sm">1876</span></button>
+          <button id="bMod" aria-pressed="false" title="The same ground today, from OpenStreetMap (M switches maps)"><span class="lg">Current map</span><span class="sm">Today</span></button>
+        </div>
         <button class="chipbtn" id="bFollow" aria-pressed="true"><span class="dot"></span><span>Follow<span class="long"> the action</span></span></button>
         <button class="chipbtn" id="bReg" aria-pressed="true"><span class="dot"></span>Regiments</button>
         <button class="chipbtn" id="bFade" aria-pressed="false"><span class="dot"></span>Fade map</button>
@@ -171,6 +203,7 @@ details p{margin:8px 0 0}
       </div>
       <div class="scale" id="scale"></div>
       <div class="hint" id="hint">Scroll to move time &middot; drag to pan &middot; Ctrl + scroll or pinch to zoom</div>
+      <div class="credit" id="credit"></div>
     </div>
     <aside class="panel" id="panel" aria-live="polite"></aside>
   </main>
@@ -200,7 +233,8 @@ var EVENTS=[
 ];
 var BEFORE="Before the first shot. Gamble's brigade is in camp at the seminary and Calef's battery is on the pike.";
 var $=function(id){return document.getElementById(id)};
-var wrap=$('mapwrap'),img=$('mapimg'),ov=$('ov'),panel=$('panel'),range=$('time');
+var wrap=$('mapwrap'),img=$('mapimg'),ov=$('ov'),baseSvg=$('base'),baseg=$('baseg'),panel=$('panel'),range=$('time');
+var base='old'; // 'old' = the 1876 sheet, 'mod' = today's map; both share one pixel frame, so the view carries over
 var view={s:0.25,x:0,y:0},t=T0,sel=null,follow=true,regOn=true,playing=false,raf=0,lastTs=0,userMoved=false;
 var LOD=0.36; // screen px per map px above which regiments replace brigades
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
@@ -283,6 +317,7 @@ function layout(sc){
     u.lab=null; for(var i=0;i<C.length;i++){ if(C[i][0]>=3&&C[i][2]<=Z.w-3&&!hit(C[i])){u.lab=C[i];break} }
     if(!u.lab&&u.pr<=2) u.lab=C[0];
     if(u.lab) R.push(u.lab) });
+  L.hit=hit; L.keep=function(r){R.push(r)};
   return L;
 }
 function unitSvg(u){
@@ -308,14 +343,44 @@ function unitSvg(u){
     h+='<rect x="'+u.lab[0].toFixed(1)+'" y="'+u.lab[1].toFixed(1)+'" width="'+u.w.toFixed(1)+'" height="16" fill="transparent"/>'}
   h+='</g>'; return h;
 }
-var LM=[['Herr Tavern',0,-12],['Lutheran Seminary',0,16],['Willoughby Run',8,0],['Chambersburg Pike',0,-10],['McPherson farm',0,16],['Pennsylvania College',0,16]];
+var LM=[['Herr Tavern',0,-12],['Lutheran Seminary',0,16],['Willoughby Run',8,0,1],['Chambersburg Pike',0,-10,1],['McPherson farm',0,16],['Pennsylvania College',0,16]]; // 4th value: only on the 1876 map (the current map labels these itself)
+
+/* ---------- current-map base (built once, then moved with a transform) ---------- */
+(function(){var W={m:[5,3.6],p:[4.4,3],s:[3.8,2.5],t:[3.2,2],u:[2.8,1.7],r:[2.3,1.3],v:[1.5,0.8]},B=D.base,h='',edge='',fill='';
+  $('croprect').setAttribute('width',D.w);$('croprect').setAttribute('height',D.h);
+  h+='<rect class="land" width="'+D.w+'" height="'+D.h+'"/>';
+  B.wood.forEach(function(d){h+='<path class="wood" d="'+d+'"/>'});
+  B.lake.forEach(function(d){h+='<path class="lake" d="'+d+'"/>'});
+  B.water.forEach(function(w){h+='<path class="ln strm" d="'+w[1]+'" stroke-width="'+(w[0]==='r'?3.2:1.6)+'"/>'});
+  B.rail.forEach(function(d){h+='<path class="ln rail" d="'+d+'" stroke-width="1.6"/>'});
+  B.road.forEach(function(r){var c=r[0],k=W[c],mn=(c==='r'||c==='v')?' min':'';
+    edge+='<path class="ln edge'+mn+'" d="'+r[1]+'" stroke-width="'+k[0]+'"/>';fill+='<path class="ln '+(c==='m'||c==='p'?'rdM':'rd')+mn+'" d="'+r[1]+'" stroke-width="'+k[1]+'"/>'});
+  baseg.innerHTML=h+edge+fill;})();
+function setBase(b){base=b;var mod=b==='mod';$('bOld').setAttribute('aria-pressed',mod?'false':'true');$('bMod').setAttribute('aria-pressed',mod?'true':'false');
+  img.hidden=mod;baseSvg.style.display=mod?'':'none';wrap.classList.toggle('mod',mod);$('bFade').hidden=mod;
+  $('credit').innerHTML=mod?'Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors':'Bachelder, 1876 &middot; Boston Public Library';
+  panelKey='';kick()}
+function baseLabels(L){ // names on the current map: skipped where they would sit on a unit or on each other
+  var z=size(),lvl=view.s>=0.42?1:0,h='';
+  D.areas.forEach(function(l){ if(l.l>lvl) return; var q=S(l.p); if(q[0]<-60||q[1]<-20||q[0]>z.w+60||q[1]>z.h+20) return;
+    if(l.k==='town'&&view.s>0.75) return;
+    var tw=l.t.length*(l.k==='town'?8.6:8.2)/2,r=[q[0]-tw,q[1]-9,q[0]+tw,q[1]+7]; if(L.hit(r)) return; L.keep(r);
+    h+='<text class="al'+(l.k==='town'?' town':'')+'" text-anchor="middle" x="'+q[0].toFixed(1)+'" y="'+(q[1]+4).toFixed(1)+'">'+esc(l.t)+'</text>'});
+  D.labels.forEach(function(l){ if(l.l>lvl) return; var q=S(l.p); if(q[0]<-60||q[1]<-20||q[0]>z.w+60||q[1]>z.h+20) return;
+    var tw=(l.t.length+(l.s?l.s.length+3:0))*5.7,ca=Math.abs(Math.cos(l.a*Math.PI/180)),sa=Math.abs(Math.sin(l.a*Math.PI/180)),bw=(tw*ca+13*sa)/2,bh=(tw*sa+13*ca)/2,r=[q[0]-bw,q[1]-bh,q[0]+bw,q[1]+bh];
+    if(r[0]<2||r[1]<2||r[2]>z.w-2||r[3]>z.h-2||L.hit(r)) return; L.keep(r);
+    h+='<text class="sl'+(l.k==='w'?' w':'')+'" text-anchor="middle" transform="translate('+q[0].toFixed(1)+' '+q[1].toFixed(1)+') rotate('+l.a+')" y="3.5">'+esc(l.t)+(l.s?' <tspan class="old">('+esc(l.s)+')</tspan>':'')+'</text>'});
+  return h}
 function draw(){
   clampView();
-  img.style.transform='translate('+view.x.toFixed(2)+'px,'+view.y.toFixed(2)+'px) scale('+view.s.toFixed(5)+')';
-  var sc=scene(),h='';
-  LM.forEach(function(l){var p=D.landmarks[l[0]];if(!p)return;var q=S(p);h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="2" fill="var(--m-ink)" opacity=".7"/><text class="lm" x="'+(q[0]+l[1]+(l[1]?0:0)).toFixed(1)+'" y="'+(q[1]+l[2]).toFixed(1)+'" text-anchor="'+(l[1]?'start':'middle')+'">'+l[0]+'</text>'});
+  var mod=base==='mod';
+  if(mod){baseg.setAttribute('transform','translate('+view.x.toFixed(2)+' '+view.y.toFixed(2)+') scale('+view.s.toFixed(5)+')');baseg.setAttribute('class',view.s<0.24?'far':'')}
+  else img.style.transform='translate('+view.x.toFixed(2)+'px,'+view.y.toFixed(2)+'px) scale('+view.s.toFixed(5)+')';
+  var sc=scene(),h='',L=layout(sc);
+  LM.forEach(function(l){var p=D.landmarks[l[0]];if(!p||(mod&&l[3]))return;var q=S(p);if(mod)L.keep([q[0]-l[0].length*3.2,q[1]+l[2]-10,q[0]+l[0].length*3.2,q[1]+l[2]+4]);h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="2" fill="var(--m-ink)" opacity=".7"/><text class="lm" x="'+(q[0]+l[1]+(l[1]?0:0)).toFixed(1)+'" y="'+(q[1]+l[2]).toFixed(1)+'" text-anchor="'+(l[1]?'start':'middle')+'">'+l[0]+'</text>'});
   // lines first, selected last so it sits on top
-  var L=layout(sc); L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});
+  if(mod) h+=baseLabels(L);
+  L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});
   L.forEach(function(u){h+=unitSvg(u)});
   ov.innerHTML=h;
   // scale bar in yards, as on the 1876 sheet
@@ -348,7 +413,7 @@ function about(){return '<details><summary>About this prototype</summary>'+
  '<p>Unit positions come from the data pilot spreadsheet (38 rows) built from the Official Records, War Department tablets and Bachelder\'s map. Nothing here has been checked by a historian.</p>'+
  '<p>Solid symbols are positions a source gives. Dashed symbols are interpolated, inferred or the last position on record. A question mark means the location is a loose estimate.</p>'+
  '<p>Base map: John B. Bachelder, <i>Map of the battle field of Gettysburg: First day\'s battle</i> (1876), Boston Public Library copy. Its printed red and blue bars show the whole day; the labelled symbols on top are this playback.</p>'+
- '<p>Modern and satellite map views need the hosted version of the tool.</p></details>'}
+ '<p>Current map: today\'s roads, streams, woods and names from OpenStreetMap, drawn in the frame of the 1876 sheet. It is turned about 1&deg; from true north, and at the three buildings used to fit the sheet the two maps differ by 15 to 18 metres. Road names are today\'s; the 1863 name follows in brackets where it differs. Satellite and terrain views are not in this prototype.</p></details>'}
 var panelKey='';
 function renderPanel(sc,force){
   var key=sel?sel+'|'+(function(){var o=sc.filter(function(o){return o.tr.id===sel})[0];return o?o.s.k.id+o.s.kind:'x'})():'now|'+((phase()||[0])[0])+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(',');
@@ -404,6 +469,8 @@ range.addEventListener('input',function(){setPlaying(false);setTime(+range.value
 $('play').addEventListener('click',function(){setPlaying(!playing)});
 $('bFollow').addEventListener('click',function(){setFollow(!follow)});
 $('bReg').addEventListener('click',function(){regOn=!regOn;this.setAttribute('aria-pressed',regOn?'true':'false');kick()});
+$('bOld').addEventListener('click',function(){setBase('old')});
+$('bMod').addEventListener('click',function(){setBase('mod')});
 $('bFade').addEventListener('click',function(){var on=img.classList.toggle('fade');this.setAttribute('aria-pressed',on?'true':'false')});
 $('zin').addEventListener('click',function(){var z=size();setFollow(false);zoomAt(1.4,z.w/2,z.h/2);kick()});
 $('zout').addEventListener('click',function(){var z=size();setFollow(false);zoomAt(1/1.4,z.w/2,z.h/2);kick()});
@@ -412,7 +479,7 @@ wrap.addEventListener('wheel',function(e){e.preventDefault();var r=wrap.getBound
   else{setPlaying(false);var dd=Math.abs(e.deltaX)>Math.abs(dy)?e.deltaX:dy;setTime(t+dd*0.035)}},{passive:false});
 var ptrs={},pn=0,downId=null,moved=false,pinch0=0;
 function pts2(){var a=Object.keys(ptrs).map(function(k){return ptrs[k]});return a}
-wrap.addEventListener('pointerdown',function(e){if(e.target.closest('.ctl'))return;var u=e.target.closest('[data-id]');
+wrap.addEventListener('pointerdown',function(e){if(e.target.closest('.ctl')||e.target.closest('.credit'))return;var u=e.target.closest('[data-id]');
   if(pn===0){downId=u?u.getAttribute('data-id'):null;moved=false}
   ptrs[e.pointerId]={x:e.clientX,y:e.clientY};pn=Object.keys(ptrs).length;try{wrap.setPointerCapture(e.pointerId)}catch(_){ }
   if(pn===2){var a=pts2();pinch0=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);moved=true}
@@ -429,14 +496,15 @@ panel.addEventListener('click',function(e){var b=e.target.closest('[data-pick]')
   if(e.target.id==='back'){sel=null;panelKey='';kick()}});
 document.addEventListener('keydown',function(e){if(e.target.tagName==='INPUT'||e.target.tagName==='BUTTON'||e.target.tagName==='SUMMARY')return;
   if(e.key==='ArrowRight'){setPlaying(false);setTime(t+1);e.preventDefault()} else if(e.key==='ArrowLeft'){setPlaying(false);setTime(t-1);e.preventDefault()}
-  else if(e.key===' '){setPlaying(!playing);e.preventDefault()} else if(e.key==='Escape'){sel=null;panelKey='';kick()}});
+  else if(e.key===' '){setPlaying(!playing);e.preventDefault()} else if(e.key==='Escape'){sel=null;panelKey='';kick()} else if(e.key==='m'||e.key==='M'){setBase(base==='mod'?'old':'mod')}});
 if(window.ResizeObserver) new ResizeObserver(function(){if(follow){view=fitBox(actionBox(),size().w<520?46:70)}kick()}).observe(wrap);
 if(matchMedia('(pointer:coarse)').matches) $('hint').hidden=true;
 
 /* ---------- start ---------- */
 img.width=D.w;img.height=D.h;
 view=fitBox(actionBox(),size().w<520?46:70);
+setBase('old');
 setTime(T0);
-window.__gb={setTime:setTime,get view(){return view},select:function(id){sel=id;panelKey='';kick()},setFollow:setFollow};
+window.__gb={setTime:setTime,get view(){return view},select:function(id){sel=id;panelKey='';kick()},setFollow:setFollow,setBase:setBase,get base(){return base}};
 })();
 </script>
