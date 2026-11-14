@@ -1,4 +1,4 @@
-"""Build data.json for the Gettysburg playback from the v2 workbook and the OpenStreetMap extract (data/osm/gettysburg.txt). If the map scan is present (maps/gettysburg/map_full.png) it also cuts the base image."""
+"""Build data.json for the Gettysburg playback from the v2 workbook and the OpenStreetMap extract (data/osm/gettysburg.txt). If the map scan is present (maps/gettysburg/map_full.png) it also cuts the two base images."""
 import sys, os, json, math
 W=os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 sys.path.insert(0,os.path.join(W,"pipeline","georef"))
@@ -6,7 +6,10 @@ import gettysburg_georef as g, gettysburg_picks as picks
 import openpyxl
 from PIL import Image
 Image.MAX_IMAGE_PIXELS=None
-X0,Y0,X1,Y1=560,1380,5160,4100; SC=0.8
+# Frame: the whole mapped area of the 1876 sheet, in scan pixels, shown at SC of scan resolution.
+X0,Y0,X1,Y1=650,1178,7300,8120; SC=0.8
+# The base is two images: the whole sheet at SCW of scan resolution, and the ground of the first morning at full SC on top of it.
+DET=(650,1380,5160,4100); SCW=0.4
 wb=openpyxl.load_workbook(W+"/data/Gettysburg Day 1 data pilot v2.xlsx",data_only=True)
 def table(n):
     ws=wb[n]; rows=list(ws.iter_rows(values_only=True)); h=rows[0]
@@ -112,8 +115,8 @@ for code,name,pts in osm_rows():
         else: base['water'].append(['r' if code=='Wr' else 's',d])
         if name and code in('Hm','Hp','Hs','Ht','Hu','Wr','Ws'): named.setdefault((name,code[0]),[]).append((code,run))
 # one or two labels per named road or stream, laid along it
-OLD={'Chambersburg Road':'Chambersburg Pike','Fairfield Road':'Hagerstown Road'}
-LVL0={'Chambersburg Road','Fairfield Road','Mummasburg Road','Biglerville Road','Old Harrisburg Road','Herrs Ridge Road','Knoxlyn Road','Willoughby Run','Marsh Creek','Rock Creek','York Street','Baltimore Street','Old Mill Road','Table Rock Road'}
+OLD={'Chambersburg Road':'Chambersburg Pike','Fairfield Road':'Hagerstown Road','York Road':'York Pike'}
+LVL0={'Chambersburg Road','Fairfield Road','Mummasburg Road','Biglerville Road','Old Harrisburg Road','Herrs Ridge Road','Knoxlyn Road','Willoughby Run','Marsh Creek','Rock Creek','York Road','Baltimore Pike','Emmitsburg Road','Taneytown Road','Hanover Road','Old Mill Road','Table Rock Road','Plum Run'}
 labels=[]
 for (name,kind),runs in sorted(named.items()):
     P_=[p for _,r in runs for p in r if 0<=p[0]<=CW and 0<=p[1]<=CH]
@@ -137,18 +140,21 @@ for (name,kind),runs in sorted(named.items()):
         L_={'t':name,'p':[round(m[0]),round(m[1])],'a':round(ang),'l':0 if name in LVL0 else 1,'k':'w' if kind=='W' else 'r'}
         if name in OLD: L_['s']=OLD[name]
         labels.append(L_)
-AREAS={'Herr Ridge':0,'McPherson Ridge':0,'Oak Hill':0,'Oak Ridge':0,'Gettysburg':0,'Railroad Cut':1,"Herbst's Woods":1,'McMillan Woods':1,'Barlow Knoll':1}
+AREAS={'Herr Ridge':0,'McPherson Ridge':0,'Oak Hill':0,'Oak Ridge':0,'Gettysburg':0,'Seminary Ridge':0,'Cemetery Ridge':0,'Cemetery Hill':0,'Culps Hill':0,'Little Round Top':0,'Big Round Top':0,
+       'Railroad Cut':1,"Herbst's Woods":1,'McMillan Woods':1,'Barlow Knoll':1,'Benner Hill':1,'The Peach Orchard':1,"Devil's Den":1,'The Wheat Field':1,'Warfield Ridge':1,'Powers Hill':1,"Wolf's Hill":1,"Spangler's Spring":1,'Pitzer Woods':1,'Rose Woods':1}
 seen=set(); areas=[]
 for code,name,p in spots:
     if name in AREAS and name not in seen and 0<=p[0]<=CW and 0<=p[1]<=CH:
         seen.add(name); areas.append({'t':name,'p':[round(p[0]),round(p[1])],'l':AREAS[name],'k':'town' if code=='Ptow' else 'area'})
 print('current map:',{k:len(v) for k,v in base.items()},len(labels),'line labels',len(areas),'area labels')
-data={'w':CW,'h':CH,'mpp':1.2318/SC,'tracks':tracks,'sources':S,'landmarks':lm,'base':base,'labels':labels,'areas':areas}
+det={'x':round((DET[0]-X0)*SC,1),'y':round((DET[1]-Y0)*SC,1),'w':round((DET[2]-DET[0])*SC),'h':round((DET[3]-DET[1])*SC)}
+data={'w':CW,'h':CH,'mpp':1.2318/SC,'tracks':tracks,'sources':S,'landmarks':lm,'base':base,'labels':labels,'areas':areas,'det':det,'wide':{'w':round((X1-X0)*SCW),'h':round((Y1-Y0)*SCW)}}
 json.dump(data,open(W+'/playbacks/gettysburg/data.json','w'),separators=(',',':'))
 SCAN=W+'/maps/gettysburg/map_full.png'
 if os.path.exists(SCAN):
-    im=Image.open(SCAN).convert('RGB').crop((X0,Y0,X1,Y1))
-    im=im.resize((data['w'],data['h']),Image.LANCZOS); im.save(W+'/playbacks/gettysburg/map.jpg',quality=80,optimize=True,progressive=True)
-else: print('map scan not found: base image not rebuilt')
+    full=Image.open(SCAN).convert('RGB')
+    im=full.crop(DET).resize((det['w'],det['h']),Image.LANCZOS); im.save(W+'/playbacks/gettysburg/map.jpg',quality=80,optimize=True,progressive=True)
+    im=full.crop((X0,Y0,X1,Y1)).resize((data['wide']['w'],data['wide']['h']),Image.LANCZOS); im.save(W+'/playbacks/gettysburg/map_wide.jpg',quality=78,optimize=True,progressive=True)
+else: print('map scan not found: base images not rebuilt')
 print(data['w'],data['h'], len(open(W+'/playbacks/gettysburg/data.json').read())/1e3,'KB')
 for t in tracks: print(t['id'],t['label'],t['ech'],t['branch'],[(k['id'],k['t0'],k['t1'],k['g']) for k in t['k']])
