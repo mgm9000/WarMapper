@@ -52,8 +52,9 @@ button{font:inherit;color:inherit}
 .stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 372px}
 .mapwrap{position:relative;overflow:hidden;background:var(--m-paper);touch-action:none;cursor:grab;min-height:0;user-select:none;-webkit-user-select:none}
 .mapwrap.drag{cursor:grabbing}
-#mapimg{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;filter:var(--map-filter);-webkit-user-drag:none;pointer-events:none}
-#mapimg.fade{opacity:.5}
+#mapimg,#mapwide{position:absolute;left:0;top:0;transform-origin:0 0;max-width:none;filter:var(--map-filter);-webkit-user-drag:none;pointer-events:none}
+#oldmaps{position:absolute;inset:0;pointer-events:none}
+.mapwrap.fade #oldmaps{opacity:.5}
 #base,#ov{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
 #base{pointer-events:none}
 .mapwrap.mod{background:var(--bg)}
@@ -185,7 +186,7 @@ details p{margin:8px 0 0}
 
   <main class="stage">
     <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Battle map. Scroll to move time, drag to pan, pinch or Ctrl plus scroll to zoom.">
-      <img id="mapimg" src="map.jpg" alt="Bachelder's 1876 map of the first day's battle" draggable="false">
+      <div id="oldmaps"><img id="mapwide" src="map_wide.jpg" alt="Bachelder's 1876 map of the first day's battle, whole sheet" draggable="false"><img id="mapimg" src="map.jpg" alt="" draggable="false"></div>
       <svg id="base" aria-hidden="true" style="display:none"><defs><clipPath id="crop"><rect id="croprect" x="0" y="0" width="10" height="10"/></clipPath></defs><g id="baseg" clip-path="url(#crop)"></g></svg>
       <svg id="ov" aria-hidden="true"></svg>
       <div class="ctl c-l">
@@ -233,7 +234,7 @@ var EVENTS=[
 ];
 var BEFORE="Before the first shot. Gamble's brigade is in camp at the seminary and Calef's battery is on the pike.";
 var $=function(id){return document.getElementById(id)};
-var wrap=$('mapwrap'),img=$('mapimg'),ov=$('ov'),baseSvg=$('base'),baseg=$('baseg'),panel=$('panel'),range=$('time');
+var wrap=$('mapwrap'),img=$('mapimg'),wide=$('mapwide'),ov=$('ov'),baseSvg=$('base'),baseg=$('baseg'),panel=$('panel'),range=$('time');
 var base='old'; // 'old' = the 1876 sheet, 'mod' = today's map; both share one pixel frame, so the view carries over
 var view={s:0.25,x:0,y:0},t=T0,sel=null,follow=true,regOn=true,playing=false,raf=0,lastTs=0,userMoved=false;
 var LOD=0.36; // screen px per map px above which regiments replace brigades
@@ -315,7 +316,7 @@ function layout(sc){
   L.slice().sort(function(a,b){return a.pr-b.pr}).forEach(function(u){
     var x=u.x,y=u.y,w=u.w,C=[[x+16,y-8,x+16+w,y+8,'start',x+17,y+4.5],[x-16-w,y-8,x-16,y+8,'end',x-17,y+4.5],[x-w/2,y+11,x+w/2,y+26,'middle',x,y+23],[x-w/2,y-35,x+w/2,y-20,'middle',x,y-23]];
     u.lab=null; for(var i=0;i<C.length;i++){ if(C[i][0]>=3&&C[i][2]<=Z.w-3&&!hit(C[i])){u.lab=C[i];break} }
-    if(!u.lab&&u.pr<=2) u.lab=C[0];
+    if(!u.lab&&(u.pr===0||(u.pr<=2&&view.s>=0.3))) u.lab=C[0]; // zoomed right out, a crowded label is dropped rather than forced
     if(u.lab) R.push(u.lab) });
   L.hit=hit; L.keep=function(r){R.push(r)};
   return L;
@@ -357,7 +358,7 @@ var LM=[['Herr Tavern',0,-12],['Lutheran Seminary',0,16],['Willoughby Run',8,0,1
     edge+='<path class="ln edge'+mn+'" d="'+r[1]+'" stroke-width="'+k[0]+'"/>';fill+='<path class="ln '+(c==='m'||c==='p'?'rdM':'rd')+mn+'" d="'+r[1]+'" stroke-width="'+k[1]+'"/>'});
   baseg.innerHTML=h+edge+fill;})();
 function setBase(b){base=b;var mod=b==='mod';$('bOld').setAttribute('aria-pressed',mod?'false':'true');$('bMod').setAttribute('aria-pressed',mod?'true':'false');
-  img.hidden=mod;baseSvg.style.display=mod?'':'none';wrap.classList.toggle('mod',mod);$('bFade').hidden=mod;
+  $('oldmaps').hidden=mod;baseSvg.style.display=mod?'':'none';wrap.classList.toggle('mod',mod);$('bFade').hidden=mod;
   $('credit').innerHTML=mod?'Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors':'Bachelder, 1876 &middot; Boston Public Library';
   panelKey='';kick()}
 function baseLabels(L){ // names on the current map: skipped where they would sit on a unit or on each other
@@ -375,9 +376,11 @@ function draw(){
   clampView();
   var mod=base==='mod';
   if(mod){baseg.setAttribute('transform','translate('+view.x.toFixed(2)+' '+view.y.toFixed(2)+') scale('+view.s.toFixed(5)+')');baseg.setAttribute('class',view.s<0.24?'far':'')}
-  else img.style.transform='translate('+view.x.toFixed(2)+'px,'+view.y.toFixed(2)+'px) scale('+view.s.toFixed(5)+')';
+  else{ // the whole sheet at reduced detail, with the sharper image of the first morning's ground on top
+    wide.style.transform='translate('+view.x.toFixed(2)+'px,'+view.y.toFixed(2)+'px) scale('+(view.s*D.w/D.wide.w).toFixed(5)+')';
+    img.style.transform='translate('+(view.x+D.det.x*view.s).toFixed(2)+'px,'+(view.y+D.det.y*view.s).toFixed(2)+'px) scale('+view.s.toFixed(5)+')'}
   var sc=scene(),h='',L=layout(sc);
-  LM.forEach(function(l){var p=D.landmarks[l[0]];if(!p||(mod&&l[3]))return;var q=S(p);if(mod)L.keep([q[0]-l[0].length*3.2,q[1]+l[2]-10,q[0]+l[0].length*3.2,q[1]+l[2]+4]);h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="2" fill="var(--m-ink)" opacity=".7"/><text class="lm" x="'+(q[0]+l[1]+(l[1]?0:0)).toFixed(1)+'" y="'+(q[1]+l[2]).toFixed(1)+'" text-anchor="'+(l[1]?'start':'middle')+'">'+l[0]+'</text>'});
+  LM.forEach(function(l){var p=D.landmarks[l[0]];if(!p||(mod&&l[3])||view.s<0.3)return;var q=S(p);if(mod)L.keep([q[0]-l[0].length*3.2,q[1]+l[2]-10,q[0]+l[0].length*3.2,q[1]+l[2]+4]);h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="2" fill="var(--m-ink)" opacity=".7"/><text class="lm" x="'+(q[0]+l[1]+(l[1]?0:0)).toFixed(1)+'" y="'+(q[1]+l[2]).toFixed(1)+'" text-anchor="'+(l[1]?'start':'middle')+'">'+l[0]+'</text>'});
   // lines first, selected last so it sits on top
   if(mod) h+=baseLabels(L);
   L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});
@@ -412,7 +415,7 @@ function rowHtml(k,head){
 function about(){return '<details><summary>About this prototype</summary>'+
  '<p>Unit positions come from the data pilot spreadsheet (38 rows) built from the Official Records, War Department tablets and Bachelder\'s map. Nothing here has been checked by a historian.</p>'+
  '<p>Solid symbols are positions a source gives. Dashed symbols are interpolated, inferred or the last position on record. A question mark means the location is a loose estimate.</p>'+
- '<p>Base map: John B. Bachelder, <i>Map of the battle field of Gettysburg: First day\'s battle</i> (1876), Boston Public Library copy. Its printed red and blue bars show the whole day; the labelled symbols on top are this playback.</p>'+
+ '<p>Base map: John B. Bachelder, <i>Map of the battle field of Gettysburg: First day\'s battle</i> (1876), Boston Public Library copy. The whole sheet is shown; the ground of the first morning, west and north-west of the town, is drawn at twice the detail of the rest. Its printed red and blue bars show the whole day; the labelled symbols on top are this playback.</p>'+
  '<p>Current map: today\'s roads, streams, woods and names from OpenStreetMap, drawn in the frame of the 1876 sheet. It is turned about 1&deg; from true north, and at the three buildings used to fit the sheet the two maps differ by 15 to 18 metres. Road names are today\'s; the 1863 name follows in brackets where it differs. Satellite and terrain views are not in this prototype.</p></details>'}
 var panelKey='';
 function renderPanel(sc,force){
@@ -471,7 +474,7 @@ $('bFollow').addEventListener('click',function(){setFollow(!follow)});
 $('bReg').addEventListener('click',function(){regOn=!regOn;this.setAttribute('aria-pressed',regOn?'true':'false');kick()});
 $('bOld').addEventListener('click',function(){setBase('old')});
 $('bMod').addEventListener('click',function(){setBase('mod')});
-$('bFade').addEventListener('click',function(){var on=img.classList.toggle('fade');this.setAttribute('aria-pressed',on?'true':'false')});
+$('bFade').addEventListener('click',function(){var on=wrap.classList.toggle('fade');this.setAttribute('aria-pressed',on?'true':'false')});
 $('zin').addEventListener('click',function(){var z=size();setFollow(false);zoomAt(1.4,z.w/2,z.h/2);kick()});
 $('zout').addEventListener('click',function(){var z=size();setFollow(false);zoomAt(1/1.4,z.w/2,z.h/2);kick()});
 wrap.addEventListener('wheel',function(e){e.preventDefault();var r=wrap.getBoundingClientRect(),dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1);
@@ -501,7 +504,7 @@ if(window.ResizeObserver) new ResizeObserver(function(){if(follow){view=fitBox(a
 if(matchMedia('(pointer:coarse)').matches) $('hint').hidden=true;
 
 /* ---------- start ---------- */
-img.width=D.w;img.height=D.h;
+img.width=D.det.w;img.height=D.det.h;wide.width=D.wide.w;wide.height=D.wide.h;
 view=fitBox(actionBox(),size().w<520?46:70);
 setBase('old');
 setTime(T0);
