@@ -93,7 +93,8 @@ else:
 src={s[0]:{'title':s[1],'url':s[7]} for s in TR.SOURCES}
 xs=[p for wy in geo.load() for p in wy['pts']]
 bb=[M(max(a for a,b in xs),min(b for a,b in xs)),M(min(a for a,b in xs),max(b for a,b in xs))]
-data={'tracks':tracks,'ways':ways,'labels':labels,'lm':lm,'sources':src,'sk':{'w':SKSIZE[0],'h':SKSIZE[1]},'bbox':[bb[0][0],bb[0][1],bb[1][0],bb[1][1]]}
+data={'tracks':tracks,'ways':ways,'labels':labels,'lm':lm,'sources':src,'sk':{'w':SKSIZE[0],'h':SKSIZE[1]},'bbox':[bb[0][0],bb[0][1],bb[1][0],bb[1][1]],
+      'cal':{'first':'1776-12-26','numbered':False,'count':1}}  # one day's fighting after a night march: no day numbers
 json.dump(data,open(S+'/playbacks/trenton/data.json','w'),separators=(',',':'),ensure_ascii=False)
 print(SKSIZE,'data',os.path.getsize(S+'/playbacks/trenton/data.json')/1e3,'KB; bbox',data['bbox'])
 for t in tracks: print(t['id'],t['label'],[(k['id'],round(k['t0']),round(k['t1']),'g' if k['g'] else '-','s' if k['gs'] else '-','v' if k.get('virtual') else '','via' if k.get('via') else '') for k in t['k']])
