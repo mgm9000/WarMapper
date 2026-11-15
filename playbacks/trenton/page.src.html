@@ -2,7 +2,7 @@
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: one-screen map table. Header (title + clock), map with a source panel beside it (below it on a phone), timeline along the bottom edge. Two bases: a current street map and the 1776 sketch. */
+/* Layout: one-screen map table. Header (title), map with the date and time in a box on it and with a source panel beside it (below it on a phone), timeline along the bottom edge. Two bases: a current street map and the 1776 sketch. */
 :root{
   --bg:#e9edf2; --surface:#ffffff; --surface-2:#f3f5f8; --fg:#17202f; --muted:#566275; --line:#d3d9e2;
   --accent:#8a5a10; --accent-fg:#ffffff; --accent-soft:#f4ead6;
@@ -41,9 +41,11 @@ button{font:inherit;color:inherit}
 .ttl{min-width:0;flex:1 1 220px}
 .ttl h1{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.15;margin:0;text-wrap:balance}
 .ttl p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
-.clock{text-align:right;flex:0 0 auto;min-width:150px}
-.clock .t{font-family:var(--display);font-weight:600;font-size:30px;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:.01em}
-.clock .d{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.when{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:46px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.18);padding:7px 12px 8px;pointer-events:none;min-width:136px}
+.when .dayn{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:1px}
+.when .t{font-family:var(--display);font-weight:600;font-size:25px;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
+.when .d{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap}
+.when .n{font-size:10.5px;color:var(--muted);font-style:italic}
 
 .stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 372px}
 .mapwrap{position:relative;overflow:hidden;background:var(--land);touch-action:none;cursor:grab;min-height:0;user-select:none;-webkit-user-select:none}
@@ -85,7 +87,7 @@ button{font:inherit;color:inherit}
 .scale i{display:block;height:6px;border:1.5px solid var(--map-text);border-top:0;margin-top:2px}
 .credit{position:absolute;right:max(8px,env(safe-area-inset-right,0px));bottom:6px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:10.5px;color:var(--muted);max-width:70%}
 .credit a{color:inherit}
-.hint{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:11.5px;color:var(--muted);pointer-events:none;white-space:nowrap}
+.hint{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:34px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:11.5px;color:var(--muted);pointer-events:none;white-space:nowrap}
 .offnote{position:absolute;left:50%;top:56px;transform:translateX(-50%);z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:6px 10px;font-size:12.5px;max-width:80%;text-align:center}
 
 .panel{background:var(--surface);border-left:1px solid var(--line);overflow:auto;min-height:0;min-width:0;padding:14px 16px 20px;-webkit-overflow-scrolling:touch}
@@ -150,7 +152,7 @@ details p{margin:8px 0 0}
 @media (max-width:860px){
   .stage{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1.5fr) minmax(0,1fr)}
   .panel{border-left:0;border-top:1px solid var(--line);padding:12px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
-  .ttl h1{font-size:16.5px} .ttl p{display:none} .clock .t{font-size:24px} .bar{padding-block:8px;gap:10px}
+  .ttl h1{font-size:16.5px} .ttl p{display:none} .when{bottom:40px;padding:5px 9px 6px;min-width:0} .when .t{font-size:20px} .when .d{font-size:11px} .bar{padding-block:8px;gap:10px}
   .ttl{flex:1 1 150px}
   .hint{display:none}
   .seg .lg{display:none} .seg .sm{display:inline}
@@ -167,10 +169,6 @@ details p{margin:8px 0 0}
     <div class="ttl">
       <h1>Trenton, 26 December 1776</h1>
       <p>Washington's march from the Delaware and the fight for the town</p>
-    </div>
-    <div class="clock">
-      <div class="t" id="clock">3:00 a.m.</div>
-      <div class="d" id="clocksub">26 December 1776</div>
     </div>
   </header>
 
@@ -192,6 +190,7 @@ details p{margin:8px 0 0}
         <button class="sq" id="zout" aria-label="Zoom out">&minus;</button>
       </div>
       <div class="offnote" id="offnote" hidden></div>
+      <div class="when" id="when" aria-live="off"><div class="dayn" id="dayn" hidden></div><div class="t" id="clock">3:00 a.m.</div><div class="d" id="clockdate"></div><div class="n" id="clocknote" hidden>Times are estimates</div></div>
       <div class="scale" id="scale"></div>
       <div class="hint" id="hint">Scroll or pinch to zoom &middot; drag to pan &middot; scroll over the timeline to move time</div>
       <div class="credit" id="credit"></div>
@@ -436,8 +435,13 @@ function renderPanel(sc,force){
   panel.innerHTML=h; if(sel) panel.scrollTop=0;
 }
 
+/* ---------- date and time box on the map ---------- */
+var CAL=D.cal,WDN=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'],MON12=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function calOf(m){ // m = minutes from midnight of the battle's first calendar day; the day number is given only for battles whose data says their days are numbered
+  var i=Math.floor(m/1440),b=CAL.first.split('-'),dt=new Date(Date.UTC(+b[0],+b[1]-1,+b[2]+i));
+  return {n:(CAL.numbered&&i>=0&&i<CAL.count)?i+1:0,date:WDN[dt.getUTCDay()]+' '+dt.getUTCDate()+' '+MON12[dt.getUTCMonth()]+' '+dt.getUTCFullYear(),clock:fmt(((m%1440)+1440)%1440)}}
 /* ---------- time ---------- */
-function paintTime(){ $('clock').textContent=fmt(t); $('clocksub').textContent=t>=465?'Times are estimates':'26 December 1776';
+function paintTime(){ var c=calOf(t);$('clock').textContent=c.clock;$('clockdate').textContent=c.date;$('dayn').hidden=!c.n;if(c.n)$('dayn').textContent='Day '+c.n;$('clocknote').hidden=t<465;
   $('done').style.width=(t2u(t)*100)+'%'; var p=phase();
   Array.prototype.forEach.call(document.querySelectorAll('.tl .ev'),function(e){e.classList.toggle('on',!!p&&+e.dataset.t===p[0])}) }
 function setTime(v,fromRange){t=Math.max(T0,Math.min(T1,v));if(!fromRange)range.value=Math.round(t2u(t)*1000);paintTime();kick()}

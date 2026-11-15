@@ -73,6 +73,7 @@ events = [dict(id=e[0], t0=day(YP.D(e[1])), t1=day(YP.D(e[2])), name=e[3], text=
 sources = {s[0]: dict(title=s[1], url=s[7]) for s in YP.SOURCES}
 sources['S39'] = dict(title='OpenStreetMap (place coordinates and base map)', url='https://www.openstreetmap.org/copyright')
 hist = json.load(open(S + 'playbacks/ypres/hist.json'))
-out = dict(hist=hist, tracks=tracks, ways=ways, woods=woods, labels=labels, events=events, sources=sources, un=UN, ext=[M(51.17, 2.68), M(50.70, 3.21)], days=35)
+out = dict(hist=hist, tracks=tracks, ways=ways, woods=woods, labels=labels, events=events, sources=sources, un=UN, ext=[M(51.17, 2.68), M(50.70, 3.21)], days=35,
+           cal=dict(first='1914-10-18', numbered=False))  # the battle's start and end dates are not agreed, so the date box shows no day numbers
 json.dump(out, open(S + 'playbacks/ypres/data.json', 'w', encoding='utf-8'), ensure_ascii=False, separators=(',', ':'))
 print(len(tracks), 'tracks', sum(len(t['k']) for t in tracks), 'rows', len(ways), 'ways', len(labels), 'labels', len(json.dumps(out)) // 1024, 'KB', out['ext'])

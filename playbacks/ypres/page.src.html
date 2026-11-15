@@ -39,9 +39,11 @@ button{font:inherit;color:inherit}
 .ttl{min-width:0;flex:1 1 200px}
 .ttl h1{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.15;margin:0;text-wrap:balance}
 .ttl p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
-.clock{text-align:right;flex:0 0 auto;min-width:176px}
-.clock .t{font-family:var(--display);font-weight:600;font-size:28px;line-height:1;font-variant-numeric:tabular-nums}
-.clock .d{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-top:3px}
+.when{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:46px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.18);padding:7px 12px 8px;pointer-events:none;min-width:136px}
+.when .dayn{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:1px}
+.when .t{font-family:var(--display);font-weight:600;font-size:22px;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
+.when .d{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap}
+.when .n{font-size:10.5px;color:var(--muted);font-style:italic}
 
 .stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 372px}
 .mapwrap{position:relative;overflow:hidden;background:var(--land);touch-action:none;cursor:grab;min-height:0;user-select:none;-webkit-user-select:none}
@@ -84,7 +86,7 @@ button{font:inherit;color:inherit}
 .scale i{display:block;height:6px;border:1.5px solid var(--map-text);border-top:0;margin-top:2px}
 .credit{position:absolute;right:max(8px,env(safe-area-inset-right,0px));bottom:6px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:10.5px;color:var(--muted);max-width:70%}
 .credit a{color:inherit}
-.hint{position:absolute;left:50%;transform:translateX(-50%);bottom:10px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:11.5px;color:var(--muted);pointer-events:none;white-space:nowrap}
+.hint{position:absolute;right:max(12px,env(safe-area-inset-right,0px));bottom:34px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:5px 9px;font-size:11.5px;color:var(--muted);pointer-events:none;white-space:nowrap}
 
 .panel{background:var(--surface);border-left:1px solid var(--line);overflow:auto;min-height:0;min-width:0;padding:14px 16px 20px;-webkit-overflow-scrolling:touch}
 .panel h2{font-family:var(--display);font-size:18px;font-weight:700;margin:0;line-height:1.2;text-wrap:balance}
@@ -149,8 +151,8 @@ details p{margin:8px 0 0}
 @media (max-width:860px){
   .stage{grid-template-columns:minmax(0,1fr);grid-template-rows:minmax(0,1.5fr) minmax(0,1fr)}
   .panel{border-left:0;border-top:1px solid var(--line);padding:12px max(16px,env(safe-area-inset-right,0px)) 16px max(16px,env(safe-area-inset-left,0px))}
-  .ttl h1{font-size:16.5px} .ttl p{display:none} .clock .t{font-size:22px} .bar{padding-block:8px;gap:10px}
-  .ttl{flex:1 1 120px} .clock{min-width:150px}
+  .ttl h1{font-size:16.5px} .ttl p{display:none} .when{bottom:40px;padding:5px 9px 6px;min-width:0} .when .t{font-size:18px} .when .d{font-size:11px} .bar{padding-block:8px;gap:10px}
+  .ttl{flex:1 1 120px}
   .seg .lg{display:none} .seg .sm{display:inline}
   .tl .ev{font-size:0}
   .tl .tk.minor{display:none}
@@ -165,10 +167,6 @@ details p{margin:8px 0 0}
     <div class="ttl">
       <h1>First Ypres, 1914</h1>
       <p>Corps and divisions day by day, from the Yser to the Lys</p>
-    </div>
-    <div class="clock">
-      <div class="t" id="clock">18 October</div>
-      <div class="d" id="clocksub">Sunday &middot; at nightfall</div>
     </div>
   </header>
 
@@ -194,6 +192,7 @@ details p{margin:8px 0 0}
         <button class="sq" id="zin" aria-label="Zoom in">+</button>
         <button class="sq" id="zout" aria-label="Zoom out">&minus;</button>
       </div>
+      <div class="when" id="when" aria-live="off"><div class="dayn" id="dayn" hidden></div><div class="t" id="clock">18 October 1914</div><div class="d" id="clocksub">Sunday &middot; at nightfall</div></div>
       <div class="scale" id="scale"></div>
       <div class="hint" id="hint">Scroll or pinch to zoom &middot; drag to pan &middot; scroll over the timeline to move through the days</div>
       <div class="credit" id="credit"></div>
@@ -434,7 +433,7 @@ function renderPanel(sc,force){
 
 /* ---------- time ---------- */
 function paintTime(){ var n=Math.ceil(t-1e-6),d=dateOf(n),night=Math.abs(t-Math.round(t))<0.02;
-  $('clock').textContent=d.day+' '+d.mon; $('clocksub').textContent=d.wd+' · '+(night?'at nightfall':'during the day');
+  $('clock').textContent=d.day+' '+d.mon+' 1914'; if(D.cal.numbered){$('dayn').hidden=false;$('dayn').textContent='Day '+(n+1)} $('clocksub').textContent=d.wd+' · '+(night?'at nightfall':'during the day');
   $('done').style.width=(t/T1*100)+'%'; var p=phase();
   Array.prototype.forEach.call(document.querySelectorAll('.tl .ev'),function(e){e.classList.toggle('on',!!p&&e.dataset.id===p.id)}) }
 function setTime(v,fromRange){t=Math.max(T0,Math.min(T1,v));if(!fromRange)range.value=Math.round(t*100);paintTime();kick()}

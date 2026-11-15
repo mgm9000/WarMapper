@@ -148,7 +148,8 @@ for code,name,p in spots:
         seen.add(name); areas.append({'t':name,'p':[round(p[0]),round(p[1])],'l':AREAS[name],'k':'town' if code=='Ptow' else 'area'})
 print('current map:',{k:len(v) for k,v in base.items()},len(labels),'line labels',len(areas),'area labels')
 det={'x':round((DET[0]-X0)*SC,1),'y':round((DET[1]-Y0)*SC,1),'w':round((DET[2]-DET[0])*SC),'h':round((DET[3]-DET[1])*SC)}
-data={'w':CW,'h':CH,'mpp':1.2318/SC,'tracks':tracks,'sources':S,'landmarks':lm,'base':base,'labels':labels,'areas':areas,'det':det,'wide':{'w':round((X1-X0)*SCW),'h':round((Y1-Y0)*SCW)}}
+data={'w':CW,'h':CH,'mpp':1.2318/SC,'tracks':tracks,'sources':S,'landmarks':lm,'base':base,'labels':labels,'areas':areas,'det':det,'wide':{'w':round((X1-X0)*SCW),'h':round((Y1-Y0)*SCW)},
+      'cal':{'first':'1863-07-01','numbered':True,'count':3}}  # Gettysburg is fought on three numbered days, 1 to 3 July 1863
 json.dump(data,open(W+'/playbacks/gettysburg/data.json','w'),separators=(',',':'))
 SCAN=W+'/maps/gettysburg/map_full.png'
 if os.path.exists(SCAN):
