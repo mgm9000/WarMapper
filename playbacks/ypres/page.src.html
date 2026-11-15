@@ -66,26 +66,23 @@
 <script src="__APP__/vendor/maplibre-gl.js"></script>
 <script src="__APP__/core.js"></script>
 <script>
-/* First Ypres, 1914. The shared core (core.js) runs the map, the clock and the controls; this script holds what is particular to this battle:
+/* First Ypres, 1914. The data comes from the battle file (battle.json, written into this page). The shared core (core.js) reads it
+   and runs the map, the clock and the controls; this script holds what is particular to this playback:
    where each formation is on a given day, how lines and symbols are laid out and drawn, the period sketches, and the side panel. */
 (function(){
 "use strict";
-var D=JSON.parse(document.getElementById('data').textContent);
+var B=WM.battle(JSON.parse(document.getElementById('data').textContent)); // the battle file: units, their recorded positions, events, maps (core.js lays it out)
 var $=WM.$,esc=WM.esc,chip=WM.chip,plen=WM.plen;
-var T0=0,T1=D.days,HOLD=0.35,LINGER=2; // time is in days from 18 October; a whole number is nightfall on that day. A unit the sources stop following stays on the map, faded, for two days
-var MAJOR={YE01:1,YE04:1,YE09:1,YE11:1,YE13:1,YE14:1};
-var BEFORE="The Allies are pushing east from Ypres and along the Lys, expecting only cavalry in front of them. Four new German reserve corps are a day's march away.";
+var T0=B.T0,T1=B.T1,HOLD=0.35,LINGER=2; // time is in days from 18 October; a whole number is nightfall on that day. A unit the sources stop following stays on the map, faded, for two days
 var wrap=$('mapwrap'),ov=$('ov'),panel=$('panel');
 var target=null,preset='sal',t=T0,sel=null,names=true,units=true,base='now',sNow=0.03;
-var HIST=D.hist,OSMC=WM.OSM_CREDIT;
+var HIST={A:B.mapList[0],days:B.mapList.slice(1)},OSMC=WM.OSM_CREDIT; // the official history's maps: Sketch A, then the sketch for each run of days
 var LODZ=0.05; // below this zoom a German division is hidden while its corps is drawn
-function dateOf(n){var d=new Date(Date.UTC(1914,9,18+n));return {day:d.getUTCDate(),mon:WM.MONTHS[d.getUTCMonth()],wd:WM.WEEKDAYS[d.getUTCDay()]}}
-function byId(id){for(var i=0;i<D.tracks.length;i++)if(D.tracks[i].id===id)return D.tracks[i]}
+var dateOf=B.dateOf;
+var byId=B.track;
 function nat(tr){return tr.side==='GE'?'ge':tr.nation==='France'?'fr':tr.nation==='Belgium'?'be':'br'}
 
-/* The frame is metres east and south of the centre of Ypres. */
-var F=D.frame;
-function toLL(p){return [F.LON0+p[0]/F.KX,F.LAT0-p[1]/F.KY]}
+/* Positions are in the battle's flat frame: metres east and south of the centre of Ypres. */
 
 /* ---------- where is a unit at time t ---------- */
 function resample(g,n){if(g.length===1){var o=[];for(var i=0;i<n;i++)o.push(g[0]);return o}
@@ -116,37 +113,37 @@ function stateAt(tr,tt){
 }
 function parentAt(tr,tt){var p=null,d=Math.ceil(tt-1e-6);tr.par.forEach(function(a){if(d>=a[0]&&d<=a[1])p=a});return p||tr.par[tr.par.length-1]||null}
 function scene(){var out=[],drawn={};
-  D.tracks.forEach(function(tr){var s=stateAt(tr,t);if(s){var o={tr:tr,s:s,drawn:!!s.g};out.push(o);if(o.drawn)drawn[tr.id]=1}});
+  B.tracks.forEach(function(tr){var s=stateAt(tr,t);if(s){var o={tr:tr,s:s,drawn:!!s.g};out.push(o);if(o.drawn)drawn[tr.id]=1}});
   out.forEach(function(o){ if(!o.drawn||o.tr.side!=='GE'||o.tr.ech!=='division'||o.tr.id===sel) return; var p=parentAt(o.tr,t);
     if(p&&drawn[p[2]]&&sNow<LODZ){o.drawn=false;o.folded=p[2]} });
   return out}
 
 /* ---------- view ---------- */
-var EXT=[D.ext[0][0],D.ext[0][1],D.ext[1][0],D.ext[1][1]];
-var BOX={sal:[-6600,-10600,15800,13800],all:[-13200,-34500,21500,15800]};
+var EXT=B.ext;
+var BOX={sal:B.presets.salient,all:B.presets.front};
 function cameraOf(p){return mv.cameraFor(BOX[p],{t:48,b:22,l:14,r:14})}
 function setPreset(p,jump){preset=p;$('vSal').setAttribute('aria-pressed',p==='sal'?'true':'false');$('vAll').setAttribute('aria-pressed',p==='all'?'true':'false');
   if(!p){target=null;return} target=cameraOf(p); if(jump){mv.jump(target);target=null} mv.kick()}
 function curHist(){ if(base==='m14') return HIST.A; if(base!=='day') return null; var d=Math.max(0,Math.ceil(t-1e-6)),ds=HIST.days;
-  for(var i=0;i<ds.length;i++) if(d>=ds[i].d0&&d<=ds[i].d1) return ds[i]; return ds[ds.length-1]}
+  for(var i=0;i<ds.length;i++) if(d>=ds[i].t0&&d<=ds[i].t1) return ds[i]; return ds[ds.length-1]}
 var lastCredit='';
-function paintCredit(H){var c=!H?OSMC:(base==='m14'?'Sketch A, official history (1925) &middot; ':esc(H.sk)+', '+esc(H.label)+(Math.ceil(t-1e-6)>H.d1?' (the last one)':'')+' &middot; official history (1925) &middot; ')+OSMC;
+function paintCredit(H){var c=!H?OSMC:(base==='m14'?esc(H.credit)+' &middot; ':esc(H.short)+', '+esc(H.label)+(Math.ceil(t-1e-6)>H.t1?' (the last one)':'')+' &middot; '+esc(H.credit)+' &middot; ')+OSMC;
   if(c!==lastCredit){lastCredit=c;$('credit').innerHTML=c}}
 function setBase(b){base=b;[['bNow','now'],['b14','m14'],['bDay','day']].forEach(function(p){$(p[0]).setAttribute('aria-pressed',b===p[1]?'true':'false')});
-  wrap.classList.toggle('hist',b!=='now'); if(b==='day') HIST.days.forEach(function(h){if(!h.pre){h.pre=new Image();h.pre.src=WM.asset(h.src)}}); panelKey='';mv.kick()}
+  wrap.classList.toggle('hist',b!=='now'); if(b==='day') HIST.days.forEach(function(h){if(!h.pre){h.pre=new Image();h.pre.src=WM.asset(h.images[0].file)}}); panelKey='';mv.kick()}
 function setUnits(v){units=v;$('bUnits').setAttribute('aria-pressed',v?'true':'false');mv.kick()}
 function setNames(v){names=v;$('bNames').setAttribute('aria-pressed',v?'true':'false');try{localStorage.setItem('ypres.names',v?'1':'0')}catch(_){ }mv.kick()}
 
 /* ---------- base map and period sketches ---------- */
-function histBox(H){return [H.x0,H.y0,H.x0+H.w*H.res,H.y0+H.h*H.res]}
+function histBox(H){return H.images[0].box}
 var histShown=null; // the sketch now on the map: one picture layer, re-pointed when the date calls for another sketch
 function buildBase(){
   var W={m:[3.4,2.2],r:[2.9,1.7],s:[2.2,1.1]},f=[];
-  D.woods.forEach(function(w){f.push(mv.poly(w[1],{k:'wood'}))});
-  D.ways.forEach(function(w){var c=w[0];
-    if(c==='w'){f.push(mv.line(w[2],{k:'water',w:(w[1]==='IJzer'||w[1]==='Lys')?3.6:2.6}));return}
-    if(c==='x'){f.push(mv.line(w[2],{k:'oldcanal'}));return}
-    var k=W[c]||W.s;f.push(mv.line(w[2],{k:'road',e:k[0],w:k[1]}))});
+  B.base.areas.forEach(function(a){f.push(WM.feat('area',a.ll,{k:'wood'}))});
+  B.base.lines.forEach(function(l){
+    if(l.kind==='water'){f.push(WM.feat('line',l.ll,{k:'water',w:l.cls==='river'?3.6:2.6}));return}
+    if(l.kind==='former-water'){f.push(WM.feat('line',l.ll,{k:'oldcanal'}));return}
+    var k=W[l.cls]||W.s;f.push(WM.feat('line',l.ll,{k:'road',e:k[0],w:k[1]}))});
   mv.geo('base',f);
   var is=function(k){return ['==',['get','k'],k]},round={'line-cap':'round','line-join':'round'};
   mv.layer({id:'b-wood',type:'fill',source:'base',filter:is('wood'),paint:{'fill-color':'var(--wood)'}});
@@ -154,14 +151,14 @@ function buildBase(){
   mv.layer({id:'b-road',type:'line',source:'base',filter:is('road'),layout:round,paint:{'line-color':'var(--road)','line-width':['get','w']}});
   mv.layer({id:'b-water',type:'line',source:'base',filter:is('water'),layout:round,paint:{'line-color':'var(--water)','line-width':['get','w']}});
   mv.layer({id:'b-oldcanal',type:'line',source:'base',filter:is('oldcanal'),paint:{'line-color':'var(--water)','line-width':2,'line-dasharray':[2.5,2]}});
-  mv.image('hist',WM.asset(HIST.A.src),histBox(HIST.A)); mv.show('hist',false);
+  mv.image('hist',WM.asset(HIST.A.images[0].file),HIST.A.images[0].ll); mv.show('hist',false);
 }
-function showHist(H){ if(H===histShown) return; if(H){mv.moveImage('hist',WM.asset(H.src),histBox(H));if(!histShown)mv.show('hist',true)} else mv.show('hist',false); histShown=H }
+function showHist(H){ if(H===histShown) return; if(H){mv.moveImage('hist',WM.asset(H.images[0].file),H.images[0].ll);if(!histShown)mv.show('hist',true)} else mv.show('hist',false); histShown=H }
 
 /* ---------- drawing ---------- */
 var S;
 var ECH={army:'XXXX',corps:'XXX',division:'XX',brigade:'X'};
-var REAR=[-12000,1500]; // the Allied rear, roughly Poperinghe: symbols sit behind their own line
+var REAR=B.points.allied_rear; // the Allied rear, roughly Poperinghe: symbols sit behind their own line
 function layout(sc){
   var L=[],Z=mv.size(),rr=S(REAR);
   sc.forEach(function(o){ if(!o.drawn) return; var tr=o.tr,pts=o.s.g.map(S),len=WM.plen(pts),m=WM.along(pts,0.5),c=m.p,x=c[0],y=c[1];
@@ -208,12 +205,12 @@ function draw(){
   sNow=mv.scale(); mv.hits.length=0; var z=mv.size(),h='';
   var H=curHist(),hb=H?histBox(H):null; showHist(H); paintCredit(H);
   var sc=scene(),L=layout(units?sc:[]),lvl=sNow>=0.034?1:0,full=sNow>=0.062;
-  D.labels.forEach(function(l){ if(l.l===1&&!lvl) return; if(l.l===2&&sNow<0.02) return; if(hb&&l.p[0]>hb[0]&&l.p[0]<hb[2]&&l.p[1]>hb[1]&&l.p[1]<hb[3]) return; var q=S(l.p); if(q[0]<-40||q[1]<-10||q[0]>z.w+40||q[1]>z.h+10) return;
-    var txt=l.t+(full&&l.o?' ('+l.o+')':''),w=txt.length*(l.l===0?6.6:5.7)+4;
+  B.labels.forEach(function(l){ if(l.l===1&&!lvl) return; if(l.l===2&&sNow<0.02) return; if(hb&&l.p[0]>hb[0]&&l.p[0]<hb[2]&&l.p[1]>hb[1]&&l.p[1]<hb[3]) return; var q=S(l.p); if(q[0]<-40||q[1]<-10||q[0]>z.w+40||q[1]>z.h+10) return;
+    var txt=l.t+(full&&l.s?' ('+l.s+')':''),w=txt.length*(l.l===0?6.6:5.7)+4;
     if(l.l===2){var r2=[q[0]-w/2,q[1]-7,q[0]+w/2,q[1]+7]; if(L.hit(r2)) return; L.add(r2); h+='<text class="wl" text-anchor="middle" x="'+q[0].toFixed(1)+'" y="'+(q[1]+4).toFixed(1)+'">'+esc(txt)+'</text>'; return}
     var r=[q[0]+5,q[1]-15,q[0]+8+w,q[1]-1],hid=L.hit(r);
     h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="'+(l.l===0?3:2.2)+'" fill="var(--map-text)" opacity="'+(l.l===0?1:.7)+'"/>'; if(hid) return; L.add(r);
-    h+='<text class="pl'+(l.l===0?' big':'')+'" x="'+(q[0]+7).toFixed(1)+'" y="'+(q[1]-4).toFixed(1)+'">'+esc(l.t)+(full&&l.o?' <tspan class="old">('+esc(l.o)+')</tspan>':'')+'</text>'});
+    h+='<text class="pl'+(l.l===0?' big':'')+'" x="'+(q[0]+7).toFixed(1)+'" y="'+(q[1]-4).toFixed(1)+'">'+esc(l.t)+(full&&l.s?' <tspan class="old">('+esc(l.s)+')</tspan>':'')+'</text>'});
   L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});
   L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h;
   WM.scaleBar($('scale'),mv.mPerPx(),'km');
@@ -221,7 +218,7 @@ function draw(){
 }
 
 /* ---------- panel ---------- */
-function phase(){var p=null,d=Math.ceil(t-1e-6);D.events.forEach(function(e){if(d>=e.t0)p=e});return p}
+function phase(){return B.eventAt(Math.ceil(t-1e-6))}
 var CS={map_read:'read from the 1925 official-history map',modern_map:'at a village centre on the current map',derived:'offset from a village',estimate:'placed from memory or a description'};
 var NAT={br:'British',fr:'French',be:'Belgian',ge:'German'};
 var KIND={stated:['Placed by a source','A history or official account names the unit at these places. The line between them is drawn straight.'],
@@ -233,17 +230,17 @@ var KIND={stated:['Placed by a source','A history or official account names the 
 function rowHtml(k,head){
   var h='<h3>'+esc(head)+' <span class="rid">row '+k.id+'</span></h3><p><b>'+esc(k.act)+'.</b> '+esc(k.place)+'</p>';
   if(k.say) h+='<blockquote>'+esc(k.say)+'</blockquote>';
-  h+='<h3>How sure</h3><dl><dt>From</dt><dd>'+esc(k.ts)+'</dd><dt>To</dt><dd>'+esc(k.te)+'</dd>';
+  h+='<h3>How sure</h3><dl><dt>From</dt><dd>'+esc(k.ts)+'</dd><dt>To</dt><dd>'+esc(k.te)+(k.open?'; not followed after this':'')+'</dd>';
   if(k.basis){h+='<dt>Location</dt><dd>'+esc(k.basis)+'</dd>';}
   else if(k.pl&&k.pl.length){var n={};k.pl.forEach(function(p){n[p[2]]=(n[p[2]]||0)+1});var parts=[];['modern_map','map_read','derived','estimate'].forEach(function(c){if(n[c])parts.push((k.pl.length>1?n[c]+' ':'')+CS[c])});
     h+='<dt>Location</dt><dd>'+(k.pl.length>1?'A line through '+k.pl.length+' places: ':'A point ')+parts.join(', ')+'. Good to about '+(k.prec>=1000?(k.prec/1000)+' km':k.prec+' m')+'.</dd>';}
   h+='<dt>Overall</dt><dd>'+chip(k.oc)+'</dd></dl>';
   if(k.notes) h+='<h3>Notes</h3><p>'+esc(k.notes)+'</p>';
-  var sl=WM.srcList(D.sources,k.src); if(sl) h+='<h3>Sources</h3><ul class="srcs">'+sl+'</ul>';
+  var sl=WM.srcList(B.sources,k.src); if(sl) h+='<h3>Sources</h3><ul class="srcs">'+sl+'</ul>';
   if(k.lat!=null) h+='<p style="margin-top:10px"><a href="https://www.openstreetmap.org/?mlat='+k.lat+'&mlon='+k.lon+'#map=14/'+k.lat+'/'+k.lon+'" target="_blank" rel="noopener">Open this area on OpenStreetMap</a></p>';
   return h;
 }
-var NROWS=0;D.tracks.forEach(function(tr){NROWS+=tr.k.length});
+var NROWS=0;B.tracks.forEach(function(tr){NROWS+=tr.k.length});
 function about(){return '<details><summary>About this prototype</summary>'+
  '<p>Positions come from the data pilot spreadsheet ('+NROWS+' Ypres rows). British and French lines on 21, 23, 25, 29 and 31 October and 4, 9 and 11 November are read from the sketch maps of the British official history (1925); each holds until the next sketch or the next change in the text. Everything else, and every German position, comes from text: the first four days of the official history, the German General Staff account of 1917, two British histories of 1916 and encyclopedia articles. No French source was read. Nothing here has been checked by a historian.</p>'+
  '<p>A line read from a sketch follows the drawn line to about 250 m. A line from text runs straight through the centres of the villages the sources name. The sketches show the Germans only as arrows, so German lines are text, moved where needed to stand 500 m clear of the Allied line. The sources give positions by day, taken here as nightfall.</p>'+
@@ -260,7 +257,7 @@ function renderPanel(sc){
   if(sel){
     var tr=byId(sel),n=nat(tr),p=parentAt(tr,t);
     h+='<button class="back" id="back">&larr; All units</button><div class="who"><div class="side '+n+'">'+NAT[n]+'</div><h2>'+esc(tr.name)+'</h2>';
-    if(p) h+='<div class="meta">'+[p[3],p[2]?'under '+(D.un[p[2]]||p[2]):'',p[4]].filter(Boolean).map(esc).join(' &middot; ')+'</div>';
+    if(p) h+='<div class="meta">'+[p[3],p[2]?'under '+((B.units[p[2]]||{}).name||p[2]):'',p[4]].filter(Boolean).map(esc).join(' &middot; ')+'</div>';
     h+='</div>';
     if(!me){h+='<div class="state unplaced"><b>Not in the data on this day</b>Move the time to see this unit.</div>'}
     else{var K=KIND[me.s.kind];
@@ -269,7 +266,7 @@ function renderPanel(sc){
       else h+=rowHtml(me.s.k,(me.s.kind==='after'||me.s.kind==='lost')?'Last record':'Record');}
     if(tr.notes) h+='<p class="meta" style="margin-top:12px">'+esc(tr.notes)+'</p>';
   } else {
-    var ph=phase(); h+='<div class="eyebrow">'+(ph?esc(ph.name):'Before the battle')+'</div><p class="phase">'+esc(ph?ph.text:BEFORE)+'</p>';
+    var ph=phase(); h+='<div class="eyebrow">'+esc(ph?ph.name:B.opening.label)+'</div><p class="phase">'+esc(ph?ph.text:B.opening.text)+'</p>';
     [['br','British'],['fr','French'],['be','Belgian'],['ge','German']].forEach(function(sd){var Ls=sc.filter(function(o){return nat(o.tr)===sd[0]&&(o.drawn||o.folded)});if(!Ls.length)return;
       h+='<h3><span class="sd '+sd[0]+'"></span>'+sd[1]+'</h3><ul class="ulist">';
       Ls.forEach(function(o){h+='<li><button data-pick="'+o.tr.id+'"><span class="nm">'+esc(o.tr.label)+'</span><span class="ac">'+esc(o.s.kind==='moving'?'Moving':o.s.kind==='after'?'Last recorded position':o.s.k.act)+'</span></button></li>'});h+='</ul>'});
@@ -286,13 +283,13 @@ function select(id){sel=id||null;panelKey='';mv.kick()}
 
 /* ---------- map, time, controls ---------- */
 var mv,clk;
-try{ mv=WM.mapView({container:'map',wrap:wrap,world:'front',worlds:{front:{toLL:toLL,ext:EXT,mPerUnit:1,maxScale:0.6,minFactor:0.85}},
+try{ mv=WM.mapView({container:'map',wrap:wrap,world:'front',worlds:{front:{toLL:B.toLL,ext:EXT,mPerUnit:1,maxScale:0.6,minFactor:0.85}},
   onDraw:draw,onPick:select,onUserMove:function(){if(preset||target)setPreset(null)},onResize:function(){if(preset){mv.jump(cameraOf(preset));target=null}},
   onStep:function(ts){var more=clk.step(ts);if(target){if(mv.chase(target,0.2))more=true;else target=null}return more}});
 }catch(err){WM.noMap(wrap,err);return}
 S=mv.S;
 function paintTime(v){t=v;var n=Math.ceil(t-1e-6),d=dateOf(n),night=Math.abs(t-Math.round(t))<0.02;
-  $('clock').textContent=d.day+' '+d.mon+' 1914'; WM.paintDayNumber(D.cal.numbered?n+1:0); // a day number only where the battle's data says its days are numbered
+  $('clock').textContent=d.day+' '+d.mon+' '+d.year; WM.paintDayNumber(B.cal.numbered?n+1:0); // a day number only where the battle's data says its days are numbered
   $('clocksub').textContent=d.wd+' \u00b7 '+(night?'at nightfall':'during the day');
   $('done').style.width=(t/T1*100)+'%'; var p=phase();
   Array.prototype.forEach.call(document.querySelectorAll('.tl .ev'),function(e){e.classList.toggle('on',!!p&&e.dataset.id===p.id)})}
@@ -305,7 +302,7 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(v*100)},fr
 (function(){var tl=$('tl'),pc=function(m){return (m/T1*100)+'%'},h='';
   for(var m=0;m<=T1;m++){var maj=(m-2)%5===0;h+='<span class="tick'+(maj?' maj':'')+'" style="left:'+pc(m)+'"></span>';
     if(maj){var d=dateOf(m);h+='<span class="tk'+((m-2)%10?' minor':'')+'" style="left:'+pc(m)+'">'+d.day+' '+d.mon.slice(0,3)+'</span>'}}
-  D.events.forEach(function(e){h+='<button class="ev'+(MAJOR[e.id]?'':' mute')+'" data-id="'+e.id+'" data-t="'+e.t0+'" style="left:'+pc(e.t0)+'" title="'+esc(e.name)+'" aria-label="'+esc(e.name)+'">'+esc(e.name)+'</button>'});
+  B.events.forEach(function(e){h+='<button class="ev'+(e.quiet?' mute':'')+'" data-id="'+e.id+'" data-t="'+e.t+'" style="left:'+pc(e.t)+'" title="'+esc(e.name)+'" aria-label="'+esc(e.name)+'">'+esc(e.name)+'</button>'});
   tl.insertAdjacentHTML('afterbegin',h);
   tl.addEventListener('click',function(ev){var b=ev.target.closest('.ev');if(b){clk.setPlaying(false);clk.setTime(+b.dataset.t)}});
 })();

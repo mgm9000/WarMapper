@@ -1,6 +1,7 @@
 """Build the playback pages.
 
-Each battle has a page source (playbacks/<battle>/page.src.html) and its data (data.json). The pages share the app/ folder:
+Each battle has a page source (playbacks/<battle>/page.src.html) and its battle file (battle.json, in the one format all battles
+share: docs/battle-file.md; tools/export_battles.py writes them). The pages share the app/ folder:
 the map library (MapLibre GL JS), core.js and core.css.
 
   python3 tools/build.py                     build playbacks/<battle>/index.html for the website (all battles)
@@ -26,7 +27,7 @@ def page(battle, app):
     """The page as one HTML document, with the shared files referenced under the path `app`."""
     d = os.path.join(ROOT, 'playbacks', battle)
     src = read(os.path.join(d, 'page.src.html'))
-    data = read(os.path.join(d, 'data.json')).replace('</', '<\\/')
+    data = read(os.path.join(d, 'battle.json')).replace('</', '<\\/')
     assert src.count('__DATA__') == 1, battle
     out = src.replace('__DATA__', data).replace('__APP__', app)
     title = re.search(r'<title>.*?</title>', out).group(0)

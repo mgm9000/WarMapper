@@ -58,39 +58,30 @@
 <script src="__APP__/vendor/maplibre-gl.js"></script>
 <script src="__APP__/core.js"></script>
 <script>
-/* Trenton, 26 December 1776. The shared core (core.js) runs the map, the clock and the controls; this script holds what is particular to this battle:
-   its events, where each unit is at a given time, how units are laid out and drawn, and the side panel.
+/* Trenton, 26 December 1776. The data comes from the battle file (battle.json, written into this page). The shared core (core.js) reads it
+   and runs the map, the clock and the controls; this script holds what is particular to this playback:
+   where each unit is at a given time, how units are laid out and drawn, and the side panel.
    Two bases: a current street map, and Wiederhold's 1776 sketch, which is not to scale and so is shown as a picture of its own with its own unit positions. */
 (function(){
 "use strict";
-var D=JSON.parse(document.getElementById('data').textContent);
+var B=WM.battle(JSON.parse(document.getElementById('data').textContent)); // the battle file: units, their recorded positions, events, maps (core.js lays it out)
 var $=WM.$,esc=WM.esc,fmt=WM.fmtClock,lerpG=WM.lerpG,cen=WM.cen,chip=WM.chip;
 /* timeline: the march (3:00 to 7:30) takes the first 30% of the bar, the fight (7:30 to 10:00) the rest */
-var T0=180,TM=450,T1=600,UM=0.30;
+var T0=B.T0,TM=B.focus[0],T1=B.T1,UM=0.30; // minutes from midnight on the 26th
 function u2t(u){return u<=UM?T0+(TM-T0)*u/UM:TM+(T1-TM)*(u-UM)/(1-UM)}
 function t2u(t){return t<=TM?UM*(t-T0)/(TM-T0):UM+(1-UM)*(t-TM)/(T1-TM)}
-var EVENTS=[
- [240,'March begins',"The column sets off from the landing for Trenton, about nine miles away.",1],
- [405,'Army divides',"At Birmingham Greene takes the upper road and Sullivan the River Road.",1],
- [465,'First shots',"Greene's advance drives in Lt. Wiederhold's picket on the Pennington road.",1],
- [476,"Sullivan's attack","About three minutes later the lower column strikes the jäger picket at the Hermitage.",0],
- [480,'Guns open',"Forrest's and Hamilton's batteries open from the head of King and Queen Streets.",0],
- [498,'Line of battle',"The three Hessian regiments form a line along the east edge of the village.",1],
- [503,'Guns taken',"The Rall regiment's two guns are lost on King Street, just north of the headquarters.",0],
- [518,'Rall shot',"Rall leads two regiments back into the town and is mortally wounded on Queen Street.",1],
- [530,'Surrender',"The Rall and von Lossberg regiments lay down their arms east of the town.",1],
- [545,'Knyphausen surrenders',"The Knyphausen regiment, cut off from the bridge, surrenders by the Assunpink.",0]
-];
-var BEFORE="The army is on the New Jersey bank, forming for the march. The crossing ran about three hours late.";
+var SK=B.maps['wiederhold-1776'],SIDE={}; for(var sk in B.sides) SIDE[B.sides[sk].code]=B.sides[sk].short;
+// each record has a position on the ground (g) and, where Wiederhold drew it, one on his sketch (gs), in the sketch picture's own pixels
+B.tracks.forEach(function(tr){tr.k.forEach(function(k){k.gs=(k.on&&k.on[SK.id])||null})});
+var ROADS=[],MARKS=[]; B.labels.forEach(function(l){(l.k==='landmark'?MARKS:ROADS).push(l)});
 var wrap=$('mapwrap'),ov=$('ov'),panel=$('panel');
 var base='mod',t=T0,sel=null,follow=true,names=true,sNow=0.1;
-function GK(){return base==='mod'?'g':'gs'} // each record has a position on the ground (g) and, where Wiederhold drew it, one on the sketch (gs)
-function byId(id){for(var i=0;i<D.tracks.length;i++)if(D.tracks[i].id===id)return D.tracks[i]}
+function GK(){return base==='mod'?'g':'gs'}
+var byId=B.track;
 
 /* The ground frame is metres east and south of a point in Trenton. The sketch has no true scale, so it gets a frame of its own:
    its pixels, laid out as a small patch of pretend ground, which lets the same map engine pan and zoom it. */
-var F=D.frame,SKK=1e-5;
-function toLL(p){return [F.LON0+p[0]/F.KX,F.LAT0-p[1]/F.KY]}
+var SKK=1e-5;
 function skLL(p){return [p[0]*SKK,-p[1]*SKK]}
 
 /* ---------- where is a unit at time t ---------- */
@@ -121,13 +112,13 @@ function stateAt(tr,tt,key){
   var last=ks[n-1],g=last[key]; if(!g) return {k:last,g:null,kind:last.g?'offsketch':'unplaced'};
   return {k:last,g:g,kind:'after'};
 }
-function scene(){var key=GK(),out=[];D.tracks.forEach(function(tr){var s=stateAt(tr,t,key);if(s&&!s.hid)out.push({tr:tr,s:s,drawn:!!s.g})});return out}
+function scene(){var key=GK(),out=[];B.tracks.forEach(function(tr){var s=stateAt(tr,t,key);if(s&&!s.hid)out.push({tr:tr,s:s,drawn:!!s.g})});return out}
 
 /* ---------- view ---------- */
 function actionBox(){var key=GK(),b=[1e9,1e9,-1e9,-1e9],any=false;
-  D.tracks.forEach(function(tr){var s=stateAt(tr,t,key);if(!s||!s.g||s.hid)return;
+  B.tracks.forEach(function(tr){var s=stateAt(tr,t,key);if(!s||!s.g||s.hid)return;
     if(tr.id==='T-HE-PKFER')return; any=true;s.g.forEach(function(p){b[0]=Math.min(b[0],p[0]);b[1]=Math.min(b[1],p[1]);b[2]=Math.max(b[2],p[0]);b[3]=Math.max(b[3],p[1])})});
-  if(!any) return base==='mod'?[-9000,-9000,600,600]:[0,0,D.sk.w*0.75,D.sk.h];
+  if(!any) return base==='mod'?B.presets.march:[0,0,SK.size[0]*0.75,SK.size[1]];
   var minW=base==='mod'?700:520,minH=base==='mod'?520:400,mg=base==='mod'?90:70;
   var mx=Math.max(mg,(minW-(b[2]-b[0]))/2),my=Math.max(mg,(minH-(b[3]-b[1]))/2);
   return [b[0]-mx,b[1]-my,b[2]+mx,b[3]+my]}
@@ -137,7 +128,7 @@ function setNames(v){names=v;$('bNames').setAttribute('aria-pressed',v?'true':'f
 
 /* ---------- drawing ---------- */
 var S;
-var ECH={army:'XXXX',division:'XX',brigade:'X',regiment:'III',company:'I',battery:'I',section:'••',detachment:'•',hq:''};
+var ECH={army:'XXXX',division:'XX',brigade:'X',regiment:'III',company:'I',battery:'I',section:'••',detachment:'•',headquarters:''};
 function layout(sc){
   var L=[],Z=mv.size(),agg=(base==='mod'&&sNow<0.085),ag=[];
   sc.forEach(function(o){ if(!o.drawn) return; if(agg&&o.tr.side==='CR'&&o.tr.id!=='T-HE-PKFER'){ag.push(S(cen(o.s.g)));return} var tr=o.tr,pts=o.s.g.map(S),len=WM.plen(pts);
@@ -177,7 +168,7 @@ function unitSvg(u){
   h+='<g transform="translate('+x.toFixed(1)+' '+y.toFixed(1)+')">';
   if(isSel) h+='<rect x="-18" y="-14" width="36" height="28" rx="4" fill="none" stroke="var(--m-sel)" stroke-width="4"/>';
   h+='<rect x="-13" y="-9" width="26" height="18" fill="'+fill+'" stroke="'+col+'" stroke-width="1.8"'+((soft||low)?' stroke-dasharray="3 2.5"':'')+'/>';
-  if(tr.ech==='hq') h+='<path d="M-13 -9V16" stroke="'+col+'" stroke-width="1.8"/><text class="ech in" text-anchor="middle" y="4" style="stroke:none">HQ</text>';
+  if(tr.ech==='headquarters') h+='<path d="M-13 -9V16" stroke="'+col+'" stroke-width="1.8"/><text class="ech in" text-anchor="middle" y="4" style="stroke:none">HQ</text>';
   else if(tr.branch==='inf') h+='<path d="M-13 -9L13 9M-13 9L13 -9" stroke="'+col+'" stroke-width="1.4"/>';
   else if(tr.branch==='cav') h+='<path d="M-13 9L13 -9" stroke="'+col+'" stroke-width="1.4"/>';
   else h+='<circle r="3.4" fill="'+col+'"/>';
@@ -191,11 +182,11 @@ function draw(){
   var sc=scene(),L=layout(sc);
   if(base==='mod'){
     var lvl=sNow>=0.12?1:0;
-    D.labels.forEach(function(l){ if(l.l!==lvl) return; var q=S(l.p); if(q[0]<-60||q[1]<-20||q[0]>z.w+60||q[1]>z.h+20) return;
+    ROADS.forEach(function(l){ if(l.l!==lvl) return; var q=S(l.p); if(q[0]<-60||q[1]<-20||q[0]>z.w+60||q[1]>z.h+20) return;
       var tw=(l.t.length+(l.s?l.s.length+3:0))*5.6,ca=Math.abs(Math.cos(l.a*Math.PI/180)),sa=Math.abs(Math.sin(l.a*Math.PI/180)),bw=(tw*ca+12*sa)/2,bh=(tw*sa+12*ca)/2;
       if(L.hit([q[0]-bw,q[1]-bh,q[0]+bw,q[1]+bh])) return;
       h+='<text class="sl" text-anchor="middle" transform="translate('+q[0].toFixed(1)+' '+q[1].toFixed(1)+') rotate('+l.a+')">'+esc(l.t)+(l.s?' <tspan class="old">('+esc(l.s)+')</tspan>':'')+'</text>'});
-    D.lm.forEach(function(l){ if(l.l!==lvl&&!(l.l===0&&lvl===1)) return; var q=S(l.p); if(q[0]<-40||q[1]<-20||q[0]>z.w+40||q[1]>z.h+20) return;
+    MARKS.forEach(function(l){ if(l.l!==lvl&&!(l.l===0&&lvl===1)) return; var q=S(l.p); if(q[0]<-40||q[1]<-20||q[0]>z.w+40||q[1]>z.h+20) return;
       if(l.t==='Trenton'&&sNow>0.09) return;
       var hid=L.hit([q[0]+5,q[1]-17,q[0]+9+l.t.length*6.6,q[1]-2]);
       h+='<circle cx="'+q[0].toFixed(1)+'" cy="'+q[1].toFixed(1)+'" r="3" fill="var(--map-text)"/>'; if(hid) return;
@@ -214,27 +205,27 @@ function draw(){
 var MOD=['b-river','b-creek','b-edge','b-road'];
 function buildBase(){
   var W={m:[4.6,3.2],p:[4.2,2.8],s:[3.6,2.3],t:[3.1,1.9],r:[2.3,1.3]},f=[];
-  D.ways.forEach(function(w){var z=w[0][0],c=w[0][1];
-    if(z==='W'){f.push(mv.line(w[2],{k:w[1]==='Delaware River'?'river':'creek'}));return}
-    var k=W[c]||W.r;f.push(mv.line(w[2],{k:'road',major:(c==='m'||c==='p')?1:0,e:k[0],w:k[1]}))});
+  B.base.lines.forEach(function(l){
+    if(l.kind==='water'){f.push(WM.feat('line',l.ll,{k:l.cls==='river'?'river':'creek'}));return}
+    var k=W[l.cls]||W.r;f.push(WM.feat('line',l.ll,{k:'road',major:(l.cls==='m'||l.cls==='p')?1:0,e:k[0],w:k[1]}))});
   mv.geo('base',f);
   var is=function(k){return ['==',['get','k'],k]},round={'line-cap':'round','line-join':'round'};
   // the Delaware is drawn as a line 270 m wide on the ground, so its width in pixels doubles with each zoom level
-  var px=function(zm){return 270*512*Math.pow(2,zm)/(40075016.686*Math.cos(F.LAT0*Math.PI/180))};
+  var px=function(zm){return 270*512*Math.pow(2,zm)/(40075016.686*Math.cos(B.raw.view.origin[1]*Math.PI/180))};
   mv.layer({id:'b-river',type:'line',source:'base',filter:is('river'),layout:round,paint:{'line-color':'var(--water)','line-width':['interpolate',['exponential',2],['zoom'],6,px(6),22,px(22)]}});
   mv.layer({id:'b-creek',type:'line',source:'base',filter:is('creek'),layout:round,paint:{'line-color':'var(--water)','line-width':3}});
   mv.layer({id:'b-edge',type:'line',source:'base',filter:is('road'),layout:round,paint:{'line-color':'var(--road-edge)','line-width':['get','e']}});
   mv.layer({id:'b-road',type:'line',source:'base',filter:is('road'),layout:round,paint:{'line-color':function(c){return ['match',['get','major'],1,c('--road-major'),c('--road')]},'line-width':['get','w']}});
-  mv.image('sketch',WM.asset('sketch.jpg'),[0,0,D.sk.w,D.sk.h],WORLDS.sk);
+  mv.image('sketch',WM.asset(SK.images[0].file),[0,0,SK.size[0],SK.size[1]],WORLDS.sk);
 }
 function setBase(b){base=b;var mod=b==='mod';$('bMod').setAttribute('aria-pressed',mod?'true':'false');$('bSk').setAttribute('aria-pressed',mod?'false':'true');
   mv.setWorld(b);MOD.forEach(function(id){mv.show(id,mod)});mv.show('sketch',!mod);
   wrap.classList.toggle('paper',!mod);mv.bg(mod?'--land':'--m-paper');
-  $('credit').innerHTML=mod?WM.OSM_CREDIT:'Wiederhold, 1776 &middot; Library of Congress';
+  $('credit').innerHTML=mod?WM.OSM_CREDIT:esc(SK.credit);
   mv.jump(target());panelKey='';mv.retheme();mv.kick()}
 
 /* ---------- panel ---------- */
-function phase(){var p=null;EVENTS.forEach(function(e){if(t>=e[0])p=e});return p}
+function phase(){return B.eventAt(t)}
 var CS={map_read:'Read from a surveyed period map',sketch_read:"Read from Wiederhold's sketch",modern_map:'A named place on the current map',marker:'A marker at the spot',derived:'Worked out from other points',estimate:'Estimated from a description',none:'None'};
 var KIND={stated:['Placed by a source','A report, a history, a marker or the 1776 sketch puts the unit here.'],inferred:['Inferred position','Worked out from the sequence of events; the sources do not name this unit here.'],
   moving:['Moving: interpolated','No source records this stretch. The unit is drawn along a road or a straight line between two recorded positions.'],
@@ -246,7 +237,7 @@ function rowHtml(k,head){
   h+='<h3>How sure</h3><dl><dt>Start</dt><dd>'+esc(k.ts)+'</dd><dt>End</dt><dd>'+esc(k.te)+' <span class="meta">('+esc(k.tb)+')</span></dd>';
   h+='<dt>Location</dt><dd>'+esc(CS[k.cs]||k.cs)+(k.prec?', good to about '+k.prec+' m':'')+'. <span class="meta">'+esc(k.cb)+'</span></dd><dt>Overall</dt><dd>'+chip(k.oc)+'</dd></dl>';
   if(k.notes) h+='<h3>Notes</h3><p>'+esc(k.notes)+'</p>';
-  var sl=WM.srcList(D.sources,k.src); if(sl) h+='<h3>Sources</h3><ul class="srcs">'+sl+'</ul>';
+  var sl=WM.srcList(B.sources,k.src); if(sl) h+='<h3>Sources</h3><ul class="srcs">'+sl+'</ul>';
   if(osm) h+='<p style="margin-top:10px"><a href="'+osm+'" target="_blank" rel="noopener">Open this spot on OpenStreetMap</a></p>';
   return h;
 }
@@ -261,7 +252,7 @@ function about(){return '<details><summary>About this prototype</summary>'+
 var panelKey='';
 function renderPanel(sc){
   var me=sel?sc.filter(function(o){return o.tr.id===sel})[0]:null;
-  var key=base+'|'+(sel?sel+'|'+(me?me.s.k.id+me.s.kind:'x'):'now|'+((phase()||[0])[0])+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(','));
+  var key=base+'|'+(sel?sel+'|'+(me?me.s.k.id+me.s.kind:'x'):'now|'+((phase()||{id:0}).id)+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(','));
   if(key===panelKey) return; panelKey=key; var h='';
   if(sel){
     var tr=byId(sel);
@@ -273,8 +264,8 @@ function renderPanel(sc){
       if(me.s.kind==='moving'){h+=rowHtml(me.s.k,'Heading to');if(me.s.from)h+=rowHtml(me.s.from,'Coming from')}
       else h+=rowHtml(me.s.k,me.s.kind==='after'?'Last record':'Current record');}
   } else {
-    var p=phase(); h+='<div class="eyebrow">'+(p?'Now: '+esc(p[1]):'Before the march')+'</div><p class="phase">'+esc(p?p[2]:BEFORE)+'</p>';
-    [['US','American'],['CR','Hessian and British']].forEach(function(sd){var L=sc.filter(function(o){return o.tr.side===sd[0]&&o.drawn});if(!L.length)return;
+    var p=phase(); h+='<div class="eyebrow">'+esc(p?'Now: '+p.name:B.opening.label)+'</div><p class="phase">'+esc(p?p.text:B.opening.text)+'</p>';
+    [['US',SIDE.US],['CR',SIDE.CR]].forEach(function(sd){var L=sc.filter(function(o){return o.tr.side===sd[0]&&o.drawn});if(!L.length)return;
       h+='<h3>'+sd[1]+' on the map</h3><ul class="ulist">';
       L.forEach(function(o){h+='<li><button data-pick="'+o.tr.id+'"><span class="sd '+sd[0]+'"></span><span class="nm">'+esc(o.tr.label)+'</span><span class="ac">'+esc(o.s.kind==='moving'?'Moving (interpolated)':o.s.kind==='after'?'Last recorded position':o.s.k.act)+'</span></button></li>'});h+='</ul>'});
     var nd=sc.filter(function(o){return !o.drawn});
@@ -286,17 +277,17 @@ function renderPanel(sc){
 function select(id){sel=id||null;panelKey='';mv.kick()}
 
 /* ---------- map, time, controls ---------- */
-var WORLDS={mod:{toLL:toLL,ext:[-17000,-10600,4200,2400],mPerUnit:1,maxScale:8,minFactor:0.9},
-            sk:{toLL:skLL,ext:[0,0,D.sk.w,D.sk.h],mPerUnit:SKK*40075016.686/360,maxScale:3,minFactor:0.9}};
+var WORLDS={mod:{toLL:B.toLL,ext:B.ext,mPerUnit:1,maxScale:8,minFactor:0.9},
+            sk:{toLL:skLL,ext:[0,0,SK.size[0],SK.size[1]],mPerUnit:SKK*40075016.686/360,maxScale:3,minFactor:0.9}};
 var mv,clk;
 try{ mv=WM.mapView({container:'map',wrap:wrap,world:'mod',worlds:WORLDS,
   onDraw:draw,onPick:select,onUserMove:function(){if(follow)setFollow(false)},onResize:function(){if(follow)mv.jump(target())},
   onStep:function(ts){var more=clk.step(ts);if(follow&&mv.chase(target(),0.16))more=true;return more}});
 }catch(err){WM.noMap(wrap,err);return}
 S=mv.S;
-function paintTime(v){t=v;var c=WM.calOf(D.cal,t);$('clock').textContent=c.clock;$('clockdate').textContent=c.date;WM.paintDayNumber(c.n);$('clocknote').hidden=t<465;
+function paintTime(v){t=v;var c=WM.calOf(B.cal,t);$('clock').textContent=c.clock;$('clockdate').textContent=c.date;WM.paintDayNumber(c.n);$('clocknote').hidden=t<465;
   $('done').style.width=(t2u(t)*100)+'%'; var p=phase();
-  Array.prototype.forEach.call(document.querySelectorAll('.tl .ev'),function(e){e.classList.toggle('on',!!p&&+e.dataset.t===p[0])})}
+  Array.prototype.forEach.call(document.querySelectorAll('.tl .ev'),function(e){e.classList.toggle('on',!!p&&+e.dataset.t===p.t)})}
 clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*1000)},fromRange:function(v){return u2t(v/1000)},
   rate:function(v){return v<TM?18:3},onTime:paintTime,   // the march plays six times as fast as the fight
   arrow:function(dir,v){return v+dir*((dir>0?v<TM:v<=TM)?5:1)},wheel:function(dd,v){return u2t(Math.max(0,Math.min(1,t2u(v)+dd*0.00022)))},
@@ -307,7 +298,7 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*100
   $('win').style.left=pc(TM);$('win').style.width=((1-UM)*100)+'%';
   [180,240,300,360,420].forEach(function(m){h+='<span class="tick" style="left:'+pc(m)+'"></span>'+(m%120===60?'':'<span class="tk minor" style="left:'+pc(m)+'">'+fmt(m).replace(' a.m.','')+'</span>')});
   for(var m=450;m<=600;m+=15){h+='<span class="tick" style="left:'+pc(m)+'"></span>';if(m%30===0)h+='<span class="tk'+(m%60?' minor':'')+'" style="left:'+pc(m)+'">'+fmt(m).replace(' a.m.','')+'</span>'}
-  EVENTS.forEach(function(e){h+='<button class="ev'+(e[3]?'':' mute')+'" data-t="'+e[0]+'" style="left:'+pc(e[0])+'" title="'+esc(e[1])+'" aria-label="'+esc(e[1])+'">'+esc(e[1])+'</button>'});
+  B.events.forEach(function(e){h+='<button class="ev'+(e.quiet?' mute':'')+'" data-t="'+e.t+'" style="left:'+pc(e.t)+'" title="'+esc(e.name)+'" aria-label="'+esc(e.name)+'">'+esc(e.name)+'</button>'});
   tl.insertAdjacentHTML('afterbegin',h);
   tl.addEventListener('click',function(ev){var b=ev.target.closest('.ev');if(b){clk.setPlaying(false);clk.setTime(+b.dataset.t)}});
 })();

@@ -1,8 +1,9 @@
 /* WarMapper playback core: the parts every battle shares.
+   - battle:  reads a battle file (the one format every battle's data comes in; docs/battle-file.md) and lays it out for drawing.
    - mapView: the map itself (MapLibre GL JS), base layers, period-map images, camera, and picking a unit.
    - clock:   time, the play button, the slider, scrolling over the timeline, arrow keys.
    - helpers: geometry, text, the date box, the scale bar, the source list.
-   Each battle's own script supplies its data, where its units are at a given time, and how they are drawn. */
+   Each battle's own script supplies where its units are at a given time and how they are drawn. */
 (function(global){
 "use strict";
 var WM={};
@@ -26,8 +27,10 @@ WM.srcList=function(sources,ids){var out='';String(ids||'').split(';').forEach(f
   out+='<li><code>'+id+'</code> '+(s.url?'<a href="'+WM.esc(s.url)+'" target="_blank" rel="noopener">'+WM.esc(s.title)+'</a>':WM.esc(s.title))+'</li>'});return out};
 /* an image or other file of the page: a single-file copy of the page carries them inside itself */
 WM.asset=function(name){var a=global.WM_ASSETS;return (a&&a[name])?a[name]:name};
-/* "M1 2L3 4L5 6Z" (the form the data files use for map lines) to a list of points */
-WM.pathPoints=function(d){var out=[];String(d).split(/[MLZ]/).forEach(function(s){s=s.trim();if(!s)return;var a=s.split(/[ ,]+/);out.push([+a[0],+a[1]])});return out};
+/* a map feature (a line or an area) from a list of [longitude, latitude] points */
+WM.feat=function(type,ll,props){var area=type==='area',r=ll;
+  if(area&&r.length&&(r[0][0]!==r[r.length-1][0]||r[0][1]!==r[r.length-1][1]))r=r.concat([r[0]]);
+  return {type:'Feature',properties:props||{},geometry:area?{type:'Polygon',coordinates:[r]}:{type:'LineString',coordinates:r}}};
 WM.OSM_CREDIT='Map data &copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap</a> contributors';
 
 /* ---------- date and time box ---------- */
@@ -38,6 +41,78 @@ WM.WEEKDAYS=WDN; WM.MONTHS=MON12;
 WM.calOf=function(cal,m){var i=Math.floor(m/1440),b=cal.first.split('-'),dt=new Date(Date.UTC(+b[0],+b[1]-1,+b[2]+i));
   return {n:(cal.numbered&&i>=0&&i<cal.count)?i+1:0,date:WDN[dt.getUTCDay()]+' '+dt.getUTCDate()+' '+MON12[dt.getUTCMonth()]+' '+dt.getUTCFullYear(),clock:WM.fmtClock(((m%1440)+1440)%1440)}};
 WM.paintDayNumber=function(n){var el=WM.$('dayn');el.hidden=!n;if(n)el.textContent='Day '+n};
+
+/* ---------- the battle file ---------- */
+/* Every battle's data arrives as one battle file (format "warmapper-battle/1": docs/battle-file.md). The file holds places as
+   longitude and latitude and times as dates and clock times. WM.battle turns it into what the drawing code works with:
+   - a flat frame in metres, east and south of the file's origin (B.toLL and B.fromLL go between the frame and longitude, latitude);
+   - time as a number: minutes or days (the file says which) from the file's zero;
+   - B.tracks: one per symbol, each with its steps k[] in time order. A step has t0, t1 (when it is shown), g (its points in the frame),
+     and the record behind it: act, place, say (the source's words), method, oc (confidence), src, notes, ts and te (its times as text). */
+WM.battle=function(raw){
+  if(!raw||String(raw.format)!=='warmapper-battle/1') throw new Error('This page reads battle files of format warmapper-battle/1; this file says '+(raw&&raw.format));
+  var B={raw:raw,id:raw.id,title:raw.title,subtitle:raw.subtitle||'',sources:raw.sources||{},opening:raw.opening||{label:'',text:''}};
+  /* the frame: metres per degree of longitude and of latitude at the origin (the standard series for the WGS 84 ellipsoid) */
+  var o=raw.view.origin,ph=o[1]*Math.PI/180,KY=111132.92-559.82*Math.cos(2*ph)+1.175*Math.cos(4*ph),KX=111412.84*Math.cos(ph)-93.5*Math.cos(3*ph);
+  B.toLL=function(p){return [o[0]+p[0]/KX,o[1]-p[1]/KY]};
+  B.fromLL=function(q){return [(q[0]-o[0])*KX,(o[1]-q[1])*KY]};
+  B.box=function(b){var a=B.fromLL([b[0],b[3]]),c=B.fromLL([b[2],b[1]]);return [a[0],a[1],c[0],c[1]]};   // [west, south, east, north] -> a box in the frame
+  B.ext=B.box(raw.view.extent); B.presets={}; B.points={}; var k;
+  for(k in (raw.view.presets||{})) B.presets[k]=B.box(raw.view.presets[k]);
+  for(k in (raw.view.points||{})) B.points[k]=B.fromLL(raw.view.points[k]);
+  /* time */
+  var T=raw.time,byDay=T.unit==='day';
+  function stamp(s){var m=/^(\d{4})-(\d\d)-(\d\d)(?:T(\d\d):(\d\d)(?::(\d\d))?)?$/.exec(s);if(!m)throw new Error('not a date or time: '+s);
+    var d=new Date(0);d.setUTCFullYear(+m[1],+m[2]-1,+m[3]);d.setUTCHours(+(m[4]||0),+(m[5]||0),+(m[6]||0),0);return d.getTime()}
+  var zero=stamp(byDay?T.zero.slice(0,10):T.zero);
+  B.unit=T.unit;
+  B.time=function(s){return s==null?null:byDay?Math.round((stamp(s.slice(0,10))-zero)/864e5):(stamp(s)-zero)/6e4};
+  B.T0=B.time(T.start); B.T1=B.time(T.end); B.focus=T.focus?[B.time(T.focus[0]),B.time(T.focus[1])]:null;
+  B.cal={first:T.calendar.first,numbered:!!T.calendar.numbered,count:T.calendar.days||0};
+  B.dateOf=function(n){var d=new Date(zero+n*864e5);return {day:d.getUTCDate(),mon:MON12[d.getUTCMonth()],wd:WDN[d.getUTCDay()],year:d.getUTCFullYear()}};   // the date n days after zero
+  function dayText(s){return (+s.slice(8,10))+' '+MON12[+s.slice(5,7)-1]}
+  function momentText(s){if(byDay||s.length===10)return dayText(s);var c=WM.fmtClock((+s.slice(11,13))*60+(+s.slice(14,16)));return s.slice(0,10)===T.calendar.first?c:dayText(s)+', '+c}
+  /* a time the record gives as [earliest, latest]; either may be unknown */
+  B.rangeText=function(r){var a=r[0],b=r[1];if(a==null&&b==null)return 'unknown';if(a==null)return 'by '+momentText(b);if(b==null)return momentText(a)+' or later';return a===b?momentText(a):momentText(a)+' to '+momentText(b)};
+  /* sides, units, tracks */
+  B.sides={}; raw.sides.forEach(function(s){B.sides[s.id]=s});
+  B.units={}; raw.units.forEach(function(u){B.units[u.id]=u});
+  var BR={infantry:'inf',cavalry:'cav',artillery:'art'};
+  function step(s){var loc=s.location||{},g=s.at?s.at.map(B.fromLL):null,mid=null;
+    if(s.at){var n=s.at.length,i=n>>1;mid=(n%2)?s.at[i]:[(s.at[i-1][0]+s.at[i][0])/2,(s.at[i-1][1]+s.at[i][1])/2]}
+    return {id:s.id,t0:B.time(s.show[0]),t1:B.time(s.show[1]),ts:B.rangeText(s.start),te:B.rangeText(s.end),open:s.end[1]==null?1:0,
+      g:g,via:s.via?s.via.map(B.fromLL):null,on:s.on||null,
+      act:s.activity||'',place:s.place||'',say:s.quote||'',method:s.method,oc:s.confidence,tb:s.time_basis||'',
+      basis:loc.basis||'',cb:loc.basis||(g?'':'No position on record'),cs:loc.source||'none',cc:loc.confidence||'',prec:loc.precision_m||null,
+      pl:(loc.places||[]).map(function(p){return [p.name||'',p.today||'',p.source,p.precision_m]}),
+      src:(s.sources||[]).join('; '),notes:s.notes||'',status:s.review||'',bat:s.battle||'',virtual:!!s.virtual,shared:!!s.shared,
+      lat:mid?+mid[1].toFixed(5):null,lon:mid?+mid[0].toFixed(5):null}}
+  B.tracks=raw.tracks.map(function(tr){var u=B.units[tr.unit],as=u.assignments||[],a0=as[0]||{};
+    return {id:tr.id,unit:tr.unit,name:u.name,label:tr.label||u.label,side:B.sides[u.side].code,nation:u.nation||'',ech:tr.echelon||u.echelon,branch:BR[u.branch]||'inf',
+      cmd:a0.commander||'',str:a0.strength||'',notes:u.notes||'',
+      par:as.map(function(a){return [a.from?B.time(a.from):-1e9,a.to?B.time(a.to):1e9,a.parent||'',a.commander||'',a.strength||'']}),   // who it answered to, and when
+      parent:tr.parent||'',hideAfter:!!tr.hide_after,hold:tr.hold_until?B.time(tr.hold_until):0,nudge:tr.nudge||null,loose:!!tr.loose,offmap:tr.off_map||'',
+      k:tr.steps.map(step)}});
+  B.track=function(id){for(var i=0;i<B.tracks.length;i++)if(B.tracks[i].id===id)return B.tracks[i]};
+  /* events: t is the moment the timeline marks the event at */
+  B.events=(raw.events||[]).map(function(e){return {id:e.id,t:B.time(e.at),t0:B.time(e.start),t1:B.time(e.end),name:e.label||e.name,full:e.name,text:e.text,quiet:!!e.quiet}});
+  B.eventAt=function(t){var p=null;B.events.forEach(function(e){if(t>=e.t)p=e});return p};   // the latest event to have begun
+  /* names on the map: t text, s the other name (the period's, or today's), p place, a angle, l level (0 shows first), k kind, e placed only roughly */
+  B.labels=(raw.labels||[]).map(function(l){return {t:l.text,s:l.alt||'',p:B.fromLL(l.at),a:l.angle||0,l:l.level||0,k:l.kind,e:l.approximate?1:0}});
+  /* period maps. One laid on the ground has, for each picture, its four corners (ll) and the box they span in the frame;
+     one that is not to scale (own) is a picture with its own pixel grid, and steps carry positions on it (k.on[map id]). */
+  B.maps={}; B.mapList=(raw.maps||[]).map(function(m){
+    var v={id:m.id,title:m.title,short:m.short||'',label:m.label||'',credit:m.credit,own:m.georeferenced===false,size:m.size||null,t0:m.from!=null?B.time(m.from):null,t1:m.to!=null?B.time(m.to):null,
+      images:m.images.map(function(im){var c=im.corners||null,box=null;
+        if(c){var f=c.map(B.fromLL);box=[Math.min(f[0][0],f[3][0]),Math.min(f[0][1],f[1][1]),Math.max(f[1][0],f[2][0]),Math.max(f[2][1],f[3][1])]}
+        return {file:im.file,ll:c,box:box,detail:!!im.detail}})};
+    B.maps[m.id]=v; return v});
+  /* the current map's lines and areas, as lists of [longitude, latitude] */
+  function unpack(s){var out=[],x=0,y=0;s.split(';').forEach(function(t,i){var a=t.split(',');x=i?x+(+a[0]):+a[0];y=i?y+(+a[1]):+a[1];out.push([x/1e5,y/1e5])});return out}
+  var bs=raw.base||{};
+  B.base={credit:bs.credit||'',lines:(bs.lines||[]).map(function(l){return {kind:l[0],cls:l[1],name:l[2],ll:unpack(l[3])}}),areas:(bs.areas||[]).map(function(a){return {kind:a[0],name:a[1],ll:unpack(a[2])}})};
+  return B;
+};
 
 /* ---------- scale bar ---------- */
 /* mPerPx: metres on the ground per screen pixel; units: 'yards' or 'km' */
@@ -67,7 +142,7 @@ WM.mapView=function(opt){
   function scale(){var c=map.getCenter();return pxPerMeter(map.getZoom(),c.lat)*cur.mPerUnit}                 // screen pixels per unit of the current frame
   function zoomFor(s,lat,w){w=w||cur;return Math.log2(s/w.mPerUnit*EARTH*Math.cos(lat*Math.PI/180)/TILE)}
   function S(p){var q=map.project(cur.toLL(p));return [q.x,q.y]}
-  function corners(b,w){w=w||cur;return [w.toLL([b[0],b[1]]),w.toLL([b[2],b[1]]),w.toLL([b[2],b[3]]),w.toLL([b[0],b[3]])]}
+  function corners(b,w){if(Array.isArray(b[0]))return b;w=w||cur;return [w.toLL([b[0],b[1]]),w.toLL([b[2],b[1]]),w.toLL([b[2],b[3]]),w.toLL([b[0],b[3]])]}
   /* the camera that shows box b (in the current frame) inside the padding; never closer than maxS screen pixels per unit */
   function cameraFor(b,pad,maxS){var z=size(),c=corners(b).map(merc),x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     c.forEach(function(m){x0=Math.min(x0,m[0]);x1=Math.max(x1,m[0]);y0=Math.min(y0,m[1]);y1=Math.max(y1,m[1])});
@@ -96,9 +171,7 @@ WM.mapView=function(opt){
   function retheme(){map.setPaintProperty('bg','background-color',css(bgToken));tracked.forEach(function(t){if(map.getLayer(t[0]))map.setPaintProperty(t[0],t[1],resolve(t[2]))});map.triggerRepaint()}
   function bg(token){bgToken=token;map.setPaintProperty('bg','background-color',css(token))}
   function geo(id,features){map.addSource(id,{type:'geojson',data:{type:'FeatureCollection',features:features},tolerance:0.2})}
-  function line(d,props,w){w=w||cur;return {type:'Feature',properties:props||{},geometry:{type:'LineString',coordinates:WM.pathPoints(d).map(w.toLL)}}}
-  function poly(d,props,w){w=w||cur;var r=WM.pathPoints(d).map(w.toLL);if(r.length&&(r[0][0]!==r[r.length-1][0]||r[0][1]!==r[r.length-1][1]))r.push(r[0]);return {type:'Feature',properties:props||{},geometry:{type:'Polygon',coordinates:[r]}}}
-  /* A period-map picture laid on the ground: box is where its corners sit in the frame. The picture is loaded as an ordinary image
+  /* A period-map picture laid on the ground: box is where it sits, either a box in the frame or its four corners as longitude and latitude. The picture is loaded as an ordinary image
      and handed to the map as a canvas, so it needs no web request of the map library's own and also works from a single-file page. */
   var pics={};
   function image(id,url,box,w){pics[id]={vis:true,op:1,want:null};map.addLayer({id:id+'-slot',type:'background',layout:{visibility:'none'}});moveImage(id,url,box,w)}   // the slot keeps the picture's place among the layers
@@ -135,7 +208,7 @@ WM.mapView=function(opt){
   if(global.MutationObserver) new MutationObserver(function(){setTimeout(retheme,0)}).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme','class','style']});
 
   var mv={map:map,css:css,size:size,scale:scale,S:S,cameraFor:cameraFor,jump:jump,chase:chase,setWorld:setWorld,zoomBy:zoomBy,zoomFor:function(s){var e=cur.ext;return zoomFor(s,cur.toLL([(e[0]+e[2])/2,(e[1]+e[3])/2])[1])},
-    layer:layer,geo:geo,line:line,poly:poly,image:image,moveImage:moveImage,show:show,opacity:opacity,bg:bg,retheme:retheme,kick:kick,hits:hits,
+    layer:layer,geo:geo,image:image,moveImage:moveImage,show:show,opacity:opacity,bg:bg,retheme:retheme,kick:kick,hits:hits,
     get world(){return curName}, mPerPx:function(){return cur.mPerUnit/scale()},
     /* run fn once the map is ready for layers */
     start:function(fn){map.on('load',function(){limits();fn();ready=true;retheme();kick()})}};
