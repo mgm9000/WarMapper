@@ -62,7 +62,7 @@ The map is drawn with [MapLibre GL JS](https://maplibre.org/), an open-source ma
 - **Units and names** are drawn in an SVG layer on top of the map, so they stay sharp and can be laid out to avoid each other.
 - **Coordinates.** Each battle's data is in a flat frame of its own (the 1876 sheet for Gettysburg, metres from a town centre for Trenton and Ypres). `data.json` carries the `frame` that turns those points into longitude and latitude.
 
-The playback pages load their images with web requests, so `playbacks/*/index.html` must be served by a web server (GitHub Pages, or `python3 -m http.server` in this folder). The single-file copies do not need one.
+A browser will not let a page opened straight from a folder hand its images to the map, so `playbacks/*/index.html` must be served by a web server (GitHub Pages, or `python3 -m http.server` in this folder). The single-file copies carry their images inside the page and do not need one.
 
 ## How the data is organised
 

@@ -91,19 +91,29 @@ WM.mapView=function(opt){
 
   /* layers: a colour written as 'var(--name)' follows the page's light and dark themes */
   function resolve(v){ if(typeof v==='function') return v(css); if(typeof v==='string'&&v.indexOf('var(')===0) return css(v.slice(4,-1)); return v }
-  function layer(spec,before){var paint={},k;for(k in (spec.paint||{})){var v=spec.paint[k];if(typeof v==='function'||(typeof v==='string'&&v.indexOf('var(')===0))tracked.push([spec.id,k,v]);paint[k]=resolve(v)}
+  function layer(spec,before){var paint={},k;tracked=tracked.filter(function(t){return t[0]!==spec.id});for(k in (spec.paint||{})){var v=spec.paint[k];if(typeof v==='function'||(typeof v==='string'&&v.indexOf('var(')===0))tracked.push([spec.id,k,v]);paint[k]=resolve(v)}
     var s={};for(k in spec)s[k]=spec[k];s.paint=paint;map.addLayer(s,before)}
   function retheme(){map.setPaintProperty('bg','background-color',css(bgToken));tracked.forEach(function(t){if(map.getLayer(t[0]))map.setPaintProperty(t[0],t[1],resolve(t[2]))});map.triggerRepaint()}
   function bg(token){bgToken=token;map.setPaintProperty('bg','background-color',css(token))}
   function geo(id,features){map.addSource(id,{type:'geojson',data:{type:'FeatureCollection',features:features},tolerance:0.2})}
   function line(d,props,w){w=w||cur;return {type:'Feature',properties:props||{},geometry:{type:'LineString',coordinates:WM.pathPoints(d).map(w.toLL)}}}
   function poly(d,props,w){w=w||cur;var r=WM.pathPoints(d).map(w.toLL);if(r.length&&(r[0][0]!==r[r.length-1][0]||r[0][1]!==r[r.length-1][1]))r.push(r[0]);return {type:'Feature',properties:props||{},geometry:{type:'Polygon',coordinates:[r]}}}
-  /* a period-map picture laid on the ground: box is where its corners sit in the frame */
-  function image(id,url,box,w,before){map.addSource(id,{type:'image',url:url,coordinates:corners(box,w)});
-    layer({id:id,type:'raster',source:id,paint:{'raster-fade-duration':0,'raster-resampling':'linear','raster-brightness-max':function(c){return +c('--raster-max')||1}}},before)}  // a little dimmer in the dark theme
-  function moveImage(id,url,box,w){var s=map.getSource(id);if(s)s.updateImage({url:url,coordinates:corners(box,w)})}
-  function show(id,on){if(map.getLayer(id))map.setLayoutProperty(id,'visibility',on?'visible':'none')}
-  function opacity(id,v){if(map.getLayer(id))map.setPaintProperty(id,'raster-opacity',v)}
+  /* A period-map picture laid on the ground: box is where its corners sit in the frame. The picture is loaded as an ordinary image
+     and handed to the map as a canvas, so it needs no web request of the map library's own and also works from a single-file page. */
+  var pics={};
+  function image(id,url,box,w){pics[id]={vis:true,op:1,want:null};map.addLayer({id:id+'-slot',type:'background',layout:{visibility:'none'}});moveImage(id,url,box,w)}   // the slot keeps the picture's place among the layers
+  function moveImage(id,url,box,w){var rec=pics[id],cs=corners(box,w),im=new Image();rec.want=url;
+    im.onload=function(){if(rec.want!==url)return;   // a later request overtook this one
+      var cv=document.createElement('canvas');cv.width=im.naturalWidth;cv.height=im.naturalHeight;cv.getContext('2d').drawImage(im,0,0);
+      if(map.getLayer(id))map.removeLayer(id);if(map.getSource(id))map.removeSource(id);
+      map.addSource(id,{type:'canvas',canvas:cv,coordinates:cs,animate:false});
+      layer({id:id,type:'raster',source:id,layout:{visibility:rec.vis?'visible':'none'},
+        paint:{'raster-fade-duration':0,'raster-resampling':'linear','raster-opacity':rec.op,'raster-brightness-max':function(c){return +c('--raster-max')||1}}},id+'-slot');  // a little dimmer in the dark theme
+      map.triggerRepaint()};
+    im.onerror=function(){if(global.console)console.warn('WarMapper: could not load the picture '+String(url).slice(0,80))};
+    im.src=url}
+  function show(id,on){if(pics[id])pics[id].vis=on;if(map.getLayer(id))map.setLayoutProperty(id,'visibility',on?'visible':'none')}
+  function opacity(id,v){if(pics[id])pics[id].op=v;if(map.getLayer(id))map.setPaintProperty(id,'raster-opacity',v)}
 
   /* picking: the battle's drawing code lists what can be tapped, last drawn on top */
   function pick(pt){for(var i=hits.length-1;i>=0;i--){var h=hits[i];
