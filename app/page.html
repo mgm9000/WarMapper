@@ -1,0 +1,45 @@
+<title>__PAGETITLE__</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<link rel="stylesheet" href="__APP__/vendor/maplibre-gl.css">
+<link rel="stylesheet" href="__APP__/core.css">
+<div class="app">
+  <header class="bar gut">
+    <div class="ttl">
+      <h1>__HEADING__</h1>
+      <p>__TAGLINE__</p>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Battle map. Scroll or pinch to zoom, drag to pan. To move time, scroll over the timeline or use the arrow keys.">
+      <div id="map"></div>
+      <svg id="ov" aria-hidden="true"></svg>
+      <div class="ctl c-l" id="ctl"></div>
+      <div class="ctl c-r">
+        <button class="sq" id="zin" aria-label="Zoom in">+</button>
+        <button class="sq" id="zout" aria-label="Zoom out">&minus;</button>
+      </div>
+      <div class="offnote" id="offnote" hidden></div>
+      <div class="when" id="when" aria-live="off"><div class="dayn" id="dayn" hidden></div><div class="t" id="clock"></div><div class="d" id="clockdate"></div><div class="n" id="clocknote" hidden></div></div>
+      <div class="scale" id="scale"></div>
+      <div class="hint" id="hint">Scroll or pinch to zoom &middot; drag to pan &middot; scroll over the timeline to move time</div>
+      <div class="credit" id="credit"></div>
+    </div>
+    <aside class="panel" id="panel" aria-live="polite"></aside>
+  </main>
+
+  <footer class="tlbar gut">
+    <button class="play" id="play" aria-label="Play"><svg viewBox="0 0 16 16" id="playico"><path d="M3 1.5v13l11-6.5z"/></svg></button>
+    <div class="tl" id="tl">
+      <div class="rail"></div><div class="win" id="win"></div><div class="done" id="done"></div>
+      <input type="range" id="time" min="0" max="4000" step="1" value="0" aria-label="Time">
+    </div>
+  </footer>
+</div>
+
+<script id="data" type="application/json">__DATA__</script>
+<script src="__APP__/vendor/maplibre-gl.js"></script>
+<script src="__APP__/core.js"></script>
+<script src="__APP__/player.js"></script>
+<script>WM.play(JSON.parse(document.getElementById('data').textContent));</script>

@@ -163,3 +163,12 @@ details p{margin:8px 0 0}
   .sq{width:32px;height:32px}
 }
 @media (prefers-reduced-motion: reduce){ *{transition:none!important} }
+
+/* ---------- sides, and what differs between a battlefield and a front ---------- */
+/* the unit colours are the same in both themes so they read on a period map and on the current map; the panel's colours follow the theme */
+:root{--m-blue:#124f93;--m-blue-fill:#e3eefb;--m-red:#b02a1c;--m-red-fill:#fde6e1;--ui-blue:#1d5c9e;--ui-red:#b5382a}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){ --ui-blue:#7fb2ea; --ui-red:#f0897c; } }
+:root[data-theme="dark"]{ --ui-blue:#7fb2ea; --ui-red:#f0897c; }
+.mapwrap.compact .ulab{font-size:12px} .mapwrap.compact .ech{font-size:8.5px;letter-spacing:.05em}
+.when.date .t{font-size:22px} @media (max-width:860px){ .when.date .t{font-size:18px} }
+.tl.days .tick{height:4px;opacity:.6} .tl.days .tick.maj{height:6px;opacity:1}

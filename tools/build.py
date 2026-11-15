@@ -1,19 +1,19 @@
 """Build the playback pages.
 
-Each battle has a page source (playbacks/<battle>/page.src.html) and its battle file (battle.json, in the one format all battles
-share: docs/battle-file.md; tools/export_battles.py writes them). The pages share the app/ folder:
-the map library (MapLibre GL JS), core.js and core.css.
+Every battle's page is the same page (app/page.html) with that battle's battle file written into it (battle.json, in the one format
+all battles share: docs/battle-file.md; tools/export_battles.py writes them). The pages share the app/ folder: the map library
+(MapLibre GL JS), core.js (the map, the clock, reading a battle file), player.js (the playback) and core.css.
 
   python3 tools/build.py                     build playbacks/<battle>/index.html for the website (all battles)
   python3 tools/build.py ypres               one battle only
   python3 tools/build.py --bundle OUT        also write OUT/<battle>/ : the page with its own copy of app/ and its images, to host on its own
   python3 tools/build.py --single OUT        also write OUT/<battle>.html : one file with everything inside it, which opens from a folder with no web server
 """
-import os, re, sys, base64, shutil
+import os, re, sys, json, html, base64, shutil
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 BATTLES = ['gettysburg', 'trenton', 'ypres']
-APP_FILES = ['vendor/maplibre-gl.js', 'vendor/maplibre-gl.css', 'vendor/MAPLIBRE-LICENSE.txt', 'core.js', 'core.css']
+APP_FILES = ['vendor/maplibre-gl.js', 'vendor/maplibre-gl.css', 'vendor/MAPLIBRE-LICENSE.txt', 'core.js', 'player.js', 'core.css']
 HEAD = ('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">%s'
         '<style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui}img{max-width:100%%}[hidden]{display:none!important}</style></head><body>\n')
 MIME = {'.jpg': 'image/jpeg', '.jpeg': 'image/jpeg', '.png': 'image/png', '.webp': 'image/webp'}
@@ -26,10 +26,13 @@ def read(path):
 def page(battle, app):
     """The page as one HTML document, with the shared files referenced under the path `app`."""
     d = os.path.join(ROOT, 'playbacks', battle)
-    src = read(os.path.join(d, 'page.src.html'))
-    data = read(os.path.join(d, 'battle.json')).replace('</', '<\\/')
+    src = read(os.path.join(ROOT, 'app', 'page.html'))
+    data = read(os.path.join(d, 'battle.json'))
+    b = json.loads(data)
     assert src.count('__DATA__') == 1, battle
-    out = src.replace('__DATA__', data).replace('__APP__', app)
+    for mark, text in (('__PAGETITLE__', b.get('playback', {}).get('page_title') or b['title']), ('__HEADING__', b['title']), ('__TAGLINE__', b.get('subtitle', ''))):
+        src = src.replace(mark, html.escape(text, quote=False))
+    out = src.replace('__DATA__', data.replace('</', '<\\/')).replace('__APP__', app)
     title = re.search(r'<title>.*?</title>', out).group(0)
     return HEAD % title + out.replace(title, '', 1) + '\n</body></html>\n'
 
@@ -47,7 +50,7 @@ def single(battle):
         tag = '<link rel="stylesheet" href="__APP__/%s">' % name
         assert tag in out, name
         out = out.replace(tag, '<style>\n' + read(os.path.join(app, name)) + '\n</style>')
-    for name in ('vendor/maplibre-gl.js', 'core.js'):
+    for name in ('vendor/maplibre-gl.js', 'core.js', 'player.js'):
         tag = '<script src="__APP__/%s"></script>' % name
         js = read(os.path.join(app, name))
         assert tag in out and '</script' not in js, name

@@ -3,7 +3,7 @@
    - mapView: the map itself (MapLibre GL JS), base layers, period-map images, camera, and picking a unit.
    - clock:   time, the play button, the slider, scrolling over the timeline, arrow keys.
    - helpers: geometry, text, the date box, the scale bar, the source list.
-   Each battle's own script supplies where its units are at a given time and how they are drawn. */
+   player.js is the playback itself: the rules for where units are at a given time, how they are drawn, the controls and the side panel. */
 (function(global){
 "use strict";
 var WM={};
@@ -85,7 +85,7 @@ WM.battle=function(raw){
       act:s.activity||'',place:s.place||'',say:s.quote||'',method:s.method,oc:s.confidence,tb:s.time_basis||'',
       basis:loc.basis||'',cb:loc.basis||(g?'':'No position on record'),cs:loc.source||'none',cc:loc.confidence||'',prec:loc.precision_m||null,
       pl:(loc.places||[]).map(function(p){return [p.name||'',p.today||'',p.source,p.precision_m]}),
-      src:(s.sources||[]).join('; '),notes:s.notes||'',status:s.review||'',bat:s.battle||'',virtual:!!s.virtual,shared:!!s.shared,
+      src:(s.sources||[]).join('; '),notes:s.notes||'',status:s.review||'',bat:s.battle||'',virtual:!!s.virtual,shared:!!s.shared,along:!!s.along,
       lat:mid?+mid[1].toFixed(5):null,lon:mid?+mid[0].toFixed(5):null}}
   B.tracks=raw.tracks.map(function(tr){var u=B.units[tr.unit],as=u.assignments||[],a0=as[0]||{};
     return {id:tr.id,unit:tr.unit,name:u.name,label:tr.label||u.label,side:B.sides[u.side].code,nation:u.nation||'',ech:tr.echelon||u.echelon,branch:BR[u.branch]||'inf',
@@ -98,11 +98,11 @@ WM.battle=function(raw){
   B.events=(raw.events||[]).map(function(e){return {id:e.id,t:B.time(e.at),t0:B.time(e.start),t1:B.time(e.end),name:e.label||e.name,full:e.name,text:e.text,quiet:!!e.quiet}});
   B.eventAt=function(t){var p=null;B.events.forEach(function(e){if(t>=e.t)p=e});return p};   // the latest event to have begun
   /* names on the map: t text, s the other name (the period's, or today's), p place, a angle, l level (0 shows first), k kind, e placed only roughly */
-  B.labels=(raw.labels||[]).map(function(l){return {t:l.text,s:l.alt||'',p:B.fromLL(l.at),a:l.angle||0,l:l.level||0,k:l.kind,e:l.approximate?1:0}});
+  B.labels=(raw.labels||[]).map(function(l){return {t:l.text,s:l.alt||'',p:B.fromLL(l.at),a:l.angle||0,l:l.level||0,k:l.kind,e:l.approximate?1:0,show:l.show||'current'}});
   /* period maps. One laid on the ground has, for each picture, its four corners (ll) and the box they span in the frame;
      one that is not to scale (own) is a picture with its own pixel grid, and steps carry positions on it (k.on[map id]). */
   B.maps={}; B.mapList=(raw.maps||[]).map(function(m){
-    var v={id:m.id,title:m.title,short:m.short||'',label:m.label||'',credit:m.credit,own:m.georeferenced===false,size:m.size||null,t0:m.from!=null?B.time(m.from):null,t1:m.to!=null?B.time(m.to):null,
+    var v={raw:m,id:m.id,title:m.title,short:m.short||'',label:m.label||'',credit:m.credit,own:m.georeferenced===false,size:m.size||null,t0:m.from!=null?B.time(m.from):null,t1:m.to!=null?B.time(m.to):null,
       images:m.images.map(function(im){var c=im.corners||null,box=null;
         if(c){var f=c.map(B.fromLL);box=[Math.min(f[0][0],f[3][0]),Math.min(f[0][1],f[1][1]),Math.max(f[1][0],f[2][0]),Math.max(f[2][1],f[3][1])]}
         return {file:im.file,ll:c,box:box,detail:!!im.detail}})};
