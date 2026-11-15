@@ -109,8 +109,9 @@ for e in table('Events'):
       'text':e['summary']+EXTRA.get(e['event_id'],''),'steps':[s for s in bf.ids(e['pos_ids']) if s in used],'sources':bf.ids(e['source_ids']),'battle':e['battle_id']})
 
 # ---- labels ----
-labels=[{'text':n,'at':px(x,y),'kind':'landmark'} for n,(x,y) in {'Herr Tavern':(2484,2545),'Lutheran Seminary':(3745,3433),'Willoughby Run':(2893,2960),'Chambersburg Pike':(1900,2215),
-        'Unfinished railroad':(3120,2640),'McPherson farm':(3165,3040),'Pennsylvania College':(4444,3168),'Mummasburg Road':(3930,1960)}.items()]
+# landmarks named on both maps, and two the current map names for itself, so they are shown on the 1876 map only
+labels=[{'text':n,'at':px(x,y),'kind':'landmark','show':show} for n,(x,y,show) in {'Herr Tavern':(2484,2545,'both'),'Lutheran Seminary':(3745,3433,'both'),'Willoughby Run':(2893,2960,'period'),
+        'Chambersburg Pike':(1900,2215,'period'),'McPherson farm':(3165,3040,'both'),'Pennsylvania College':(4444,3168,'both')}.items()]
 
 # ---- current map: today's roads, streams, woods and names from the OpenStreetMap extract, cut to the sheet.
 #      The cutting is done in the sheet's own pixels (at SC), then every point goes back to longitude and latitude. ----
@@ -196,7 +197,19 @@ if os.path.exists(SCAN):
     im=full.crop((X0,Y0,X1,Y1)).resize((round((X1-X0)*SCW),round((Y1-Y0)*SCW)),Image.LANCZOS); im.save(HERE+'/map_wide.jpg',quality=78,optimize=True,progressive=True)
 else: print('map scan not found: base pictures not rebuilt')
 
-battle={'id':'gettysburg-day1-morning','title':'Gettysburg','subtitle':'The first morning, 1 July 1863',
+# ---- how this battle is played back: the settings the shared player reads (docs/battle-file.md, "playback") ----
+playback={'page_title':'Gettysburg Day 1 Playback','style':'tactical','scale_bar':'yards','rate':3,'bounds':'bachelder-1876',
+ 'follow':{'min':[1390,925],'margin':140},
+ 'bases':[{'id':'old','label':'1876 map','short':'1876','title':"Bachelder's 1876 map of the first day (M switches maps)",'map':'bachelder-1876','backdrop':'paper','fade':True},
+          {'id':'mod','label':'Current map','short':'Today','title':'The same ground today, from OpenStreetMap (M switches maps)','current':True,'clip':'bachelder-1876'}],
+ # zoom levels, in screen pixels per metre, at which things appear or change
+ 'zoom':{'max':1.95,'min_factor':0.96,'follow_max':1.04,'fold':0.215,'labels':0.273,'towns_until':0.487,'landmarks_from':0.195,'minor_roads_from':0.156,'force_names_from':0.195},
+ 'fold':{'label':'Regiments'},'rules':{'blend':4},
+ 'texts':{'stated':'A report, tablet or the 1876 map puts the unit here.','inferred':'Worked out from the sequence of events, not stated by a source.',
+          'moving':'No source records this stretch. The unit is drawn on a straight line between two recorded positions.'},
+ 'found':{'map_read':'read from the 1876 map','estimate':'estimated from the description'},
+ 'about':[l for l in open(HERE+'/about.txt',encoding='utf-8').read().split('\n') if l]}
+battle={'id':'gettysburg-day1-morning','title':'Gettysburg, the first morning','subtitle':"Buford's cavalry against Heth's division on the Chambersburg Pike",'playback':playback,
  'record':{'workbook':'Military Map Explorer data pilot v7','campaign':CAMPAIGN,'battles':['GETT-D1-AM','GETT-D1','GETT']},
  # Gettysburg is fought on three numbered days, 1 to 3 July 1863
  'time':{'unit':'minute','zero':DAY+'T00:00','start':bf.at_minute(DAY,T_START),'end':bf.at_minute(DAY,T_END),'focus':[bf.at_minute(DAY,450),bf.at_minute(DAY,615)],

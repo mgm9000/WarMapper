@@ -15,8 +15,8 @@ The playbacks are served with GitHub Pages at https://mgm9000.github.io/WarMappe
 | Folder | Contents |
 | --- | --- |
 | `index.html`, `assets/` | The landing page for the website and its three preview images. |
-| `playbacks/` | One folder per battle: its page (`index.html`), its battle file (`battle.json`) and its period-map images. |
-| `app/` | What every playback shares: `core.js` (reading a battle file, the map, the clock, the controls), `core.css`, and the map library in `app/vendor/`. |
+| `playbacks/` | One folder per battle: its battle file (`battle.json`), the script that writes it (`prep.py`), its period-map images, and the built page (`index.html`). |
+| `app/` | The playback, the same for every battle: `page.html` (the page), `player.js` (the rules of a playback), `core.js` (reading a battle file, the map, the clock), `core.css`, and the map library in `app/vendor/`. |
 | `tools/` | `export_battles.py`, which writes and checks the battle files, and `build.py`, which builds the pages. |
 | `docs/` | `battle-file.md`: the layout of a battle file. |
 | `data/` | The pilot workbook (all three battles as linked tables), the Gettysburg source workbook, and the OpenStreetMap extracts used to draw the base maps. |
@@ -63,7 +63,7 @@ The map is drawn with [MapLibre GL JS](https://maplibre.org/), an open-source ma
 
 - **Each battle is one battle file**, `playbacks/<battle>/battle.json`, and every battle's file has the same layout: units, where the sources put them and when, events, sources, the period maps and the current map. Places are longitude and latitude; times are dates and clock times. [`docs/battle-file.md`](docs/battle-file.md) describes it. The Gettysburg file is written from the workbook; the Trenton and First Ypres files are written from the data modules the workbook's rows for those battles are made from.
 - **`app/core.js`** reads the battle file and runs the map (base layers, period-map images, the camera, picking a unit), the clock (play, slider, scrolling over the timeline, arrow keys) and the date box.
-- **Each battle's `page.src.html`** holds what is still particular to that playback: where each unit is drawn between two recorded positions, how its units are laid out and drawn, and its side panel.
+- **`app/player.js`** is the playback itself, the same for every battle: where a unit is between two recorded positions, which units fold into their parent when zoomed out, how symbols and names are laid out, the base-map switch, the timeline and the side panel. What differs from battle to battle is data, in the battle file's `playback` section. No battle has code of its own: `tools/build.py` writes each battle file into the one page, `app/page.html`.
 - **Units and names** are drawn in an SVG layer on top of the map, so they stay sharp and can be laid out to avoid each other.
 - **Coordinates.** For drawing, `core.js` lays each battle out on a flat grid in metres, east and south of a point the battle file names. Trenton's 1776 sketch is not to scale, so it is shown as a picture in its own right and units carry separate positions on it.
 

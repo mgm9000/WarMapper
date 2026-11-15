@@ -40,7 +40,8 @@ def kf(p):
             'on':{SKETCH:[[round(x[5][0]*SKS,1),round(x[5][1]*SKS,1)] for x in g]} if g and all(x[5] for x in g) else None,
             'activity':p['activity'],'place':p['place'],'quote':p['say'],'method':p['method'],'confidence':p['oc'],'time_basis':p['time_basis'],
             'location':{'source':g[0][2],'basis':g[0][4],'precision_m':max(x[3] for x in g)} if g else None,
-            'sources':bf.ids(p['source_ids']),'notes':p['notes'],'battle':p['battle_id']}
+            'sources':bf.ids(p['source_ids']),'notes':p['notes'],'battle':p['battle_id'],
+            'along':True if p['pos_id']=='T23' else None}   # T23's line is the street the picket retreats along during the step
 HIDE={'T-US-ARMY','T-US-ADVF','T-HE-PKPEN','T-HE-ALT','T-HE-PKRIV','T-HE-PKBRG','T-HE-PKMAI','T-HE-PKFER','T-HE-ARTR','T-GB-16LD','T-HE-JAG'}
 NUDGE={'T-US-HAM':[-26,-16],'T-US-STIR':[-30,16],'T-US-FORR':[24,-18],'T-US-GREENE':[26,14],'T-US-MOUL':[0,22],'T-HE-ARTR':[-24,0],'T-US-ADVW':[24,-4],'T-HE-ARTK':[20,10],'T-US-FERM':[18,-14],'T-HE-LOSS':[0,0]}
 tracks=[]
@@ -83,14 +84,14 @@ order=[u[0] for u in TR.UNITS]; tracks.sort(key=lambda t:order.index(t['id']))
 lines=[]
 for w in geo.load():
     kind='water' if w['zone']=='W' else 'road'
-    lines.append([kind,('river' if w['name']=='Delaware River' else 'stream') if kind=='water' else w['cls'],w['name'],bf.pack([M(a,b) for a,b in w['pts']])])
+    lines.append([kind,'river' if kind=='water' else w['cls'],w['name'],bf.pack([M(a,b) for a,b in w['pts']])])
 def L(name,lat,lon,ang=0,lvl=1,sub=''): return {'text':name,'alt':sub,'at':M(lat,lon),'angle':ang,'level':lvl,'kind':'road'}
 labels=[L('Warren St',40.22400,-74.76527,-80,1,'King St'),L('Broad St',40.22390,-74.76445,-88,1,'Queen St'),L('State St',40.22022,-74.76505,5,1,'Second St'),L('E Hanover St',40.22118,-74.76290,-8,1,'Third St'),
         L('Front St',40.21912,-74.76510,5,1),L('Perry St',40.22345,-74.76180,-18,1),L('Pennington Ave',40.22760,-74.76680,43,1,'Pennington road'),L('Brunswick Ave',40.22740,-74.76225,-50,1,'road to Princeton'),
         L('Montgomery St',40.22450,-74.76277,-78,1),L('W State St',40.22150,-74.77150,-18,1,'River Road'),L('Assunpink Creek',40.21870,-74.76000,-25,1),
         L('Delaware River',40.2620,-74.8540,-48,0),L('Bear Tavern Rd',40.2800,-74.8330,45,0),L('Scotch Rd',40.2700,-74.7990,60,0),L('Sullivan Way',40.2480,-74.8125,50,0,'River Road'),L('Pennington Rd',40.2530,-74.7770,75,0),L('Delaware River',40.2080,-74.7700,20,1)]
 labels+=[{'text':"McKonkey's Ferry landing",'at':M(40.29672,-74.86753),'level':0,'kind':'landmark'},{'text':'Bear Tavern','at':M(40.30918,-74.84857),'level':0,'kind':'landmark'},{'text':'Jacobs Creek','at':M(40.29080,-74.84043),'level':0,'kind':'landmark'},{'text':'Birmingham','at':M(40.26605,-74.81902),'level':0,'kind':'landmark'},
-    {'text':'Trenton','at':M(40.2203,-74.7650),'level':0,'kind':'landmark'},{'text':'Battle Monument','at':M(40.22575,-74.76478),'level':1,'kind':'landmark'},{'text':"Rall's headquarters",'at':M(40.22248,-74.76587),'level':1,'kind':'landmark'},{'text':'Old Barracks','at':M(40.21948,-74.7685),'level':1,'kind':'landmark'},
+    {'text':'Trenton','at':M(40.2203,-74.7650),'level':0,'kind':'town'},{'text':'Battle Monument','at':M(40.22575,-74.76478),'level':1,'kind':'landmark'},{'text':"Rall's headquarters",'at':M(40.22248,-74.76587),'level':1,'kind':'landmark'},{'text':'Old Barracks','at':M(40.21948,-74.7685),'level':1,'kind':'landmark'},
     {'text':"Friends' Meeting House",'at':M(40.22124,-74.76206),'level':1,'kind':'landmark'},{'text':'The Hermitage','at':M(40.2277,-74.7834),'level':1,'kind':'landmark'}]
 SCAN=S+'/maps/trenton/map_full.png'
 if os.path.exists(SCAN):
@@ -100,7 +101,8 @@ else:
     SKSIZE=(3118,2020); print('sketch scan not found: sketch picture not rebuilt')
 maps=[{'id':SKETCH,'title':"Wiederhold, sketch of the engagement at Trenton (1776)",'credit':'Wiederhold, 1776 \u00b7 Library of Congress','source':'S36',
        # the sketch is not to scale outside the town, so it is not laid on the ground: units carry their own positions on it (a step's "on")
-       'georeferenced':False,'size':list(SKSIZE),'images':[{'file':'sketch.jpg'}]}]
+       'georeferenced':False,'size':list(SKSIZE),'images':[{'file':'sketch.jpg'}],'scale_note':'Not to scale outside the town',
+       'off_note':{'until':at(462),'text':'The march is off this sketch. Switch to the current map to follow it, or move on to 7:45.'}}]
 
 ulist=[]
 for u in TR.UNITS:
@@ -125,7 +127,23 @@ catalogue={s[0]:{'title':s[1],'citation':s[5],'type':s[4],'url':s[7]} for s in T
 def box(x0,y0,x1,y1):
     """a box given in metres east and south of the middle of Trenton -> [west, south, east, north]"""
     (n,w),(s_,e)=geo.ll(x0,-y0),geo.ll(x1,-y1); return [round(w,5),round(s_,5),round(e,5),round(n,5)]
-battle={'id':'trenton-1776','title':'Trenton','subtitle':'26 December 1776',
+# ---- how this battle is played back: the settings the shared player reads (docs/battle-file.md, "playback") ----
+playback={'page_title':'Trenton 1776 Playback','style':'tactical','scale_bar':'yards','rate':3,
+ 'lead':{'share':0.30,'rate':18,'step':5},   # the march takes the first 30% of the timeline and plays six times as fast as the fight
+ 'time_note':{'from':at(465),'text':'Times are estimates'},
+ 'follow':{'min':[700,520],'margin':90,'exclude':['T-HE-PKFER'],'empty':'march'},
+ 'bases':[{'id':'mod','label':'Current map','short':'Today','current':True},{'id':'sk','label':'1776 sketch','short':'1776','map':SKETCH}],
+ 'zoom':{'max':8,'min_factor':0.9,'follow_max':2.2,'labels':0.12,'towns_until':0.09},
+ # zoomed right out on the current map, the garrison is one symbol
+ 'groups':[{'label':"Rall's brigade (garrison)",'side':'CR','except':['T-HE-PKFER'],'below':0.085,'echelon':'brigade','branch':'inf'}],
+ 'rules':{'blend':3},
+ 'texts':{'stated':'A report, a history, a marker or the 1776 sketch puts the unit here.','inferred':'Worked out from the sequence of events; the sources do not name this unit here.',
+          'moving':'No source records this stretch. The unit is drawn along a road or a straight line between two recorded positions.',
+          'offthis':'This position lies outside what Wiederhold drew. Switch to the current map to see it.'},
+ 'found':{'map_read':'read from a surveyed period map','sketch_read':"read from Wiederhold's sketch"},
+ 'about':[l for l in open(HERE+'/about.txt',encoding='utf-8').read().split('\n') if l]}
+battle={'id':'trenton-1776','title':'Trenton, 26 December 1776','subtitle':"Washington's march from the Delaware and the fight for the town",'playback':playback,
+ 'nations':[{'name':'United States','short':'American'},{'name':'Hesse-Cassel','short':'Hessian'},{'name':'Great Britain','short':'British'}],
  'record':{'workbook':'Military Map Explorer data pilot v7','campaign':'ARW-TP','battles':['TREN']},
  # one day's fighting after a night march: no day numbers. The march (3:00 to 7:30) comes before the fight ("focus")
  'time':{'unit':'minute','zero':DAY+'T00:00','start':at(180),'end':at(600),'focus':[at(450),at(600)],'calendar':{'first':DAY,'numbered':False,'days':1}},
@@ -134,6 +152,6 @@ battle={'id':'trenton-1776','title':'Trenton','subtitle':'26 December 1776',
  'sides':[{'id':'ARW-US','code':'US','name':'United States (Continental Army and militia)','short':'American','colour':'blue'},
           {'id':'ARW-CR','code':'CR','name':'British Crown forces (British and German troops)','short':'Hessian and British','colour':'red'}],
  'units':ulist,'tracks':tracks,'events':events,'labels':labels,'maps':maps,
- 'base':{'credit':'\u00a9 OpenStreetMap contributors','source':'S39','lines':lines,'areas':[]}}
+ 'base':{'credit':'\u00a9 OpenStreetMap contributors','source':'S39','lines':lines,'areas':[],'widths':{'Delaware River':270}}}   # the Delaware is drawn 270 m wide
 battle['sources']=bf.used_sources(battle,catalogue,['S39'] if 'S39' in catalogue else [])
 bf.write(battle,HERE+'/battle.json')

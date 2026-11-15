@@ -96,12 +96,28 @@ for h in hist['days']:
                      fit=dict(points=h.get('n'), misfit_m=h.get('rms')), images=[dict(file=h['src'], corners=placed(h))], **{'from': date(h['d0']), 'to': date(h['d1'])}))
 def box(x0, y0, x1, y1):
     a, b = LL(x0, y1), LL(x1, y0); return [a[0], a[1], b[0], b[1]]
-battle = dict(id='ypres-1914', title='First Ypres', subtitle='October and November 1914',
+# ---- how this battle is played back: the settings the shared player reads (docs/battle-file.md, "playback") ----
+playback = dict(page_title='First Ypres Playback', style='operational', scale_bar='km', rate=0.85,
+    views=[dict(preset='salient', label='Ypres salient', short='Salient'), dict(preset='front', label='Whole front', short='All')],
+    bases=[dict(id='now', label='Current map', short='Now', current=True),
+           dict(id='m14', label='1914 map', short='1914', map='official-history-sketch-a', backdrop='current'),
+           dict(id='day', label='Sketch of the day', short='Daily', series=True, backdrop='current')],
+    zoom=dict(max=0.6, min_factor=0.85, fold=0.05, labels=0.034, full_names=0.062, woods_from=0.02),
+    fold=dict(formation=True, sides=['GE']),                            # zoomed out, a German division is hidden while its corps is drawn
+    rear=dict(side='AL', at=LL(-12000, 1500)),            # roughly Poperinghe: Allied symbols sit on this side of their line, German ones on the other
+    texts=dict(stated='A history or official account names the unit at these places. The line between them is drawn straight.',
+               inferred='Worked out from other units or from the order of events; the sources do not give this line.',
+               moving='The sources give positions at nightfall. The path between two nights is not recorded.',
+               after='The sources read do not follow this unit here. It is shown where they last put it.', unplaced='The sources read do not say where the unit was.'),
+    found=dict(map_read='read from the 1925 official-history map', modern_map='at a village centre on the current map', derived='offset from a village', estimate='placed from memory or a description'),
+    about=[l for l in open(HERE + 'about.txt', encoding='utf-8').read().split('\n') if l])
+nations = [dict(name='Great Britain', code='br', short='British', colour='#124f93', dark='#6ea8ea'), dict(name='France', code='fr', short='French', colour='#2f86c9', dark='#8fd0ff', paper='#1f6fb0'),
+           dict(name='Belgium', code='be', short='Belgian', colour='#0f7f86', dark='#5fd0d0'), dict(name='Germany', code='ge', short='German', colour='#b02a1c', dark='#f0897c')]
+battle = dict(id='ypres-1914', title='First Ypres, 1914', subtitle='Corps and divisions day by day, from the Yser to the Lys', playback=playback, nations=nations,
     record=dict(workbook='Military Map Explorer data pilot v7', campaign='WW1-FL14', battles=['YPRES1', 'YP-LANG', 'YP-GHEL', 'YP-NONNE', 'MESS14', 'YSER']),
     # time runs in days; a whole day is nightfall on that date. The battle's start and end dates are not agreed, so its days are not numbered
     time=dict(unit='day', zero=D0.isoformat(), start=D0.isoformat(), end=date(35), calendar=dict(first=D0.isoformat(), numbered=False)),
-    view=dict(origin=bf.ll(LAT0, LON0), extent=[2.68, 50.70, 3.21, 51.17], presets=dict(salient=box(-6600, -10600, 15800, 13800), front=box(-13200, -34500, 21500, 15800)),
-              points=dict(allied_rear=LL(-12000, 1500))),   # roughly Poperinghe: Allied symbols sit on this side of their line
+    view=dict(origin=bf.ll(LAT0, LON0), extent=[2.68, 50.70, 3.21, 51.17], presets=dict(salient=box(-6600, -10600, 15800, 13800), front=box(-13200, -34500, 21500, 15800))),
     opening=dict(label='Before the battle', text="The Allies are pushing east from Ypres and along the Lys, expecting only cavalry in front of them. Four new German reserve corps are a day's march away."),
     sides=[dict(id='WW1-ALL', code='AL', name='Allies (British, French and Belgian)', short='Allied', colour='blue'), dict(id='WW1-GER', code='GE', name='Germany', short='German', colour='red')],
     units=units, tracks=tracks, events=events, labels=labels, maps=maps,

@@ -167,6 +167,23 @@ def validate(b, folder=None):
     for tr in b['tracks']:
         if tr.get('parent') and tr['parent'] not in tracks: bad.append('track %s: parent track %r not found' % (tr['id'], tr['parent']))
 
+    P = b.get('playback', {})
+    for bs in P.get('bases', []):
+        need(bs, ['id', 'label'], 'playback base')
+        if bs.get('map') and bs['map'] not in maps: bad.append('playback base %s: map %r is not in maps' % (bs.get('id'), bs['map']))
+        if bs.get('clip') and bs['clip'] not in maps: bad.append('playback base %s: clip map %r is not in maps' % (bs.get('id'), bs['clip']))
+        if not (bs.get('current') or bs.get('map') or bs.get('series')): bad.append('playback base %s: needs "current", "map" or "series"' % bs.get('id'))
+    if P.get('bounds') and P['bounds'] not in maps: bad.append('playback.bounds: map %r is not in maps' % P['bounds'])
+    for v in P.get('views', []):
+        if v.get('preset') not in V.get('presets', {}): bad.append('playback view: preset %r is not in view.presets' % v.get('preset'))
+    if P.get('follow', {}).get('empty') and P['follow']['empty'] not in V.get('presets', {}): bad.append('playback.follow.empty: no such preset')
+    for tid in P.get('follow', {}).get('exclude', []):
+        if tid not in tracks: bad.append('playback.follow.exclude: track %r not found' % tid)
+    if P.get('style') and P['style'] not in ('tactical', 'operational'): bad.append('playback.style must be "tactical" or "operational"')
+    codes = {s.get('code') for s in b['sides']}
+    for g in P.get('groups', []):
+        if g.get('side') not in codes: bad.append('playback group %r: unknown side code' % g.get('label'))
+    for n in b.get('nations', []): need(n, ['name', 'short'], 'nation')
     last = None
     for e in b['events']:
         w = 'event %s' % e.get('id'); need(e, ['id', 'start', 'end', 'at', 'name', 'text'], w)
@@ -198,7 +215,7 @@ def write(battle, path):
     bad = validate(battle, os.path.dirname(path))
     if bad:
         raise SystemExit('battle file not written, %d problem(s):\n  ' % len(bad) + '\n  '.join(bad[:40]))
-    order = ['format', 'id', 'title', 'subtitle', 'record', 'time', 'view', 'opening', 'sides', 'units', 'tracks', 'events', 'sources', 'labels', 'maps', 'base']
+    order = ['format', 'id', 'title', 'subtitle', 'record', 'time', 'view', 'playback', 'opening', 'sides', 'nations', 'units', 'tracks', 'events', 'sources', 'labels', 'maps', 'base']
     battle = {k: battle[k] for k in order if k in battle} | {k: v for k, v in battle.items() if k not in order}
     with open(path, 'w', encoding='utf-8') as f:
         json.dump(battle, f, ensure_ascii=False, separators=(',', ':'))

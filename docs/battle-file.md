@@ -8,7 +8,7 @@ and the current map all come from it.
 - Written by: each battle's recipe, `playbacks/<battle>/prep.py`. Run them all with `python3 tools/export_battles.py`.
 - Checked by: `pipeline/battlefile.py`. A file that breaks a rule below is not written, and
   `python3 tools/export_battles.py --check` checks the files as they stand.
-- Read by: `WM.battle()` in `app/core.js`.
+- Read by: `WM.battle()` in `app/core.js`, and played by `WM.play()` in `app/player.js`. No battle has code of its own.
 
 ## Two rules that hold everywhere
 
@@ -28,8 +28,10 @@ give is `null`.
 | `record` | Where the data came from: the workbook, and its campaign and battle ids |
 | `time` | The stretch of time the playback covers and how time is counted |
 | `view` | Where on the earth the battle is |
+| `playback` | How this battle is played back: the settings the shared player reads |
 | `opening` | The text shown before the first event |
 | `sides` | The two sides |
+| `nations` | Optional: the nations within the sides, where they need their own name or colour |
 | `units` | Every unit in the battle's order of battle, whether or not it is placed |
 | `tracks` | One per symbol on the map: a unit and its recorded positions in time order |
 | `events` | The named moments on the timeline |
@@ -54,7 +56,7 @@ give is `null`.
 ### view
 
 `origin` is a point near the middle of the action. `extent` is `[west, south, east, north]`. `presets` are named
-boxes of the same form that a page can jump to. `points` are named single places a page needs.
+boxes of the same form that the playback can jump to.
 
 ### sides and units
 
@@ -180,7 +182,56 @@ The current map, cut down to what the battle needs, from OpenStreetMap.
 - Points are packed to keep the file small: the first point, then the step to each next point, as
   `longitude,latitude` in units of 0.00001 degree (about a metre).
 
+## playback
+
+The rules of a playback are the same for every battle and live in `app/player.js`: where a unit is between two
+steps, how symbols and names are laid out, the side panel, the timeline. What differs from battle to battle is
+set here. Everything is optional; a battle file with no `playback` section plays on the current map with the
+defaults.
+
+```json
+"playback": {
+  "page_title": "Trenton 1776 Playback", "style": "tactical", "scale_bar": "yards", "rate": 3,
+  "lead": {"share": 0.30, "rate": 18, "step": 5},
+  "follow": {"min": [700, 520], "margin": 90, "exclude": ["T-HE-PKFER"], "empty": "march"},
+  "bases": [{"id": "mod", "label": "Current map", "short": "Today", "current": true},
+            {"id": "sk", "label": "1776 sketch", "short": "1776", "map": "wiederhold-1776"}],
+  "zoom": {"max": 8, "follow_max": 2.2, "labels": 0.12, "towns_until": 0.09},
+  "about": ["..."]
+}
+```
+
+| Setting | What it does |
+|---|---|
+| `style` | `tactical` for a battlefield (larger symbols, a question mark on a loose position) or `operational` for a front (smaller symbols, thinner roads). Defaults from `time.unit`. |
+| `scale_bar` | `yards` or `km`. |
+| `rate` | Time units played per second. |
+| `lead` | Squeezes the stretch before `time.focus` (a night march before a fight) into a `share` of the timeline, played at its own `rate`, with arrow keys moving `step` units. |
+| `time_note` | A line under the clock from a given time on (`from`, `text`). |
+| `follow` | Shows the Follow button: the camera keeps the units in view. `min` is the smallest box it frames, in metres; `margin` the space around the units; `exclude` tracks it ignores; `empty` the preset shown while no unit is placed. |
+| `views` | Named views as buttons, each a `preset` from `view.presets` with a `label` and `short` label. The first is the opening view. |
+| `bases` | The maps the reader can put under the units; the first is the opening one. Each is the current map (`"current": true`), one period map (`"map": id`) or the period map for the date on the timeline (`"series": true`: the maps that have `from` and `to`). `backdrop` says what a period map lies on: `paper` or `current` (the current map shows around it). `clip` cuts the current map to a period map's edge. `fade` adds the Fade map button. |
+| `bounds` | A map id: the reader cannot pan beyond that map. |
+| `zoom` | Zoom levels in screen pixels per metre: `max`; `follow_max`; `fold` (below it, units fold into their parent); `labels` (from it, level 1 names show); `towns_until`; `landmarks_from`; `woods_from`; `full_names` (from it, a place's other name shows); `minor_roads_from`; `force_names_from`. |
+| `fold` | `label` names the button that switches folding of tracks that have a `parent`. `formation: true` also hides a unit while its parent formation has a line of its own on the map and the reader is zoomed out; `sides` limits that to the sides listed. |
+| `groups` | Zoomed out below `below`, the units of a `side` (but for `except`) are drawn as one symbol with this `label`. |
+| `rear` | A point (`at`) behind one `side`'s line: that side's symbols sit on that side of their lines, the other side's on the far side. |
+| `rules` | `blend`: minutes over which a unit shifts from one step to the next when they meet. `near`: metres within which no march is drawn. For day battles, `lead` (the part of a day before nightfall in which the move happens) and `linger` (days a unit stays after the sources drop it). |
+| `texts`, `found` | Wording for this battle: the sentence under each state (`stated`, `inferred`, `moving`, `after`, `unplaced`, `offthis`, `lost`), and the words for how a place was found (`map_read`, `sketch_read` and so on). |
+| `about` | The paragraphs under "About this prototype". |
+
+Elsewhere in the file the player also reads:
+
+- `nations`: `{"name", "short"}` gives a nation its own name in the panel ("Hessian"); with `code`, `colour` (and
+  `dark`, `paper` for the dark theme and for period maps) its units get their own colour and the panel lists
+  units by nation.
+- On a label, `show`: `current` (the default: drawn where today's map shows), `period` or `both`.
+- On a step, `along: true`: the step's line is the path the unit moves along during the step.
+- On a map that is not to scale, `scale_note` (shown in place of the scale bar) and `off_note` (`until`, `text`:
+  a note shown while the action is off that map).
+- In `base`, `widths`: a river's width on the ground in metres, by name.
+
 ## What is not in the file
 
-How a playback behaves is the page's business: how a symbol moves between two steps, which symbols fold into
-their parent when zoomed out, how names avoid each other. Each battle's page still holds those rules for itself.
+Code. The page (`app/page.html`) and the player are the same for every battle; `tools/build.py` writes the
+battle file into the page.
