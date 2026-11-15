@@ -149,7 +149,9 @@ for code,name,p in spots:
 print('current map:',{k:len(v) for k,v in base.items()},len(labels),'line labels',len(areas),'area labels')
 det={'x':round((DET[0]-X0)*SC,1),'y':round((DET[1]-Y0)*SC,1),'w':round((DET[2]-DET[0])*SC),'h':round((DET[3]-DET[1])*SC)}
 data={'w':CW,'h':CH,'mpp':1.2318/SC,'tracks':tracks,'sources':S,'landmarks':lm,'base':base,'labels':labels,'areas':areas,'det':det,'wide':{'w':round((X1-X0)*SCW),'h':round((Y1-Y0)*SCW)},
-      'cal':{'first':'1863-07-01','numbered':True,'count':3}}  # Gettysburg is fought on three numbered days, 1 to 3 July 1863
+      'cal':{'first':'1863-07-01','numbered':True,'count':3},  # Gettysburg is fought on three numbered days, 1 to 3 July 1863
+      # how a point of this frame becomes longitude and latitude: frame -> scan pixel -> metres east and north of the fit's origin -> degrees
+      'frame':{'X0':X0,'Y0':Y0,'SC':SC,'a':float(g.a),'b':float(g.b),'tx':float(g.tx),'ty':float(g.ty),'LAT0':g.LAT0,'LON0':g.LON0,'MLAT':g.MLAT,'MLON':g.MLON}}
 json.dump(data,open(W+'/playbacks/gettysburg/data.json','w'),separators=(',',':'))
 SCAN=W+'/maps/gettysburg/map_full.png'
 if os.path.exists(SCAN):
