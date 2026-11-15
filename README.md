@@ -15,11 +15,12 @@ The playbacks are served with GitHub Pages at https://mgm9000.github.io/WarMappe
 | Folder | Contents |
 | --- | --- |
 | `index.html`, `assets/` | The landing page for the website and its three preview images. |
-| `playbacks/` | One folder per battle: its page (`index.html`), its data (`data.json`) and its period-map images. |
-| `app/` | What every playback shares: `core.js` (the map, the clock, the controls), `core.css`, and the map library in `app/vendor/`. |
-| `tools/` | `build.py`, which builds the pages. |
+| `playbacks/` | One folder per battle: its page (`index.html`), its battle file (`battle.json`) and its period-map images. |
+| `app/` | What every playback shares: `core.js` (reading a battle file, the map, the clock, the controls), `core.css`, and the map library in `app/vendor/`. |
+| `tools/` | `export_battles.py`, which writes and checks the battle files, and `build.py`, which builds the pages. |
+| `docs/` | `battle-file.md`: the layout of a battle file. |
 | `data/` | The pilot workbook (all three battles as linked tables), the Gettysburg source workbook, and the OpenStreetMap extracts used to draw the base maps. |
-| `pipeline/` | The scripts and data modules that build the workbook and run its checks. |
+| `pipeline/` | The scripts and data modules that build the workbook and run its checks, and `battlefile.py`, which checks a battle file against the format. |
 
 The three pilots:
 
@@ -43,24 +44,28 @@ Python 3 with `openpyxl` and `Pillow`.
 # the workbook, with its checks
 python3 pipeline/build_workbook.py "data/Gettysburg Day 1 data pilot v2.xlsx" out.xlsx
 
-# a playback: export the data, then build the page
-python3 playbacks/ypres/prep.py
+# the battle files (playbacks/<battle>/battle.json), checked against the format
+python3 tools/export_battles.py
+
+# one playback: its battle file, then its page
+python3 tools/export_battles.py ypres
 python3 tools/build.py ypres
 
 # all three pages, plus a single-file copy of each that opens from a folder with no web server
 python3 tools/build.py --single out/
 ```
 
-The Gettysburg playback is still built from the older v2 workbook and covers the morning only.
+The Gettysburg playback covers the morning only.
 
 ## How the playbacks are built
 
 The map is drawn with [MapLibre GL JS](https://maplibre.org/), an open-source map library, kept in `app/vendor/` so the site has no outside dependency apart from web fonts. The site is static: no server, no database, no keys.
 
-- **`app/core.js`** runs the map (base layers, period-map images, the camera, picking a unit), the clock (play, slider, scrolling over the timeline, arrow keys) and the date box.
-- **Each battle's `page.src.html`** holds what is particular to that battle: its events, where each unit is at a given time, how its units are drawn, and its side panel.
+- **Each battle is one battle file**, `playbacks/<battle>/battle.json`, and every battle's file has the same layout: units, where the sources put them and when, events, sources, the period maps and the current map. Places are longitude and latitude; times are dates and clock times. [`docs/battle-file.md`](docs/battle-file.md) describes it. The Gettysburg file is written from the workbook; the Trenton and First Ypres files are written from the data modules the workbook's rows for those battles are made from.
+- **`app/core.js`** reads the battle file and runs the map (base layers, period-map images, the camera, picking a unit), the clock (play, slider, scrolling over the timeline, arrow keys) and the date box.
+- **Each battle's `page.src.html`** holds what is still particular to that playback: where each unit is drawn between two recorded positions, how its units are laid out and drawn, and its side panel.
 - **Units and names** are drawn in an SVG layer on top of the map, so they stay sharp and can be laid out to avoid each other.
-- **Coordinates.** Each battle's data is in a flat frame of its own (the 1876 sheet for Gettysburg, metres from a town centre for Trenton and Ypres). `data.json` carries the `frame` that turns those points into longitude and latitude.
+- **Coordinates.** For drawing, `core.js` lays each battle out on a flat grid in metres, east and south of a point the battle file names. Trenton's 1776 sketch is not to scale, so it is shown as a picture in its own right and units carry separate positions on it.
 
 A browser will not let a page opened straight from a folder hand its images to the map, so `playbacks/*/index.html` must be served by a web server (GitHub Pages, or `python3 -m http.server` in this folder). The single-file copies carry their images inside the page and do not need one.
 
