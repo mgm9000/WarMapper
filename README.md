@@ -26,7 +26,7 @@ The three pilots:
 
 | Battle | Dates | Scale | Position rows |
 | --- | --- | --- | --- |
-| Gettysburg, first morning | 1 July 1863 | Regiments and batteries, by the minute | 38 |
+| Gettysburg, first day | 1 July 1863 | Brigades by the minute, with regiments and batteries for the morning | 109 |
 | Trenton | 25 to 26 December 1776 | Regiments, by the minute | 61 |
 | First Ypres | 18 October to 22 November 1914 | Corps and divisions, by the day | 215 |
 
@@ -54,7 +54,7 @@ Python 3 with `openpyxl` (and `Pillow` and `numpy` for the two map scripts).
 - A coordinate that is wrong but still on the map cannot be caught that way. The script lists places where a unit would have to move implausibly fast between two rows; read those.
 - A new battle is new rows: a row on `Playbacks`, its units, positions and sources, its symbols on `Tracks`, and a current map in `data/base/`. No code.
 
-The Gettysburg playback covers the morning only.
+The Gettysburg playback covers the first day, 7:15 a.m. to 5:30 p.m. After 10:15 a.m. it rests on Bachelder's 1876 map alone: brigade positions and the times printed beside them. The reports for the afternoon have not been read, and the Union brigades' places on Cemetery Hill at the end of the day are estimates.
 
 ## How the playbacks are built
 
