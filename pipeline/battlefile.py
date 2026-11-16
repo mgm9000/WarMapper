@@ -122,6 +122,11 @@ def validate(b, folder=None):
             if k in m: time_ok(m[k], w + '.' + k)
         if m.get('georeferenced', True) is False:
             need(m, ['size'], w)
+        if m.get('iiif'):
+            I = m['iiif']; need(I, ['service', 'width', 'height', 'tile', 'scale_factors', 'region', 'reduced'], w + ' iiif')
+            r = I.get('region', [])
+            if len(r) != 4 or not (0 <= r[0] < r[2] <= I.get('width', 0) and 0 <= r[1] < r[3] <= I.get('height', 0)): bad.append(w + ': iiif region must be [left, top, right, bottom] inside the scan')
+            if not str(I.get('service', '')).startswith('https://'): bad.append(w + ': iiif service must be an https address')
         for im in m.get('images', []):
             need(im, ['file'], w + ' image')
             if m.get('georeferenced', True):

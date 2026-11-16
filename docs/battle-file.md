@@ -164,6 +164,12 @@ top-right, bottom-right, bottom-left:
 - A map that is not to scale has `"georeferenced": false` and its picture's `size` in pixels in place of corners.
   It is shown as a picture in its own right, and steps carry their positions on it under `on`.
 
+- `iiif` says where the holding library serves the full scan as zoomable tiles (the IIIF image service), so the
+  playback can show full detail when the reader zooms in: `service` (its address), `width`, `height`, `tile` and
+  `scale_factors` (from the service's own description), `region` (the part of the scan the first picture shows, as
+  `[left, top, right, bottom]` in scan pixels) and `reduced` (how large that picture is against the scan). A picture
+  may carry its own `reduced`; tiles are fetched only once the reader zooms past what the pictures on screen can show.
+
 Picture files sit beside the battle file.
 
 ### base
@@ -253,5 +259,5 @@ battle file into the page.
 | `events` | `Events`. `timeline` is `name`, `dot` or `off`; `playback_at`, `playback_label` and `playback_text` are the playback's moment, short name and wording where they differ from the record's |
 | `sources` | `Sources`: only those the battle cites |
 | `labels` | `Labels` |
-| `maps` | `Maps`: one row per picture |
+| `maps` | `Maps`: one row per picture; the `iiif_...` columns on a map's first picture |
 | `base` | Not in the workbook: `data/base/<playback>.json`, cut from OpenStreetMap by `pipeline/basemaps.py` |

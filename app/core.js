@@ -106,7 +106,7 @@ WM.battle=function(raw){
     var v={raw:m,id:m.id,title:m.title,short:m.short||'',label:m.label||'',credit:m.credit,own:m.georeferenced===false,size:m.size||null,t0:m.from!=null?B.time(m.from):null,t1:m.to!=null?B.time(m.to):null,
       images:m.images.map(function(im){var c=im.corners||null,box=null;
         if(c){var f=c.map(B.fromLL);box=[Math.min(f[0][0],f[3][0]),Math.min(f[0][1],f[1][1]),Math.max(f[1][0],f[2][0]),Math.max(f[2][1],f[3][1])]}
-        return {file:im.file,ll:c,box:box,detail:!!im.detail}})};
+        return {file:im.file,ll:c,box:box,detail:!!im.detail,reduced:im.reduced||0}})};
     B.maps[m.id]=v; return v});
   /* the current map's lines and areas, as lists of [longitude, latitude] */
   function unpack(s){var out=[],x=0,y=0;s.split(';').forEach(function(t,i){var a=t.split(',');x=i?x+(+a[0]):+a[0];y=i?y+(+a[1]):+a[1];out.push([x/1e5,y/1e5])});return out}

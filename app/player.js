@@ -326,13 +326,54 @@ function buildBase(){
     if(!b.m) return;
     b.m.images.forEach(function(im,i){var id='pic-'+b.id+'-'+i;PICS[b.id].push({id:id,detail:im.detail});
       mv.image(id,WM.asset(im.file),b.own?[0,0,b.m.size[0],b.m.size[1]]:im.ll,b.own?WORLDS[worldOf(b)]:undefined);mv.show(id,false)})});
+  mv.map.addLayer({id:'iiif-slot',type:'background',layout:{visibility:'none'}});   // full-detail tiles go in here, over the pictures
 }
 /* The period map can be turned down to let today's map show through it. Turned down, only a map's whole-sheet picture shows, so two pictures of one map do not add up. */
 function through(){return opac<1&&!base.current&&!base.own}
 function paintFade(){(PICS[base.id]||[]).forEach(function(p){mv.opacity(p.id,opac>=1?1:p.detail?0:opac)});if(series.length)mv.opacity('pic-series',opac);
   var cur=!!(base.current||base.backdrop==='current'||through());CUR.forEach(function(id){mv.show(id,cur)});mv.show('b-mask',cur&&!!(base.clip||(base.m&&P.bounds===base.map)));
   mv.bg((base.own||(base.m&&base.backdrop!=='current'&&!through()))?'--m-paper':'--land')}
-function setOpacity(v){opac=Math.max(0,Math.min(1,v));var e=$('opac');if(e)e.value=Math.round(opac*100);var o=$('opv');if(o)o.textContent=Math.round(opac*100)+'%';paintFade();mv.retheme();mv.kick()}
+function setOpacity(v){opac=Math.max(0,Math.min(1,v));var e=$('opac');if(e)e.value=Math.round(opac*100);var o=$('opv');if(o)o.textContent=Math.round(opac*100)+'%';paintFade();updateTiles();mv.retheme();mv.kick()}
+/* ---------- full detail: the scan itself, streamed from the library that holds it ---------- */
+/* The pictures that come with a playback are reduced copies. Where the holding library serves the full scan as tiles (the IIIF image
+   service named in the battle file), the tiles for the part on screen are laid over the picture once the reader zooms in past what the
+   picture can show. If the library cannot be reached, nothing changes: the reduced picture stays. */
+var TILES={},tileSeq=0,tileFail=0,tilesOff=false,tileTimer=0;
+function scanOf(){var m=base.m;return (m&&m.raw.iiif&&!tilesOff)?m:null}
+function scanFrame(m){ // how the scan's pixels sit in the frame: the region lies on the map's first picture
+  var I=m.raw.iiif,r=I.region,c;
+  if(m.own) c=[[0,0],[m.size[0],0],[0,m.size[1]]]; else{var q=m.images[0].ll.map(B.fromLL);c=[q[0],q[1],q[3]]}   // top-left, top-right, bottom-left
+  var ux=[(c[1][0]-c[0][0])/(r[2]-r[0]),(c[1][1]-c[0][1])/(r[2]-r[0])],uy=[(c[2][0]-c[0][0])/(r[3]-r[1]),(c[2][1]-c[0][1])/(r[3]-r[1])],det=ux[0]*uy[1]-ux[1]*uy[0];
+  return {r:r,per:Math.hypot(ux[0],ux[1]),   // frame units per scan pixel
+    toF:function(X,Y){X-=r[0];Y-=r[1];return [c[0][0]+ux[0]*X+uy[0]*Y,c[0][1]+ux[1]*X+uy[1]*Y]},
+    fromF:function(p){var dx=p[0]-c[0][0],dy=p[1]-c[0][1];return [r[0]+(dx*uy[1]-dy*uy[0])/det,r[1]+(dy*ux[0]-dx*ux[1])/det]}}}
+function scanScale(m){return mv.scale()*scanFrame(m).per}   // screen pixels per scan pixel
+function updateTiles(){
+  var m=scanOf(),want={},k;
+  if(m&&opac>=1){var I=m.raw.iiif,F=scanFrame(m),toLL=WORLDS[worldOf(base)].toLL,s=mv.scale()*F.per,
+      inv=m.own?function(q){return [q.lng/SKK,-q.lat/SKK]}:function(q){return B.fromLL([q.lng,q.lat])};
+    var have=I.reduced,ctr=inv(mv.map.getCenter());   // how much of the scan's detail the pictures already give at the middle of the screen
+    m.images.forEach(function(im){if(im.reduced>have&&im.box&&ctr[0]>im.box[0]&&ctr[0]<im.box[2]&&ctr[1]>im.box[1]&&ctr[1]<im.box[3])have=im.reduced});
+    if(s>have*1.08){
+      var sf=1; I.scale_factors.forEach(function(f){if(f<=1/s&&f>sf)sf=f});   // the coarsest level that still has a scan pixel for every screen pixel
+      var z=mv.size(),x0=1e9,y0=1e9,x1=-1e9,y1=-1e9,r=F.r,T=I.tile*sf;
+      [[0,0],[z.w,0],[z.w,z.h],[0,z.h]].forEach(function(c){var p=F.fromF(inv(mv.map.unproject(c)));x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])});
+      x0=Math.max(x0,r[0]);y0=Math.max(y0,r[1]);x1=Math.min(x1,r[2])-0.01;y1=Math.min(y1,r[3])-0.01;
+      if(x1>x0&&y1>y0&&(Math.floor(x1/T)-Math.floor(x0/T)+1)*(Math.floor(y1/T)-Math.floor(y0/T)+1)<=48)
+        for(var i=Math.floor(x0/T);i<=Math.floor(x1/T);i++)for(var j=Math.floor(y0/T);j<=Math.floor(y1/T);j++){
+          var ax=Math.max(i*T,r[0]),ay=Math.max(j*T,r[1]),bx=Math.min((i+1)*T,r[2]),by=Math.min((j+1)*T,r[3]); if(bx-ax<2||by-ay<2) continue;
+          want[m.id+'/'+sf+'/'+i+'/'+j]={url:I.service+'/'+ax+','+ay+','+(bx-ax)+','+(by-ay)+'/'+Math.ceil((bx-ax)/sf)+',/0/default.jpg',q:[F.toF(ax,ay),F.toF(bx,ay),F.toF(bx,by),F.toF(ax,by)].map(toLL)}}
+    }}
+  for(k in TILES) if(!want[k]){if(mv.map.getLayer(TILES[k]))mv.map.removeLayer(TILES[k]);if(mv.map.getSource(TILES[k]))mv.map.removeSource(TILES[k]);delete TILES[k]}
+  for(k in want) if(!TILES[k]){var id='iiif-'+(tileSeq++);TILES[k]=id;
+    mv.map.addSource(id,{type:'image',url:want[k].url,coordinates:want[k].q});
+    mv.layer({id:id,type:'raster',source:id,paint:{'raster-fade-duration':0,'raster-resampling':'linear','raster-brightness-max':function(c){return +c('--raster-max')||1}}},'iiif-slot')}
+  var b11=$('z11'); if(b11) b11.hidden=!m;
+}
+function queueTiles(){clearTimeout(tileTimer);tileTimer=setTimeout(updateTiles,160)}
+function tileError(e){ // three failures and the library is left alone for the rest of the visit
+  var er=e&&e.error,txt=String((er&&(er.url||er.message))||''),mine=(e&&/^iiif-/.test(String(e.sourceId||'')))||/iiif/i.test(txt)||(Object.keys(TILES).length&&/fetch|network|load/i.test(txt));
+  if(mine&&++tileFail>=3&&!tilesOff){tilesOff=true;updateTiles();panelKey='';mv.kick()}}
 function setBase(b,first){
   if(typeof b==='string') b=bases.filter(function(x){return x.id===b})[0]; if(!b) return;
   var moved=first||worldOf(b)!==worldOf(base); base=b;
@@ -342,7 +383,7 @@ function setBase(b,first){
   if(b.series) series.forEach(function(m){if(!m.pre){m.pre=new Image();m.pre.src=WM.asset(m.images[0].file)}});
   wrap.classList.toggle('paper',!b.current); var go=$('gOpac'); if(go) go.hidden=!!(b.current||b.own); paintFade();
   if(moved) mv.jump(home());
-  panelKey=''; mv.retheme(); mv.kick()}
+  updateTiles(); panelKey=''; mv.retheme(); mv.kick()}
 
 /* ---------- panel ---------- */
 function curEvent(){return B.eventAt(stamp(t))}
@@ -415,7 +456,8 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   else{fit='Yes';if(f.method)fit+=': '+f.method;if(f.metres_per_pixel)fit+='; '+f.metres_per_pixel+' m per scan pixel';if(f.turn_degrees)fit+='; turned '+f.turn_degrees+'\u00b0 from north';if(f.points)fit+=': fitted on '+f.points+' points'+(f.misfit_m?', typical misfit '+f.misfit_m+' m':'');fit+='.'}
   h+='<h2>'+esc(m.title)+'</h2><dl>'+row('Battle',B.title)+row('Shows',m.label)+row('Made by',s.author)+row('Date',s.date)+row('Kind',s.type)+row('Published or held',s.citation)+row('Scale',m.raw.scale_note||(m.own?'Not to scale':''))+row('Rights',s.rights||'Not checked')+row('Placed on the ground',fit)+'</dl>';
   if(s.url) h+='<p style="margin-top:10px"><a href="'+esc(s.url)+'" target="_blank" rel="noopener">Open the original record</a></p>';
-  h+='<p class="meta" style="margin-top:12px">The picture shown here is a reduced copy of the scan.</p>';return h}
+  var I=m.raw.iiif,host=I?I.service.split('/')[2]:'';
+  h+='<p class="meta" style="margin-top:12px">'+(I&&!tilesOff?'The picture that comes with this page is a reduced copy. When you zoom in, the full scan is streamed in pieces from '+esc(host)+'; the 1:1 button shows it at full size.':I?'The picture shown is a reduced copy. The full scan could not be reached at '+esc(host)+' from here.':'The picture shown here is a reduced copy of the scan.')+'</p>';return h}
 
 /* ---------- controls ---------- */
 (function(){var h='',seg=function(label,items){return '<div class="seg" role="group" aria-label="'+label+'">'+items.join('')+'</div>'},
@@ -448,6 +490,7 @@ try{ mv=WM.mapView({container:'map',wrap:wrap,world:worldOf(base),worlds:WORLDS,
   onStep:function(ts){var more=clk.step(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&mv.chase(target(),0.16))more=true;return more}});
 }catch(err){WM.noMap(wrap,err);return null}
 S=mv.S;
+mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
 /* the stretch before the part the data covers best (a night march before a fight) can be squeezed into a share of the bar and played faster */
 var LD=(P.lead&&B.focus&&B.focus[0]>T0)?P.lead:null,TM=LD?B.focus[0]:T0,UM=LD?LD.share:0,RNG=4000;
 function u2t(u){return (LD&&u<=UM)?T0+(TM-T0)*u/UM:TM+(T1-TM)*(u-UM)/(1-UM)}
@@ -492,6 +535,10 @@ function on(id,fn){var e=$(id);if(e)e.addEventListener('click',fn)}
 bases.forEach(function(b){on('b-'+b.id,function(){setBase(b)})});
 (P.views||[]).forEach(function(v){on('v-'+v.preset,function(){setPreset(v.preset)})});
 on('bFollow',function(){setFollow(!follow)});
+document.addEventListener('keydown',function(e){var tg=(e.target&&e.target.tagName)||''; if(tg==='INPUT'||tg==='TEXTAREA'||e.metaKey||e.ctrlKey||e.altKey) return;
+  var d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
+  if(d&&e.shiftKey){setFollow(false);setPreset(null);mv.map.panBy([d[0]*120,d[1]*120],{duration:160});e.preventDefault();e.stopPropagation();return}   // shift + arrows move the map; plain arrows move time
+  if(e.key==='+'||e.key==='='){setFollow(false);setPreset(null);mv.zoomBy(1.45);e.preventDefault()} else if(e.key==='-'||e.key==='_'){setFollow(false);setPreset(null);mv.zoomBy(1/1.45);e.preventDefault()}},true);
 function openLayers(v){$('layers').hidden=!v;$('bLayers').setAttribute('aria-expanded',v?'true':'false')}
 on('bLayers',function(){openLayers($('layers').hidden)});
 document.addEventListener('pointerdown',function(e){if(!$('layers').hidden&&!e.target.closest('#layers')&&!e.target.closest('#bLayers'))openLayers(false)});
@@ -503,6 +550,7 @@ on('sy-standard',function(){setSymbols('standard')}); on('sy-period',function(){
 on('fr-none',function(){setSeenFrom('')}); raw.sides.forEach(function(sd){on('fr-'+sd.code,function(){setSeenFrom(sd.code)})});
 var opr=$('opac'); if(opr) opr.addEventListener('input',function(){setOpacity(+opr.value/100)});
 on('zin',function(){setFollow(false);setPreset(null);mv.zoomBy(1.45)}); on('zout',function(){setFollow(false);setPreset(null);mv.zoomBy(1/1.45)});
+on('z11',function(){var m=scanOf();if(!m)return;setFollow(false);setPreset(null);mv.zoomBy(1/scanScale(m))});
 on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.own?WORLDS[worldOf(base)].ext:EXT,{t:48,b:22,l:14,r:14}))});
 (function(){var app=document.querySelector('.app'),b=$('zfull'); if(!b) return;   // full screen is not offered where the browser does not allow it (inside some embedded views)
   if(!document.fullscreenEnabled||!app.requestFullscreen){b.hidden=true;return}

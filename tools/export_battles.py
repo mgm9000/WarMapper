@@ -148,8 +148,11 @@ def export(pb, W):
         mp = maps.setdefault(m['map_id'], {'id': m['map_id'], 'title': m['title'], 'short': text(m.get('short')), 'label': text(m.get('label')), 'credit': m['credit'], 'source': text(m.get('source_id')),
               'georeferenced': False if str(m.get('fitted_to_ground')).lower() == 'no' else None, 'size': [int(v) for v in str(m['size_px']).split(',')] if not blank(m.get('size_px')) else None,
               'from': when(m.get('from')), 'to': when(m.get('to')), 'fit': json.loads(m['fit']) if not blank(m.get('fit')) else None, 'scale_note': text(m.get('scale_note')),
-              'off_note': {'until': when(m['off_note_until']), 'text': m['off_note_text']} if not blank(m.get('off_note_until')) else None, 'images': []})
-        mp['images'].append({'file': m['file'], 'detail': True if yes(m.get('detail')) else None,
+              'off_note': {'until': when(m['off_note_until']), 'text': m['off_note_text']} if not blank(m.get('off_note_until')) else None, 'iiif': None, 'images': []})
+        if not blank(m.get('iiif_service')) and not mp['iiif']:   # the holding library serves the full scan as zoomable tiles
+            mp['iiif'] = {'service': str(m['iiif_service']).rstrip('/'), 'width': int(m['iiif_width']), 'height': int(m['iiif_height']), 'tile': int(m['iiif_tile']),
+                          'scale_factors': json.loads(m['iiif_scale_factors']), 'region': [int(v) for v in str(m['iiif_region']).split(',')], 'reduced': float(m['iiif_reduced'])}
+        mp['images'].append({'file': m['file'], 'detail': True if yes(m.get('detail')) else None, 'reduced': float(m['iiif_reduced']) if not blank(m.get('iiif_reduced')) else None,
                              'corners': None if blank(m.get('tl_lat')) else [bf.ll(m[c + '_lat'], m[c + '_lon']) for c in ('tl', 'tr', 'br', 'bl')]})
     S = settings(mine(W['Playback settings'])); presets = S.pop('preset', None)
     if 'rear' in S: S['rear']['at'] = bf.ll(S['rear'].pop('lat'), S['rear'].pop('lon'))

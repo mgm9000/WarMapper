@@ -87,6 +87,8 @@ The period maps shown in the playbacks:
 | Trenton | Lt. Andreas Wiederhold, *Sketch of the engagement at Trenton, given on the 26th of December 1776* | Library of Congress, Geography and Map Division |
 | First Ypres | Sketch maps in J. E. Edmonds, *Military Operations, France and Belgium, 1914*, volume II (Macmillan, 1925) | Internet Archive |
 
+The pictures in this repository are reduced copies. When a reader zooms in on the Gettysburg or Trenton map, the playback fetches the full scan in tiles straight from the holding library's own image service (IIIF): the Boston Public Library's for the Bachelder map, the Library of Congress's for the Wiederhold sketch. If the library cannot be reached, the reduced copy stays on screen. The First Ypres sketches are pages of a scanned book and have no such service set up here.
+
 The maps themselves are old enough to be in the public domain in the United States. The terms the holding institutions set for reuse of their scans have not all been checked.
 
 No licence has been chosen for this repository yet.
