@@ -17,10 +17,10 @@ The playbacks are served with GitHub Pages at https://mgm9000.github.io/WarMappe
 | `index.html`, `assets/` | The landing page for the website and its three preview images. |
 | `playbacks/` | One folder per battle: its battle file (`battle.json`), the script that writes it (`prep.py`), its period-map images, and the built page (`index.html`). |
 | `app/` | The playback, the same for every battle: `page.html` (the page), `player.js` (the rules of a playback), `core.js` (reading a battle file, the map, the clock), `core.css`, and the map library in `app/vendor/`. |
-| `tools/` | `export_battles.py`, which writes and checks the battle files, and `build.py`, which builds the pages. |
+| `tools/` | `export_battles.py`, which writes every battle file from the workbook and checks it, and `build.py`, which builds the pages. |
 | `docs/` | `battle-file.md`: the layout of a battle file. |
-| `data/` | The pilot workbook (all three battles as linked tables), the Gettysburg source workbook, and the OpenStreetMap extracts used to draw the base maps. |
-| `pipeline/` | The scripts and data modules that build the workbook and run its checks, and `battlefile.py`, which checks a battle file against the format. |
+| `data/` | **`WarMapper battle data.xlsx`, the master copy of the battle data**; `base/`, the current map under each battle; `osm/`, the OpenStreetMap extracts those were cut from; `legacy/`, the two older workbooks. |
+| `pipeline/` | `battlefile.py` (checks a battle file against the format), `basemaps.py` (cuts the current maps from the extracts), `pictures.py` (cuts the period-map pictures from the full scans), `georef/` (how the period maps were fitted to the ground), and `legacy/` (retired scripts). |
 
 The three pilots:
 
@@ -36,24 +36,23 @@ The three pilots:
 - **The scripts that georeference those scans.** Only their results (the fitted parameters) are included.
 - **The product requirements document.**
 
-## Rebuilding
+## Changing the data
 
-Python 3 with `openpyxl` and `Pillow`.
+The workbook, `data/WarMapper battle data.xlsx`, is the master copy. Edit it, then:
 
 ```
-# the workbook, with its checks
-python3 pipeline/build_workbook.py "data/Gettysburg Day 1 data pilot v2.xlsx" out.xlsx
-
-# the battle files (playbacks/<battle>/battle.json), checked against the format
+# write the battle files from the workbook (playbacks/<battle>/battle.json), checked against the format
 python3 tools/export_battles.py
 
-# one playback: its battle file, then its page
-python3 tools/export_battles.py ypres
-python3 tools/build.py ypres
-
-# all three pages, plus a single-file copy of each that opens from a folder with no web server
+# build the pages, plus a single-file copy of each that opens from a folder with no web server
 python3 tools/build.py --single out/
 ```
+
+Python 3 with `openpyxl` (and `Pillow` and `numpy` for the two map scripts).
+
+- A battle file that breaks the format is not written, and the script says which row is at fault: a track naming a row that does not exist, a source that is cited but not listed, a point far off the map.
+- A coordinate that is wrong but still on the map cannot be caught that way. The script lists places where a unit would have to move implausibly fast between two rows; read those.
+- A new battle is new rows: a row on `Playbacks`, its units, positions and sources, its symbols on `Tracks`, and a current map in `data/base/`. No code.
 
 The Gettysburg playback covers the morning only.
 
@@ -61,7 +60,7 @@ The Gettysburg playback covers the morning only.
 
 The map is drawn with [MapLibre GL JS](https://maplibre.org/), an open-source map library, kept in `app/vendor/` so the site has no outside dependency apart from web fonts. The site is static: no server, no database, no keys.
 
-- **Each battle is one battle file**, `playbacks/<battle>/battle.json`, and every battle's file has the same layout: units, where the sources put them and when, events, sources, the period maps and the current map. Places are longitude and latitude; times are dates and clock times. [`docs/battle-file.md`](docs/battle-file.md) describes it. The Gettysburg file is written from the workbook; the Trenton and First Ypres files are written from the data modules the workbook's rows for those battles are made from.
+- **Each battle is one battle file**, `playbacks/<battle>/battle.json`, and every battle's file has the same layout: units, where the sources put them and when, events, sources, the period maps and the current map. Places are longitude and latitude; times are dates and clock times. [`docs/battle-file.md`](docs/battle-file.md) describes it. All of them are written from the workbook by one script.
 - **`app/core.js`** reads the battle file and runs the map (base layers, period-map images, the camera, picking a unit), the clock (play, slider, scrolling over the timeline, arrow keys) and the date box.
 - **`app/player.js`** is the playback itself, the same for every battle: where a unit is between two recorded positions, which units fold into their parent when zoomed out, how symbols and names are laid out, the base-map switch, the timeline and the side panel. What differs from battle to battle is data, in the battle file's `playback` section. No battle has code of its own: `tools/build.py` writes each battle file into the one page, `app/page.html`.
 - **Units and names** are drawn in an SVG layer on top of the map, so they stay sharp and can be laid out to avoid each other.
@@ -71,7 +70,7 @@ A browser will not let a page opened straight from a folder hand its images to t
 
 ## How the data is organised
 
-Positions are rows in linked tables: wars, campaigns, battles, units, assignments, positions, places, routes, events, sources, plus tables of conflicts between sources and gaps in them. Times are ranges (earliest and latest), every coordinate records how it was obtained and how precise it is, and automated checks run on every build. The `Read me` sheet of the workbook explains each table and what changed in each version.
+Positions are rows in linked tables: wars, campaigns, battles, units, assignments, positions, places, routes, events, sources, plus tables of conflicts between sources and gaps in them. Times are ranges (earliest and latest), and every coordinate records how it was obtained and how precise it is. Six more sheets say how each battle is played back: `Playbacks`, `Playback settings`, `Tracks` (which position rows each symbol on the map follows), `Nations`, `Labels` and `Maps`. The `Read me` sheet explains each table and what changed in each version. Its `Checks` sheet dates from when the workbook was generated by script and is no longer updated; the export script now does the checking.
 
 ## Credits and licence
 

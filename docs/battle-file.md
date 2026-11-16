@@ -5,7 +5,7 @@ The playback pages read nothing else: units, where the sources put them and when
 and the current map all come from it.
 
 - Format name: `warmapper-battle/1` (the file says so in its first field; a page refuses a file with another name).
-- Written by: each battle's recipe, `playbacks/<battle>/prep.py`. Run them all with `python3 tools/export_battles.py`.
+- Written by: `python3 tools/export_battles.py`, from the master workbook (`data/WarMapper battle data.xlsx`). The last section says which sheet each part comes from.
 - Checked by: `pipeline/battlefile.py`. A file that breaks a rule below is not written, and
   `python3 tools/export_battles.py --check` checks the files as they stand.
 - Read by: `WM.battle()` in `app/core.js`, and played by `WM.play()` in `app/player.js`. No battle has code of its own.
@@ -116,7 +116,7 @@ A step is one row of the record: one unit, at one place, for one stretch of time
 - `method` is `stated` (a source puts the unit here), `inferred` (worked out from other facts) or `interpolated`.
 - `confidence` is `high`, `medium` or `low`.
 - `location` says how the position was found: `source` (`marker`, `map_read`, `sketch_read`, `modern_map`,
-  `derived`, `estimate`), `basis` in words, `precision_m`, and `places` where a line runs through named places.
+  `derived`, `estimate`), `basis` in words, `confidence` and `precision_m`.
 - `virtual` marks a step that is not a record of this unit: a stand-in so the symbol has somewhere to start from.
   `shared` marks a step that is a record of the unit's parent.
 
@@ -205,6 +205,7 @@ defaults.
 |---|---|
 | `style` | `tactical` for a battlefield (larger symbols, a question mark on a loose position) or `operational` for a front (smaller symbols, thinner roads). Defaults from `time.unit`. |
 | `scale_bar` | `yards` or `km`. |
+| `question_mark` | What marks a unit as doubtful (a question mark, a dashed symbol): `location`, how sure the place is, or `overall` (the default). |
 | `rate` | Time units played per second. |
 | `lead` | Squeezes the stretch before `time.focus` (a night march before a fight) into a `share` of the timeline, played at its own `rate`, with arrow keys moving `step` units. |
 | `time_note` | A line under the clock from a given time on (`from`, `text`). |
@@ -235,3 +236,21 @@ Elsewhere in the file the player also reads:
 
 Code. The page (`app/page.html`) and the player are the same for every battle; `tools/build.py` writes the
 battle file into the page.
+
+## Where each part comes from in the workbook
+
+| Part of the battle file | Sheet |
+|---|---|
+| `id`, `title`, `subtitle`, `time`, `view`, `opening`, `record` | `Playbacks`: one row per playback |
+| `playback`, and `view.presets` | `Playback settings`: one setting per row. `bases.1.label` is the label of the first base; a value written `[..]` is a list |
+| `sides` | `Sides` (`code` and `short` are the playback's) |
+| `nations` | `Nations` |
+| `units` and their `assignments` | `Units`, `Assignments`: every unit of the campaign's war |
+| `tracks` | `Tracks`: one row per symbol. `rows` lists the `Positions` rows it follows; left empty, it follows every row of its unit. `starts_from_row`, `starts_at` and `start_route` give a symbol a stand-in start from a row of its division's |
+| steps | `Positions`. `show_from` and `show_to` are when the playback draws the row; left empty, it is drawn from its latest start to its earliest end. Where two rows of one symbol overlap, the earlier gives way |
+| a step's `via` | `Routes`: a route from one row to the next, where its `playback` column says yes |
+| `events` | `Events`. `timeline` is `name`, `dot` or `off`; `playback_at`, `playback_label` and `playback_text` are the playback's moment, short name and wording where they differ from the record's |
+| `sources` | `Sources`: only those the battle cites |
+| `labels` | `Labels` |
+| `maps` | `Maps`: one row per picture |
+| `base` | Not in the workbook: `data/base/<playback>.json`, cut from OpenStreetMap by `pipeline/basemaps.py` |
