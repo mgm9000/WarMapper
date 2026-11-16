@@ -147,11 +147,33 @@ function actionBox(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],b=[1e9,1e9,-
   var mn=base.own?[520,400]:(F.min||[1400,900]),mg=base.own?70:(F.margin||140);
   var mx=Math.max(mg,(mn[0]-(b[2]-b[0]))/2),my=Math.max(mg,(mn[1]-(b[3]-b[1]))/2);
   return [b[0]-mx,b[1]-my,b[2]+mx,b[3]+my]}
-function target(){var n=mv.size().w<520?36:56;return mv.cameraFor(actionBox(),{t:n+34,b:n+26,l:n,r:n},base.own?1.3:(Z.follow_max||Z.max||2))}
+/* Where the action is. If two opposing units are close enough to be in contact, it is where they meet (the closest pairs, averaged);
+   otherwise it is where units are on the move; otherwise the middle of everything on the map. */
+function focusPoint(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],U=[],mov=[];
+  B.tracks.forEach(function(tr){if(tr.parent||ex.indexOf(tr.id)>=0)return;var s=stateAt(tr,t,key);if(!s||!s.g||s.hid)return;
+    var c=cen(s.g);U.push({side:tr.side,c:c,pts:s.g.length>1?s.g.concat([c]):[c]});if(s.kind==='moving')mov.push(c)});
+  if(!U.length) return null;
+  var lim=base.own?260:(F.contact||(compact?5000:800)),best=1e18,pairs=[];   // how close counts as contact: metres on the ground
+  for(var i=0;i<U.length;i++)for(var j=i+1;j<U.length;j++){if(U[i].side===U[j].side)continue;var d=1e18,m=null;
+    U[i].pts.forEach(function(a){U[j].pts.forEach(function(b){var q=Math.hypot(a[0]-b[0],a[1]-b[1]);if(q<d){d=q;m=[(a[0]+b[0])/2,(a[1]+b[1])/2]}})});
+    pairs.push([d,m]);if(d<best)best=d}
+  if(best<=lim) return cen(pairs.filter(function(q){return q[0]<=Math.max(best*1.5,best+lim*0.2)}).map(function(q){return q[1]}));
+  return cen(mov.length?mov:U.map(function(u){return u.c}))}
+/* The Follow camera. At its widest it frames every unit. Zoomed in from there with + (followK above 1) it cannot show them all,
+   so it centres on where the action is and keeps doing so as time moves. */
+var followK=1;
+function target(){var n=mv.size().w<520?36:56,W=WORLDS[worldOf(base)],cam=mv.cameraFor(actionBox(),{t:n+34,b:n+26,l:n,r:n},base.own?1.3:(Z.follow_max||Z.max||2));
+  if(followK!==1){cam.zoom=Math.min(cam.zoom+Math.log2(followK),mv.zoomFor(W.maxScale));
+    if(followK>1){var f=focusPoint();if(f)cam.center=W.toLL(f)}}
+  return cam}
+function zoomStep(f){ // the + and - buttons: while Follow is on they tighten or widen the Follow camera, which stays on the action
+  if(follow&&P.follow){var W=WORLDS[worldOf(base)],n=mv.size().w<520?36:56,fit=mv.cameraFor(actionBox(),{t:n+34,b:n+26,l:n,r:n},base.own?1.3:(Z.follow_max||Z.max||2));
+    followK=Math.max(0.35,Math.min(followK*f,Math.pow(2,mv.zoomFor(W.maxScale)-fit.zoom)));if(Math.abs(followK-1)<0.05)followK=1;mv.kick();return}
+  setPreset(null);mv.zoomBy(f)}
 function cameraOf(p){return mv.cameraFor(B.presets[p],{t:48,b:22,l:14,r:14})}
 function home(){return preset?cameraOf(preset):(follow?target():mv.cameraFor(base.own?WORLDS[worldOf(base)].ext:EXT,{t:48,b:22,l:14,r:14}))}
 function press(id,v){var e=$(id);if(e)e.setAttribute('aria-pressed',v?'true':'false')}
-function setFollow(v){follow=v;press('bFollow',v);if(v)mv.kick()}
+function setFollow(v){if(v&&!follow)followK=1;follow=v;press('bFollow',v);if(v)mv.kick()}   // switched on again, Follow starts from its widest view
 function setPreset(p,jump){preset=p;(P.views||[]).forEach(function(v){press('v-'+v.preset,p===v.preset)});
   if(!p){goal=null;return} goal=cameraOf(p); if(jump){mv.jump(goal);goal=null} mv.kick()}
 function remember(k,v){try{localStorage.setItem('wm.'+B.id+'.'+k,v?'1':'0')}catch(_){ }}
@@ -538,7 +560,7 @@ on('bFollow',function(){setFollow(!follow)});
 document.addEventListener('keydown',function(e){var tg=(e.target&&e.target.tagName)||''; if(tg==='INPUT'||tg==='TEXTAREA'||e.metaKey||e.ctrlKey||e.altKey) return;
   var d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
   if(d&&e.shiftKey){setFollow(false);setPreset(null);mv.map.panBy([d[0]*120,d[1]*120],{duration:160});e.preventDefault();e.stopPropagation();return}   // shift + arrows move the map; plain arrows move time
-  if(e.key==='+'||e.key==='='){setFollow(false);setPreset(null);mv.zoomBy(1.45);e.preventDefault()} else if(e.key==='-'||e.key==='_'){setFollow(false);setPreset(null);mv.zoomBy(1/1.45);e.preventDefault()}},true);
+  if(e.key==='+'||e.key==='='){zoomStep(1.45);e.preventDefault()} else if(e.key==='-'||e.key==='_'){zoomStep(1/1.45);e.preventDefault()}},true);
 function openLayers(v){$('layers').hidden=!v;$('bLayers').setAttribute('aria-expanded',v?'true':'false')}
 on('bLayers',function(){openLayers($('layers').hidden)});
 document.addEventListener('pointerdown',function(e){if(!$('layers').hidden&&!e.target.closest('#layers')&&!e.target.closest('#bLayers'))openLayers(false)});
@@ -549,7 +571,7 @@ onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',functio
 on('sy-standard',function(){setSymbols('standard')}); on('sy-period',function(){setSymbols('period')});
 on('fr-none',function(){setSeenFrom('')}); raw.sides.forEach(function(sd){on('fr-'+sd.code,function(){setSeenFrom(sd.code)})});
 var opr=$('opac'); if(opr) opr.addEventListener('input',function(){setOpacity(+opr.value/100)});
-on('zin',function(){setFollow(false);setPreset(null);mv.zoomBy(1.45)}); on('zout',function(){setFollow(false);setPreset(null);mv.zoomBy(1/1.45)});
+on('zin',function(){zoomStep(1.45)}); on('zout',function(){zoomStep(1/1.45)});
 on('z11',function(){var m=scanOf();if(!m)return;setFollow(false);setPreset(null);mv.zoomBy(1/scanScale(m))});
 on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.own?WORLDS[worldOf(base)].ext:EXT,{t:48,b:22,l:14,r:14}))});
 (function(){var app=document.querySelector('.app'),b=$('zfull'); if(!b) return;   // full screen is not offered where the browser does not allow it (inside some embedded views)
@@ -581,7 +603,7 @@ setStep(0);
 if(P.views) preset=P.views[0].preset;
 mv.start(function(){buildBase();paintTime(T0);(P.views||[]).forEach(function(v){press('v-'+v.preset,preset===v.preset)});setBase(base,true);clk.setTime(T0);readLink();WM.hint(mv)});
 var api={battle:B,setTime:clk.setTime,select:select,setFollow:setFollow,setBase:setBase,setNames:setNames,setUnits:setUnits,setFold:setFold,setPreset:setPreset,mv:mv,
-  setNarrative:setNarr,setSymbols:setSymbols,setSeenFrom:setSeenFrom,setOpacity:setOpacity,setStep:setStep,link:linkHash,
+  focus:function(){var f=focusPoint();return f?WORLDS[worldOf(base)].toLL(f):null},setNarrative:setNarr,setSymbols:setSymbols,setSeenFrom:setSeenFrom,setOpacity:setOpacity,setStep:setStep,link:linkHash,
   scene:function(){return scene().map(function(o){return {id:o.tr.id,kind:o.s.kind,row:o.s.k.id,drawn:o.drawn}})}};
 Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}});
 global.__wm=api; return api;
