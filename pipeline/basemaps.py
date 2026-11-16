@@ -14,23 +14,53 @@ CREDIT = '© OpenStreetMap contributors'
 
 
 def gettysburg():
-    """Cut to the edge of the 1876 sheet. The cutting is done in the sheet's own pixels, then every point goes back to longitude and latitude."""
+    """Cut exactly to the edge of the 1876 sheet, so the current map ends where the period map does and another map can lie around both. The cutting is done in the sheet's own pixels, then every point goes back to longitude and latitude."""
     import gettysburg_georef as g
-    X0, Y0, X1, Y1 = 650, 1178, 7300, 8120; SC = 0.8; MG = 40
+    X0, Y0, X1, Y1 = 650, 1178, 7300, 8120; SC = 0.8
     CW, CH = round((X1 - X0) * SC), round((Y1 - Y0) * SC)
     def back(p): la, lo = g.px2ll(p[0] / SC + X0, p[1] / SC + Y0); return bf.ll(la, lo)
-    def inside(p): return -MG <= p[0] <= CW + MG and -MG <= p[1] <= CH + MG
+    def inside(p): return 0 <= p[0] <= CW and 0 <= p[1] <= CH
+    def cut(a, b):
+        """The part of the segment a-b that lies on the sheet, or None (Liang-Barsky)."""
+        t0, t1 = 0.0, 1.0; dx, dy = b[0] - a[0], b[1] - a[1]
+        for pp, q in ((-dx, a[0]), (dx, CW - a[0]), (-dy, a[1]), (dy, CH - a[1])):
+            if pp == 0:
+                if q < 0: return None
+            else:
+                r = q / pp
+                if pp < 0: t0 = max(t0, r)
+                else: t1 = min(t1, r)
+        if t0 > t1: return None
+        return (a[0] + dx * t0, a[1] + dy * t0), (a[0] + dx * t1, a[1] + dy * t1)
     def pieces(pts):
-        """The runs of a line that lie on the sheet (each keeps one point beyond the edge so it reaches it)."""
+        """The runs of a line that lie on the sheet, each ending exactly at the sheet's edge where the line leaves it."""
         out = []; cur = []
-        for i, p in enumerate(pts):
-            if inside(p):
-                if not cur and i > 0: cur.append(pts[i - 1])
-                cur.append(p)
-            elif cur:
-                cur.append(p); out.append(cur); cur = []
+        for a, b in zip(pts, pts[1:]):
+            c = cut(a, b)
+            if not c:
+                if len(cur) > 1: out.append(cur)
+                cur = []; continue
+            if not cur or cur[-1] != c[0]:
+                if len(cur) > 1: out.append(cur)
+                cur = [c[0]]
+            cur.append(c[1])
+            if c[1] != b:          # left the sheet inside this segment
+                out.append(cur); cur = []
         if len(cur) > 1: out.append(cur)
-        return [c for c in out if len(c) > 1]
+        return [c for c in out if sum(math.hypot(b[0] - a[0], b[1] - a[1]) for a, b in zip(c, c[1:])) > 2]   # drop a corner clipped to almost nothing
+    def trim(poly):
+        """A wood or a lake cut to the sheet (Sutherland-Hodgman; the sheet is a plain box in its own pixels)."""
+        for axis, lim, keep_low in ((0, 0, False), (0, CW, True), (1, 0, False), (1, CH, True)):
+            ins = (lambda p: p[axis] <= lim) if keep_low else (lambda p: p[axis] >= lim)
+            out = []
+            for i, b in enumerate(poly):
+                a = poly[i - 1]
+                if ins(a) != ins(b):
+                    t = (lim - a[axis]) / (b[axis] - a[axis]); out.append((a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t))
+                if ins(b): out.append(b)
+            poly = out
+            if len(poly) < 3: return []
+        return poly
     def enc(pts): return bf.pack([back(p) for p in pts])
     ROAD = {'Hm': 'm', 'Hp': 'p', 'Hs': 's', 'Ht': 't', 'Hu': 'u', 'Hr': 'r', 'Hv': 'v'}
     lines = []; areas = []
@@ -41,7 +71,9 @@ def gettysburg():
             x, y = g.ll2px(la / 1e5, lo / 1e5); pts.append(((float(x) - X0) * SC, (float(y) - Y0) * SC))
         if code[0] == 'P': continue
         if code in ('Fw', 'Fl'):
-            if any(inside(p) for p in pts): areas.append(['wood' if code == 'Fw' else 'water', name, enc(pts)])
+            if pts[0] == pts[-1]: pts = pts[:-1]
+            cutp = trim(pts)
+            if len(cutp) >= 3: areas.append(['wood' if code == 'Fw' else 'water', name, enc(cutp + [cutp[0]])])
             continue
         for run in pieces(pts):
             if code in ROAD: lines.append(['road', ROAD[code], name, enc(run)])
