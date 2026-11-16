@@ -33,11 +33,12 @@ var wrap=$('mapwrap'),ov=$('ov'),panel=$('panel');
 var kinds={},found={},k0; for(k0 in KIND)kinds[k0]=[KIND[k0][0],(P.texts&&P.texts[k0])||KIND[k0][1]]; for(k0 in FOUND)found[k0]=(P.found&&P.found[k0])||FOUND[k0];
 
 /* ---------- bases: the maps the reader can put under the units ---------- */
-/* a base is the current map ({current:true}), one period map ({map:id}) or the period map for the date on the timeline ({series:true}).
+/* a base is the current map ({current:true}), one period map ({map:id}), the period map for the date on the timeline ({series:true})
+   or aerial or satellite imagery from a tile service ({imagery:{tiles, credit, ...}}).
    A period map lies on plain paper (backdrop "paper") or over the current map (backdrop "current"). A map that is not to scale has a frame of its own. */
 var bases=(P.bases&&P.bases.length)?P.bases:[{id:'now',label:'Current map',short:'Today',current:true}];
 var series=B.mapList.filter(function(m){return m.t0!=null});
-bases.forEach(function(b){b.m=b.map?B.maps[b.map]:null;b.own=!!(b.m&&b.m.own)});
+bases.forEach(function(b){b.m=b.map?B.maps[b.map]:null;b.own=!!(b.m&&b.m.own);b.sat=!!(b.imagery&&b.imagery.tiles)});
 var SKK=1e-5; function ownLL(p){return [p[0]*SKK,-p[1]*SKK]}   // a not-to-scale map: its pixels laid out as a small patch of pretend ground
 var bm=P.bounds&&B.maps[P.bounds],EXT=bm?bm.images[0].box:B.ext;
 var WORLDS={ground:{toLL:B.toLL,ext:EXT,mPerUnit:1,maxScale:Z.max||2,minFactor:Z.min_factor||0.9}};
@@ -270,7 +271,7 @@ function unitSvg(u,part){
 /* Names on the map. Names from today's map are drawn where today's map shows: not on a period map, which carries its own.
    A name marked for period maps (show "period" or "both") is drawn there too. */
 function mapNames(L,cover){
-  var z=mv.size(),lvl=sNow>=(Z.labels||0)?1:0,h='',cur=!!(base.current||base.backdrop==='current'||through());
+  var z=mv.size(),lvl=sNow>=(Z.labels||0)?1:0,h='',cur=!!(base.current||base.sat||base.backdrop==='current'||through());
   B.labels.forEach(function(l){
     var show=l.show||'current'; if(cur?show==='period':show==='current') return;
     if((l.k==='road'||l.k==='water')?!lineNames:!placeNames) return;
@@ -296,6 +297,7 @@ var seriesShown=null,lastCredit='';
 function showSeries(H){ if(H===seriesShown) return; if(H){mv.moveImage('pic-series',WM.asset(H.images[0].file),H.images[0].ll);if(!seriesShown)mv.show('pic-series',true)} else mv.show('pic-series',false); seriesShown=H }
 function paintCredit(H){var c;
   if(base.current) c=WM.OSM_CREDIT;
+  else if(base.sat){var im=base.imagery;c=(im.link?'<a href="'+esc(im.link)+'" target="_blank" rel="noopener">'+esc(im.credit)+'</a>':esc(im.credit))+' &middot; Names: '+WM.OSM_CREDIT}
   else{var m=H||base.m; c=(H?esc(m.short)+', '+esc(m.label)+(stamp(t)>m.t1?' (the last one)':'')+' &middot; ':'')+esc(m.credit)+((base.backdrop==='current'||through())?' &middot; '+WM.OSM_CREDIT:'')}
   if(c!==lastCredit){lastCredit=c;$('credit').innerHTML=c}}
 function draw(){
@@ -315,6 +317,10 @@ function draw(){
 var CUR=[],PICS={};
 function buildBase(){
   var W=ROADS[style],f=[],lat=raw.view.origin[1],minor=!!Z.minor_roads_from,wide=(raw.base&&raw.base.widths)||{},mask=bases.filter(function(b){return b.clip})[0];
+  // imagery bases: tiles from the provider's own service, under everything else. MapLibre fetches tiles only while the layer is shown.
+  bases.forEach(function(b){if(!b.sat)return;var im=b.imagery,id='sat-'+b.id;
+    mv.map.addSource(id,{type:'raster',tiles:[im.tiles],tileSize:im.tile_size||256,minzoom:im.min_zoom||0,maxzoom:im.max_zoom||18});
+    mv.layer({id:id,type:'raster',source:id,layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-brightness-max':function(c){return +c('--raster-max')||1}}})});
   B.base.areas.forEach(function(a){f.push(WM.feat('area',a.ll,{k:a.kind==='wood'?'wood':'lake'}))});
   B.base.lines.forEach(function(l){
     if(l.kind==='water'){f.push(WM.feat('line',l.ll,wide[l.name]?{k:'river',gw:wide[l.name]}:{k:'water',w:compact?(l.cls==='river'?3.6:2.6):(l.cls==='river'?3.2:1.6)}));return}
@@ -351,9 +357,10 @@ function buildBase(){
   mv.map.addLayer({id:'iiif-slot',type:'background',layout:{visibility:'none'}});   // full-detail tiles go in here, over the pictures
 }
 /* The period map can be turned down to let today's map show through it. Turned down, only a map's whole-sheet picture shows, so two pictures of one map do not add up. */
-function through(){return opac<1&&!base.current&&!base.own}
+function through(){return opac<1&&!base.current&&!base.own&&!base.sat}
 function paintFade(){(PICS[base.id]||[]).forEach(function(p){mv.opacity(p.id,opac>=1?1:p.detail?0:opac)});if(series.length)mv.opacity('pic-series',opac);
-  var cur=!!(base.current||base.backdrop==='current'||through());CUR.forEach(function(id){mv.show(id,cur)});mv.show('b-mask',cur&&!!(base.clip||(base.m&&P.bounds===base.map)));
+  bases.forEach(function(b){if(b.sat)mv.map.setLayoutProperty('sat-'+b.id,'visibility',b===base?'visible':'none')});
+  var cur=!!(base.current||base.backdrop==='current'||through());CUR.forEach(function(id){mv.show(id,cur)});mv.show('b-mask',(cur||base.sat)&&!!(base.clip||(base.m&&P.bounds===base.map)));
   mv.bg((base.own||(base.m&&base.backdrop!=='current'&&!through()))?'--m-paper':'--land')}
 function setOpacity(v){opac=Math.max(0,Math.min(1,v));var e=$('opac');if(e)e.value=Math.round(opac*100);var o=$('opv');if(o)o.textContent=Math.round(opac*100)+'%';paintFade();updateTiles();mv.retheme();mv.kick()}
 /* ---------- full detail: the scan itself, streamed from the library that holds it ---------- */
@@ -403,7 +410,7 @@ function setBase(b,first){
   if(moved) mv.setWorld(worldOf(b));
   if(!b.series&&series.length){mv.show('pic-series',false);seriesShown=null}
   if(b.series) series.forEach(function(m){if(!m.pre){m.pre=new Image();m.pre.src=WM.asset(m.images[0].file)}});
-  wrap.classList.toggle('paper',!b.current); var go=$('gOpac'); if(go) go.hidden=!!(b.current||b.own); paintFade();
+  wrap.classList.toggle('paper',!b.current&&!b.sat); wrap.classList.toggle('sat',b.sat); var go=$('gOpac'); if(go) go.hidden=!!(b.current||b.own||b.sat); paintFade();
   if(moved) mv.jump(home());
   updateTiles(); panelKey=''; mv.retheme(); mv.kick()}
 
@@ -472,6 +479,7 @@ function select(id){sel=id||null;info=false;panelKey='';mv.kick()}
 var evOpen=false;
 /* the map on screen: what it is, who made it, where it is held, how it was placed */
 function mapDetails(){var h='<button class="back" id="back">&larr; All units</button><div class="eyebrow">The map on screen</div>',row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>':''};
+  if(base.sat){var im=base.imagery;h+='<h2>'+esc(im.name||base.label)+'</h2><p>'+esc(im.about||'Aerial or satellite imagery of the ground today, streamed from the provider\'s tile service. The names on it come from OpenStreetMap.')+'</p><dl>'+row('Source',im.credit)+row('Rights',im.rights||'')+row('Taken',im.date||'')+'</dl>'+(im.link?'<p style="margin-top:10px"><a href="'+esc(im.link)+'" target="_blank" rel="noopener">About this imagery</a></p>':'')+'<p class="meta" style="margin-top:12px">If the tile service cannot be reached, the map shows plain ground under the units.</p>';return h}
   if(base.current){h+='<h2>Current map</h2><p>Today\'s roads, water, railways, woods and names, cut down from OpenStreetMap to what this battle needs. It is a drawing of that data, not a live map service.</p><dl>'+row('Source','OpenStreetMap contributors')+row('Rights','Open Database License')+'</dl><p style="margin-top:10px"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap copyright and licence</a></p>';return h}
   var m=(base.series&&seriesShown)||base.m||series[0],s=B.sources[m.raw.source]||{},f=m.raw.fit||{},fit='';
   if(m.own) fit='No. It is not to scale, so it is shown as a picture of its own and units have separate positions on it.';
@@ -497,7 +505,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
     +ck('cPlaces','Place names',true)+ck('cLines','Road and stream names',true)+ck('cNarr','The current event, in words, on the map',false)+'</div>';
   L+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Symbol style',[sb('sy-standard','Standard',true),sb('sy-period','Period style',false)])+'<p class="gn">Period style drops the frames: a line is a bar, as on maps of the time.</p></div>';
   L+='<div class="grp"><div class="gh">Seen from</div>'+seg('Seen from',[sb('fr-none','Neither side',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Seen from one side, the other side takes the diamond frame of the standard military symbols.</p></div>';
-  if(bases.some(function(b){return !b.current&&!b.own})) L+='<div class="grp" id="gOpac"><div class="gh"><span>Period map</span><span id="opv">100%</span></div><input type="range" id="opac" min="0" max="100" step="5" value="100" aria-label="How strongly the period map is drawn"><p class="gn">Turn it down to see today&rsquo;s map through the period map.</p></div>';
+  if(bases.some(function(b){return !b.current&&!b.own&&!b.sat})) L+='<div class="grp" id="gOpac"><div class="gh"><span>Period map</span><span id="opv">100%</span></div><input type="range" id="opac" min="0" max="100" step="5" value="100" aria-label="How strongly the period map is drawn"><p class="gn">Turn it down to see today&rsquo;s map through the period map.</p></div>';
   L+='<div class="grp"><button class="lnk" id="bLink">Copy a link to this view</button><span class="ok" id="linkok" hidden>Copied</span></div>';
   $('layers').innerHTML=L;
   wrap.classList.toggle('compact',compact); $('when').classList.toggle('date',byDay); $('tl').classList.toggle('days',byDay);

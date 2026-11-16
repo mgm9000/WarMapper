@@ -46,6 +46,8 @@ button{font:inherit;color:inherit}
 .stage{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 372px}
 .mapwrap{position:relative;overflow:hidden;background:var(--land);min-height:0;user-select:none;-webkit-user-select:none;--u-ink:var(--fg);--u-halo:var(--land)}
 .mapwrap.paper{background:var(--m-paper);--u-ink:var(--m-ink);--u-halo:var(--m-halo)}
+/* over aerial or satellite imagery: dark text on a light halo in both themes, so names read against any ground */
+.mapwrap.sat{--u-ink:#141a24;--u-halo:#f4f5ef;--map-text:#141a24;--map-halo:rgba(244,245,239,.92);--water-text:#174f78;--raster-max:1}
 #map{position:absolute;inset:0}
 #map .maplibregl-canvas{outline:none}
 #ov{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;pointer-events:none;z-index:2}
