@@ -19,8 +19,13 @@
       <div class="ctl c-r">
         <button class="sq" id="zin" aria-label="Zoom in">+</button>
         <button class="sq" id="zout" aria-label="Zoom out">&minus;</button>
+        <button class="sq" id="zfit" aria-label="Fit the whole battle on screen" title="Fit the whole battle on screen"><svg viewBox="0 0 16 16" width="15" height="15"><rect x="1.8" y="3.3" width="12.4" height="9.4" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="5" y="6" width="6" height="4" fill="currentColor"/></svg></button>
+        <button class="sq" id="zfull" aria-label="Full screen" title="Full screen"><svg viewBox="0 0 16 16" width="15" height="15"><path d="M2 6V2h4M10 2h4v4M14 10v4h-4M6 14H2v-4" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></button>
+        <button class="sq info" id="binfo" aria-label="About the map on screen" title="About the map on screen">i</button>
       </div>
+      <div class="pop" id="layers" hidden></div>
       <div class="offnote" id="offnote" hidden></div>
+      <div class="narr" id="narr" hidden></div>
       <div class="when" id="when" aria-live="off"><div class="dayn" id="dayn" hidden></div><div class="t" id="clock"></div><div class="d" id="clockdate"></div><div class="n" id="clocknote" hidden></div></div>
       <div class="scale" id="scale"></div>
       <div class="hint" id="hint">Scroll or pinch to zoom &middot; drag to pan &middot; scroll over the timeline to move time</div>
@@ -30,7 +35,10 @@
   </main>
 
   <footer class="tlbar gut">
+    <button class="tb" id="evprev" aria-label="Previous key event" title="Previous key event"><svg viewBox="0 0 16 16"><path d="M3.5 2.5v11M13.5 2.5L6 8l7.5 5.5z"/></svg></button>
     <button class="play" id="play" aria-label="Play"><svg viewBox="0 0 16 16" id="playico"><path d="M3 1.5v13l11-6.5z"/></svg></button>
+    <button class="tb" id="evnext" aria-label="Next key event" title="Next key event"><svg viewBox="0 0 16 16"><path d="M12.5 2.5v11M2.5 2.5L10 8l-7.5 5.5z"/></svg></button>
+    <button class="stepb" id="step" title="How far one arrow key or scroll notch moves time. Click to change."></button>
     <div class="tl" id="tl">
       <div class="rail"></div><div class="win" id="win"></div><div class="done" id="done"></div>
       <input type="range" id="time" min="0" max="4000" step="1" value="0" aria-label="Time">

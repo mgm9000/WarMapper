@@ -172,3 +172,25 @@ details p{margin:8px 0 0}
 .mapwrap.compact .ulab{font-size:12px} .mapwrap.compact .ech{font-size:8.5px;letter-spacing:.05em}
 .when.date .t{font-size:22px} @media (max-width:860px){ .when.date .t{font-size:18px} }
 .tl.days .tick{height:4px;opacity:.6} .tl.days .tick.maj{height:6px;opacity:1}
+
+/* ---------- layers menu, narrative, event buttons, time step, map details ---------- */
+.chipbtn .car{font-size:9px;color:var(--muted)}
+.pop{position:absolute;top:50px;left:max(10px,env(safe-area-inset-left,0px));z-index:5;width:264px;max-width:calc(100% - 20px);max-height:calc(100% - 64px);overflow:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 6px 22px rgba(0,0,0,.25);padding:6px 12px 10px;font-size:13px}
+.pop .grp{padding:8px 0;border-top:1px solid var(--line)} .pop .grp:first-child{border-top:0}
+.pop .gh{font-size:10.5px;letter-spacing:.09em;text-transform:uppercase;color:var(--muted);font-weight:600;margin-bottom:5px;display:flex;justify-content:space-between}
+.pop .ck{display:flex;gap:8px;align-items:center;padding:3px 0;cursor:pointer} .pop .ck input{accent-color:var(--accent);width:15px;height:15px;margin:0}
+.pop kbd{font:inherit;font-size:10.5px;color:var(--muted);border:1px solid var(--line);border-radius:3px;padding:0 4px;margin-left:4px}
+.pop .seg{box-shadow:none;display:flex} .pop .seg button{flex:1;padding:5px 6px;font-size:12px}
+.pop .gn{margin:5px 0 0;font-size:11.5px;color:var(--muted)} .pop input[type=range]{width:100%;accent-color:var(--accent)}
+.pop .lnk{background:none;border:1px solid var(--line);border-radius:6px;padding:5px 10px;font-size:12.5px;cursor:pointer} .pop .ok{margin-left:8px;color:var(--muted);font-size:12px}
+.sq.info{font-family:Georgia,serif;font-style:italic;font-weight:700;font-size:16px}
+.narr{position:absolute;left:50%;transform:translateX(-50%);bottom:34px;z-index:3;max-width:min(560px,46%);background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:7px 11px;font-size:13px;line-height:1.35;box-shadow:0 1px 4px rgba(0,0,0,.2);pointer-events:none}
+.narr b{font-weight:600}
+.tb{flex:none;width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--surface);cursor:pointer;display:grid;place-items:center;padding:0;margin-inline:-6px}
+.tb svg{width:12px;height:12px;fill:currentColor;stroke:currentColor;stroke-width:1.6;stroke-linecap:round}
+.stepb{flex:none;border:1px solid var(--line);background:var(--surface);border-radius:6px;padding:4px 7px;font-size:11.5px;font-weight:500;cursor:pointer;white-space:nowrap;font-variant-numeric:tabular-nums}
+.evl{list-style:none;margin:6px 0 0;padding:0} .evl button{width:100%;text-align:left;background:none;border:0;border-radius:5px;padding:4px 6px;display:flex;gap:10px;cursor:pointer;font-size:13px}
+.evl button:hover{background:var(--surface-2)} .evl .tm{color:var(--muted);font-variant-numeric:tabular-nums;flex:none;min-width:5.2em} .evl .cur{font-weight:600}
+details.evs{margin-top:10px} details.evs summary{cursor:pointer;font-size:12.5px;color:var(--muted)}
+@media (max-width:860px){ .narr{bottom:auto;top:96px;max-width:calc(100% - 70px);left:10px;transform:none;font-size:12px} .tb{display:none} .pop{top:92px} }
+.mapwrap.narr-on .hint{display:none}
