@@ -177,7 +177,13 @@ def validate(b, folder=None):
         need(bs, ['id', 'label'], 'playback base')
         if bs.get('map') and bs['map'] not in maps: bad.append('playback base %s: map %r is not in maps' % (bs.get('id'), bs['map']))
         if bs.get('clip') and bs['clip'] not in maps: bad.append('playback base %s: clip map %r is not in maps' % (bs.get('id'), bs['clip']))
-        if not (bs.get('current') or bs.get('map') or bs.get('series')): bad.append('playback base %s: needs "current", "map" or "series"' % bs.get('id'))
+        im = bs.get('imagery')
+        if im is not None:
+            t = str(im.get('tiles', '')) if isinstance(im, dict) else ''
+            if not (t.startswith('https://') and all(k in t for k in ('{z}', '{x}', '{y}'))):
+                bad.append('playback base %s: imagery.tiles must be an https address with {z}, {x} and {y}' % bs.get('id'))
+            if not (isinstance(im, dict) and im.get('credit')): bad.append('playback base %s: imagery needs a credit' % bs.get('id'))
+        if not (bs.get('current') or bs.get('map') or bs.get('series') or im): bad.append('playback base %s: needs "current", "map", "series" or "imagery"' % bs.get('id'))
     if P.get('bounds') and P['bounds'] not in maps: bad.append('playback.bounds: map %r is not in maps' % P['bounds'])
     for v in P.get('views', []):
         if v.get('preset') not in V.get('presets', {}): bad.append('playback view: preset %r is not in view.presets' % v.get('preset'))
