@@ -523,7 +523,20 @@ function paintTime(v){t=v;
   else{var c=WM.calOf(B.cal,t);$('clock').textContent=c.clock;$('clockdate').textContent=c.date;WM.paintDayNumber(c.n)}
   var tn=P.time_note,ne=$('clocknote'); if(tn){ne.textContent=tn.text;ne.hidden=t<B.time(tn.from)} else ne.hidden=true;
   $('done').style.width=(t2u(t)*100)+'%'; var ev=curEvent(); paintNarr();
-  Array.prototype.forEach.call(document.querySelectorAll('.tl .ev'),function(e){e.classList.toggle('on',!!ev&&e.dataset.id===ev.id)})}
+  Array.prototype.forEach.call(document.querySelectorAll('.tl .ev'),function(e){e.classList.toggle('on',!!ev&&e.dataset.id===ev.id)});
+  var cur=ev?ev.id:''; if(cur!==namedFor){namedFor=cur;fitNames()}}
+/* Event names on the timeline: where two would overlap, only one is written (the tick stays). The current event's name always is. */
+var namedFor=null;
+function fitNames(){
+  var els=Array.prototype.slice.call(document.querySelectorAll('.tl .ev')),kept=[],i;
+  els.forEach(function(e){e.classList.remove('crowd')});
+  var box=els.map(function(e){var r=e.getBoundingClientRect();return [r.left-4,r.right+4,r.width]});
+  function clash(b){for(var j=0;j<kept.length;j++)if(b[0]<kept[j][1]&&b[1]>kept[j][0])return true;return false}
+  for(i=0;i<els.length;i++)if(els[i].classList.contains('on')&&box[i][2]>20)kept.push(box[i]);
+  for(i=0;i<els.length;i++){var e=els[i]; if(e.classList.contains('on')||e.classList.contains('mute')||box[i][2]<=20)continue;   // a name already hidden (a quiet event, or a narrow screen) takes no room
+    if(clash(box[i]))e.classList.add('crowd');else kept.push(box[i])}
+}
+window.addEventListener('resize',fitNames);
 /* the time step: how far one arrow key or one notch of the scroll wheel moves time. Only steps the battle's span can use are offered. */
 var STEPS=(byDay?[[1,'1 day'],[7,'1 week'],[30,'1 month']]:[[1,'1 min'],[5,'5 min'],[15,'15 min'],[60,'1 hour'],[1440,'1 day']]).filter(function(x,i){return i===0||x[0]*3<=T1-T0});
 function setStep(i){stepI=(i+STEPS.length)%STEPS.length;wheelAcc=0;var e=$('step');e.textContent=STEPS[stepI][1];e.hidden=STEPS.length<2}
@@ -543,12 +556,13 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*RNG
     else if(k==='m'&&bases.length>1)setBase(bases[(bases.indexOf(base)+1)%bases.length])}});
 
 /* timeline furniture: ticks, the part the data covers best, and the events */
-(function(){var tl=$('tl'),pc=function(m){return (t2u(m)*100)+'%'},h='',m,fmt=function(v){return WM.fmtClock(v).replace(' a.m.','')};
+(function(){var tl=$('tl'),pc=function(m){return (t2u(m)*100)+'%'},h='',m,lg=!byDay&&(T1-TM)>360,fmt=function(v){var c=WM.fmtClock(v).replace(' a.m.','');return lg?c.replace(':00',''):c};
   var win=$('win'); if(B.focus){win.style.left=pc(B.focus[0]);win.style.width=((t2u(B.focus[1])-t2u(B.focus[0]))*100)+'%';if(B.focus[1]>=T1)win.style.borderRadius='0 5px 5px 0'} else win.hidden=true;
   if(byDay){var nth=0;for(m=T0;m<=T1;m++){var d=B.dateOf(m),maj=d.day%5===0;h+='<span class="tick'+(maj?' maj':'')+'" style="left:'+pc(m)+'"></span>';
       if(maj){h+='<span class="tk'+(nth%2?' minor':'')+'" style="left:'+pc(m)+'">'+d.day+' '+d.mon.slice(0,3)+'</span>';nth++}}}
   else{for(m=Math.ceil(T0/60)*60;m<TM;m+=60){h+='<span class="tick" style="left:'+pc(m)+'"></span>';if(m%120===0)h+='<span class="tk minor" style="left:'+pc(m)+'">'+fmt(m)+'</span>'}
-    for(m=Math.ceil(TM/30)*30;m<=T1;m+=15){h+='<span class="tick" style="left:'+pc(m)+'"></span>';if(m%30===0)h+='<span class="tk'+(m%60?' minor':'')+'" style="left:'+pc(m)+'">'+fmt(m)+'</span>'}}
+    var st=lg?30:15,lb=lg?60:30;   // a long day: a tick each half hour and a time each hour
+    for(m=Math.ceil(TM/30)*30;m<=T1;m+=st){h+='<span class="tick" style="left:'+pc(m)+'"></span>';if(m%lb===0)h+='<span class="tk'+(m%(lb*2)?' minor':'')+'" style="left:'+pc(m)+'">'+fmt(m)+'</span>'}}
   B.events.forEach(function(e){h+='<button class="ev'+(e.quiet?' mute':'')+'" data-id="'+esc(e.id)+'" data-t="'+e.t+'" style="left:'+pc(e.t)+'" title="'+esc(e.name)+'" aria-label="'+esc(e.name)+'">'+esc(e.name)+'</button>'});
   tl.insertAdjacentHTML('afterbegin',h);
   tl.addEventListener('click',function(ev){var b=ev.target.closest('.ev');if(b){clk.setPlaying(false);clk.setTime(+b.dataset.t)}});
