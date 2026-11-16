@@ -184,6 +184,12 @@ def validate(b, folder=None):
                 bad.append('playback base %s: imagery.tiles must be an https address with {z}, {x} and {y}' % bs.get('id'))
             if not (isinstance(im, dict) and im.get('credit')): bad.append('playback base %s: imagery needs a credit' % bs.get('id'))
         if not (bs.get('current') or bs.get('map') or bs.get('series') or im): bad.append('playback base %s: needs "current", "map", "series" or "imagery"' % bs.get('id'))
+    su = P.get('surround')
+    if su is not None:
+        t = str(su.get('tiles', '')) if isinstance(su, dict) else ''
+        if not (t.startswith('https://') and all(k in t for k in ('{z}', '{x}', '{y}'))): bad.append('playback.surround.tiles must be an https address with {z}, {x} and {y}')
+        if not (isinstance(su, dict) and su.get('credit')): bad.append('playback.surround needs a credit')
+        if isinstance(su, dict) and su.get('reach') is not None and not (isinstance(su['reach'], (int, float)) and 1 < su['reach'] <= 40): bad.append('playback.surround.reach must be a number above 1 and up to 40')
     if P.get('bounds') and P['bounds'] not in maps: bad.append('playback.bounds: map %r is not in maps' % P['bounds'])
     for v in P.get('views', []):
         if v.get('preset') not in V.get('presets', {}): bad.append('playback view: preset %r is not in view.presets' % v.get('preset'))

@@ -211,7 +211,7 @@ defaults.
 | Setting | What it does |
 |---|---|
 | `style` | `tactical` for a battlefield (larger symbols, a question mark on a loose position) or `operational` for a front (smaller symbols, thinner roads). Defaults from `time.unit`. |
-| `scale_bar` | `yards` or `km`. |
+| `scale_bar` | `yards` or `km`: the measure the scale bar writes first. The other follows under it, and both change as the reader zooms. |
 | `question_mark` | What marks a unit as doubtful (a question mark, a dashed symbol): `location`, how sure the place is, or `overall` (the default). |
 | `rate` | Time units played per second. |
 | `lead` | Squeezes the stretch before `time.focus` (a night march before a fight) into a `share` of the timeline, played at its own `rate`, with arrow keys moving `step` units. |
@@ -220,7 +220,8 @@ defaults.
 | `views` | Named views as buttons, each a `preset` from `view.presets` with a `label` and `short` label. The first is the opening view. |
 | `bases` | The maps the reader can put under the units; the first is the opening one. Each is the current map (`"current": true`), one period map (`"map": id`), the period map for the date on the timeline (`"series": true`: the maps that have `from` and `to`) or aerial or satellite imagery (`"imagery": {...}`, below). `backdrop` says what a period map lies on: `paper` or `current` (the current map shows around it). `clip` cuts the current map, or the imagery, to a period map's edge. `fade` adds the Fade map button. |
 | `bases[].imagery` | Imagery streamed from a tile service while that base is shown: `tiles`, the https address of one tile with `{z}`, `{x}` and `{y}` in it (standard web-map tiles); `credit`, the provider's required attribution; `max_zoom`, the deepest level the service has (the map enlarges past it); and, for the map-details panel, `name`, `about`, `rights`, `date` and `link`. Names from the current map are drawn over it. The page needs no key for it, so only services free to use without one belong here. |
-| `bounds` | A map id: the reader cannot pan beyond that map. |
+| `bounds` | A map id: the edge of the battle's own maps. The Fit button frames it, and without a `surround` the reader cannot zoom out past it. |
+| `surround` | A modern map from a tile service, drawn around the period map and the current map where they end, so the reader can zoom out past the edge of the sheet and see the country around it. `tiles`, `credit`, `max_zoom`, `name`, `about`, `rights` and `link` as for `bases[].imagery`; `reach` is how far out the reader can go, in widths of the bounds map (4 by default). The tiles are asked for only while part of the screen lies beyond the battle's own maps. On an imagery base the imagery simply runs on instead. A map that is not to scale cannot have a surround. With a surround, the current map's own data must end exactly at the edge of the bounds map (`pipeline/basemaps.py` cuts it there). |
 | `zoom` | Zoom levels in screen pixels per metre: `max`; `follow_max`; `fold` (below it, units fold into their parent); `labels` (from it, level 1 names show); `towns_until`; `landmarks_from`; `woods_from`; `full_names` (from it, a place's other name shows); `minor_roads_from`; `force_names_from`. |
 | `fold` | `label` names the button that switches folding of tracks that have a `parent`. `formation: true` also hides a unit while its parent formation has a line of its own on the map and the reader is zoomed out; `sides` limits that to the sides listed. |
 | `groups` | Zoomed out below `below`, the units of a `side` (but for `except`) are drawn as one symbol with this `label`. |
@@ -236,8 +237,9 @@ Elsewhere in the file the player also reads:
   units by nation.
 - On a label, `show`: `current` (the default: drawn where today's map shows), `period` or `both`.
 - On a step, `along: true`: the step's line is the path the unit moves along during the step.
-- On a map that is not to scale, `scale_note` (shown in place of the scale bar) and `off_note` (`until`, `text`:
-  a note shown while the action is off that map).
+- On a map that is not to scale, `scale_note` (shown in place of the scale bar), `approx_m_per_px` (metres on the
+  ground per pixel of `size` where the map is nearest to true: with it a rough scale bar is drawn, marked "about",
+  and `scale_note` goes under it) and `off_note` (`until`, `text`: a note shown while the action is off that map).
 - In `base`, `widths`: a river's width on the ground in metres, by name.
 
 ## What is not in the file

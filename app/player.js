@@ -43,6 +43,16 @@ var SKK=1e-5; function ownLL(p){return [p[0]*SKK,-p[1]*SKK]}   // a not-to-scale
 var bm=P.bounds&&B.maps[P.bounds],EXT=bm?bm.images[0].box:B.ext;
 var WORLDS={ground:{toLL:B.toLL,ext:EXT,mPerUnit:1,maxScale:Z.max||2,minFactor:Z.min_factor||0.9}};
 bases.forEach(function(b){if(b.own)WORLDS['own:'+b.map]={toLL:ownLL,ext:[0,0,b.m.size[0],b.m.size[1]],mPerUnit:SKK*EARTH/360,maxScale:3,minFactor:0.9}});
+/* A surround: a modern map from a tile service, drawn around the period map and the current map where they end, so the reader can zoom out past them.
+   GROUND is the edge of what the battle's own maps cover: the bounds map, else a base's clip map, else the battle's extent. */
+var SUR=(P.surround&&P.surround.tiles)?P.surround:null,surOn=null;
+var gmap=bm||(function(){var c=bases.filter(function(b){return b.clip})[0];return c?B.maps[c.clip]:null})();
+var GROUND=gmap?gmap.images[0].ll:[[EXT[0],EXT[1]],[EXT[2],EXT[1]],[EXT[2],EXT[3]],[EXT[0],EXT[3]]].map(function(q){return B.toLL(q)});
+if(SUR){(function(){var f=(+SUR.reach||4)/2,cx=(EXT[0]+EXT[2])/2,cy=(EXT[1]+EXT[3])/2,hw=Math.abs(EXT[2]-EXT[0])*f,hh=Math.abs(EXT[3]-EXT[1])*f;WORLDS.ground.reach=[cx-hw,cy-hh,cx+hw,cy+hh]})()}
+function inGround(p){var s=0,i,a,b,c;for(i=0;i<4;i++){a=GROUND[i];b=GROUND[(i+1)%4];c=(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]);if(c){if(s&&(c>0)!==(s>0))return false;s=c}}return true}
+/* The surround is asked for only while some of the screen lies beyond the battle's own maps, so nothing is fetched until the reader zooms or pans out past them. */
+function paintSurround(){ if(!SUR) return; var z=mv.size(),on=!base.own&&!base.sat&&[[0,0],[z.w,0],[z.w,z.h],[0,z.h]].some(function(q){var l=mv.map.unproject(q);return !inGround([l.lng,l.lat])});
+  if(on!==surOn){surOn=on;mv.show('sur',on);panelKey=''} }
 function worldOf(b){return b.own?'own:'+b.map:'ground'}
 
 /* ---------- state ---------- */
@@ -299,16 +309,19 @@ function paintCredit(H){var c;
   if(base.current) c=WM.OSM_CREDIT;
   else if(base.sat){var im=base.imagery;c=(im.link?'<a href="'+esc(im.link)+'" target="_blank" rel="noopener">'+esc(im.credit)+'</a>':esc(im.credit))+' &middot; Names: '+WM.OSM_CREDIT}
   else{var m=H||base.m; c=(H?esc(m.short)+', '+esc(m.label)+(stamp(t)>m.t1?' (the last one)':'')+' &middot; ':'')+esc(m.credit)+((base.backdrop==='current'||through())?' &middot; '+WM.OSM_CREDIT:'')}
+  if(SUR&&surOn) c+=' &middot; Around it: '+esc(SUR.credit);
   if(c!==lastCredit){lastCredit=c;$('credit').innerHTML=c}}
 function draw(){
   sNow=mv.scale(); mv.hits.length=0;
-  var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintCredit(H);
+  var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintSurround(); paintCredit(H);
   var cover=base.backdrop==='current'?(H||base.m).images[0].box:null;
   var sc=scene(),L=layout(unitsOn?sc:[]),h=mapNames(L,cover);
   L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});   // the selected unit last, so it sits on top
   L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h;
-  if(base.own) $('scale').innerHTML='<span class="nts">'+esc(base.m.raw.scale_note||'Not to scale')+'</span>';
-  else WM.scaleBar($('scale'),mv.mPerPx(),P.scale_bar||(byDay?'km':'yards'));
+  var su=P.scale_bar||(byDay?'km':'yards'),sk=$('scale');
+  if(!base.own) WM.scaleBar(sk,mv.mPerPx(),su);
+  else if(base.m.raw.approx_m_per_px) WM.scaleBar(sk,base.m.raw.approx_m_per_px/sNow,su,true,base.m.raw.scale_note||'Roughly: this map is not to scale');   // a sketch: a rough scale where it is nearest to true
+  else{var nt='<span class="nts">'+esc(base.m.raw.scale_note||'Not to scale')+'</span>';if(sk._h!==nt){sk._h=nt;sk.innerHTML=nt}}
   var off=$('offnote'),on=base.own&&base.m.raw.off_note; if(on&&t<B.time(on.until)){off.hidden=false;off.textContent=on.text} else off.hidden=true;
   renderPanel(sc); noteView();
 }
@@ -317,6 +330,11 @@ function draw(){
 var CUR=[],PICS={};
 function buildBase(){
   var W=ROADS[style],f=[],lat=raw.view.origin[1],minor=!!Z.minor_roads_from,wide=(raw.base&&raw.base.widths)||{},mask=bases.filter(function(b){return b.clip})[0];
+  if(SUR){ // the surround at the very bottom, then plain ground over it where the battle's own maps lie
+    mv.map.addSource('sur',{type:'raster',tiles:[SUR.tiles],tileSize:SUR.tile_size||256,minzoom:SUR.min_zoom||0,maxzoom:SUR.max_zoom||16});
+    mv.layer({id:'sur',type:'raster',source:'sur',layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-saturation':-0.25,'raster-brightness-max':function(c){return +c('--raster-max')||1}}});
+    mv.geo('ground',[{type:'Feature',properties:{},geometry:{type:'Polygon',coordinates:[GROUND.concat([GROUND[0]])]}}]);
+    mv.layer({id:'b-ground',type:'fill',source:'ground',paint:{'fill-color':'var(--land)'}})}
   // imagery bases: tiles from the provider's own service, under everything else. MapLibre fetches tiles only while the layer is shown.
   bases.forEach(function(b){if(!b.sat)return;var im=b.imagery,id='sat-'+b.id;
     mv.map.addSource(id,{type:'raster',tiles:[im.tiles],tileSize:im.tile_size||256,minzoom:im.min_zoom||0,maxzoom:im.max_zoom||18});
@@ -360,7 +378,8 @@ function buildBase(){
 function through(){return opac<1&&!base.current&&!base.own&&!base.sat}
 function paintFade(){(PICS[base.id]||[]).forEach(function(p){mv.opacity(p.id,opac>=1?1:p.detail?0:opac)});if(series.length)mv.opacity('pic-series',opac);
   bases.forEach(function(b){if(b.sat)mv.map.setLayoutProperty('sat-'+b.id,'visibility',b===base?'visible':'none')});
-  var cur=!!(base.current||base.backdrop==='current'||through());CUR.forEach(function(id){mv.show(id,cur)});mv.show('b-mask',(cur||base.sat)&&!!(base.clip||(base.m&&P.bounds===base.map)));
+  var cur=!!(base.current||base.backdrop==='current'||through());CUR.forEach(function(id){mv.show(id,cur)});mv.show('b-mask',!SUR&&(cur||base.sat)&&!!(base.clip||(base.m&&P.bounds===base.map)));   // with a surround nothing is covered: the current map's data ends at the edge and imagery runs on
+  if(SUR)mv.show('b-ground',!base.own);
   mv.bg((base.own||(base.m&&base.backdrop!=='current'&&!through()))?'--m-paper':'--land')}
 function setOpacity(v){opac=Math.max(0,Math.min(1,v));var e=$('opac');if(e)e.value=Math.round(opac*100);var o=$('opv');if(o)o.textContent=Math.round(opac*100)+'%';paintFade();updateTiles();mv.retheme();mv.kick()}
 /* ---------- full detail: the scan itself, streamed from the library that holds it ---------- */
@@ -446,7 +465,7 @@ function item(o,text){return '<li><button data-pick="'+o.tr.id+'"><span class="s
 var panelKey='';
 function renderPanel(sc){
   var me=sel?sc.filter(function(o){return o.tr.id===sel})[0]:null,ev=curEvent();
-  if(info&&!sel){var ik='info|'+base.id+'|'+(seriesShown?seriesShown.id:'');if(ik!==panelKey){panelKey=ik;panel.innerHTML=mapDetails();panel.scrollTop=0}return}
+  if(info&&!sel){var ik='info|'+base.id+'|'+(seriesShown?seriesShown.id:'');if(ik!==panelKey){panelKey=ik;panel.innerHTML=mapDetails()+aroundNote();panel.scrollTop=0}return}
   var key=base.id+'|'+(sel?sel+'|'+(me?me.s.k.id+me.s.kind+(byDay?stamp(t):''):'x'):'now|'+(ev?ev.id:0)+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(','));
   if(key===panelKey) return; panelKey=key; var h='';
   if(sel){
@@ -477,6 +496,9 @@ function renderPanel(sc){
 }
 function select(id){sel=id||null;info=false;panelKey='';mv.kick()}
 var evOpen=false;
+/* what lies around the map on screen, where the battle has a surround */
+function aroundNote(){ if(!SUR||base.own||base.sat) return '';
+  return '<div class="eyebrow" style="margin-top:18px">Around this map</div><p>'+esc(SUR.about||'Zoom out past the edge and a modern map of the surrounding country is drawn around it, streamed from the provider\'s tile service.')+'</p><dl><dt>Source</dt><dd>'+esc(SUR.name?SUR.name+' ('+SUR.credit+')':SUR.credit)+'</dd>'+(SUR.rights?'<dt>Rights</dt><dd>'+esc(SUR.rights)+'</dd>':'')+'</dl>'+(SUR.link?'<p style="margin-top:10px"><a href="'+esc(SUR.link)+'" target="_blank" rel="noopener">About this map</a></p>':'')}
 /* the map on screen: what it is, who made it, where it is held, how it was placed */
 function mapDetails(){var h='<button class="back" id="back">&larr; All units</button><div class="eyebrow">The map on screen</div>',row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>':''};
   if(base.sat){var im=base.imagery;h+='<h2>'+esc(im.name||base.label)+'</h2><p>'+esc(im.about||'Aerial or satellite imagery of the ground today, streamed from the provider\'s tile service. The names on it come from OpenStreetMap.')+'</p><dl>'+row('Source',im.credit)+row('Rights',im.rights||'')+row('Taken',im.date||'')+'</dl>'+(im.link?'<p style="margin-top:10px"><a href="'+esc(im.link)+'" target="_blank" rel="noopener">About this imagery</a></p>':'')+'<p class="meta" style="margin-top:12px">If the tile service cannot be reached, the map shows plain ground under the units.</p>';return h}

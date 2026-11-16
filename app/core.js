@@ -116,18 +116,22 @@ WM.battle=function(raw){
 };
 
 /* ---------- scale bar ---------- */
-/* mPerPx: metres on the ground per screen pixel; units: 'yards' or 'km' */
-WM.scaleBar=function(el,mPerPx,units){var pick,txt;
-  if(units==='yards'){var oy=[100,250,500,1000,1760,3520,8800];pick=oy[0];oy.forEach(function(y){if(y*0.9144/mPerPx<=150)pick=y});
-    txt=pick>=1760?(pick/1760)+(pick===1760?' mile':' miles'):pick+' yards'; el.innerHTML=txt+'<i style="width:'+(pick*0.9144/mPerPx).toFixed(0)+'px"></i>'}
-  else{var om=[500,1000,2000,5000,10000,20000];pick=om[0];om.forEach(function(m){if(m/mPerPx<=150)pick=m});
-    el.innerHTML=(pick>=1000?(pick/1000)+' km':pick+' m')+' <span style="opacity:.7">('+(pick/1609.34).toFixed(pick<2000?1:0)+' mi)</span><i style="width:'+(pick/mPerPx).toFixed(0)+'px"></i>'}};
+/* mPerPx: metres on the ground per screen pixel. units: 'yards' or 'km', the measure written first; the other follows under it.
+   about: the map is only roughly to scale, so the lengths are marked as rough. note: a line under the bars. */
+WM.scaleBar=function(el,mPerPx,units,about,note){
+  var IMP=[10,25,50,100,250,500,1000,1760,3520,8800,17600,35200,88000,176000],MET=[10,20,50,100,200,500,1000,2000,5000,10000,20000,50000,100000,200000];
+  function best(list,m){var pick=list[0];list.forEach(function(v){if(v*m/mPerPx<=130)pick=v});return pick}
+  var y=best(IMP,0.9144),k=best(MET,1),pre=about?'about ':'';
+  var imp='<div class="sb"><span>'+pre+(y>=1760?(y/1760)+(y===1760?' mile':' miles'):y+' yards')+'</span><i style="width:'+(y*0.9144/mPerPx).toFixed(0)+'px"></i></div>',
+      met='<div class="sb"><span>'+pre+(k>=1000?(k/1000)+' km':k+' m')+'</span><i style="width:'+(k/mPerPx).toFixed(0)+'px"></i></div>';
+  var h=(units==='km'?met+imp:imp+met)+(note?'<div class="sn">'+WM.esc(note)+'</div>':''); if(el._h!==h){el._h=h;el.innerHTML=h}};
 
 /* ---------- the map ---------- */
 function merc(ll){var s=Math.sin(ll[1]*Math.PI/180);return [(ll[0]+180)/360,0.5-Math.log((1+s)/(1-s))/(4*Math.PI)]}
 function unmerc(m){return [m[0]*360-180,Math.atan(Math.sinh(Math.PI*(1-2*m[1])))*180/Math.PI]}
 /* A "world" is one flat frame the battle's data is drawn in, with the way to turn its points into longitude and latitude:
-   {toLL:function(p)->[lng,lat], ext:[x0,y0,x1,y1], mPerUnit:metres per unit of the frame, maxScale:most screen pixels per unit, minFactor:how far out past "the whole frame fits"}
+   {toLL:function(p)->[lng,lat], ext:[x0,y0,x1,y1], mPerUnit:metres per unit of the frame, maxScale:most screen pixels per unit, minFactor:how far out past "the whole frame fits",
+    reach:[x0,y0,x1,y1] a larger box the reader may zoom out to, where another map lies around the frame (optional)}
    opt = {container, wrap, worlds:{name:world}, world:name, onDraw(), onStep(ts)->still moving?, onPick(id), onUserMove(), onResize()} */
 WM.mapView=function(opt){
   if(!global.maplibregl) throw new Error('The map library did not load.');
@@ -157,7 +161,7 @@ WM.mapView=function(opt){
   function chase(tg,rate){var c=map.getCenter(),z=map.getZoom(),dz=tg.zoom-z,a=merc([c.lng,c.lat]),b=merc(tg.center),ws=TILE*Math.pow(2,z),dx=(b[0]-a[0])*ws,dy=(b[1]-a[1])*ws;
     if(Math.abs(dz)<0.004&&Math.abs(dx)<0.6&&Math.abs(dy)<0.6){map.jumpTo(tg);return false}
     map.jumpTo({center:unmerc([a[0]+(b[0]-a[0])*rate,a[1]+(b[1]-a[1])*rate]),zoom:z+dz*rate});return true}
-  function limits(){var e=cur.ext,z=size(),c=corners(e).map(merc),x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
+  function limits(){var e=cur.reach||cur.ext,z=size(),c=corners(e).map(merc),x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     c.forEach(function(m){x0=Math.min(x0,m[0]);x1=Math.max(x1,m[0]);y0=Math.min(y0,m[1]);y1=Math.max(y1,m[1])});
     var lat=unmerc([(x0+x1)/2,(y0+y1)/2])[1],fit=Math.log2(Math.min(z.w/(x1-x0),z.h/(y1-y0))/TILE)+Math.log2(cur.minFactor||1);
     map.setMaxBounds(null); map.setMinZoom(0); map.setMaxZoom(24); map.setMinZoom(Math.max(0,Math.min(23,fit))); map.setMaxZoom(Math.min(24,Math.max(fit+0.5,zoomFor(cur.maxScale,lat))));
