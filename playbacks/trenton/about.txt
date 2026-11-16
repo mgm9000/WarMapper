@@ -1,6 +1,0 @@
-Unit positions come from the data pilot spreadsheet (61 Trenton rows), built from Washington's report, Stryker's 1898 history, markers, the current street map and Lt. Wiederhold's sketch. Nothing here has been checked by a historian.
-Clock times after the first shots are midpoints of estimated ranges: the sources give almost none.
-The Names button hides the names beside the symbols; tap a symbol to see whose it is.
-Solid symbols are positions a source gives. Dashed symbols are interpolated or the last position on record. A question mark means low confidence.
-Symbols are blue for the Americans and red for the Hessian and British garrison. On his own sketch Wiederhold drew the Hessians in blue and the Americans in orange.
-The current map is a simplified drawing of OpenStreetMap streets, not live map tiles. Satellite and terrain views are not in this prototype.

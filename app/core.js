@@ -90,7 +90,7 @@ WM.battle=function(raw){
   B.tracks=raw.tracks.map(function(tr){var u=B.units[tr.unit],as=u.assignments||[],a0=as[0]||{};
     return {id:tr.id,unit:tr.unit,name:u.name,label:tr.label||u.label,side:B.sides[u.side].code,nation:u.nation||'',ech:tr.echelon||u.echelon,branch:BR[u.branch]||'inf',
       cmd:a0.commander||'',str:a0.strength||'',notes:u.notes||'',
-      par:as.map(function(a){return [a.from?B.time(a.from):-1e9,a.to?B.time(a.to):1e9,a.parent||'',a.commander||'',a.strength||'']}),   // who it answered to, and when
+      par:as.map(function(a){return [a.from?B.time(a.from):-1e9,a.to?B.time(a.to)+((!byDay&&a.to.length===10)?1439:0):1e9,a.parent||'',a.commander||'',a.strength||'']}),   // a date alone runs to the end of that day   // who it answered to, and when
       parent:tr.parent||'',hideAfter:!!tr.hide_after,hold:tr.hold_until?B.time(tr.hold_until):0,nudge:tr.nudge||null,loose:!!tr.loose,offmap:tr.off_map||'',
       k:tr.steps.map(step)}});
   B.track=function(id){for(var i=0;i<B.tracks.length;i++)if(B.tracks[i].id===id)return B.tracks[i]};

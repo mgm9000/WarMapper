@@ -174,7 +174,7 @@ function layout(sc){
     if(len>7){var px=-m.v[1],py=m.v[0]; // the symbol sits beside its line: behind it, where the battle says which way the rear lies; otherwise to the east
       if(rear){var dot=px*(rear[0]-c[0])+py*(rear[1]-c[1]);if((dot<0)===(tr.side===P.rear.side)){px=-px;py=-py}x+=px*21;y+=py*17}
       else{if(px<0){px=-px;py=-py}x+=px*20;y+=py*13}}
-    var conf=o.s.k.cc||o.s.k.oc,low=(conf==='low'&&o.s.kind!=='moving'),txt=tr.label+((low&&!compact)?' ?':'');
+    var conf=(P.question_mark==='location'&&o.s.k.cc)||o.s.k.oc,low=(conf==='low'&&o.s.kind!=='moving'),txt=tr.label+((low&&!compact)?' ?':'');
     L.push({o:o,pts:pts,len:len,c:c,x:x,y:y,low:low,txt:txt,w:txt.length*(compact?6.7:7.1)+6,pr:rank(tr),nudged:!!(nx||ny),line:len>7})});
   Object.keys(ag).forEach(function(gi){var G=P.groups[gi],gc=cen(ag[gi]);
     L.push({o:{tr:{id:'',label:G.label,side:G.side,nation:'',ech:G.echelon||'brigade',branch:G.branch||'inf'},s:{kind:'stated',k:{oc:'high'}}},pts:[gc],len:0,c:gc,x:gc[0],y:gc[1],low:false,txt:G.label,w:G.label.length*7.1+6,pr:1,nudged:false,line:false})});
@@ -329,9 +329,11 @@ function rowHtml(k,head){
   var loc='';
   if(k.pl.length&&!k.basis){var n={},parts=[],order=[];k.pl.forEach(function(p){if(!n[p[2]])order.push(p[2]);n[p[2]]=(n[p[2]]||0)+1});
     order.forEach(function(c){parts.push((k.pl.length>1?n[c]+' ':'')+(found[c]||c))});loc=(k.pl.length>1?'A line through '+k.pl.length+' places: ':'A point ')+parts.join(', ')}
-  else if(k.cs!=='none') loc=cap(found[k.cs]||k.cs);
-  if(loc&&k.prec) loc+=', good to about '+(k.prec>=1000?(k.prec/1000)+' km':k.prec+' m');
-  h+='<dt>Location</dt><dd>'+(k.cc?chip(k.cc)+' ':'')+esc(loc?loc+'.':'')+(k.cb?' <span class="meta">'+esc(k.cb)+'</span>':'')+'</dd><dt>Overall</dt><dd>'+chip(k.oc)+'</dd>';
+  else if(k.cs!=='none'&&!k.basis) loc=cap(found[k.cs]||k.cs);   // the record's own account of the place (basis) is shown where there is one
+  var good=k.prec?'good to about '+(k.prec>=1000?(k.prec/1000)+' km':k.prec+' m'):'';
+  if(good&&/good to about/i.test(k.cb)) good='';
+  if(loc) loc+=(good?', '+good:'')+'.'; else if(good&&k.cb) loc=cap(good)+'.';
+  h+='<dt>Location</dt><dd>'+(k.cc&&k.cc!=='n/a'?chip(k.cc)+' ':'')+(k.cb?esc(k.cb)+(/[.!?]$/.test(k.cb)?' ':'. '):'')+esc(loc)+'</dd><dt>Overall</dt><dd>'+chip(k.oc)+'</dd>';
   if(k.status) h+='<dt>Review</dt><dd>'+esc(k.status)+'</dd>';
   h+='</dl>';
   if(k.notes) h+='<h3>Notes</h3><p>'+esc(k.notes)+'</p>';

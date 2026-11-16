@@ -1,6 +1,6 @@
 """The common battle file: one format for every battle (docs/battle-file.md describes it in full).
 
-Each battle's recipe (playbacks/<battle>/prep.py) gathers that battle's record and hands it to write(), which checks it
+tools/export_battles.py gathers each battle's record from the master workbook and hands it to write(), which checks it
 against the format and saves playbacks/<battle>/battle.json. The playback pages read nothing else.
 """
 import json, os, re
