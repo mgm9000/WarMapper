@@ -163,7 +163,8 @@ def export(pb, W):
               'opening': {'label': text(pb.get('opening_label')), 'text': text(pb.get('opening_text'))}, 'playback': S,
               'sides': sides, 'nations': [{k: n[k] for k in ('name', 'short', 'code', 'colour', 'dark', 'paper')} for n in mine(W.get('Nations', []))],
               'units': ulist, 'tracks': tracks, 'events': events, 'labels': labels, 'maps': list(maps.values()), 'base': base}
-    catalogue = {s['source_id']: {'title': s['title'], 'citation': text(s['citation']), 'type': text(s['type']), 'url': text(s['url'])} for s in W['Sources']}
+    catalogue = {s['source_id']: {'title': s['title'], 'author': text(s.get('author')), 'date': str(s['date']) if not blank(s.get('date')) else None, 'citation': text(s['citation']),
+                                  'type': text(s['type']), 'url': text(s['url']), 'rights': text(s.get('rights'))} for s in W['Sources']}
     battle['sources'] = bf.used_sources(bf.clean(battle), catalogue, [base['source']] if base.get('source') in catalogue else [])
     return battle
 

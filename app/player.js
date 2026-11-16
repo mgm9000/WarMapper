@@ -45,7 +45,8 @@ bases.forEach(function(b){if(b.own)WORLDS['own:'+b.map]={toLL:ownLL,ext:[0,0,b.m
 function worldOf(b){return b.own?'own:'+b.map:'ground'}
 
 /* ---------- state ---------- */
-var base=bases[0],t=T0,sel=null,follow=!!P.follow,names=true,unitsOn=true,foldOn=true,faded=false,sNow=0.1,preset=null,goal=null,S,mv,clk;
+var base=bases[0],t=T0,sel=null,follow=!!P.follow,names=true,unitsOn=true,foldOn=true,sNow=0.1,preset=null,goal=null,S,mv,clk;
+var placeNames=true,lineNames=true,narrOn=false,symbols='standard',seenFrom='',opac=1,info=false,stepI=0,wheelAcc=0;   // the Layers menu's choices, the map-details view, the time step
 function gkey(){return base.own?base.map:'g'}
 function geo(k,key){return key==='g'?k.g:((k.on&&k.on[key])||null)}
 
@@ -154,9 +155,13 @@ function setFollow(v){follow=v;press('bFollow',v);if(v)mv.kick()}
 function setPreset(p,jump){preset=p;(P.views||[]).forEach(function(v){press('v-'+v.preset,p===v.preset)});
   if(!p){goal=null;return} goal=cameraOf(p); if(jump){mv.jump(goal);goal=null} mv.kick()}
 function remember(k,v){try{localStorage.setItem('wm.'+B.id+'.'+k,v?'1':'0')}catch(_){ }}
-function setNames(v){names=v;press('bNames',v);remember('names',v);mv.kick()}
-function setUnits(v){unitsOn=v;press('bUnits',v);mv.kick()}
-function setFold(v){foldOn=v;press('bFold',v);mv.kick()}
+function tick(id,v){var e=$(id);if(e)e.checked=v}
+function setNames(v){names=v;tick('cNames',v);remember('names',v);mv.kick()}
+function setUnits(v){unitsOn=v;tick('cUnits',v);mv.kick()}
+function setFold(v){foldOn=v;tick('cFold',v);mv.kick()}
+function setNarr(v){narrOn=v;tick('cNarr',v);remember('narr',v);wrap.classList.toggle('narr-on',v);paintNarr()}
+function setSymbols(v){symbols=v;press('sy-standard',v==='standard');press('sy-period',v==='period');mv.kick()}
+function setSeenFrom(c){seenFrom=c||'';press('fr-none',!seenFrom);raw.sides.forEach(function(sd){press('fr-'+sd.code,seenFrom===sd.code)});mv.kick()}
 
 /* ---------- drawing ---------- */
 function rank(tr){ // which names are kept when the map is crowded: 1 first
@@ -203,32 +208,50 @@ function unitSvg(u,part){
   if(part==='line'){ if(!u.line) return '';
     var d=pts.map(function(p,i){return (i?'L':'M')+f1(p[0])+' '+f1(p[1])}).join('');
     var w=compact?((tr.ech==='corps'||tr.ech==='army')?5:tr.ech==='division'?4:3):((!tr.parent&&(tr.ech==='brigade'||tr.ech==='division'))?6:4.5);
+    if(symbols==='period') w+=1.5;
     var dash=tr.loose?' stroke-dasharray="2 5"':((soft||(compact&&k==='inferred'))?' stroke-dasharray="'+(compact?'8 6':'7 5')+'"':'');
     h+='<g opacity="'+op+'" stroke-linecap="round" stroke-linejoin="round" fill="none">'; mv.hits.push({id:tr.id,pts:pts,tol:Math.max(7,w/2+4)});
     if(isSel) h+='<path d="'+d+'" stroke="var(--m-sel)" stroke-width="'+(w+9)+'" opacity=".8"/>';
     h+='<path d="'+d+'" stroke="var(--u-halo)" stroke-width="'+(w+(compact?3:4))+'"'+(compact?'':' stroke-linecap="butt"')+'/><path d="'+d+'" stroke="'+col+'" stroke-width="'+w+'"'+((compact||tr.loose)?'':' stroke-linecap="butt"')+dash+'/>';
     return h+'</g>'; }
   var W=compact?12:13,H=compact?8:9;
+  if(symbols==='period'){ // period style: no frame. A line is its own mark, as on the maps of the time; a unit at a point is a small block
+    h+='<g opacity="'+op+'">';
+    if(!u.line){mv.hits.push({id:tr.id,r:[c[0]-12,c[1]-9,c[0]+12,c[1]+9]});
+      if(isSel) h+='<rect x="'+f1(c[0]-13)+'" y="'+f1(c[1]-8)+'" width="26" height="16" rx="3" fill="none" stroke="var(--m-sel)" stroke-width="4"/>';
+      h+='<rect x="'+f1(c[0]-9)+'" y="'+f1(c[1]-4)+'" width="18" height="8" fill="'+col+'" stroke="var(--u-halo)" stroke-width="1.5"'+((soft||low)?' fill-opacity=".55"':'')+'/>'}
+    if(u.lab){h+='<text class="ulab" text-anchor="'+u.lab[4]+'" x="'+f1(u.lab[5])+'" y="'+f1(u.lab[6])+'">'+esc(u.txt)+'</text>';mv.hits.push({id:tr.id,r:[u.lab[0],u.lab[1],u.lab[0]+u.w,u.lab[1]+16]})}
+    return h+'</g>'}
+  var foe=!!seenFrom&&tr.side!==seenFrom,D=W+1;   // seen from one side, the other side's units take the diamond frame of the standard symbols
   h+='<g opacity="'+op+'">'; mv.hits.push({id:tr.id,r:[x-W-4,y-H-11,x+W+4,y+H+4]});
   if((compact&&u.line)||u.nudged) h+='<line x1="'+f1(c[0])+'" y1="'+f1(c[1])+'" x2="'+f1(x)+'" y2="'+f1(y)+'" stroke="'+(compact?col:'var(--u-ink)')+'" stroke-width="'+(compact?1.2:1)+'"/>';
   if(u.nudged&&!(compact&&u.line)) h+='<circle cx="'+f1(c[0])+'" cy="'+f1(c[1])+'" r="2.5" fill="'+col+'"/>';
   h+='<g transform="translate('+f1(x)+' '+f1(y)+')">';
-  if(isSel) h+='<rect x="'+(-W-5)+'" y="'+(-H-5)+'" width="'+(2*W+10)+'" height="'+(2*H+10)+'" rx="4" fill="none" stroke="var(--m-sel)" stroke-width="4"/>';
-  h+='<rect x="'+(-W)+'" y="'+(-H)+'" width="'+2*W+'" height="'+2*H+'" fill="'+lk.fill+'" stroke="'+col+'" stroke-width="1.8"'+((soft||low)?' stroke-dasharray="3 2.5"':'')+'/>';
+  if(isSel) h+='<rect x="'+(-W-5)+'" y="'+(foe?-D-4:-H-5)+'" width="'+(2*W+10)+'" height="'+(foe?2*D+8:2*H+10)+'" rx="4" fill="none" stroke="var(--m-sel)" stroke-width="4"/>';
+  var dsh=((soft||low)?' stroke-dasharray="3 2.5"':''),q=D/2;
+  if(foe){h+='<path d="M0 '+(-D)+'L'+D+' 0L0 '+D+'L'+(-D)+' 0Z" fill="'+lk.fill+'" stroke="'+col+'" stroke-width="1.8"'+dsh+'/>';
+    if(tr.ech==='headquarters') h+='<text class="ech in" text-anchor="middle" y="3.5" style="stroke:none">HQ</text>';
+    else if(tr.branch==='inf') h+='<path d="M'+(-q)+' '+(-q)+'L'+q+' '+q+'M'+(-q)+' '+q+'L'+q+' '+(-q)+'" stroke="'+col+'" stroke-width="1.4"/>';
+    else if(tr.branch==='cav') h+='<path d="M'+(-q)+' '+q+'L'+q+' '+(-q)+'" stroke="'+col+'" stroke-width="1.4"/>';
+    else h+='<circle r="3.2" fill="'+col+'"/>';
+    h+='<text class="ech" text-anchor="middle" y="'+(-D-3)+'">'+(ECH[tr.ech]||'')+'</text></g>';}
+  else{
+  h+='<rect x="'+(-W)+'" y="'+(-H)+'" width="'+2*W+'" height="'+2*H+'" fill="'+lk.fill+'" stroke="'+col+'" stroke-width="1.8"'+dsh+'/>';
   if(tr.ech==='headquarters') h+='<path d="M'+(-W)+' '+(-H)+'V'+(H+7)+'" stroke="'+col+'" stroke-width="1.8"/><text class="ech in" text-anchor="middle" y="4" style="stroke:none">HQ</text>';
   else if(tr.branch==='inf') h+='<path d="M'+(-W)+' '+(-H)+'L'+W+' '+H+'M'+(-W)+' '+H+'L'+W+' '+(-H)+'" stroke="'+col+'" stroke-width="1.4"/>';
   else if(tr.branch==='cav') h+='<path d="M'+(-W)+' '+H+'L'+W+' '+(-H)+'" stroke="'+col+'" stroke-width="1.4"/>';
   else h+='<circle r="3.4" fill="'+col+'"/>';
-  h+='<text class="ech" text-anchor="middle" y="'+(-H-3)+'">'+(ECH[tr.ech]||'')+'</text></g>';
+  h+='<text class="ech" text-anchor="middle" y="'+(-H-3)+'">'+(ECH[tr.ech]||'')+'</text></g>';}
   if(u.lab){h+='<text class="ulab" text-anchor="'+u.lab[4]+'" x="'+f1(u.lab[5])+'" y="'+f1(u.lab[6])+'">'+esc(u.txt)+'</text>';mv.hits.push({id:tr.id,r:[u.lab[0],u.lab[1],u.lab[0]+u.w,u.lab[1]+16]})}
   return h+'</g>';
 }
 /* Names on the map. Names from today's map are drawn where today's map shows: not on a period map, which carries its own.
    A name marked for period maps (show "period" or "both") is drawn there too. */
 function mapNames(L,cover){
-  var z=mv.size(),lvl=sNow>=(Z.labels||0)?1:0,h='',cur=!!(base.current||base.backdrop==='current');
+  var z=mv.size(),lvl=sNow>=(Z.labels||0)?1:0,h='',cur=!!(base.current||base.backdrop==='current'||through());
   B.labels.forEach(function(l){
     var show=l.show||'current'; if(cur?show==='period':show==='current') return;
+    if((l.k==='road'||l.k==='water')?!lineNames:!placeNames) return;
     if(l.l>lvl&&l.k!=='wood') return;
     if(cover&&l.p[0]>cover[0]&&l.p[0]<cover[2]&&l.p[1]>cover[1]&&l.p[1]<cover[3]) return;
     var q=S(l.p); if(q[0]<-60||q[1]<-20||q[0]>z.w+60||q[1]>z.h+20) return;
@@ -251,7 +274,7 @@ var seriesShown=null,lastCredit='';
 function showSeries(H){ if(H===seriesShown) return; if(H){mv.moveImage('pic-series',WM.asset(H.images[0].file),H.images[0].ll);if(!seriesShown)mv.show('pic-series',true)} else mv.show('pic-series',false); seriesShown=H }
 function paintCredit(H){var c;
   if(base.current) c=WM.OSM_CREDIT;
-  else{var m=H||base.m; c=(H?esc(m.short)+', '+esc(m.label)+(stamp(t)>m.t1?' (the last one)':'')+' &middot; ':'')+esc(m.credit)+(base.backdrop==='current'?' &middot; '+WM.OSM_CREDIT:'')}
+  else{var m=H||base.m; c=(H?esc(m.short)+', '+esc(m.label)+(stamp(t)>m.t1?' (the last one)':'')+' &middot; ':'')+esc(m.credit)+((base.backdrop==='current'||through())?' &middot; '+WM.OSM_CREDIT:'')}
   if(c!==lastCredit){lastCredit=c;$('credit').innerHTML=c}}
 function draw(){
   sNow=mv.scale(); mv.hits.length=0;
@@ -263,7 +286,7 @@ function draw(){
   if(base.own) $('scale').innerHTML='<span class="nts">'+esc(base.m.raw.scale_note||'Not to scale')+'</span>';
   else WM.scaleBar($('scale'),mv.mPerPx(),P.scale_bar||(byDay?'km':'yards'));
   var off=$('offnote'),on=base.own&&base.m.raw.off_note; if(on&&t<B.time(on.until)){off.hidden=false;off.textContent=on.text} else off.hidden=true;
-  renderPanel(sc);
+  renderPanel(sc); noteView();
 }
 
 /* ---------- the base maps ---------- */
@@ -304,22 +327,28 @@ function buildBase(){
     b.m.images.forEach(function(im,i){var id='pic-'+b.id+'-'+i;PICS[b.id].push({id:id,detail:im.detail});
       mv.image(id,WM.asset(im.file),b.own?[0,0,b.m.size[0],b.m.size[1]]:im.ll,b.own?WORLDS[worldOf(b)]:undefined);mv.show(id,false)})});
 }
-function paintFade(){(PICS[base.id]||[]).forEach(function(p){mv.opacity(p.id,!(faded&&base.fade)?1:p.detail?0:0.5)})}   // faded, only the whole-map picture shows, so the two do not add up
+/* The period map can be turned down to let today's map show through it. Turned down, only a map's whole-sheet picture shows, so two pictures of one map do not add up. */
+function through(){return opac<1&&!base.current&&!base.own}
+function paintFade(){(PICS[base.id]||[]).forEach(function(p){mv.opacity(p.id,opac>=1?1:p.detail?0:opac)});if(series.length)mv.opacity('pic-series',opac);
+  var cur=!!(base.current||base.backdrop==='current'||through());CUR.forEach(function(id){mv.show(id,cur)});mv.show('b-mask',cur&&!!(base.clip||(base.m&&P.bounds===base.map)));
+  mv.bg((base.own||(base.m&&base.backdrop!=='current'&&!through()))?'--m-paper':'--land')}
+function setOpacity(v){opac=Math.max(0,Math.min(1,v));var e=$('opac');if(e)e.value=Math.round(opac*100);var o=$('opv');if(o)o.textContent=Math.round(opac*100)+'%';paintFade();mv.retheme();mv.kick()}
 function setBase(b,first){
   if(typeof b==='string') b=bases.filter(function(x){return x.id===b})[0]; if(!b) return;
   var moved=first||worldOf(b)!==worldOf(base); base=b;
   bases.forEach(function(x){press('b-'+x.id,x===b);(PICS[x.id]||[]).forEach(function(p){mv.show(p.id,x===b)})});
   if(moved) mv.setWorld(worldOf(b));
-  var cur=!!(b.current||b.backdrop==='current'); CUR.forEach(function(id){mv.show(id,cur)}); mv.show('b-mask',cur&&!!b.clip);
   if(!b.series&&series.length){mv.show('pic-series',false);seriesShown=null}
   if(b.series) series.forEach(function(m){if(!m.pre){m.pre=new Image();m.pre.src=WM.asset(m.images[0].file)}});
-  wrap.classList.toggle('paper',!b.current); mv.bg((b.own||(b.m&&b.backdrop!=='current'))?'--m-paper':'--land');
-  var fd=$('bFade'); if(fd) fd.hidden=!b.fade; paintFade();
+  wrap.classList.toggle('paper',!b.current); var go=$('gOpac'); if(go) go.hidden=!!(b.current||b.own); paintFade();
   if(moved) mv.jump(home());
   panelKey=''; mv.retheme(); mv.kick()}
 
 /* ---------- panel ---------- */
 function curEvent(){return B.eventAt(stamp(t))}
+function paintNarr(){var n=$('narr'),ev=curEvent(),tx=ev?ev.text:B.opening.text; n.hidden=!narrOn||!tx; if(narrOn&&tx) n.innerHTML=(ev?'<b>'+esc(ev.name)+'.</b> ':'')+esc(tx)}
+function whenText(v){if(byDay){var d=B.dateOf(v);return d.day+' '+d.mon.slice(0,3)}return WM.fmtClock(v)}
+function toEvent(dir){var eps=byDay?0.01:0.5,hit=null;B.events.forEach(function(e){if(dir>0?(e.t>t+eps&&!hit):(e.t<t-eps))hit=e});if(hit){clk.setPlaying(false);clk.setTime(hit.t)}}
 function nowText(){if(byDay){var d=B.dateOf(stamp(t));return d.day+' '+d.mon}return WM.fmtClock(t)}
 function cap(s){return s.charAt(0).toUpperCase()+s.slice(1)}
 function rowHtml(k,head){
@@ -347,6 +376,7 @@ function item(o,text){return '<li><button data-pick="'+o.tr.id+'"><span class="s
 var panelKey='';
 function renderPanel(sc){
   var me=sel?sc.filter(function(o){return o.tr.id===sel})[0]:null,ev=curEvent();
+  if(info&&!sel){var ik='info|'+base.id+'|'+(seriesShown?seriesShown.id:'');if(ik!==panelKey){panelKey=ik;panel.innerHTML=mapDetails();panel.scrollTop=0}return}
   var key=base.id+'|'+(sel?sel+'|'+(me?me.s.k.id+me.s.kind+(byDay?stamp(t):''):'x'):'now|'+(ev?ev.id:0)+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(','));
   if(key===panelKey) return; panelKey=key; var h='';
   if(sel){
@@ -361,6 +391,8 @@ function renderPanel(sc){
     if(tr.notes) h+='<p class="meta" style="margin-top:12px">'+esc(tr.notes)+'</p>';
   } else {
     h+='<div class="eyebrow">'+esc(ev?'Now: '+ev.name:B.opening.label)+'</div><p class="phase">'+esc(ev?ev.text:B.opening.text)+'</p>';
+    if(B.events.length){h+='<details class="evs"'+(evOpen?' open':'')+'><summary>Key events: jump to one</summary><ul class="evl">';
+      B.events.forEach(function(e){h+='<li><button data-ev="'+esc(e.id)+'"'+(ev&&ev.id===e.id?' class="cur"':'')+'><span class="tm">'+esc(whenText(e.t))+'</span><span>'+esc(e.full)+'</span></button></li>'});h+='</ul></details>'}
     var groups=[],seen={}; (byNation?(raw.nations||[]).map(function(n){return [n.name,n.short]}):raw.sides.map(function(s){return [s.code,s.short]})).forEach(function(g){groups.push(g);seen[g[0]]=1});
     groups.forEach(function(g){var Ls=sc.filter(function(o){return (o.drawn||o.folded)&&look(o.tr).group===g[0]});if(!Ls.length)return;
       h+='<h3>'+esc(g[1])+' on the map</h3><ul class="ulist">';Ls.forEach(function(o){h+=item(o,status(o))});h+='</ul>'});
@@ -373,7 +405,17 @@ function renderPanel(sc){
   }
   panel.innerHTML=h; if(sel) panel.scrollTop=0;
 }
-function select(id){sel=id||null;panelKey='';mv.kick()}
+function select(id){sel=id||null;info=false;panelKey='';mv.kick()}
+var evOpen=false;
+/* the map on screen: what it is, who made it, where it is held, how it was placed */
+function mapDetails(){var h='<button class="back" id="back">&larr; All units</button><div class="eyebrow">The map on screen</div>',row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>':''};
+  if(base.current){h+='<h2>Current map</h2><p>Today\'s roads, water, railways, woods and names, cut down from OpenStreetMap to what this battle needs. It is a drawing of that data, not a live map service.</p><dl>'+row('Source','OpenStreetMap contributors')+row('Rights','Open Database License')+'</dl><p style="margin-top:10px"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap copyright and licence</a></p>';return h}
+  var m=(base.series&&seriesShown)||base.m||series[0],s=B.sources[m.raw.source]||{},f=m.raw.fit||{},fit='';
+  if(m.own) fit='No. It is not to scale, so it is shown as a picture of its own and units have separate positions on it.';
+  else{fit='Yes';if(f.method)fit+=': '+f.method;if(f.metres_per_pixel)fit+='; '+f.metres_per_pixel+' m per scan pixel';if(f.turn_degrees)fit+='; turned '+f.turn_degrees+'\u00b0 from north';if(f.points)fit+=': fitted on '+f.points+' points'+(f.misfit_m?', typical misfit '+f.misfit_m+' m':'');fit+='.'}
+  h+='<h2>'+esc(m.title)+'</h2><dl>'+row('Battle',B.title)+row('Shows',m.label)+row('Made by',s.author)+row('Date',s.date)+row('Kind',s.type)+row('Published or held',s.citation)+row('Scale',m.raw.scale_note||(m.own?'Not to scale':''))+row('Rights',s.rights||'Not checked')+row('Placed on the ground',fit)+'</dl>';
+  if(s.url) h+='<p style="margin-top:10px"><a href="'+esc(s.url)+'" target="_blank" rel="noopener">Open the original record</a></p>';
+  h+='<p class="meta" style="margin-top:12px">The picture shown here is a reduced copy of the scan.</p>';return h}
 
 /* ---------- controls ---------- */
 (function(){var h='',seg=function(label,items){return '<div class="seg" role="group" aria-label="'+label+'">'+items.join('')+'</div>'},
@@ -382,10 +424,18 @@ function select(id){sel=id||null;panelKey='';mv.kick()}
   if(bases.length>1) h+=seg('Base map',bases.map(function(b){return btn('b-'+b.id,b)}));
   if(P.views) h+=seg('Map view',P.views.map(function(v){return btn('v-'+v.preset,v)}));
   if(P.follow) h+=chipb('bFollow','Follow<span class="long"> the action</span>','Keep the units in view as time moves (F)',true);
-  if(P.fold&&P.fold.label) h+=chipb('bFold',esc(P.fold.label),'Show the smaller units when zoomed in',true);
-  if(bases.some(function(b){return b.fade})) h+=chipb('bFade','Fade map','Dim the period map so the units stand out',false);
-  h+=chipb('bNames','Names','Show or hide the names beside the unit symbols (N)',true)+chipb('bUnits','Units','Show or hide the units, to read the map underneath (U)',true);
+  h+='<button class="chipbtn" id="bLayers" aria-expanded="false" aria-controls="layers" title="What is drawn on the map, and how"><span>Layers</span><span class="car">&#9662;</span></button>';
   $('ctl').innerHTML=h;
+  // the Layers menu: what is drawn, how units are drawn, and how much of the period map shows
+  var ck=function(id,label,on,key){return '<label class="ck"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span>'+label+(key?'<kbd>'+key+'</kbd>':'')+'</span></label>'},
+      sb=function(id,label,on){return '<button id="'+id+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>'},L='';
+  L+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')
+    +ck('cPlaces','Place names',true)+ck('cLines','Road and stream names',true)+ck('cNarr','The current event, in words, on the map',false)+'</div>';
+  L+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Symbol style',[sb('sy-standard','Standard',true),sb('sy-period','Period style',false)])+'<p class="gn">Period style drops the frames: a line is a bar, as on maps of the time.</p></div>';
+  L+='<div class="grp"><div class="gh">Seen from</div>'+seg('Seen from',[sb('fr-none','Neither side',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Seen from one side, the other side takes the diamond frame of the standard military symbols.</p></div>';
+  if(bases.some(function(b){return !b.current&&!b.own})) L+='<div class="grp" id="gOpac"><div class="gh"><span>Period map</span><span id="opv">100%</span></div><input type="range" id="opac" min="0" max="100" step="5" value="100" aria-label="How strongly the period map is drawn"><p class="gn">Turn it down to see today&rsquo;s map through the period map.</p></div>';
+  L+='<div class="grp"><button class="lnk" id="bLink">Copy a link to this view</button><span class="ok" id="linkok" hidden>Copied</span></div>';
+  $('layers').innerHTML=L;
   wrap.classList.toggle('compact',compact); $('when').classList.toggle('date',byDay); $('tl').classList.toggle('days',byDay);
   if(byDay){$('hint').innerHTML=$('hint').innerHTML.replace('to move time','to move through the days')}
 })();
@@ -407,14 +457,22 @@ function paintTime(v){t=v;
     $('clock').textContent=d.day+' '+d.mon+' '+d.year;$('clockdate').textContent=d.wd+' · '+(night?'at nightfall':'during the day');WM.paintDayNumber(B.cal.numbered?n+1:0)}
   else{var c=WM.calOf(B.cal,t);$('clock').textContent=c.clock;$('clockdate').textContent=c.date;WM.paintDayNumber(c.n)}
   var tn=P.time_note,ne=$('clocknote'); if(tn){ne.textContent=tn.text;ne.hidden=t<B.time(tn.from)} else ne.hidden=true;
-  $('done').style.width=(t2u(t)*100)+'%'; var ev=curEvent();
+  $('done').style.width=(t2u(t)*100)+'%'; var ev=curEvent(); paintNarr();
   Array.prototype.forEach.call(document.querySelectorAll('.tl .ev'),function(e){e.classList.toggle('on',!!ev&&e.dataset.id===ev.id)})}
+/* the time step: how far one arrow key or one notch of the scroll wheel moves time. Only steps the battle's span can use are offered. */
+var STEPS=(byDay?[[1,'1 day'],[7,'1 week'],[30,'1 month']]:[[1,'1 min'],[5,'5 min'],[15,'15 min'],[60,'1 hour'],[1440,'1 day']]).filter(function(x,i){return i===0||x[0]*3<=T1-T0});
+function setStep(i){stepI=(i+STEPS.length)%STEPS.length;wheelAcc=0;var e=$('step');e.textContent=STEPS[stepI][1];e.hidden=STEPS.length<2}
+function stepBy(dir,v){var n=STEPS[stepI][0];
+  if(byDay) return (dir>0?Math.floor(v+1e-6):Math.ceil(v-1e-6))+dir*n;
+  if(stepI===0) return v+dir*((LD&&(dir>0?v<TM:v<=TM))?(LD.step||5):1);
+  return (dir>0?Math.floor(v/n+1e-6):Math.ceil(v/n-1e-6))*n+dir*n}   // on to the next round quarter-hour, hour, ...
 var rng=$('time'); rng.min=0; rng.max=RNG; rng.step=1; rng.value=0; rng.setAttribute('aria-label',byDay?'Day of the battle':'Time of day');
 clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*RNG)},fromRange:function(v){return u2t(v/RNG)},
   rate:function(v){return (LD&&v<TM)?LD.rate:(P.rate||(byDay?0.85:3))},onTime:paintTime,
   snap:byDay?function(v){return Math.round(v)}:null,   // the sources give one position a day, so time settles on nightfall
-  arrow:function(dir,v){if(byDay)return dir>0?Math.floor(v+1e-6)+1:Math.ceil(v-1e-6)-1;return v+dir*((LD&&(dir>0?v<TM:v<=TM))?(LD.step||5):1)},
-  wheel:function(dd,v){return u2t(Math.max(0,Math.min(1,t2u(v)+dd*0.0002)))},
+  arrow:stepBy,
+  wheel:function(dd,v){if(stepI===0)return u2t(Math.max(0,Math.min(1,t2u(v)+dd*0.0002)));   // at the finest step scrolling is smooth; at a coarser one each notch is one step
+    wheelAcc+=dd;if(Math.abs(wheelAcc)<50)return v;var dir=wheelAcc>0?1:-1;wheelAcc=0;return stepBy(dir,v)},
   onKey:function(e){var k=e.key.toLowerCase();
     if(e.key==='Escape')select(null);else if(k==='n')setNames(!names);else if(k==='u')setUnits(!unitsOn);else if(k==='f'&&P.follow)setFollow(!follow);
     else if(k==='m'&&bases.length>1)setBase(bases[(bases.indexOf(base)+1)%bases.length])}});
@@ -433,16 +491,49 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*RNG
 function on(id,fn){var e=$(id);if(e)e.addEventListener('click',fn)}
 bases.forEach(function(b){on('b-'+b.id,function(){setBase(b)})});
 (P.views||[]).forEach(function(v){on('v-'+v.preset,function(){setPreset(v.preset)})});
-on('bFollow',function(){setFollow(!follow)}); on('bFold',function(){setFold(!foldOn)}); on('bNames',function(){setNames(!names)}); on('bUnits',function(){setUnits(!unitsOn)});
-on('bFade',function(){faded=!faded;press('bFade',faded);paintFade()});
+on('bFollow',function(){setFollow(!follow)});
+function openLayers(v){$('layers').hidden=!v;$('bLayers').setAttribute('aria-expanded',v?'true':'false')}
+on('bLayers',function(){openLayers($('layers').hidden)});
+document.addEventListener('pointerdown',function(e){if(!$('layers').hidden&&!e.target.closest('#layers')&&!e.target.closest('#bLayers'))openLayers(false)});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('layers').hidden){openLayers(false);$('bLayers').focus();e.stopPropagation()}},true);
+function onCheck(id,fn){var e=$(id);if(e)e.addEventListener('change',function(){fn(e.checked)})}
+onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr);
+onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
+on('sy-standard',function(){setSymbols('standard')}); on('sy-period',function(){setSymbols('period')});
+on('fr-none',function(){setSeenFrom('')}); raw.sides.forEach(function(sd){on('fr-'+sd.code,function(){setSeenFrom(sd.code)})});
+var opr=$('opac'); if(opr) opr.addEventListener('input',function(){setOpacity(+opr.value/100)});
 on('zin',function(){setFollow(false);setPreset(null);mv.zoomBy(1.45)}); on('zout',function(){setFollow(false);setPreset(null);mv.zoomBy(1/1.45)});
+on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.own?WORLDS[worldOf(base)].ext:EXT,{t:48,b:22,l:14,r:14}))});
+(function(){var app=document.querySelector('.app'),b=$('zfull'); if(!b) return;   // full screen is not offered where the browser does not allow it (inside some embedded views)
+  if(!document.fullscreenEnabled||!app.requestFullscreen){b.hidden=true;return}
+  b.addEventListener('click',function(){if(document.fullscreenElement)document.exitFullscreen();else app.requestFullscreen()})})();
+on('binfo',function(){sel=null;info=!info;panelKey='';mv.kick()});
+on('evprev',function(){toEvent(-1)}); on('evnext',function(){toEvent(1)}); on('step',function(){setStep(stepI+1)});
 WM.panelClicks(panel,select);
+panel.addEventListener('click',function(e){var b=e.target.closest('[data-ev]');if(!b)return;var ev=B.events.filter(function(x){return x.id===b.getAttribute('data-ev')})[0];if(ev){clk.setPlaying(false);clk.setTime(ev.t)}});
+panel.addEventListener('toggle',function(e){if(e.target.classList&&e.target.classList.contains('evs'))evOpen=e.target.open},true);
+
+/* ---------- a link to this view ---------- */
+/* The page address carries the moment, the map, the place and zoom, and the unit picked, so a copied link opens the same view. */
+function linkHash(){var c=mv.map.getCenter(),p=['at='+B.isoOf(byDay?Math.round(t):Math.round(t)),'map='+base.id,'view='+c.lng.toFixed(5)+','+c.lat.toFixed(5)+','+mv.map.getZoom().toFixed(2)];if(sel)p.push('unit='+encodeURIComponent(sel));return '#'+p.join('&')}
+var hashT=0; function noteView(){clearTimeout(hashT);hashT=setTimeout(function(){try{history.replaceState(null,'',linkHash())}catch(_){ }},500)}
+function readLink(){var q={};String(location.hash||'').replace(/^#/,'').split('&').forEach(function(kv){var i=kv.indexOf('=');if(i>0)q[kv.slice(0,i)]=decodeURIComponent(kv.slice(i+1))});
+  try{ if(q.map&&bases.some(function(b){return b.id===q.map})) setBase(q.map);
+    if(q.at){var v=B.time(q.at);if(isFinite(v))clk.setTime(v)}
+    if(q.view){var a=q.view.split(',').map(Number);if(a.length===3&&a.every(isFinite)){setFollow(false);setPreset(null);mv.jump({center:[a[0],a[1]],zoom:a[2]})}}
+    if(q.unit&&B.track(q.unit)) select(q.unit);
+  }catch(_){ }}
+on('bLink',function(){var url=location.href.split('#')[0]+linkHash(),ok=$('linkok'),done=function(){ok.hidden=false;setTimeout(function(){ok.hidden=true},1600)};
+  try{history.replaceState(null,'',linkHash())}catch(_){ }
+  if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,function(){ok.textContent='Copy it from the address bar';done()});else{ok.textContent='Copy it from the address bar';done()}});
 
 /* ---------- start ---------- */
-try{if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;press('bNames',false)}}catch(_){ }
+try{if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')}}catch(_){ }
+setStep(0);
 if(P.views) preset=P.views[0].preset;
-mv.start(function(){buildBase();paintTime(T0);(P.views||[]).forEach(function(v){press('v-'+v.preset,preset===v.preset)});setBase(base,true);clk.setTime(T0);WM.hint(mv)});
+mv.start(function(){buildBase();paintTime(T0);(P.views||[]).forEach(function(v){press('v-'+v.preset,preset===v.preset)});setBase(base,true);clk.setTime(T0);readLink();WM.hint(mv)});
 var api={battle:B,setTime:clk.setTime,select:select,setFollow:setFollow,setBase:setBase,setNames:setNames,setUnits:setUnits,setFold:setFold,setPreset:setPreset,mv:mv,
+  setNarrative:setNarr,setSymbols:setSymbols,setSeenFrom:setSeenFrom,setOpacity:setOpacity,setStep:setStep,link:linkHash,
   scene:function(){return scene().map(function(o){return {id:o.tr.id,kind:o.s.kind,row:o.s.k.id,drawn:o.drawn}})}};
 Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}});
 global.__wm=api; return api;

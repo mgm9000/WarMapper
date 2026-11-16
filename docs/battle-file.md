@@ -135,7 +135,8 @@ for the timeline, `quiet` marks an event shown as a dot without its name, `steps
 
 ### sources
 
-`"S02": {"title": "...", "citation": "...", "type": "Primary: official report", "url": "..."}`.
+`"S02": {"title": "...", "author": "...", "date": "1863", "citation": "...", "type": "Primary: official report", "url": "...", "rights": "..."}`.
+A period map's details panel is made from the source its `source` names.
 Only sources the file cites are included, and every id cited anywhere in the file must be here.
 
 ### labels

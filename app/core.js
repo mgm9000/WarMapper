@@ -67,6 +67,7 @@ WM.battle=function(raw){
   var zero=stamp(byDay?T.zero.slice(0,10):T.zero);
   B.unit=T.unit;
   B.time=function(s){return s==null?null:byDay?Math.round((stamp(s.slice(0,10))-zero)/864e5):(stamp(s)-zero)/6e4};
+  B.isoOf=function(n){var d=new Date(zero+n*(byDay?864e5:6e4)),p=function(v){return (v<10?'0':'')+v},s=d.getUTCFullYear()+'-'+p(d.getUTCMonth()+1)+'-'+p(d.getUTCDate());return byDay?s:s+'T'+p(d.getUTCHours())+':'+p(d.getUTCMinutes())};   // the other way: a number back to a date or time
   B.T0=B.time(T.start); B.T1=B.time(T.end); B.focus=T.focus?[B.time(T.focus[0]),B.time(T.focus[1])]:null;
   B.cal={first:T.calendar.first,numbered:!!T.calendar.numbered,count:T.calendar.days||0};
   B.dateOf=function(n){var d=new Date(zero+n*864e5);return {day:d.getUTCDate(),mon:MON12[d.getUTCMonth()],wd:WDN[d.getUTCDay()],year:d.getUTCFullYear()}};   // the date n days after zero
