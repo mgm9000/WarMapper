@@ -216,7 +216,7 @@ defaults.
 | `rate` | Time units played per second. |
 | `lead` | Squeezes the stretch before `time.focus` (a night march before a fight) into a `share` of the timeline, played at its own `rate`, with arrow keys moving `step` units. |
 | `time_note` | A line under the clock from a given time on (`from`, `text`). |
-| `follow` | Shows the Follow button: the camera keeps the units in view. `min` is the smallest box it frames, in metres; `margin` the space around the units; `exclude` tracks it ignores; `empty` the preset shown while no unit is placed. |
+| `follow` | Shows the Follow button: the camera keeps the units in view. `min` is the smallest box it frames, in metres; `margin` the space around the units; `exclude` tracks it ignores; `empty` the preset shown while no unit is placed. With Follow on, + and - tighten or widen the camera; zoomed in, it centres on where the action is: where opposing units are within `contact` metres of each other (800 by default on a battlefield, 5,000 on a front), otherwise where units are moving. |
 | `views` | Named views as buttons, each a `preset` from `view.presets` with a `label` and `short` label. The first is the opening view. |
 | `bases` | The maps the reader can put under the units; the first is the opening one. Each is the current map (`"current": true`), one period map (`"map": id`) or the period map for the date on the timeline (`"series": true`: the maps that have `from` and `to`). `backdrop` says what a period map lies on: `paper` or `current` (the current map shows around it). `clip` cuts the current map to a period map's edge. `fade` adds the Fade map button. |
 | `bounds` | A map id: the reader cannot pan beyond that map. |
