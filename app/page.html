@@ -12,7 +12,7 @@
   </header>
 
   <main class="stage">
-    <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Battle map. Scroll or pinch to zoom, drag to pan. To move time, scroll over the timeline or use the arrow keys.">
+    <div class="mapwrap" id="mapwrap" tabindex="0" aria-label="Battle map. Scroll or pinch to zoom, drag to pan. To move time, scroll over the timeline or use the arrow keys; [ and ] jump between key events.">
       <div id="map"></div>
       <svg id="ov" aria-hidden="true"></svg>
       <div class="ctl c-l" id="ctl"></div>
@@ -27,7 +27,7 @@
       <div class="pop" id="layers" hidden></div>
       <div class="offnote" id="offnote" hidden></div>
       <div class="narr" id="narr" hidden></div>
-      <div class="bl"><div class="when" id="when" aria-live="off"><div class="dayn" id="dayn" hidden></div><div class="t" id="clock"></div><div class="d" id="clockdate"></div><div class="n" id="clocknote" hidden></div></div>
+      <div class="bl"><div class="when" id="when" aria-live="off"><div class="bn" id="clockbattle"></div><div class="dayn" id="dayn" hidden></div><div class="t" id="clock"></div><div class="d" id="clockdate"></div><div class="n" id="clocknote" hidden></div></div>
       <div class="scale" id="scale" aria-label="Map scale"></div></div>
       <div class="hint" id="hint">Scroll or pinch to zoom &middot; drag to pan &middot; scroll over the timeline to move time</div>
       <div class="credit" id="credit"></div>
@@ -36,10 +36,10 @@
   </main>
 
   <footer class="tlbar gut">
-    <button class="tb" id="evprev" aria-label="Previous key event" title="Previous key event"><svg viewBox="0 0 16 16"><path d="M3.5 2.5v11M13.5 2.5L6 8l7.5 5.5z"/></svg></button>
+    <button class="tb" id="evprev" aria-label="Back one step" title="Back one step"><svg viewBox="0 0 16 16"><path d="M8 3L1.5 8 8 13zM15 3L8.5 8 15 13z"/></svg></button>
     <button class="play" id="play" aria-label="Play"><svg viewBox="0 0 16 16" id="playico"><path d="M3 1.5v13l11-6.5z"/></svg></button>
-    <button class="tb" id="evnext" aria-label="Next key event" title="Next key event"><svg viewBox="0 0 16 16"><path d="M12.5 2.5v11M2.5 2.5L10 8l-7.5 5.5z"/></svg></button>
-    <button class="stepb" id="step" title="How far one arrow key or scroll notch moves time. Click to change."></button>
+    <button class="tb" id="evnext" aria-label="Forward one step" title="Forward one step"><svg viewBox="0 0 16 16"><path d="M8 3l6.5 5L8 13zM1 3l6.5 5L1 13z"/></svg></button>
+    <button class="stepb" id="step" title="How far the back and forward buttons, arrow keys and scroll move time, and how fast it plays. Click to change."></button>
     <div class="tl" id="tl">
       <div class="rail"></div><div class="win" id="win"></div><div class="done" id="done"></div>
       <input type="range" id="time" min="0" max="4000" step="1" value="0" aria-label="Time">

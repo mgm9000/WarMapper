@@ -14,6 +14,7 @@ var FOUND={map_read:'read from a period map',sketch_read:'read from a period ske
 var KIND={stated:['Placed by a source','A source puts the unit here.'],
   inferred:['Inferred position','Worked out from the sequence of events or from other units; no source states it.'],
   moving:['Moving: interpolated','No source records this stretch. The unit is drawn between two recorded positions.'],
+  early:['Arrived: time inferred','No source says when the unit got here. It is shown leaving when its last record ends, moving at a march pace, and waiting here for its next record.'],
   after:['Last recorded position','The data has nothing later for this unit.'],
   unplaced:['No position recorded','The sources read so far do not say where the unit was at this time.'],
   offmap:['Off this map',''],
@@ -28,7 +29,10 @@ var B=WM.battle(raw),P=raw.playback||{},Z=P.zoom||{},RU=P.rules||{};
 var $=WM.$,esc=WM.esc,chip=WM.chip,lerpG=WM.lerpG,cen=WM.cen,plen=WM.plen;
 var byDay=B.unit==='day',style=P.style||(byDay?'operational':'tactical'),compact=style==='operational';
 var T0=B.T0,T1=B.T1;
-var BLEND=RU.blend||4,NEAR=RU.near||15,LEAD_IN=RU.lead||0.35,LINGER=RU.linger||2;
+var BLEND=RU.blend||4,NEAR=RU.near||15,LEAD_IN=RU.lead||0.35,LINGER=RU.linger||2,PACE=RU.pace||null;
+/* march pace in metres a minute (rules.pace: one number, or one per branch). A unit moving to a step marked "march", with nothing on record
+   between, leaves when the earlier record ends and moves at that pace, rather than drifting across the whole gap; it then waits there. */
+function paceOf(tr){if(!PACE)return 0;if(typeof PACE==='number')return PACE;return PACE[{inf:'infantry',cav:'cavalry',art:'artillery'}[tr.branch]]||PACE.infantry||0}
 var wrap=$('mapwrap'),ov=$('ov'),panel=$('panel');
 var kinds={},found={},k0; for(k0 in KIND)kinds[k0]=[KIND[k0][0],(P.texts&&P.texts[k0])||KIND[k0][1]]; for(k0 in FOUND)found[k0]=(P.found&&P.found[k0])||FOUND[k0];
 
@@ -95,9 +99,10 @@ function stateClock(tr,tt,key){
       return {k:k,g:g,kind:placed(k)};
     }
     if(nx&&tt>end&&tt<nx.t0){
-      if(g&&gn){ var ca=cen(g),cb=cen(gn);
-        if(!nx.via&&Math.hypot(ca[0]-cb[0],ca[1]-cb[1])<(key==='g'?NEAR:8)) return {k:nx,g:gn,kind:placed(nx)};   // hardly any distance: no march is drawn
-        return {k:nx,from:k,g:move(k,nx,(tt-end)/(nx.t0-end),key),kind:'moving'}; }
+      if(g&&gn){ var ca=cen(g),cb=cen(gn),dd=Math.hypot(ca[0]-cb[0],ca[1]-cb[1]),arr=nx.t0,pc=(key==='g'&&!nx.via&&nx.march)?paceOf(tr):0;
+        if(!nx.via&&dd<(key==='g'?NEAR:8)) return {k:nx,g:gn,kind:placed(nx)};   // hardly any distance: no march is drawn
+        if(pc&&end+Math.max(3,dd/pc)<arr){arr=end+Math.max(3,dd/pc);if(tt>=arr)return {k:nx,from:k,g:gn,kind:'early'}}   // there at march pace, then waits
+        return {k:nx,from:k,g:move(k,nx,(tt-end)/(arr-end),key),kind:'moving'}; }
       if(g) return {k:nx,g:noPlace(nx,key)==='unplaced'?g:null,kind:noPlace(nx,key)};
       return {k:k,g:null,kind:noPlace(k,key)};
     }
@@ -204,13 +209,16 @@ function rank(tr){ // which names are kept when the map is crowded: 1 first
   if(compact) return (tr.ech==='corps'||tr.ech==='army')?1:tr.ech==='division'?2:3;
   return (tr.ech==='regiment'||tr.ech==='brigade')?1:2}
 function layout(sc){
-  var L=[],Zs=mv.size(),rear=(P.rear&&!base.own)?S(B.fromLL(P.rear.at)):null,ag={};
+  var L=[],Zs=mv.size(),rear=(P.rear&&!base.own)?S(B.fromLL(P.rear.at)):null,ag={},FOES=[],reach=(compact?8000:2500)*(base.own?0.5:sNow);   // how far off an enemy still decides which way a line faces (screen px)
+  sc.forEach(function(o){if(o.s.g&&!o.hidden)o.s.g.forEach(function(p){FOES.push([o.tr.side,S(p)])})});
+  function nearFoe(side,c){var b=null,bd=reach;FOES.forEach(function(f){if(f[0]===side)return;var d=Math.hypot(f[1][0]-c[0],f[1][1]-c[1]);if(d<bd){bd=d;b=f[1]}});return b}
   sc.forEach(function(o){ if(!o.drawn) return; var tr=o.tr;
     for(var gi=0;gi<(P.groups||[]).length;gi++){var G=P.groups[gi]; // zoomed right out, a group of units is one symbol
       if(!base.own&&sNow<G.below&&tr.side===G.side&&(G.except||[]).indexOf(tr.id)<0){(ag[gi]=ag[gi]||[]).push(S(cen(o.s.g)));return}}
     var pts=o.s.g.map(S),len=plen(pts),m=WM.along(pts,0.5),c=m.p,nx=tr.nudge?tr.nudge[0]:0,ny=tr.nudge?tr.nudge[1]:0,x=c[0]+nx,y=c[1]+ny;
-    if(len>7){var px=-m.v[1],py=m.v[0]; // the symbol sits beside its line: behind it, where the battle says which way the rear lies; otherwise to the east
-      if(rear){var dot=px*(rear[0]-c[0])+py*(rear[1]-c[1]);if((dot<0)===(tr.side===P.rear.side)){px=-px;py=-py}x+=px*21;y+=py*17}
+    if(len>7){var px=-m.v[1],py=m.v[0],foe=nearFoe(tr.side,c); // the symbol sits behind its line: on the side away from the nearest enemy,
+      if(foe){if(px*(foe[0]-c[0])+py*(foe[1]-c[1])>0){px=-px;py=-py}x+=px*21;y+=py*17}   // else where the battle says the rear lies, else to the east
+      else if(rear){var dot=px*(rear[0]-c[0])+py*(rear[1]-c[1]);if((dot<0)===(tr.side===P.rear.side)){px=-px;py=-py}x+=px*21;y+=py*17}
       else{if(px<0){px=-px;py=-py}x+=px*20;y+=py*13}}
     var conf=(P.question_mark==='location'&&o.s.k.cc)||o.s.k.oc,low=(conf==='low'&&o.s.kind!=='moving'),txt=tr.label+((low&&!compact)?' ?':'');
     L.push({o:o,pts:pts,len:len,c:c,x:x,y:y,low:low,txt:txt,w:txt.length*(compact?6.7:7.1)+6,pr:rank(tr),nudged:!!(nx||ny),line:len>7})});
@@ -235,9 +243,9 @@ function layout(sc){
   return L;
 }
 function f1(v){return v.toFixed(1)}
-function unitSvg(u,part){
+function unitSvg(u,part){   // the last position on record stays plain to see: dashed, barely faded
   var o=u.o,tr=o.tr,s=o.s,pts=u.pts,lk=look(tr),col=lk.col,k=s.kind;
-  var soft=(k==='moving'||k==='after'||k==='unplaced'),low=u.low,op=(k==='after'||k==='unplaced')?0.5:1,isSel=!!tr.id&&sel===tr.id,h='',x=u.x,y=u.y,c=u.c;
+  var soft=(k==='moving'||k==='early'||k==='after'||k==='unplaced'),low=u.low,op=k==='unplaced'?0.5:k==='after'?0.8:1,isSel=!!tr.id&&sel===tr.id,h='',x=u.x,y=u.y,c=u.c;
   if(part==='line'){ if(!u.line) return '';
     var d=pts.map(function(p,i){return (i?'L':'M')+f1(p[0])+' '+f1(p[1])}).join('');
     var w=compact?((tr.ech==='corps'||tr.ech==='army')?5:tr.ech==='division'?4:3):((!tr.parent&&(tr.ech==='brigade'||tr.ech==='division'))?6:4.5);
@@ -282,9 +290,21 @@ function unitSvg(u,part){
    A name marked for period maps (show "period" or "both") is drawn there too. */
 function mapNames(L,cover){
   var z=mv.size(),lvl=sNow>=(Z.labels||0)?1:0,h='',cur=!!(base.current||base.sat||base.backdrop==='current'||through());
-  B.labels.forEach(function(l){
+  var TER={ridge:1,hill:1},LB=B.labels.filter(function(l){return TER[l.k]}).concat(B.labels.filter(function(l){return !TER[l.k]}));   // the lie of the land is named first, so roads and woods give way to it
+  LB.forEach(function(l){
     var show=l.show||'current'; if(cur?show==='period':show==='current') return;
     if((l.k==='road'||l.k==='water')?!lineNames:!placeNames) return;
+    if(TER[l.k]){ if(l.l>lvl) return; var q0=S(l.p); if(q0[0]<-200||q0[1]<-200||q0[0]>z.w+200||q0[1]>z.h+200) return;
+      if(l.k==='ridge'){ // a ridge: its name spaced out along the crest, slid along it to find room clear of the units; a key ridge is named even under them
+        var tw=l.t.length*9.1,ra=l.a*Math.PI/180,ux=Math.cos(ra),uy=Math.sin(ra),ca=Math.abs(ux),sa=Math.abs(uy),bw=(tw*ca+14*sa)/2,bh=(tw*sa+14*ca)/2,pick=null,rr;
+        [0,45,-45,90,-90,140,-140].some(function(o){var cx=q0[0]+ux*o,cy=q0[1]+uy*o;rr=[cx-bw,cy-bh,cx+bw,cy+bh];if(rr[0]<2||rr[1]<2||rr[2]>z.w-2||rr[3]>z.h-2||L.hit(rr))return false;pick=[cx,cy,rr];return true});
+        if(!pick){if(l.l>0)return;pick=[q0[0],q0[1],null]} else L.keep(pick[2]);
+        h+='<text class="rl'+(pick[2]?'':' under')+'" text-anchor="middle" transform="translate('+f1(pick[0])+' '+f1(pick[1])+') rotate('+l.a+')" y="4">'+esc(l.t)+'</text>'; return}
+      // a hill: a summit mark, and its name beside it
+      var hw=l.t.length*7.3+4,hr=[q0[0]+7,q0[1]-16,q0[0]+9+hw,q0[1]],hl=[q0[0]-9-hw,q0[1]-16,q0[0]-7,q0[1]],side=!L.hit(hr)?hr:!L.hit(hl)?hl:null;
+      h+='<path class="hm" d="M'+f1(q0[0])+' '+f1(q0[1]-5)+'l4.5 7.5h-9z"/>';
+      if(!side&&l.l>0) return; if(side) L.keep(side);
+      h+='<text class="hl'+(side?'':' under')+'"'+(side===hl?' text-anchor="end" x="'+f1(q0[0]-8)+'"':' x="'+f1(q0[0]+8)+'"')+' y="'+f1(q0[1]-4)+'">'+esc(l.t)+(l.s&&sNow>=(Z.full_names||1e9)?' <tspan class="old">('+esc(l.s)+')</tspan>':'')+'</text>'; return}
     if(l.l>lvl&&l.k!=='wood') return;
     if(cover&&l.p[0]>cover[0]&&l.p[0]<cover[2]&&l.p[1]>cover[1]&&l.p[1]<cover[3]) return;
     var q=S(l.p); if(q[0]<-60||q[1]<-20||q[0]>z.w+60||q[1]>z.h+20) return;
@@ -460,7 +480,7 @@ function rowHtml(k,head){
   return h;
 }
 function about(){return '<details><summary>About this prototype</summary>'+(P.about||[]).map(function(p){return '<p>'+esc(p)+'</p>'}).join('')+'<p>The map is drawn with MapLibre GL JS.</p></details>'}
-function status(o){return o.s.kind==='moving'?'Moving (interpolated)':o.s.kind==='after'?'Last recorded position':o.s.k.act}
+function status(o){return o.s.kind==='moving'?'Moving (interpolated)':o.s.kind==='early'?'Arrived (time inferred)':o.s.kind==='after'?'Last recorded position':o.s.k.act}
 function item(o,text){return '<li><button data-pick="'+o.tr.id+'"><span class="sd" style="background:'+look(o.tr).ui+'"></span><span class="nm">'+esc(o.tr.label)+'</span><span class="ac">'+esc(text)+'</span></button></li>'}
 var panelKey='';
 function renderPanel(sc){
@@ -476,6 +496,7 @@ function renderPanel(sc){
     else{var kd=me.s.kind,K=kinds[kd];
       h+='<div class="state '+((kd==='offthis'||kd==='lost'||kd==='offmap')?'unplaced':kd)+'"><b>'+K[0]+'</b>'+esc(kd==='offmap'?tr.offmap:K[1])+'</div>';
       if(kd==='moving'){h+=rowHtml(me.s.k,'Heading to');if(me.s.from)h+=rowHtml(me.s.from,'Coming from')}
+      else if(kd==='early'){h+=rowHtml(me.s.k,'Next record');if(me.s.from)h+=rowHtml(me.s.from,'Came from')}
       else h+=rowHtml(me.s.k,(kd==='after'||kd==='lost')?'Last record':'Current record');}
     if(tr.notes) h+='<p class="meta" style="margin-top:12px">'+esc(tr.notes)+'</p>';
   } else {
@@ -530,6 +551,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   if(bases.some(function(b){return !b.current&&!b.own&&!b.sat})) L+='<div class="grp" id="gOpac"><div class="gh"><span>Period map</span><span id="opv">100%</span></div><input type="range" id="opac" min="0" max="100" step="5" value="100" aria-label="How strongly the period map is drawn"><p class="gn">Turn it down to see today&rsquo;s map through the period map.</p></div>';
   L+='<div class="grp"><button class="lnk" id="bLink">Copy a link to this view</button><span class="ok" id="linkok" hidden>Copied</span></div>';
   $('layers').innerHTML=L;
+  var cb=$('clockbattle'); if(cb){cb.textContent=P.clock_title||B.title;cb.hidden=P.clock_title===''}   // the battle's name in the date box
   wrap.classList.toggle('compact',compact); $('when').classList.toggle('date',byDay); $('tl').classList.toggle('days',byDay);
   if(byDay){$('hint').innerHTML=$('hint').innerHTML.replace('to move time','to move through the days')}
 })();
@@ -568,21 +590,26 @@ function fitNames(){
 }
 window.addEventListener('resize',fitNames);
 /* the time step: how far one arrow key or one notch of the scroll wheel moves time. Only steps the battle's span can use are offered. */
+/* The same step sets how fast the playback runs: one step of battle time for each second played. */
 var STEPS=(byDay?[[1,'1 day'],[7,'1 week'],[30,'1 month']]:[[1,'1 min'],[5,'5 min'],[15,'15 min'],[60,'1 hour'],[1440,'1 day']]).filter(function(x,i){return i===0||x[0]*3<=T1-T0});
-function setStep(i){stepI=(i+STEPS.length)%STEPS.length;wheelAcc=0;var e=$('step');e.textContent=STEPS[stepI][1];e.hidden=STEPS.length<2}
+function setStep(i){stepI=(i+STEPS.length)%STEPS.length;wheelAcc=0;var e=$('step'),w=STEPS[stepI][1];e.textContent=w;e.hidden=STEPS.length<2;
+  e.title='Step: '+w+'. The back and forward buttons and the arrow keys move '+w+'; playing runs '+w+' a second. Click to change.';
+  var b=$('evprev'),f=$('evnext');if(b){b.title='Back '+w;b.setAttribute('aria-label','Back '+w)}if(f){f.title='Forward '+w;f.setAttribute('aria-label','Forward '+w)}}
+function stepNear(r){var best=0;STEPS.forEach(function(x,i){if(Math.abs(Math.log(x[0]/r))<Math.abs(Math.log(STEPS[best][0]/r)))best=i});return best}   // the step nearest a play rate
 function stepBy(dir,v){var n=STEPS[stepI][0];
   if(byDay) return (dir>0?Math.floor(v+1e-6):Math.ceil(v-1e-6))+dir*n;
   if(stepI===0) return v+dir*((LD&&(dir>0?v<TM:v<=TM))?(LD.step||5):1);
-  return (dir>0?Math.floor(v/n+1e-6):Math.ceil(v/n-1e-6))*n+dir*n}   // on to the next round quarter-hour, hour, ...
+  return Math.round(v)+dir*n}   // always exactly one step, so every press moves time the same amount
 var rng=$('time'); rng.min=0; rng.max=RNG; rng.step=1; rng.value=0; rng.setAttribute('aria-label',byDay?'Day of the battle':'Time of day');
 clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*RNG)},fromRange:function(v){return u2t(v/RNG)},
-  rate:function(v){return (LD&&v<TM)?LD.rate:(P.rate||(byDay?0.85:3))},onTime:paintTime,
+  rate:function(v){var n=STEPS[stepI][0];return (LD&&v<TM)?Math.max(LD.rate,n):n},onTime:paintTime,
   snap:byDay?function(v){return Math.round(v)}:null,   // the sources give one position a day, so time settles on nightfall
   arrow:stepBy,
   wheel:function(dd,v){if(stepI===0)return u2t(Math.max(0,Math.min(1,t2u(v)+dd*0.0002)));   // at the finest step scrolling is smooth; at a coarser one each notch is one step
     wheelAcc+=dd;if(Math.abs(wheelAcc)<50)return v;var dir=wheelAcc>0?1:-1;wheelAcc=0;return stepBy(dir,v)},
   onKey:function(e){var k=e.key.toLowerCase();
-    if(e.key==='Escape')select(null);else if(k==='n')setNames(!names);else if(k==='u')setUnits(!unitsOn);else if(k==='f'&&P.follow)setFollow(!follow);
+    if(e.key==='['||e.key==='PageUp'){toEvent(-1);e.preventDefault()}else if(e.key===']'||e.key==='PageDown'){toEvent(1);e.preventDefault()}
+    else if(e.key==='Escape')select(null);else if(k==='n')setNames(!names);else if(k==='u')setUnits(!unitsOn);else if(k==='f'&&P.follow)setFollow(!follow);
     else if(k==='m'&&bases.length>1)setBase(bases[(bases.indexOf(base)+1)%bases.length])}});
 
 /* timeline furniture: ticks, the part the data covers best, and the events */
@@ -622,7 +649,8 @@ on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.
   if(!document.fullscreenEnabled||!app.requestFullscreen){b.hidden=true;return}
   b.addEventListener('click',function(){if(document.fullscreenElement)document.exitFullscreen();else app.requestFullscreen()})})();
 on('binfo',function(){sel=null;info=!info;panelKey='';mv.kick()});
-on('evprev',function(){toEvent(-1)}); on('evnext',function(){toEvent(1)}); on('step',function(){setStep(stepI+1)});
+// back and forward one step; [ and ] jump between key events
+on('evprev',function(){clk.setPlaying(false);clk.setTime(stepBy(-1,t))}); on('evnext',function(){clk.setPlaying(false);clk.setTime(stepBy(1,t))}); on('step',function(){setStep(stepI+1)});
 WM.panelClicks(panel,select);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-ev]');if(!b)return;var ev=B.events.filter(function(x){return x.id===b.getAttribute('data-ev')})[0];if(ev){clk.setPlaying(false);clk.setTime(ev.t)}});
 panel.addEventListener('toggle',function(e){if(e.target.classList&&e.target.classList.contains('evs'))evOpen=e.target.open},true);
@@ -643,7 +671,7 @@ on('bLink',function(){var url=location.href.split('#')[0]+linkHash(),ok=$('linko
 
 /* ---------- start ---------- */
 try{if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')}}catch(_){ }
-setStep(0);
+setStep(stepNear(P.rate||(byDay?1:5)));
 if(P.views) preset=P.views[0].preset;
 mv.start(function(){buildBase();paintTime(T0);(P.views||[]).forEach(function(v){press('v-'+v.preset,preset===v.preset)});setBase(base,true);clk.setTime(T0);readLink();WM.hint(mv)});
 var api={battle:B,setTime:clk.setTime,select:select,setFollow:setFollow,setBase:setBase,setNames:setNames,setUnits:setUnits,setFold:setFold,setPreset:setPreset,mv:mv,
