@@ -163,9 +163,11 @@ function scene(){
 }
 
 /* ---------- view ---------- */
-function actionBox(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],b=[1e9,1e9,-1e9,-1e9],any=false;
-  B.tracks.forEach(function(tr){if(tr.parent||tr.loose||ex.indexOf(tr.id)>=0)return;var s=stateAt(tr,t,key);if(!s||!s.g||s.hid)return;any=true;
-    s.g.forEach(function(p){b[0]=Math.min(b[0],p[0]);b[1]=Math.min(b[1],p[1]);b[2]=Math.max(b[2],p[0]);b[3]=Math.max(b[3],p[1])})});
+/* What the Follow camera frames: every unit on the map now, and every unit that will be on it within the look-ahead
+   (playback.follow.lookahead, minutes), so a column still far off is in view before it arrives and the camera closes in as the forces meet. */
+function actionBox(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],b=[1e9,1e9,-1e9,-1e9],any=false,la=byDay?0:(F.lookahead!=null?F.lookahead:30),when=la?[t,Math.min(T1,t+la/2),Math.min(T1,t+la)]:[t];
+  B.tracks.forEach(function(tr){if(tr.parent||tr.loose||ex.indexOf(tr.id)>=0)return;when.forEach(function(tt){var s=stateAt(tr,tt,key);if(!s||!s.g||s.hid)return;any=true;
+    s.g.forEach(function(p){b[0]=Math.min(b[0],p[0]);b[1]=Math.min(b[1],p[1]);b[2]=Math.max(b[2],p[0]);b[3]=Math.max(b[3],p[1])})})});
   if(!any) return base.own?[0,0,base.m.size[0]*0.75,base.m.size[1]]:((F.empty&&B.presets[F.empty])||EXT);
   var mn=base.own?[520,400]:(F.min||[1400,900]),mg=base.own?70:(F.margin||140);
   var mx=Math.max(mg,(mn[0]-(b[2]-b[0]))/2),my=Math.max(mg,(mn[1]-(b[3]-b[1]))/2);
@@ -184,7 +186,8 @@ function focusPoint(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],U=[],mov=[]
   return cen(mov.length?mov:U.map(function(u){return u.c}))}
 /* The Follow camera. At its widest it frames every unit. Zoomed in from there with + (followK above 1) it cannot show them all,
    so it centres on where the action is and keeps doing so as time moves. */
-var followK=1;
+var FOL={rate:(P.follow&&P.follow.ease)||0.1,glide_rate:0.012,glide_ms:(P.follow&&P.follow.glide_seconds!=null?P.follow.glide_seconds:6)*1000};
+var followK=1,glide=0;   // glide: until when (ms) the camera eases in slowly, after play is first pressed
 function target(){var n=mv.size().w<520?36:56,W=WORLDS[worldOf(base)],cam=mv.cameraFor(actionBox(),{t:n+34,b:n+26,l:n,r:n},base.own?1.3:(Z.follow_max||Z.max||2));
   if(followK!==1){cam.zoom=Math.min(cam.zoom+Math.log2(followK),mv.zoomFor(W.maxScale));
     if(followK>1){var f=focusPoint();if(f)cam.center=W.toLL(f)}}
@@ -229,19 +232,26 @@ function layout(sc){
       else{if(px<0){px=-px;py=-py}x+=px*20;y+=py*13}}
     var conf=(P.question_mark==='location'&&o.s.k.cc)||o.s.k.oc,low=(conf==='low'&&o.s.kind!=='moving'),txt=tr.label+((low&&!compact)?' ?':'');
     L.push({o:o,pts:pts,len:len,c:c,x:x,y:y,low:low,txt:txt,w:txt.length*(compact?6.7:7.1)+6,pr:rank(tr),nudged:!!(nx||ny),line:len>7})});
+  if(fmOn&&FM&&!base.own&&sNow<FM.below){ var F={};
+    L.forEach(function(u){var tr=u.o.tr;if(!tr.id||tr.parent||tr.id===sel)return;var f=formationOf(tr.unit);if(!f||f.side==null)return;(F[f.id]=F[f.id]||{f:f,u:[]}).u.push(u)});
+    Object.keys(F).forEach(function(id){var g=F[id],n=g.u.length,x=0,y=0,cx=0,cy=0,mov=0,tr0=g.u[0].o.tr; if(n<(FM.min_units||1)) return;
+      g.u.forEach(function(u){u.noSym=true;x+=u.x;y+=u.y;cx+=u.c[0];cy+=u.c[1];if(u.o.s.kind==='moving')mov++});
+      var lab=g.f.label||g.f.name,tr={id:'F:'+id,unit:id,label:lab,side:tr0.side,nation:tr0.nation,ech:FM.echelon||'division',branch:tr0.branch,parent:'',formation:true};
+      L.push({o:{tr:tr,s:{kind:mov===n?'moving':'stated',k:{oc:'high'}}},pts:[[cx/n,cy/n]],len:0,c:[cx/n,cy/n],x:x/n,y:y/n,low:false,txt:lab,w:lab.length*7.1+6,pr:0,nudged:false,line:false,kids:g.u.map(function(u){return u.o.tr.id})})});
+    L=L.filter(function(u){return !u.noSym||u.line}); }   // a gathered unit keeps only its line
   Object.keys(ag).forEach(function(gi){var G=P.groups[gi],gc=cen(ag[gi]);
     L.push({o:{tr:{id:'',label:G.label,side:G.side,nation:'',ech:G.echelon||'brigade',branch:G.branch||'inf'},s:{kind:'stated',k:{oc:'high'}}},pts:[gc],len:0,c:gc,x:gc[0],y:gc[1],low:false,txt:G.label,w:G.label.length*7.1+6,pr:1,nudged:false,line:false})});
   L.sort(function(a,b){return a.pr-b.pr});
   // spread symbols that land on the same spot
-  for(var i=0;i<L.length;i++)for(var pass=0;pass<4;pass++){var moved=false;for(var j=0;j<i;j++){var a=L[i],b=L[j];if(Math.abs(a.x-b.x)<27&&Math.abs(a.y-b.y)<21){var sx=a.x>=b.x?1:-1,sy=a.y>=b.y?1:-1;if(Math.abs(a.x-b.x)>Math.abs(a.y-b.y))a.x=b.x+sx*28;else a.y=b.y+sy*22;a.nudged=true;moved=true}}if(!moved)break}
+  for(var i=0;i<L.length;i++)for(var pass=0;pass<4;pass++){var moved=false;for(var j=0;j<i;j++){var a=L[i],b=L[j];if(a.noSym||b.noSym)continue;if(Math.abs(a.x-b.x)<27&&Math.abs(a.y-b.y)<21){var sx=a.x>=b.x?1:-1,sy=a.y>=b.y?1:-1;if(Math.abs(a.x-b.x)>Math.abs(a.y-b.y))a.x=b.x+sx*28;else a.y=b.y+sy*22;a.nudged=true;moved=true}}if(!moved)break}
   var R=[]; function hit(r){for(var i=0;i<R.length;i++){var q=R[i];if(r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1])return true}return false}
-  L.forEach(function(u){R.push([u.x-14,u.y-19,u.x+14,u.y+10]);
+  L.forEach(function(u){if(!u.noSym)R.push([u.x-14,u.y-19,u.x+14,u.y+10]);
     if(!compact) for(var i=1;i<u.pts.length&&u.line;i++){var a=u.pts[i-1],b=u.pts[i],d=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.round(d/11));
       for(var j=0;j<=n;j++){var qx=a[0]+(b[0]-a[0])*j/n,qy=a[1]+(b[1]-a[1])*j/n;R.push([qx-4,qy-4,qx+4,qy+4])}}});
   // names, most important units first; a crowded name is dropped (the unit stays tappable)
   var force=!compact&&sNow>=(Z.force_names_from||0);
   L.forEach(function(u){
-    u.lab=null; if(!names&&!(sel&&u.o.tr.id===sel)) return;
+    u.lab=null; if(u.noSym||(!names&&!(sel&&u.o.tr.id===sel))) return;
     var x=u.x,y=u.y,w=u.w,C=[[x+16,y-8,x+16+w,y+8,'start',x+17,y+4.5],[x-16-w,y-8,x-16,y+8,'end',x-17,y+4.5],[x-w/2,y+11,x+w/2,y+26,'middle',x,y+23],[x-w/2,y-35,x+w/2,y-20,'middle',x,y-23]];
     for(var i=0;i<C.length;i++){ if(C[i][0]>=3&&C[i][2]<=Zs.w-3&&!hit(C[i])){u.lab=C[i];break} }
     if(!u.lab&&(u.pr===0||(force&&u.pr===1))) u.lab=C[0];
@@ -249,6 +259,17 @@ function layout(sc){
   L.hit=hit; L.keep=function(r){R.push(r)};
   return L;
 }
+/* Formations (playback.formations, and the Layers menu): zoomed out below `below`, the units under one formation of the given
+   echelon (a division, say) are drawn as that formation: one symbol where their symbols would sit, with their lines kept as its front.
+   Zooming in past `below` breaks it out into its units again. A unit is gathered by walking up who it answered to at the moment. */
+var FM=P.formations||null,fmOn=!!(FM&&FM.on);
+function formationOf(uid){ var seen=0,d=stamp(t),want=FM.echelon||'division';
+  while(uid&&seen++<5){var u=B.units[uid];if(!u)return null;var as=u.assignments||[],a=null;
+    as.forEach(function(x){var f=x.from?B.time(x.from):-1e9,e=x.to?B.time(x.to)+((!byDay&&x.to.length===10)?1439:0):1e9;if(d>=f&&d<=e)a=x});
+    a=a||as[as.length-1]; if(!a||!a.parent) return null; var p=B.units[a.parent]; if(!p) return null;
+    if(String(p.echelon||'').toLowerCase()===want) return p; uid=a.parent}
+  return null}
+function setFormations(v){fmOn=v;tick('cForm',v);remember('form',v);mv.kick()}
 function f1(v){return v.toFixed(1)}
 function unitSvg(u,part){   // the last position on record stays plain to see: dashed, barely faded
   var o=u.o,tr=o.tr,s=o.s,pts=u.pts,lk=look(tr),col=lk.col,k=s.kind;
@@ -262,6 +283,7 @@ function unitSvg(u,part){   // the last position on record stays plain to see: d
     if(isSel) h+='<path d="'+d+'" stroke="var(--m-sel)" stroke-width="'+(w+9)+'" opacity=".8"/>';
     h+='<path d="'+d+'" stroke="var(--u-halo)" stroke-width="'+(w+(compact?3:4))+'"'+(compact?'':' stroke-linecap="butt"')+'/><path d="'+d+'" stroke="'+col+'" stroke-width="'+w+'"'+((compact||tr.loose)?'':' stroke-linecap="butt"')+dash+'/>';
     return h+'</g>'; }
+  if(u.noSym) return '';
   var W=compact?12:13,H=compact?8:9;
   if(symbols==='period'){ // period style: no frame. A line is its own mark, as on the maps of the time; a unit at a point is a small block
     h+='<g opacity="'+op+'">';
@@ -523,7 +545,11 @@ function renderPanel(sc){
   }
   panel.innerHTML=h; if(sel) panel.scrollTop=0;
 }
-function select(id){sel=id||null;info=false;panelKey='';mv.kick()}
+function select(id){
+  if(id&&String(id).indexOf('F:')===0){ // a formation drawn zoomed out: zoom in on it until it breaks out into its units
+    var hit=null;mv.hits.forEach(function(h){if(h.id===id&&h.r)hit=h}); if(hit){setFollow(false);setPreset(null);var W=WORLDS[worldOf(base)],c=mv.map.unproject([(hit.r[0]+hit.r[2])/2,(hit.r[1]+hit.r[3])/2]);
+      mv.map.easeTo({center:c,zoom:mv.zoomFor(FM.below*1.15),duration:700})} return }
+  sel=id||null;info=false;panelKey='';mv.kick()}
 var evOpen=false;
 /* what lies around the map on screen, where the battle has a surround */
 function aroundNote(){ if(!topo()||base.own||base.sat||base.current) return '';
@@ -554,7 +580,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   // the Layers menu: what is drawn, how units are drawn, and how much of the period map shows
   var ck=function(id,label,on,key){return '<label class="ck"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span>'+label+(key?'<kbd>'+key+'</kbd>':'')+'</span></label>'},
       sb=function(id,label,on){return '<button id="'+id+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>'},L='';
-  L+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')
+  L+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')
     +ck('cPlaces','Place names',true)+ck('cLines','Road and stream names',true)+ck('cNarr','The current event, in words, on the map',false)+'</div>';
   L+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Symbol style',[sb('sy-standard','Standard',true),sb('sy-period','Period style',false)])+'<p class="gn">Period style drops the frames: a line is a bar, as on maps of the time.</p></div>';
   L+='<div class="grp"><div class="gh">Seen from</div>'+seg('Seen from',[sb('fr-none','Neither side',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Seen from one side, the other side takes the diamond frame of the standard military symbols.</p></div>';
@@ -571,7 +597,7 @@ try{ mv=WM.mapView({container:'map',wrap:wrap,world:worldOf(base),worlds:WORLDS,
   onDraw:draw,onPick:select,
   onUserMove:function(){if(follow)setFollow(false);if(preset||goal)setPreset(null)},
   onResize:function(){if(preset){mv.jump(cameraOf(preset));goal=null}else if(follow&&!landing)mv.jump(target());else if(landing)mv.jump(home())},
-  onStep:function(ts){var more=clk.step(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing&&mv.chase(target(),0.16))more=true;return more}});
+  onStep:function(ts){var more=clk.step(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing&&mv.chase(target(),glide>Date.now()?FOL.glide_rate:FOL.rate))more=true;return more}});
 }catch(err){WM.noMap(wrap,err);return null}
 S=mv.S;
 mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
@@ -579,7 +605,7 @@ mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
 var LD=(P.lead&&B.focus&&B.focus[0]>T0)?P.lead:null,TM=LD?B.focus[0]:T0,UM=LD?LD.share:0,RNG=4000;
 function u2t(u){return (LD&&u<=UM)?T0+(TM-T0)*u/UM:TM+(T1-TM)*(u-UM)/(1-UM)}
 function t2u(v){return (LD&&v<=TM)?UM*(v-T0)/(TM-T0):UM+(1-UM)*(v-TM)/(T1-TM)}
-function paintTime(v){t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey=''}   // the battle has been started: the units come on, and Follow takes the camera
+function paintTime(v){t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms}   // the battle has been started: the units come on, and Follow takes the camera
 
   if(byDay){var n=stamp(t),d=B.dateOf(n),night=Math.abs(t-Math.round(t))<0.02;
     $('clock').textContent=d.day+' '+d.mon+' '+d.year;$('clockdate').textContent=d.wd+' · '+(night?'at nightfall':'during the day');WM.paintDayNumber(B.cal.numbered?n+1:0)}
@@ -648,7 +674,7 @@ on('bLayers',function(){openLayers($('layers').hidden)});
 document.addEventListener('pointerdown',function(e){if(!$('layers').hidden&&!e.target.closest('#layers')&&!e.target.closest('#bLayers'))openLayers(false)});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('layers').hidden){openLayers(false);$('bLayers').focus();e.stopPropagation()}},true);
 function onCheck(id,fn){var e=$(id);if(e)e.addEventListener('change',function(){fn(e.checked)})}
-onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr);
+onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations);
 onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
 on('sy-standard',function(){setSymbols('standard')}); on('sy-period',function(){setSymbols('period')});
 on('fr-none',function(){setSeenFrom('')}); raw.sides.forEach(function(sd){on('fr-'+sd.code,function(){setSeenFrom(sd.code)})});
@@ -682,14 +708,14 @@ on('bLink',function(){var url=location.href.split('#')[0]+linkHash(),ok=$('linko
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,function(){ok.textContent='Copy it from the address bar';done()});else{ok.textContent='Copy it from the address bar';done()}});
 
 /* ---------- start ---------- */
-try{if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')}}catch(_){ }
+try{if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)}}catch(_){ }
 setStep(stepNear(P.rate||(byDay?1:5)));
 if(P.views) preset=P.views[0].preset;
 base=startBase();
 mv.start(function(){buildBase();paintTime(T0);(P.views||[]).forEach(function(v){press('v-'+v.preset,preset===v.preset)});setBase(base,true);clk.setTime(T0);readLink();WM.hint(mv)});
 var api={battle:B,setTime:clk.setTime,select:select,setFollow:setFollow,setBase:setBase,setNames:setNames,setUnits:setUnits,setFold:setFold,setPreset:setPreset,mv:mv,
   focus:function(){var f=focusPoint();return f?WORLDS[worldOf(base)].toLL(f):null},setNarrative:setNarr,setSymbols:setSymbols,setSeenFrom:setSeenFrom,setOpacity:setOpacity,setStep:setStep,link:linkHash,
-  begin:function(){landing=false;panelKey='';mv.kick()},
+  begin:function(){landing=false;panelKey='';mv.kick()},setFormations:setFormations,
   scene:function(){return scene().map(function(o){return {id:o.tr.id,kind:o.s.kind,row:o.s.k.id,drawn:o.drawn}})}};
 Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}}); Object.defineProperty(api,'landing',{get:function(){return landing}}); Object.defineProperty(api,'modern',{get:function(){return {on:!!modOn,off:modOff}}});
 global.__wm=api; return api;

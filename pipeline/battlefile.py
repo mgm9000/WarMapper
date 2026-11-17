@@ -191,6 +191,8 @@ def validate(b, folder=None):
         if not (t.startswith('https://') and all(k in t for k in ('{z}', '{x}', '{y}'))): bad.append('playback.modern.tiles must be an https address with {z}, {x} and {y}')
         if not (isinstance(su, dict) and su.get('credit')): bad.append('playback.modern needs a credit')
         if isinstance(su, dict) and su.get('reach') is not None and not (isinstance(su['reach'], (int, float)) and 1 < su['reach'] <= 40): bad.append('playback.modern.reach must be a number above 1 and up to 40')
+    fm = P.get('formations')
+    if fm is not None and not (isinstance(fm, dict) and isinstance(fm.get('below'), (int, float)) and fm['below'] > 0): bad.append('playback.formations needs a number `below`')
     if P.get('start_base') and P['start_base'] not in [b.get('id') for b in P.get('bases', [])]: bad.append('playback.start_base names no base')
     if P.get('bounds') and P['bounds'] not in maps: bad.append('playback.bounds: map %r is not in maps' % P['bounds'])
     for v in P.get('views', []):
