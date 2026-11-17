@@ -7,19 +7,19 @@
   --m-ink:#141a24; --m-halo:#fdf8ea; --m-paper:#e8dcc0; --m-sel:#f2a900;
   --display:"Zilla Slab",Rockwell,Georgia,serif; --body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   /* current map */
-  --raster-max:1; --land:#e6e9e0; --wood:#cfe0c3; --road:#ffffff; --road-major:#fbf0c9; --road-edge:#b4bcae; --rail:#8d94a0; --water:#a8cde6; --water-text:#2c6c9c; --map-text:#3b4654; --map-halo:#eef1ea; --map-ink:#141a24;
+  --raster-max:1; --land:#e6e9e0; --relief:#7b4f24; --wood:#cfe0c3; --road:#ffffff; --road-major:#fbf0c9; --road-edge:#b4bcae; --rail:#8d94a0; --water:#a8cde6; --water-text:#2c6c9c; --map-text:#3b4654; --map-halo:#eef1ea; --map-ink:#141a24;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
   --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
   --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
-  --raster-max:.88; --land:#1b232d; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
+  --raster-max:.88; --land:#1b232d; --relief:#d9ad7c; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
   color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
   --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
   --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
-  --raster-max:.88; --land:#1b232d; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
+  --raster-max:.88; --land:#1b232d; --relief:#d9ad7c; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
   color-scheme:dark }
 
 html,body{height:100%}
@@ -37,6 +37,7 @@ button{font:inherit;color:inherit}
 .ttl h1{font-family:var(--display);font-weight:700;font-size:20px;line-height:1.15;margin:0;text-wrap:balance}
 .ttl p{margin:2px 0 0;color:var(--muted);font-size:12.5px}
 .when{position:absolute;left:max(10px,env(safe-area-inset-left,0px));bottom:46px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.18);padding:7px 12px 8px;pointer-events:none;min-width:136px}
+.when .bn{font-family:var(--display);font-size:12.5px;font-weight:600;line-height:1.2;color:var(--fg);max-width:220px;margin-bottom:2px}
 .when .dayn{font-size:10.5px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--accent);margin-bottom:1px}
 .when .t{font-family:var(--display);font-weight:600;font-size:25px;line-height:1.1;font-variant-numeric:tabular-nums;letter-spacing:.01em;white-space:nowrap}
 .when .d{font-size:11.5px;color:var(--muted);margin-top:2px;white-space:nowrap}
@@ -47,7 +48,8 @@ button{font:inherit;color:inherit}
 .mapwrap{position:relative;overflow:hidden;background:var(--land);min-height:0;user-select:none;-webkit-user-select:none;--u-ink:var(--fg);--u-halo:var(--land)}
 .mapwrap.paper{background:var(--m-paper);--u-ink:var(--m-ink);--u-halo:var(--m-halo)}
 /* over aerial or satellite imagery: dark text on a light halo in both themes, so names read against any ground */
-.mapwrap.sat{--u-ink:#141a24;--u-halo:#f4f5ef;--map-text:#141a24;--map-halo:rgba(244,245,239,.92);--water-text:#174f78;--raster-max:1}
+.mapwrap.sat .rl,.mapwrap.sat .hl{stroke:rgba(43,28,12,.85)}
+.mapwrap.sat{--relief:#fff1d6;--u-ink:#141a24;--u-halo:#f4f5ef;--map-text:#141a24;--map-halo:rgba(244,245,239,.92);--water-text:#174f78;--raster-max:1}
 #map{position:absolute;inset:0}
 #map .maplibregl-canvas{outline:none}
 #ov{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;pointer-events:none;z-index:2}
@@ -58,6 +60,11 @@ button{font:inherit;color:inherit}
 .sl .old,.pl .old{font-style:italic}
 .al{font-size:10.5px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;fill:var(--map-text);stroke:var(--map-halo);stroke-width:3px;opacity:.8}
 .al.town{font-size:15px;letter-spacing:.04em;text-transform:none;opacity:.9}
+/* the lie of the land: ridges named along the crest, hills with a summit mark, in the brown of relief */
+.rl{font-family:var(--display);font-size:12.5px;font-weight:600;font-style:italic;letter-spacing:.2em;fill:var(--relief);stroke:var(--map-halo);stroke-width:3.5px}
+.hl{font-family:var(--display);font-size:12.5px;font-weight:600;font-style:italic;fill:var(--relief);stroke:var(--map-halo);stroke-width:3.5px}
+.rl.under,.hl.under{opacity:.7}
+.hm{fill:var(--relief);stroke:var(--map-halo);stroke-width:1.5px;paint-order:stroke}
 .pl{font-size:11px;fill:var(--map-text);stroke:var(--map-halo);stroke-width:3px}
 .pl.big{font-size:12.5px;font-weight:600}
 .wl{font-size:10.5px;font-style:italic;fill:var(--map-text);stroke:var(--map-halo);stroke-width:3px;opacity:.85}

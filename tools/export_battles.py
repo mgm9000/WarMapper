@@ -8,7 +8,8 @@ of its own: a new battle is new rows in the workbook.
   python3 tools/export_battles.py ypres        one battle only
   python3 tools/export_battles.py --check      check the files as they stand, without rewriting them
 
-A battle file that breaks the format is not written. Positions that would have a unit move implausibly fast are listed as warnings.
+A battle file that breaks the format is not written. Positions that would have a unit move implausibly fast are listed as warnings, and so
+are places where one side's symbol is drawn on top of the other's (a unit overrun on the map without the data saying what became of it).
 After exporting, run tools/build.py to put the new data into the pages.
 """
 import datetime as dt, json, math, os, sys
@@ -99,6 +100,7 @@ def export(pb, W):
         return {'id': pid, 'start': [se, sl], 'end': [ee, el], 'show': [frm, to], 'at': at,
                 'on': {p['map_id']: [[float(v) for v in q.split(',')] for q in str(p['map_xy']).split(';')]} if not blank(p.get('map_xy')) else None,
                 'along': True if yes(p.get('moves_along_line')) else None,
+                'march': True if yes(p.get('arrive_at_pace')) else None,
                 'activity': text(p['activity']), 'place': text(p['place_description']), 'quote': text(p['source_wording']), 'method': text(p['position_method']),
                 'confidence': text(p['overall_confidence']), 'time_basis': text(p['time_basis']), 'location': loc, 'sources': bf.ids(p['source_ids']), 'notes': text(p['notes']),
                 'review': text(p['review_status']), 'battle': text(p['battle_id']), 'shared': True if p['unit_id'] != tr['unit_id'] else None}
@@ -189,6 +191,86 @@ def pace(battle):
     return out
 
 
+def _seg_d(a, b, c, d):
+    """Distance between segments ab and cd (0 where they cross)."""
+    def cross(o, p, q): return (p[0] - o[0]) * (q[1] - o[1]) - (p[1] - o[1]) * (q[0] - o[0])
+    if a != b and c != d:
+        d1, d2, d3, d4 = cross(c, d, a), cross(c, d, b), cross(a, b, c), cross(a, b, d)
+        if ((d1 > 0) != (d2 > 0)) and ((d3 > 0) != (d4 > 0)): return 0.0
+    def pt(p, s, e):
+        vx, vy = e[0] - s[0], e[1] - s[1]; L = vx * vx + vy * vy
+        f = 0 if not L else max(0, min(1, ((p[0] - s[0]) * vx + (p[1] - s[1]) * vy) / L))
+        return math.hypot(p[0] - s[0] - f * vx, p[1] - s[1] - f * vy)
+    return min(pt(a, c, d), pt(b, c, d), pt(c, a, b), pt(d, a, b))
+
+
+def _gd(g, h):
+    """Distance between two positions (points or lines)."""
+    G = list(zip(g, g[1:])) or [(g[0], g[0])]; H = list(zip(h, h[1:])) or [(h[0], h[0])]
+    return min(_seg_d(a, b, c, d) for a, b in G for c, d in H)
+
+
+def _lerp(a, b, f):
+    n = max(len(a), len(b)); a = a + [a[-1]] * (n - len(a)); b = b + [b[-1]] * (n - len(b))
+    return [(p[0] + (q[0] - p[0]) * f, p[1] + (q[1] - p[1]) * f) for p, q in zip(a, b)]
+
+
+def contacts(battle, near=50):
+    """Warnings: where a symbol of one side sits on, or passes over, a symbol of the other (within `near` metres), as the playback
+    draws them minute by minute. Units that met in battle are close, but one side's symbol drawn over the other's means a unit has been
+    overrun on the map without the data saying so: it should fall back, be shown taken, or leave the map. Battles followed by the clock only."""
+    if battle['time']['unit'] != 'minute': return []
+    def stamp(s): return dt.datetime.fromisoformat(s if len(s) > 10 else s + 'T00:00')
+    zero = stamp(battle['time']['zero']); T = lambda s: (stamp(s) - zero).total_seconds() / 60
+    lat0 = battle['view']['origin'][1]; kx = 111320 * math.cos(math.radians(lat0)); ky = 111040
+    xy = lambda p: (p[0] * kx, p[1] * ky)
+    rules = (battle.get('playback') or {}).get('rules') or {}; pace = rules.get('pace'); near_m = rules.get('near', 15)
+    units = {u['id']: u for u in battle['units']}; tracks = []
+    for tr in battle['tracks']:
+        if tr.get('off_map'): continue
+        u = units[tr['unit']]; p = (pace if isinstance(pace, (int, float)) else pace.get(u['branch']) or pace.get('infantry')) if pace else 0
+        ks = [{'id': s['id'], 't0': T(s['show'][0]), 't1': T(s['show'][1]), 'g': [xy(q) for q in s['at']] if s.get('at') else None, 'virtual': s.get('virtual'), 'via': bool(s.get('via')), 'march': s.get('march')} for s in tr['steps']]
+        tracks.append({'id': tr['id'], 'side': u['side'], 'ks': ks, 'hide': tr.get('hide_after'), 'hold': T(tr['hold_until']) if tr.get('hold_until') else 0, 'pace': p or 0})
+    def at(tr, t):
+        ks = tr['ks']; n = len(ks)
+        if t < ks[0]['t0']: return None
+        for i, k in enumerate(ks):
+            nx = ks[i + 1] if i + 1 < n else None; end = max(k['t1'], tr['hold']) if i == n - 1 else k['t1']
+            if k['t0'] <= t <= end: return None if k['virtual'] else (k['g'], k['id'])
+            if nx and end < t < nx['t0']:
+                if not (k['g'] and nx['g']): return (k['g'], k['id']) if k['g'] else None
+                ca, cb = [sum(c) / len(c) for c in zip(*k['g'])], [sum(c) / len(c) for c in zip(*nx['g'])]; d = math.hypot(ca[0] - cb[0], ca[1] - cb[1])
+                if not nx['via'] and d < near_m: return (nx['g'], nx['id'])
+                arr = nx['t0']
+                if tr['pace'] and nx['march'] and not nx['via'] and end + max(3, d / tr['pace']) < arr:
+                    arr = end + max(3, d / tr['pace'])
+                    if t >= arr: return (nx['g'], nx['id'])
+                return (_lerp(k['g'], nx['g'], (t - end) / (arr - end)), k['id'] + '>' + nx['id'])
+        if tr['hide']: return None
+        return (ks[-1]['g'], ks[-1]['id']) if ks[-1]['g'] else None
+    t0, t1 = T(battle['time']['start']), T(battle['time']['end']); hits = {}
+    t = t0
+    while t <= t1:
+        here = [(tr, at(tr, t)) for tr in tracks]; here = [(tr, a) for tr, a in here if a and a[0]]
+        for i, (a, pa) in enumerate(here):
+            for b, pb in here[i + 1:]:
+                if a['side'] == b['side']: continue
+                d = _gd(pa[0], pb[0])
+                if d < near: hits.setdefault((a['id'], b['id']), []).append((t, pa[1], pb[1], d))
+        t += 1
+    out = []
+    clock = lambda m: '%d:%02d' % (int(m // 60) % 24, int(m % 60))
+    for (a, b), ts in sorted(hits.items(), key=lambda kv: kv[1][0][0]):
+        runs = [[ts[0]]]
+        for x in ts[1:]:
+            if x[0] - runs[-1][-1][0] > 1: runs.append([x])
+            else: runs[-1].append(x)
+        for r in runs:
+            d = min(x[3] for x in r)
+            out.append('%s and %s %s %s to %s (rows %s / %s)' % (a, b, 'drawn crossing' if d < 5 else 'within %d m' % max(5, round(d)), clock(r[0][0]), clock(r[-1][0]), r[0][1], r[0][2]))
+    return out
+
+
 def main(argv):
     args = list(argv); check_only = '--check' in args
     if check_only: args.remove('--check')
@@ -204,6 +286,7 @@ def main(argv):
         folder = os.path.join(ROOT, 'playbacks', pb['playback_id']); os.makedirs(folder, exist_ok=True)
         battle = bf.write(export(pb, W), os.path.join(folder, 'battle.json'))
         for w in pace(battle): print('  check this:', w)
+        for w in contacts(battle): print('  contact:', w)
     return 0
 
 

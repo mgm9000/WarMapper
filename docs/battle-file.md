@@ -143,7 +143,9 @@ Only sources the file cites are included, and every id cited anywhere in the fil
 
 `{"text": "Chambersburg Road", "alt": "Chambersburg Pike", "at": [-77.279316, 39.850271], "angle": 29, "level": 0, "kind": "road"}`
 
-`kind` is `road`, `water`, `area`, `town`, `place`, `wood` or `landmark`. `alt` is the other name: the period's
+`kind` is `road`, `water`, `area`, `town`, `place`, `wood`, `landmark`, `ridge` or `hill`. A `ridge` is named along its crest
+(give its `angle`), a `hill` with a summit mark; both are drawn in the brown of relief, ahead of road names, and a level-0 ridge or hill is
+named even where units cover it (beneath them). `alt` is the other name: the period's
 name where `text` is today's. `level` 0 shows first; higher levels appear as the reader zooms in. `angle` turns a
 name to lie along its road or stream. `approximate` marks a place put down only roughly.
 
@@ -213,7 +215,8 @@ defaults.
 | `style` | `tactical` for a battlefield (larger symbols, a question mark on a loose position) or `operational` for a front (smaller symbols, thinner roads). Defaults from `time.unit`. |
 | `scale_bar` | `yards` or `km`: the measure the scale bar writes first. The other follows under it, and both change as the reader zooms. |
 | `question_mark` | What marks a unit as doubtful (a question mark, a dashed symbol): `location`, how sure the place is, or `overall` (the default). |
-| `rate` | Time units played per second. |
+| `clock_title` | The battle's name in the date box on the map. Defaults to `title`. |
+| `rate` | The play speed the page opens at: it opens on the time step nearest this many time units a second. The step button then sets both how far the back and forward buttons and arrow keys move and how fast it plays (one step a second). |
 | `lead` | Squeezes the stretch before `time.focus` (a night march before a fight) into a `share` of the timeline, played at its own `rate`, with arrow keys moving `step` units. |
 | `time_note` | A line under the clock from a given time on (`from`, `text`). |
 | `follow` | Shows the Follow button: the camera keeps the units in view. `min` is the smallest box it frames, in metres; `margin` the space around the units; `exclude` tracks it ignores; `empty` the preset shown while no unit is placed. With Follow on, + and - tighten or widen the camera; zoomed in, it centres on where the action is: where opposing units are within `contact` metres of each other (800 by default on a battlefield, 5,000 on a front), otherwise where units are moving. |
@@ -225,8 +228,8 @@ defaults.
 | `zoom` | Zoom levels in screen pixels per metre: `max`; `follow_max`; `fold` (below it, units fold into their parent); `labels` (from it, level 1 names show); `towns_until`; `landmarks_from`; `woods_from`; `full_names` (from it, a place's other name shows); `minor_roads_from`; `force_names_from`. |
 | `fold` | `label` names the button that switches folding of tracks that have a `parent`. `formation: true` also hides a unit while its parent formation has a line of its own on the map and the reader is zoomed out; `sides` limits that to the sides listed. |
 | `groups` | Zoomed out below `below`, the units of a `side` (but for `except`) are drawn as one symbol with this `label`. |
-| `rear` | A point (`at`) behind one `side`'s line: that side's symbols sit on that side of their lines, the other side's on the far side. |
-| `rules` | `blend`: minutes over which a unit shifts from one step to the next when they meet. `near`: metres within which no march is drawn. For day battles, `lead` (the part of a day before nightfall in which the move happens) and `linger` (days a unit stays after the sources drop it). |
+| `rear` | A unit's symbol sits behind its own line: on the side away from the nearest enemy within about 2.5 km (8 km for an operational battle). Where no enemy is that near, `rear` decides: a point (`at`) behind one `side`'s line, so that side's symbols sit on that side of their lines and the other side's on the far side. Failing both, symbols sit to the east. |
+| `rules` | `blend`: minutes over which a unit shifts from one step to the next when they meet. `near`: metres within which no march is drawn. `pace`: march pace in metres a minute, one number or one per branch (`infantry`, `cavalry`, `artillery`), used for moves into a step marked `march`. For day battles, `lead` (the part of a day before nightfall in which the move happens) and `linger` (days a unit stays after the sources drop it). |
 | `texts`, `found` | Wording for this battle: the sentence under each state (`stated`, `inferred`, `moving`, `after`, `unplaced`, `offthis`, `lost`), and the words for how a place was found (`map_read`, `sketch_read` and so on). |
 | `about` | The paragraphs under "About this prototype". |
 
@@ -237,6 +240,8 @@ Elsewhere in the file the player also reads:
   units by nation.
 - On a label, `show`: `current` (the default: drawn where today's map shows), `period` or `both`.
 - On a step, `along: true`: the step's line is the path the unit moves along during the step.
+- On a step, `march: true`: with nothing on record between the previous step and this one, the unit leaves when the previous step ends
+  and moves here at the battle's `rules.pace`, then waits ("Arrived: time inferred"), instead of drifting slowly across the whole gap.
 - On a map that is not to scale, `scale_note` (shown in place of the scale bar), `approx_m_per_px` (metres on the
   ground per pixel of `size` where the map is nearest to true: with it a rough scale bar is drawn, marked "about",
   and `scale_note` goes under it) and `off_note` (`until`, `text`: a note shown while the action is off that map).
@@ -257,7 +262,7 @@ battle file into the page.
 | `nations` | `Nations` |
 | `units` and their `assignments` | `Units`, `Assignments`: every unit of the campaign's war |
 | `tracks` | `Tracks`: one row per symbol. `rows` lists the `Positions` rows it follows; left empty, it follows every row of its unit. `starts_from_row`, `starts_at` and `start_route` give a symbol a stand-in start from a row of its division's |
-| steps | `Positions`. `show_from` and `show_to` are when the playback draws the row; left empty, it is drawn from its latest start to its earliest end. Where two rows of one symbol overlap, the earlier gives way |
+| steps | `Positions`. `show_from` and `show_to` are when the playback draws the row; left empty, it is drawn from its latest start to its earliest end. Where two rows of one symbol overlap, the earlier gives way. `arrive_at_pace` (yes) is the step's `march` |
 | a step's `via` | `Routes`: a route from one row to the next, where its `playback` column says yes |
 | `events` | `Events`. `timeline` is `name`, `dot` or `off`; `playback_at`, `playback_label` and `playback_text` are the playback's moment, short name and wording where they differ from the record's |
 | `sources` | `Sources`: only those the battle cites |

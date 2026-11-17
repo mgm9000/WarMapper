@@ -52,6 +52,7 @@ Python 3 with `openpyxl` (and `Pillow` and `numpy` for the two map scripts).
 
 - A battle file that breaks the format is not written, and the script says which row is at fault: a track naming a row that does not exist, a source that is cited but not listed, a point far off the map.
 - A coordinate that is wrong but still on the map cannot be caught that way. The script lists places where a unit would have to move implausibly fast between two rows; read those.
+- It also lists every place where one side's symbol is drawn within 50 m of the other's, minute by minute ("contact"). Close fights show up there, and so does a unit overrun on the map without the data saying what became of it: that one needs a row that has it fall back, or `show_to` so it leaves the map.
 - A new battle is new rows: a row on `Playbacks`, its units, positions and sources, its symbols on `Tracks`, and a current map in `data/base/`. No code.
 
 The Gettysburg playback covers the first day, 7:15 a.m. to 5:30 p.m. After 10:15 a.m. it rests on Bachelder's 1876 map alone: brigade positions and the times printed beside them. The reports for the afternoon have not been read, and the Union brigades' places on Cemetery Hill at the end of the day are estimates.

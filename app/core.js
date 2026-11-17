@@ -86,7 +86,7 @@ WM.battle=function(raw){
       act:s.activity||'',place:s.place||'',say:s.quote||'',method:s.method,oc:s.confidence,tb:s.time_basis||'',
       basis:loc.basis||'',cb:loc.basis||(g?'':'No position on record'),cs:loc.source||'none',cc:loc.confidence||'',prec:loc.precision_m||null,
       pl:(loc.places||[]).map(function(p){return [p.name||'',p.today||'',p.source,p.precision_m]}),
-      src:(s.sources||[]).join('; '),notes:s.notes||'',status:s.review||'',bat:s.battle||'',virtual:!!s.virtual,shared:!!s.shared,along:!!s.along,
+      src:(s.sources||[]).join('; '),notes:s.notes||'',status:s.review||'',bat:s.battle||'',virtual:!!s.virtual,shared:!!s.shared,along:!!s.along,march:!!s.march,
       lat:mid?+mid[1].toFixed(5):null,lon:mid?+mid[0].toFixed(5):null}}
   B.tracks=raw.tracks.map(function(tr){var u=B.units[tr.unit],as=u.assignments||[],a0=as[0]||{};
     return {id:tr.id,unit:tr.unit,name:u.name,label:tr.label||u.label,side:B.sides[u.side].code,nation:u.nation||'',ech:tr.echelon||u.echelon,branch:BR[u.branch]||'inf',

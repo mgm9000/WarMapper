@@ -1,0 +1,155 @@
+{
+ "map": "Bachelder 1876, Second day's battle (S53), Boston Public Library commonwealth:q524n589j, image commonwealth:q524n693b",
+ "scan": "image_access_full JPEG, 7836 x 9286 pixels",
+ "method": "SIFT features of the scan (at 0.4) matched to the first-day sheet's fitted picture playbacks/gettysburg/map_wide.jpg (the same engraved base); homography by RANSAC; 7,760 matches, 7,166 inliers, rms 1.09 map_wide pixels (about 3 m on the ground), spread over the whole sheet",
+ "H_scan_to_day1_map_wide": [
+  [
+   0.39961008437319956,
+   0.0016775577437273999,
+   -271.5541524475202
+  ],
+  [
+   -0.0006572548312121782,
+   0.40049841222867966,
+   -464.2481210669719
+  ],
+  [
+   2.477226155282192e-07,
+   -1.0093290447601051e-07,
+   1.0
+  ]
+ ],
+ "then": "map_wide pixels to longitude/latitude through the first-day picture's four corners (battle.json maps[0].images[0].corners), as the playback draws it",
+ "union_evening_reads_scan_px": {
+  "US-MER": [
+   [
+    5219,
+    4546
+   ],
+   [
+    5300,
+    4520
+   ],
+   [
+    5345,
+    4482
+   ],
+   [
+    5420,
+    4462
+   ]
+  ],
+  "US-CUT": [
+   [
+    5420,
+    4462
+   ],
+   [
+    5512,
+    4450
+   ],
+   [
+    5545,
+    4485
+   ]
+  ],
+  "US-AMES": [
+   [
+    4755,
+    4252
+   ],
+   [
+    4860,
+    4212
+   ],
+   [
+    4920,
+    4240
+   ],
+   [
+    4975,
+    4298
+   ]
+  ],
+  "US-GIL": [
+   [
+    4985,
+    4332
+   ],
+   [
+    5050,
+    4452
+   ]
+  ],
+  "US-AMS": [
+   [
+    4722,
+    4440
+   ],
+   [
+    4772,
+    4385
+   ]
+  ],
+  "US-KRZ": [
+   [
+    4775,
+    4425
+   ],
+   [
+    4812,
+    4388
+   ]
+  ],
+  "US-COS": [
+   [
+    4625,
+    4575
+   ],
+   [
+    4648,
+    4660
+   ]
+  ],
+  "US-BID": [
+   [
+    4605,
+    4742
+   ],
+   [
+    4628,
+    4698
+   ]
+  ],
+  "US-STONE": [
+   [
+    4672,
+    4800
+   ],
+   [
+    4718,
+    4870
+   ]
+  ],
+  "US-BAX": [
+   [
+    4430,
+    4905
+   ],
+   [
+    4440,
+    5010
+   ]
+  ],
+  "US-PAUL": [
+   [
+    4440,
+    5015
+   ],
+   [
+    4446,
+    5110
+   ]
+  ]
+ }
+}
