@@ -149,7 +149,7 @@ def export(pb, W):
     for m in mine(W['Maps']):
         mp = maps.setdefault(m['map_id'], {'id': m['map_id'], 'title': m['title'], 'short': text(m.get('short')), 'label': text(m.get('label')), 'credit': m['credit'], 'source': text(m.get('source_id')),
               'georeferenced': False if str(m.get('fitted_to_ground')).lower() == 'no' else None, 'size': [int(v) for v in str(m['size_px']).split(',')] if not blank(m.get('size_px')) else None,
-              'from': when(m.get('from')), 'to': when(m.get('to')), 'fit': json.loads(m['fit']) if not blank(m.get('fit')) else None, 'scale_note': text(m.get('scale_note')),
+              'from': when(m.get('from')), 'to': when(m.get('to')), 'fit': json.loads(m['fit']) if not blank(m.get('fit')) else None, 'scale_note': text(m.get('scale_note')), 'note': text(m.get('note')),
               'approx_m_per_px': float(m['approx_m_per_px']) if not blank(m.get('approx_m_per_px')) else None,
               'off_note': {'until': when(m['off_note_until']), 'text': m['off_note_text']} if not blank(m.get('off_note_until')) else None, 'iiif': None, 'images': []})
         if not blank(m.get('iiif_service')) and not mp['iiif']:   # the holding library serves the full scan as zoomable tiles

@@ -57,7 +57,7 @@ function inQuad(p,Q){var s=0,i,a,b,c;for(i=0;i<4;i++){a=Q[i];b=Q[(i+1)%4];c=(b[0
 /* Under a period map at full strength the modern map is asked for only while some of the screen lies beyond the picture, so nothing is fetched until the reader zooms or pans out past it. */
 function paintModern(H){ if(!MOD) return; var on=false;
   if(!modOff&&!base.own&&!base.sat){var m=base.series?H:base.m,Q=m&&!m.own?m.images[0].ll:null,z=mv.size();
-    on=!!(base.current||through()||!Q||[[0,0],[z.w,0],[z.w,z.h],[0,z.h]].some(function(q){var l=mv.map.unproject(q);return !inQuad([l.lng,l.lat],Q)}))}
+    on=!!(base.current||base.backdrop==='current'||through()||!Q||[[0,0],[z.w,0],[z.w,z.h],[0,z.h]].some(function(q){var l=mv.map.unproject(q);return !inQuad([l.lng,l.lat],Q)}))}
   if(on!==modOn){modOn=on;mv.show('sur',on);panelKey=''} }
 /* The map a battle opens on: a period map if it covers all of the opening view, otherwise the current map. `start_base` overrides. */
 function startBase(){ var byId=P.start_base&&bases.filter(function(b){return b.id===P.start_base})[0]; if(byId) return byId;
@@ -537,6 +537,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   if(m.own) fit='No. It is not to scale, so it is shown as a picture of its own and units have separate positions on it.';
   else{fit='Yes';if(f.method)fit+=': '+f.method;if(f.metres_per_pixel)fit+='; '+f.metres_per_pixel+' m per scan pixel';if(f.turn_degrees)fit+='; turned '+f.turn_degrees+'\u00b0 from north';if(f.points)fit+=': fitted on '+f.points+' points'+(f.misfit_m?', typical misfit '+f.misfit_m+' m':'');fit+='.'}
   h+='<h2>'+esc(m.title)+'</h2><dl>'+row('Battle',B.title)+row('Shows',m.label)+row('Made by',s.author)+row('Date',s.date)+row('Kind',s.type)+row('Published or held',s.citation)+row('Scale',m.raw.scale_note||(m.own?'Not to scale':''))+row('Rights',s.rights||'Not checked')+row('Placed on the ground',fit)+'</dl>';
+  if(m.raw.note) h+='<p style="margin-top:10px">'+esc(m.raw.note)+'</p>';
   if(s.url) h+='<p style="margin-top:10px"><a href="'+esc(s.url)+'" target="_blank" rel="noopener">Open the original record</a></p>';
   var I=m.raw.iiif,host=I?I.service.split('/')[2]:'';
   h+='<p class="meta" style="margin-top:12px">'+(I&&!tilesOff?'The picture that comes with this page is a reduced copy. When you zoom in, the full scan is streamed in pieces from '+esc(host)+'; the 1:1 button shows it at full size.':I?'The picture shown is a reduced copy. The full scan could not be reached at '+esc(host)+' from here.':'The picture shown here is a reduced copy of the scan.')+'</p>';return h}
