@@ -243,6 +243,7 @@ Elsewhere in the file the player also reads:
 - On a step, `along: true`: the step's line is the path the unit moves along during the step.
 - On a step, `march: true`: with nothing on record between the previous step and this one, the unit leaves when the previous step ends
   and moves here at the battle's `rules.pace`, then waits ("Arrived: time inferred"), instead of drifting slowly across the whole gap.
+- `note`: anything the reader should know about the picture (a repair, a missing part), shown in the map details.
 - On a map that is not to scale, `scale_note` (shown in place of the scale bar), `approx_m_per_px` (metres on the
   ground per pixel of `size` where the map is nearest to true: with it a rough scale bar is drawn, marked "about",
   and `scale_note` goes under it) and `off_note` (`until`, `text`: a note shown while the action is off that map).

@@ -1,0 +1,155 @@
+{
+ "method": "rubber-sheet (thin-plate spline)",
+ "points": [
+  {
+   "name": "Trenton",
+   "scan_px": [
+    3690,
+    2600
+   ],
+   "lat": 40.2203,
+   "lon": -74.7655,
+   "whole_map_fit_misfit_m": 1590
+  },
+  {
+   "name": "McKonkey's Ferry (Pennsylvania side)",
+   "scan_px": [
+    2215,
+    1700
+   ],
+   "lat": 40.2958,
+   "lon": -74.8737,
+   "whole_map_fit_misfit_m": 161
+  },
+  {
+   "name": "Pennington",
+   "scan_px": [
+    2945,
+    1110
+   ],
+   "lat": 40.3286,
+   "lon": -74.7905,
+   "whole_map_fit_misfit_m": 3388
+  },
+  {
+   "name": "Princeton",
+   "scan_px": [
+    5330,
+    1580
+   ],
+   "lat": 40.349,
+   "lon": -74.66,
+   "whole_map_fit_misfit_m": 2867
+  },
+  {
+   "name": "Kingston",
+   "scan_px": [
+    5765,
+    1010
+   ],
+   "lat": 40.375,
+   "lon": -74.6135,
+   "whole_map_fit_misfit_m": 408
+  },
+  {
+   "name": "Maidenhead (Lawrenceville)",
+   "scan_px": [
+    4755,
+    1990
+   ],
+   "lat": 40.297,
+   "lon": -74.7295,
+   "whole_map_fit_misfit_m": 3452
+  },
+  {
+   "name": "Newtown",
+   "scan_px": [
+    1380,
+    2565
+   ],
+   "lat": 40.2293,
+   "lon": -74.9368,
+   "whole_map_fit_misfit_m": 631
+  },
+  {
+   "name": "Bordentown",
+   "scan_px": [
+    4265,
+    3680
+   ],
+   "lat": 40.146,
+   "lon": -74.7115,
+   "whole_map_fit_misfit_m": 1418
+  },
+  {
+   "name": "Crosswicks",
+   "scan_px": [
+    4985,
+    3570
+   ],
+   "lat": 40.1503,
+   "lon": -74.6528,
+   "whole_map_fit_misfit_m": 2438
+  },
+  {
+   "name": "Middletown (Langhorne)",
+   "scan_px": [
+    1770,
+    3390
+   ],
+   "lat": 40.1745,
+   "lon": -74.9227,
+   "whole_map_fit_misfit_m": 2054
+  },
+  {
+   "name": "Bristol",
+   "scan_px": [
+    2600,
+    4320
+   ],
+   "lat": 40.1006,
+   "lon": -74.8517,
+   "whole_map_fit_misfit_m": 1070
+  },
+  {
+   "name": "Trenton Ferry (Pennsylvania side)",
+   "scan_px": [
+    3530,
+    2840
+   ],
+   "lat": 40.208,
+   "lon": -74.777,
+   "whole_map_fit_misfit_m": 751
+  }
+ ],
+ "whole_map_fit_rms_m": 2013,
+ "crop": [
+  1185,
+  440,
+  6430,
+  4560
+ ],
+ "m_per_px": 12.0,
+ "size": [
+  3135,
+  3120
+ ],
+ "corners_tl_tr_br_bl": [
+  [
+   -74.966734,
+   40.408217
+  ],
+  [
+   -74.523951,
+   40.408217
+  ],
+  [
+   -74.523951,
+   40.071839
+  ],
+  [
+   -74.966734,
+   40.071839
+  ]
+ ]
+}
