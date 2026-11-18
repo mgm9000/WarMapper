@@ -23,8 +23,11 @@ def read(path):
     return open(path, encoding='utf-8').read()
 
 
-def page(battle, app):
-    """The page as one HTML document, with the shared files referenced under the path `app`."""
+SITE = 'https://mgm9000.github.io/WarMapper/'   # the main page; a page on the site links to it relatively, a single file (offline copy, artifact) to the site itself
+
+
+def page(battle, app, home='../../'):
+    """The page as one HTML document, with the shared files referenced under the path `app` and a link back to the main page at `home`."""
     d = os.path.join(ROOT, 'playbacks', battle)
     src = read(os.path.join(ROOT, 'app', 'page.html'))
     data = read(os.path.join(d, 'battle.json'))
@@ -32,7 +35,7 @@ def page(battle, app):
     assert src.count('__DATA__') == 1, battle
     for mark, text in (('__PAGETITLE__', b.get('playback', {}).get('page_title') or b['title']), ('__HEADING__', b['title']), ('__TAGLINE__', b.get('subtitle', ''))):
         src = src.replace(mark, html.escape(text, quote=False))
-    out = src.replace('__DATA__', data.replace('</', '<\\/')).replace('__APP__', app)
+    out = src.replace('__DATA__', data.replace('</', '<\\/')).replace('__APP__', app).replace('__HOME__', home)
     title = re.search(r'<title>.*?</title>', out).group(0)
     return HEAD % title + out.replace(title, '', 1) + '\n</body></html>\n'
 
@@ -44,7 +47,7 @@ def images(battle):
 
 def single(battle):
     """One self-contained file: the shared styles and scripts are written into the page and the images become data URIs."""
-    out = page(battle, '__APP__')
+    out = page(battle, '__APP__', SITE).replace('<a class="home" href="%s">' % SITE, '<a class="home" href="%s" target="_blank" rel="noopener">' % SITE, 1)   # from an offline copy or an artifact, the site opens in a new tab
     app = os.path.join(ROOT, 'app')
     for name in ('vendor/maplibre-gl.css', 'core.css'):
         tag = '<link rel="stylesheet" href="__APP__/%s">' % name
@@ -81,7 +84,7 @@ def main(argv):
                 os.makedirs(os.path.dirname(os.path.join(out, 'app', f)), exist_ok=True)
                 shutil.copyfile(os.path.join(ROOT, 'app', f), os.path.join(out, 'app', f))
             for f in images(b): shutil.copyfile(os.path.join(ROOT, 'playbacks', b, f), os.path.join(out, f))
-            open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(page(b, 'app'))
+            open(os.path.join(out, 'index.html'), 'w', encoding='utf-8').write(page(b, 'app', SITE))
         if single_dir:
             os.makedirs(single_dir, exist_ok=True)
             html = single(b)
