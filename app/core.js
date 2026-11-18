@@ -12,7 +12,7 @@ var EARTH=40075016.686, TILE=512;
 /* ---------- small helpers ---------- */
 WM.$=function(id){return document.getElementById(id)};
 WM.esc=function(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
-WM.fmtClock=function(m){m=Math.round(m);var h=Math.floor(m/60),mm=m%60;return ((h+11)%12+1)+':'+(mm<10?'0':'')+mm+(h<12?' a.m.':' p.m.')};
+WM.fmtClock=function(m){m=Math.round(m);var h=Math.floor(m/60)%24,mm=((m%60)+60)%60;if(h<0)h+=24;return (h<10?'0':'')+h+':'+(mm<10?'0':'')+mm};   // 24-hour clock everywhere (Morgan, 18 Nov)
 WM.pad=function(g,n){g=g.slice();while(g.length<n)g.push(g[g.length-1]);return g};
 WM.lerpG=function(a,b,f){var n=Math.max(a.length,b.length);a=WM.pad(a,n);b=WM.pad(b,n);var o=[];for(var i=0;i<n;i++)o.push([a[i][0]+(b[i][0]-a[i][0])*f,a[i][1]+(b[i][1]-a[i][1])*f]);return o};
 WM.cen=function(g){var x=0,y=0;g.forEach(function(p){x+=p[0];y+=p[1]});return [x/g.length,y/g.length]};
@@ -162,7 +162,8 @@ WM.mapView=function(opt){
     return {center:unmerc([cm[0]-((pad.l-pad.r)/2)/ws,cm[1]-((pad.t-pad.b)/2)/ws]),zoom:zoom}}
   function jump(cam){map.jumpTo(cam)}
   /* move part of the way to a camera; false once it has arrived */
-  function chase(tg,rate){var c=map.getCenter(),z=map.getZoom(),dz=tg.zoom-z,a=merc([c.lng,c.lat]),b=merc(tg.center),ws=TILE*Math.pow(2,z),dx=(b[0]-a[0])*ws,dy=(b[1]-a[1])*ws;
+  var lastChase=0;   // the chase eases by time, not by frame, so a slow machine (or a heavy period map) does not leave the units behind
+  function chase(tg,rate){var now=performance.now(),dt=lastChase?Math.max(8,Math.min(250,now-lastChase)):16.7;lastChase=now;rate=1-Math.pow(1-rate,dt/16.7);var c=map.getCenter(),z=map.getZoom(),dz=tg.zoom-z,a=merc([c.lng,c.lat]),b=merc(tg.center),ws=TILE*Math.pow(2,z),dx=(b[0]-a[0])*ws,dy=(b[1]-a[1])*ws;
     if(Math.abs(dz)<0.004&&Math.abs(dx)<0.6&&Math.abs(dy)<0.6){map.jumpTo(tg);return false}
     map.jumpTo({center:unmerc([a[0]+(b[0]-a[0])*rate,a[1]+(b[1]-a[1])*rate]),zoom:z+dz*rate});return true}
   function limits(){var e=cur.reach||cur.ext,z=size(),c=corners(e).map(merc),x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;

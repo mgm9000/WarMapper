@@ -27,7 +27,7 @@ The three pilots:
 | Battle | Dates | Scale | Position rows |
 | --- | --- | --- | --- |
 | Gettysburg, first day | 1 July 1863 | Brigades by the minute, with regiments and batteries for the morning | 131 |
-| Trenton | 25 to 26 December 1776 | Regiments, by the minute | 61 |
+| First Battle of Trenton | 25 to 26 December 1776 | Regiments, by the minute | 61 |
 | First Ypres | 18 October to 22 November 1914 | Corps and divisions, by the day | 215 |
 
 ## What is not here yet

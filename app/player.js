@@ -191,20 +191,31 @@ function focusPoint(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],U=[],mov=[]
   return cen(mov.length?mov:U.map(function(u){return u.c}))}
 /* The Follow camera. At its widest it frames every unit. Zoomed in from there with + (followK above 1) it cannot show them all,
    so it centres on where the action is and keeps doing so as time moves. */
-var FOL={rate:(P.follow&&P.follow.ease)||0.1,glide_rate:0.012,glide_ms:(P.follow&&P.follow.glide_seconds!=null?P.follow.glide_seconds:6)*1000};
+var FOL={rate:(P.follow&&P.follow.ease)||0.1,pause_ms:((P.follow&&P.follow.pause_seconds!=null)?P.follow.pause_seconds:4)*1000,glide_rate:0.03,glide_ms:(P.follow&&P.follow.glide_seconds!=null?P.follow.glide_seconds:6)*1000};
 var followK=1,glide=0;   // glide: until when (ms) the camera eases in slowly, after play is first pressed
-function target(){var n=mv.size().w<520?36:56,W=WORLDS[worldOf(base)],cam=mv.cameraFor(actionBox(),{t:n+34,b:n+26,l:n,r:n},base.own?1.3:(Z.follow_max||Z.max||2));
+function target(){var n=mv.size().w<520?36:56,W=WORLDS[worldOf(base)],cam=mv.cameraFor(actionBox(),{t:n+34,b:n+26,l:n,r:n},followMax());
   if(followK!==1){cam.zoom=Math.min(cam.zoom+Math.log2(followK),mv.zoomFor(W.maxScale));
     if(followK>1){var f=focusPoint();if(f)cam.center=W.toLL(f)}}
   return cam}
+/* Dragging or zooming the map by hand no longer switches Follow off for good: Follow waits while the reader moves the map
+   (FOL.pause_ms after the last touch), then carries on from there, keeping the reader's zoom as a tighter or wider Follow view.
+   Only the Follow button, Fit, 1:1 or a link to a view switch it off. */
+var fpause=0;
+/* How close Follow may come: on a fitted period map with no detail to stream, no closer than about 2.5 screen pixels to a pixel of the picture,
+   so the 1777 map is not blown up into a blur. */
+function followMax(){if(base.own)return 1.3;var mx=Z.follow_max||Z.max||2,m=base.m&&!base.current&&!base.sat?base.m:null,f=m&&m.raw&&m.raw.fit,mpp=f&&(f.m_per_px||f.metres_per_pixel);
+  if(mpp&&!(m.raw.iiif))mx=Math.min(mx,2.5/mpp);return mx}
+function pauseFollow(){fpause=Date.now()+FOL.pause_ms;mv.kick()}
+function resumeFollow(){var W=WORLDS[worldOf(base)],n=mv.size().w<520?36:56,fit=mv.cameraFor(actionBox(),{t:n+34,b:n+26,l:n,r:n},followMax());
+  followK=Math.max(0.35,Math.min(Math.pow(2,mv.map.getZoom()-fit.zoom),Math.pow(2,mv.zoomFor(W.maxScale)-fit.zoom)));if(Math.abs(followK-1)<0.15)followK=1}
 function zoomStep(f){ // the + and - buttons: while Follow is on they tighten or widen the Follow camera, which stays on the action
-  if(follow&&P.follow){var W=WORLDS[worldOf(base)],n=mv.size().w<520?36:56,fit=mv.cameraFor(actionBox(),{t:n+34,b:n+26,l:n,r:n},base.own?1.3:(Z.follow_max||Z.max||2));
+  if(follow&&P.follow){var W=WORLDS[worldOf(base)],n=mv.size().w<520?36:56,fit=mv.cameraFor(actionBox(),{t:n+34,b:n+26,l:n,r:n},followMax());
     followK=Math.max(0.35,Math.min(followK*f,Math.pow(2,mv.zoomFor(W.maxScale)-fit.zoom)));if(Math.abs(followK-1)<0.05)followK=1;mv.kick();return}
   setPreset(null);mv.zoomBy(f)}
 function cameraOf(p){return mv.cameraFor(B.presets[p],{t:48,b:22,l:14,r:14})}
 function home(){return preset?cameraOf(preset):((follow&&!landing)?target():mv.cameraFor(base.own?WORLDS[worldOf(base)].ext:EXT,{t:48,b:22,l:14,r:14}))}
 function press(id,v){var e=$(id);if(e)e.setAttribute('aria-pressed',v?'true':'false')}
-function setFollow(v){if(v&&!follow)followK=1;follow=v;press('bFollow',v);if(v)mv.kick()}   // switched on again, Follow starts from its widest view
+function setFollow(v){if(v&&!follow)followK=1;fpause=0;follow=v;press('bFollow',v);if(v)mv.kick()}   // switched on again, Follow starts from its widest view
 function setPreset(p,jump){preset=p;(P.views||[]).forEach(function(v){press('v-'+v.preset,p===v.preset)});
   if(!p){goal=null;return} goal=cameraOf(p); if(jump){mv.jump(goal);goal=null} mv.kick()}
 function remember(k,v){try{localStorage.setItem('wm.'+B.id+'.'+k,v?'1':'0')}catch(_){ }}
@@ -237,11 +248,12 @@ function layout(sc){
       else{if(px<0){px=-px;py=-py}x+=px*20;y+=py*13}}
     var conf=(P.question_mark==='location'&&o.s.k.cc)||o.s.k.oc,low=(conf==='low'&&o.s.kind!=='moving'),txt=tr.label+((low&&!compact)?' ?':'');
     L.push({o:o,pts:pts,len:len,c:c,x:x,y:y,low:low,txt:txt,w:txt.length*(compact?6.7:7.1)+6,pr:rank(tr),nudged:!!(nx||ny),line:len>7})});
-  if(fmOn&&FM&&!base.own&&sNow<FM.below){ var F={};
-    L.forEach(function(u){var tr=u.o.tr;if(!tr.id||tr.parent||tr.id===sel)return;var me=B.units[tr.unit],f=(me&&String(me.echelon||'').toLowerCase()===(FM.echelon||'division'))?me:formationOf(tr.unit);if(!f||f.side==null)return;(F[f.id]=F[f.id]||{f:f,u:[]}).u.push(u)});
+  if(FM&&(fmForced()||(fmOn&&!base.own&&sNow<FM.below))){ var F={};
+    L.forEach(function(u){var tr=u.o.tr;if(!tr.id||tr.parent||tr.id===sel)return;var me=B.units[tr.unit],f=isFormation(me)?me:formationOf(tr.unit);if(!f||f.side==null)return;(F[f.id]=F[f.id]||{f:f,u:[]}).u.push(u)});
     Object.keys(F).forEach(function(id){var g=F[id],n=g.u.length,x=0,y=0,cx=0,cy=0,mov=0,tr0=g.u[0].o.tr; if(n<(FM.min_units||1)) return;
-      g.u.forEach(function(u){u.noSym=true;x+=u.x;y+=u.y;cx+=u.c[0];cy+=u.c[1];if(u.o.s.kind==='moving')mov++});
-      var lab=g.f.label||g.f.name,tr={id:'F:'+id,unit:id,label:lab,side:tr0.side,nation:tr0.nation,ech:FM.echelon||'division',branch:tr0.branch,parent:'',formation:true};
+      var own=null;g.u.forEach(function(u){u.noSym=true;x+=u.x;y+=u.y;cx+=u.c[0];cy+=u.c[1];if(u.o.s.kind==='moving')mov++;if(u.o.tr.unit===id)own=u});
+      if(own){x=own.x*n;y=own.y*n;cx=own.c[0]*n;cy=own.c[1]*n;tr0=own.o.tr}   // the formation's own symbol, where it has a track, places the group
+      var lab=g.f.label||g.f.name,tr={id:'F:'+id,unit:id,label:lab,side:tr0.side,nation:tr0.nation,ech:String(g.f.echelon||FM.echelon||'division').toLowerCase(),branch:tr0.branch,parent:'',formation:true};
       L.push({o:{tr:tr,s:{kind:mov===n?'moving':'stated',k:{oc:'high'}}},pts:[[cx/n,cy/n]],len:0,c:[cx/n,cy/n],x:x/n,y:y/n,low:false,txt:lab,w:lab.length*7.1+6,pr:0,nudged:false,line:false,kids:g.u.map(function(u){return u.o.tr.id})})});
     L=L.filter(function(u){return !u.noSym||u.line}); }   // a gathered unit keeps only its line
   Object.keys(ag).forEach(function(gi){var G=P.groups[gi],gc=cen(ag[gi]);
@@ -268,12 +280,16 @@ function layout(sc){
    echelon (a division, say) are drawn as that formation: one symbol where their symbols would sit, with their lines kept as its front.
    Zooming in past `below` breaks it out into its units again. A unit is gathered by walking up who it answered to at the moment. */
 var FM=P.formations||null,fmOn=!!(FM&&FM.on);
-function formationOf(uid){ var seen=0,d=stamp(t),want=FM.echelon||'division';
+function formationOf(uid){ var seen=0,d=stamp(t);
   while(uid&&seen++<5){var u=B.units[uid];if(!u)return null;var as=u.assignments||[],a=null;
     as.forEach(function(x){var f=x.from?B.time(x.from):-1e9,e=x.to?B.time(x.to)+((!byDay&&x.to.length===10)?1439:0):1e9;if(d>=f&&d<=e)a=x});
     a=a||as[as.length-1]; if(!a||!a.parent) return null; var p=B.units[a.parent]; if(!p) return null;
-    if(String(p.echelon||'').toLowerCase()===want) return p; uid=a.parent}
+    if(isFormation(p)) return p; uid=a.parent}
   return null}
+/* A unit counts as a formation if it is of the echelon, or named in formations.also (Trenton: Knox's artillery).
+   Before formations.until the formations are drawn whatever the zoom: Trenton keeps Greene, Sullivan and Knox whole until the first shots. */
+function isFormation(u){return !!u&&(String(u.echelon||'').toLowerCase()===(FM.echelon||'division')||[].concat(FM.also||[]).indexOf(u.id)>=0)}
+function fmForced(){return !!(FM&&FM.until&&t<B.time(FM.until))}
 function setFormations(v){fmOn=v;tick('cForm',v);remember('form',v);mv.kick()}
 function f1(v){return v.toFixed(1)}
 /* Routes taken: the road each unit has marched so far (the routes the record gives), drawn under the units and growing with the clock.
@@ -613,9 +629,9 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
 /* ---------- map and time ---------- */
 try{ mv=WM.mapView({container:'map',wrap:wrap,world:worldOf(base),worlds:WORLDS,
   onDraw:draw,onPick:select,
-  onUserMove:function(){if(follow)setFollow(false);if(preset||goal)setPreset(null)},
+  onUserMove:function(){if(follow)pauseFollow();if(preset||goal)setPreset(null)},
   onResize:function(){if(preset){mv.jump(cameraOf(preset));goal=null}else if(follow&&!landing)mv.jump(target());else if(landing)mv.jump(home())},
-  onStep:function(ts){var more=clk.step(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing&&mv.chase(target(),glide>Date.now()?FOL.glide_rate:FOL.rate))more=true;return more}});
+  onStep:function(ts){var more=clk.step(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(mv.chase(target(),glide>Date.now()?FOL.glide_rate:FOL.rate))more=true}}return more}});
 }catch(err){WM.noMap(wrap,err);return null}
 S=mv.S;
 mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
@@ -668,7 +684,7 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*RNG
     else if(k==='m'&&bases.length>1){var vis=bases.filter(function(x){return !x.of}),cb=base.of?bases.filter(function(x){return x.id===base.of})[0]:base;setBase(vis[(vis.indexOf(cb)+1)%vis.length])}}});
 
 /* timeline furniture: ticks, the part the data covers best, and the events */
-(function(){var tl=$('tl'),pc=function(m){return (t2u(m)*100)+'%'},h='',m,lg=!byDay&&(T1-TM)>360,fmt=function(v){var c=WM.fmtClock(v).replace(' a.m.','');return lg?c.replace(':00',''):c};
+(function(){var tl=$('tl'),pc=function(m){return (t2u(m)*100)+'%'},h='',m,lg=!byDay&&(T1-TM)>360,fmt=function(v){return WM.fmtClock(v)};
   var win=$('win'); if(B.focus){win.style.left=pc(B.focus[0]);win.style.width=((t2u(B.focus[1])-t2u(B.focus[0]))*100)+'%';if(B.focus[1]>=T1)win.style.borderRadius='0 5px 5px 0'} else win.hidden=true;
   if(byDay){var nth=0;for(m=T0;m<=T1;m++){var d=B.dateOf(m),maj=d.day%5===0;h+='<span class="tick'+(maj?' maj':'')+'" style="left:'+pc(m)+'"></span>';
       if(maj){h+='<span class="tk'+(nth%2?' minor':'')+'" style="left:'+pc(m)+'">'+d.day+' '+d.mon.slice(0,3)+'</span>';nth++}}}
