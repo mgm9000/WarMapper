@@ -7,21 +7,21 @@
   --m-ink:#141a24; --m-halo:#fdf8ea; --m-paper:#e8dcc0; --m-sel:#f2a900;
   --display:"Zilla Slab",Rockwell,Georgia,serif; --body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   /* current map */
-  --mod-sat:-.8; --mod-lo:.22; --mod-con:-.12; --img-sat:-.55; --img-lo:.14;
+  --mod-sat:-.8; --mod-lo:.22; --mod-con:-.12; --img-sat:-.55; --img-lo:.14; --hs-shadow:rgba(52,40,26,.62); --hs-light:rgba(255,255,250,.35);
   --raster-max:1; --land:#e6e9e0; --relief:#7b4f24; --wood:#cfe0c3; --road:#ffffff; --road-major:#fbf0c9; --road-edge:#b4bcae; --rail:#8d94a0; --water:#a8cde6; --water-text:#2c6c9c; --map-text:#3b4654; --map-halo:#eef1ea; --map-ink:#141a24;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
   --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
   --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
-  --mod-sat:-.8; --mod-lo:0; --mod-con:-.1; --img-sat:-.55; --img-lo:0;
+  --mod-sat:-.8; --mod-lo:0; --mod-con:-.1; --img-sat:-.55; --img-lo:0; --hs-shadow:rgba(0,0,0,.6); --hs-light:rgba(255,255,255,.12);
   --raster-max:.88; --land:#1b232d; --relief:#d9ad7c; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
   color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
   --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
   --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
-  --mod-sat:-.8; --mod-lo:0; --mod-con:-.1; --img-sat:-.55; --img-lo:0;
+  --mod-sat:-.8; --mod-lo:0; --mod-con:-.1; --img-sat:-.55; --img-lo:0; --hs-shadow:rgba(0,0,0,.6); --hs-light:rgba(255,255,255,.12);
   --raster-max:.88; --land:#1b232d; --relief:#d9ad7c; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
   color-scheme:dark }
 

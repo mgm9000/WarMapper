@@ -52,6 +52,11 @@ bases.forEach(function(b){if(b.own)WORLDS['own:'+b.map]={toLL:ownLL,ext:[0,0,b.m
    and water (the base data) is the fall-back, shown only if the service cannot be reached. */
 var MOD=(function(){var m=P.modern||P.surround;return m&&m.tiles?m:null})(),modOn=null,modFail=0,modOff=false;
 function topo(){return !!MOD&&!modOff}
+/* Terrain shading: shadows drawn from elevation tiles, laid over today's map and under the period maps, kept out of the muting so the
+   lie of the land stays plain. Every battle gets it unless its file says hillshade:false; hillshade:{exaggeration, tiles, ...} tunes it. */
+var HS=(function(){if(P.hillshade===false)return null;var h={tiles:'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',encoding:'terrarium',max_zoom:15,exaggeration:0.8,
+  credit:'Terrain Tiles (Mapzen, AWS Open Data)',link:'https://github.com/tilezen/joerd/blob/master/docs/attribution.md'},o=P.hillshade||{};for(var k in o)h[k]=o[k];return h})(),hsOn=true,hsVis=null,hsFail=0;
+function paintHill(){ if(!HS) return; var on=hsOn&&hsFail<4&&!base.sat&&!!(modOn||base.current); if(on!==hsVis){hsVis=on;mv.show('hill',on);lastCredit=''} }
 if(MOD){(function(){var f=(+MOD.reach||(bm?4:2))/2,cx=(EXT[0]+EXT[2])/2,cy=(EXT[1]+EXT[3])/2,hw=Math.abs(EXT[2]-EXT[0])*f,hh=Math.abs(EXT[3]-EXT[1])*f;var r=[cx-hw,cy-hh,cx+hw,cy+hh];
   B.mapList.forEach(function(m){if(m.own)return;m.images.forEach(function(im){var b=im.box;if(!b)return;b=[Math.min(b[0],b[2]),Math.min(b[1],b[3]),Math.max(b[0],b[2]),Math.max(b[1],b[3])];var mx=(b[2]-b[0])*0.3,my=(b[3]-b[1])*0.3;   // room to zoom out past every period map, so the modern map is seen around it
     r=[Math.min(r[0],b[0]-mx),Math.min(r[1],b[1]-my),Math.max(r[2],b[2]+mx),Math.max(r[3],b[3]+my)]})});
@@ -327,6 +332,8 @@ function f1(v){return v.toFixed(1)}
    Each side's lines are one group at reduced strength, so roads that several units took are not drawn darker. */
 var TRL=P.trails||null,trlOn=!!(TRL&&TRL.on!==false);
 var muteOn=true;
+function hillAbout(){return HS?'<h2 style="margin-top:18px">Terrain shading</h2><p>Shadows worked out from the height of the ground, so ridges and valleys show even where today\'s map is muted. They are drawn over today\'s map only, not over the period maps, which show the ground in their own way. Heights in the United States come from the USGS; elsewhere mostly from satellite radar. Layers turns them off.</p><dl><dt>Source</dt><dd>'+esc(HS.credit)+'</dd></dl><p style="margin-top:10px"><a href="'+esc(HS.link)+'" target="_blank" rel="noopener">Where the heights come from</a></p>':''}
+function setHill(v){hsOn=v;tick('cHill',v);remember('hill',v);hsVis=null;mv.kick()}
 function setMute(v){muteOn=v;tick('cMute',v);remember('mute',v);wrap.classList.toggle('vivid',!v);mv.retheme();mv.kick()}
 function setTrails(v){trlOn=v;tick('cTrail',v);remember('trail',v);mv.kick()}
 function subPath(V,f){if(f>=1)return V;var L=0,i,seg=[];for(i=1;i<V.length;i++)L+=Math.hypot(V[i][0]-V[i-1][0],V[i][1]-V[i-1][1]);var want=L*f,out=[V[0]];
@@ -426,10 +433,11 @@ function paintCredit(H){var c,mc=MOD?(MOD.link?'<a href="'+esc(MOD.link)+'" targ
   if(base.current) c=now;
   else if(base.sat){var im=base.imagery;c=(im.link?'<a href="'+esc(im.link)+'" target="_blank" rel="noopener">'+esc(im.credit)+'</a>':esc(im.credit))+' &middot; Names: '+WM.OSM_CREDIT}
   else{var m=H||base.m,und=base.backdrop==='current'||through(); c=(H?esc(m.short)+', '+esc(m.label)+(stamp(t)>m.t1?' (the last one)':'')+' &middot; ':'')+esc(m.credit)+(und?' &middot; '+now:(modOn?' &middot; Around it: '+mc:''))}
+  if(hsVis) c+=' &middot; Terrain shading: <a href="'+esc(HS.link)+'" target="_blank" rel="noopener">'+esc(HS.credit)+'</a>';
   if(c!==lastCredit){lastCredit=c;$('credit').innerHTML=c}}
 function draw(){
   sNow=mv.scale(); mv.hits.length=0;
-  var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintModern(H); paintCredit(H);
+  var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintModern(H); paintHill(); paintCredit(H);
   var cover=base.backdrop==='current'?(H||base.m).box:null;
   var sc=scene(),L=layout(unitsOn&&!landing?sc:[]),h=mapNames(L,cover);   // on landing the map is shown alone; the units come on when the battle is started
   L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});   // the selected unit last, so it sits on top
@@ -450,6 +458,7 @@ function buildBase(){
   if(MOD){ // the modern map, under the pictures and over the battle's own drawing of today's ground (which it replaces)
     mv.map.addSource('sur',{type:'raster',tiles:[MOD.tiles],tileSize:MOD.tile_size||256,minzoom:MOD.min_zoom||0,maxzoom:MOD.max_zoom||16});
     mv.map.on('sourcedata',function(e){if(e.sourceId==='sur'&&e.tile&&!modOff)modFail=0})}
+  if(HS) mv.map.addSource('dem',{type:'raster-dem',tiles:[HS.tiles],encoding:HS.encoding,tileSize:HS.tile_size||256,maxzoom:HS.max_zoom});
   // imagery bases: tiles from the provider's own service, under everything else. MapLibre fetches tiles only while the layer is shown.
   bases.forEach(function(b){if(!b.sat)return;var im=b.imagery,id='sat-'+b.id;
     mv.map.addSource(id,{type:'raster',tiles:[im.tiles],tileSize:im.tile_size||256,minzoom:im.min_zoom||0,maxzoom:im.max_zoom||18});
@@ -482,6 +491,8 @@ function buildBase(){
   add({id:'b-road',type:'line',filter:mn(0),layout:round,paint:{'line-color':col,'line-width':['get','w']}});
   mv.layer({id:'b-mask',type:'fill',source:'base',filter:is('mask'),paint:{'fill-color':'var(--bg)'}});
   if(MOD) mv.layer({id:'sur',type:'raster',source:'sur',layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-saturation':cssNum('--mod-sat',-0.2),'raster-brightness-min':cssNum('--mod-lo',0),'raster-contrast':cssNum('--mod-con',0),'raster-brightness-max':function(c){return +c('--raster-max')||1}}});
+  if(HS) mv.layer({id:'hill',type:'hillshade',source:'dem',layout:{visibility:'none'},paint:{'hillshade-exaggeration':HS.exaggeration,'hillshade-illumination-direction':315,
+    'hillshade-shadow-color':'var(--hs-shadow)','hillshade-highlight-color':'var(--hs-light)','hillshade-accent-color':'var(--hs-shadow)'}});
   // the period maps: each base's pictures; the map of the day is one picture, re-pointed when the date calls for another
   bases.forEach(function(b){PICS[b.id]=[];
     if(b.series){ if(series.length){mv.image('pic-series',WM.asset(series[0].images[0].file),series[0].images[0].ll);mv.show('pic-series',false)} return }
@@ -536,6 +547,7 @@ function updateTiles(){
 }
 function queueTiles(){clearTimeout(tileTimer);tileTimer=setTimeout(updateTiles,160)}
 function tileError(e){ // three failures and the library is left alone for the rest of the visit
+  if(e&&e.sourceId==='dem'){ if(++hsFail>=4){hsVis=null;mv.show('hill',false);lastCredit='';mv.kick()} return }
   if(e&&e.sourceId==='sur'){ if(++modFail>=4&&!modOff){modOff=true;modOn=null;mv.show('sur',false);paintFade();lastCredit='';panelKey='';mv.kick()} return }   // the modern map cannot be reached: fall back to the drawing
   var er=e&&e.error,txt=String((er&&(er.url||er.message))||''),mine=(e&&/^iiif-/.test(String(e.sourceId||'')))||/iiif/i.test(txt)||(Object.keys(TILES).length&&/fetch|network|load/i.test(txt));
   if(mine&&++tileFail>=3&&!tilesOff){tilesOff=true;updateTiles();panelKey='';mv.kick()}}
@@ -626,7 +638,7 @@ function aroundNote(){ if(!topo()||base.own||base.sat||base.current) return '';
 function mapDetails(){var h='<button class="back" id="back">&larr; All units</button><div class="eyebrow">The map on screen</div>',row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>':''};
   h+='<p class="meta credits">Credits for what is on screen: '+lastCredit+'</p>';
   if(base.sat){var im=base.imagery;h+='<h2>'+esc(im.name||base.label)+'</h2><p>'+esc(im.about||'Aerial or satellite imagery of the ground today, streamed from the provider\'s tile service. The names on it come from OpenStreetMap.')+'</p><dl>'+row('Source',im.credit)+row('Rights',im.rights||'')+row('Taken',im.date||'')+'</dl>'+(im.link?'<p style="margin-top:10px"><a href="'+esc(im.link)+'" target="_blank" rel="noopener">About this imagery</a></p>':'')+'<p class="meta" style="margin-top:12px">If the tile service cannot be reached, the map shows plain ground under the units.</p>';return h}
-  if(base.current&&topo()){h+='<h2>'+esc(MOD.name||'Current map')+'</h2><p>'+esc(MOD.about||'Today\'s topographic map, streamed from the provider\'s tile service.')+'</p><dl>'+row('Source',MOD.credit)+row('Rights',MOD.rights||'')+'</dl>'+(MOD.link?'<p style="margin-top:10px"><a href="'+esc(MOD.link)+'" target="_blank" rel="noopener">About this map</a></p>':'')+'<p class="meta" style="margin-top:12px">If the map service cannot be reached, a plain drawing of today\'s roads and water, made from OpenStreetMap, is shown in its place.</p>';return h}
+  if(base.current&&topo()){h+='<h2>'+esc(MOD.name||'Current map')+'</h2><p>'+esc(MOD.about||'Today\'s topographic map, streamed from the provider\'s tile service.')+'</p><dl>'+row('Source',MOD.credit)+row('Rights',MOD.rights||'')+'</dl>'+(MOD.link?'<p style="margin-top:10px"><a href="'+esc(MOD.link)+'" target="_blank" rel="noopener">About this map</a></p>':'')+'<p class="meta" style="margin-top:12px">If the map service cannot be reached, a plain drawing of today\'s roads and water, made from OpenStreetMap, is shown in its place.</p>'+hillAbout();return h}
   if(base.current){h+='<h2>Current map</h2>'+(MOD?'<p class="meta">The topographic map service could not be reached from here, so this plain drawing is shown in its place.</p>':'')+'<p>Today\'s roads, water, railways, woods and names, cut down from OpenStreetMap to what this battle needs. It is a drawing of that data, not a live map service.</p><dl>'+row('Source','OpenStreetMap contributors')+row('Rights','Open Database License')+'</dl><p style="margin-top:10px"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap copyright and licence</a></p>';return h}
   var m=(base.series&&seriesShown)||base.m||series[0],s=B.sources[m.raw.source]||{},f=m.raw.fit||{},fit='';
   if(m.own) fit='No. It is not to scale, so it is shown as a picture of its own and units have separate positions on it.';
@@ -650,7 +662,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   var ck=function(id,label,on,key){return '<label class="ck"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span>'+label+(key?'<kbd>'+key+'</kbd>':'')+'</span></label>'},
       sb=function(id,label,on){return '<button id="'+id+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>'},L='';
   L+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')+(TRL?ck('cTrail','Routes taken',trlOn):'')
-    +((MOD||bases.some(function(b){return b.sat}))?ck('cMute','Today\'s map in muted colours',muteOn):'')+ck('cPlaces','Place names',true)+ck('cLines','Road and stream names',true)+ck('cNarr','The current event, in words, on the map',false)+'</div>';
+    +((MOD||bases.some(function(b){return b.sat}))?ck('cMute','Today\'s map in muted colours',muteOn):'')+(HS?ck('cHill','Terrain shading on today\'s map',hsOn):'')+ck('cPlaces','Place names',true)+ck('cLines','Road and stream names',true)+ck('cNarr','The current event, in words, on the map',false)+'</div>';
   L+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Symbol style',[sb('sy-standard','Standard',true),sb('sy-period','Period style',false)])+'<p class="gn">Period style drops the frames: a line is a bar, as on maps of the time.</p></div>';
   L+='<div class="grp"><div class="gh">Seen from</div>'+seg('Seen from',[sb('fr-none','Neither side',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Seen from one side, the other side takes the diamond frame of the standard military symbols.</p></div>';
   if(bases.some(function(b){return !b.current&&!b.own&&!b.sat})) L+='<div class="grp" id="gOpac"><div class="gh"><span>Period map</span><span id="opv">100%</span></div><input type="range" id="opac" min="0" max="100" step="5" value="100" aria-label="How strongly the period map is drawn"><p class="gn">Turn it down to see today&rsquo;s map through the period map.</p></div>';
@@ -743,7 +755,7 @@ on('bLayers',function(){openLayers($('layers').hidden)});
 document.addEventListener('pointerdown',function(e){if(!$('layers').hidden&&!e.target.closest('#layers')&&!e.target.closest('#bLayers'))openLayers(false)});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('layers').hidden){openLayers(false);$('bLayers').focus();e.stopPropagation()}},true);
 function onCheck(id,fn){var e=$(id);if(e)e.addEventListener('change',function(){fn(e.checked)})}
-onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations); onCheck('cTrail',setTrails); onCheck('cMute',setMute);
+onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations); onCheck('cTrail',setTrails); onCheck('cMute',setMute); onCheck('cHill',setHill);
 onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
 on('sy-standard',function(){setSymbols('standard')}); on('sy-period',function(){setSymbols('period')});
 on('fr-none',function(){setSeenFrom('')}); raw.sides.forEach(function(sd){on('fr-'+sd.code,function(){setSeenFrom(sd.code)})});
@@ -793,16 +805,16 @@ on('bLink',function(){var url=location.href.split('#')[0]+linkHash(),ok=$('linko
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,function(){ok.textContent='Copy it from the address bar';done()});else{ok.textContent='Copy it from the address bar';done()}});
 
 /* ---------- start ---------- */
-try{if(localStorage.getItem('wm.'+B.id+'.mute')==='0'){muteOn=false;tick('cMute',false);wrap.classList.add('vivid')} if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)} var ts=localStorage.getItem('wm.'+B.id+'.trail'); if(TRL&&ts!=null){trlOn=ts==='1';tick('cTrail',trlOn)}}catch(_){ }
+try{if(localStorage.getItem('wm.'+B.id+'.hill')==='0'){hsOn=false;tick('cHill',false)} if(localStorage.getItem('wm.'+B.id+'.mute')==='0'){muteOn=false;tick('cMute',false);wrap.classList.add('vivid')} if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)} var ts=localStorage.getItem('wm.'+B.id+'.trail'); if(TRL&&ts!=null){trlOn=ts==='1';tick('cTrail',trlOn)}}catch(_){ }
 setStep(stepNear(P.rate||(byDay?1:5)));
 if(P.views) preset=P.views[0].preset;
 base=startBase();
 mv.start(function(){buildBase();paintTime(T0);(P.views||[]).forEach(function(v){press('v-'+v.preset,preset===v.preset)});setBase(base,true);clk.setTime(T0);readLink();WM.hint(mv)});
 var api={battle:B,setTime:clk.setTime,select:select,setFollow:setFollow,setBase:setBase,setNames:setNames,setUnits:setUnits,setFold:setFold,setPreset:setPreset,mv:mv,
   focus:function(){var f=focusPoint();return f?WORLDS[worldOf(base)].toLL(f):null},setNarrative:setNarr,setSymbols:setSymbols,setSeenFrom:setSeenFrom,setOpacity:setOpacity,setStep:setStep,link:linkHash,
-  begin:function(){landing=false;panelKey='';mv.kick()},setFormations:setFormations,setMute:setMute,
+  begin:function(){landing=false;panelKey='';mv.kick()},setFormations:setFormations,setMute:setMute,setHill:setHill,
   scene:function(){return scene().map(function(o){return {id:o.tr.id,kind:o.s.kind,row:o.s.k.id,drawn:o.drawn}})}};
-Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}}); Object.defineProperty(api,'landing',{get:function(){return landing}}); Object.defineProperty(api,'modern',{get:function(){return {on:!!modOn,off:modOff}}});
+Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}}); Object.defineProperty(api,'landing',{get:function(){return landing}}); Object.defineProperty(api,'modern',{get:function(){return {on:!!modOn,off:modOff,hill:!!hsVis}}});
 global.__wm=api; return api;
 };
 })(window);
