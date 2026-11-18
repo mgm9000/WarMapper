@@ -163,9 +163,11 @@ WM.mapView=function(opt){
   function jump(cam){map.jumpTo(cam)}
   /* move part of the way to a camera; false once it has arrived */
   var lastChase=0;   // the chase eases by time, not by frame, so a slow machine (or a heavy period map) does not leave the units behind
-  function chase(tg,rate){var now=performance.now(),dt=lastChase?Math.max(8,Math.min(250,now-lastChase)):16.7;lastChase=now;rate=1-Math.pow(1-rate,dt/16.7);var c=map.getCenter(),z=map.getZoom(),dz=tg.zoom-z,a=merc([c.lng,c.lat]),b=merc(tg.center),ws=TILE*Math.pow(2,z),dx=(b[0]-a[0])*ws,dy=(b[1]-a[1])*ws;
+  /* zrate, if given, eases the zoom at its own pace (Follow zooms more gently than it pans) */
+  function chase(tg,rate,zrate){var now=performance.now(),dt=lastChase?Math.max(8,Math.min(250,now-lastChase)):16.7;lastChase=now;var k=function(r){return 1-Math.pow(1-r,dt/16.7)},pr=k(rate),zr=k(zrate||rate);
+    var c=map.getCenter(),z=map.getZoom(),dz=tg.zoom-z,a=merc([c.lng,c.lat]),b=merc(tg.center),ws=TILE*Math.pow(2,z),dx=(b[0]-a[0])*ws,dy=(b[1]-a[1])*ws;
     if(Math.abs(dz)<0.004&&Math.abs(dx)<0.6&&Math.abs(dy)<0.6){map.jumpTo(tg);return false}
-    map.jumpTo({center:unmerc([a[0]+(b[0]-a[0])*rate,a[1]+(b[1]-a[1])*rate]),zoom:z+dz*rate});return true}
+    map.jumpTo({center:unmerc([a[0]+(b[0]-a[0])*pr,a[1]+(b[1]-a[1])*pr]),zoom:z+dz*zr});return true}
   function limits(){var e=cur.reach||cur.ext,z=size(),c=corners(e).map(merc),x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     c.forEach(function(m){x0=Math.min(x0,m[0]);x1=Math.max(x1,m[0]);y0=Math.min(y0,m[1]);y1=Math.max(y1,m[1])});
     var lat=unmerc([(x0+x1)/2,(y0+y1)/2])[1],fit=Math.log2(Math.min(z.w/(x1-x0),z.h/(y1-y0))/TILE)+Math.log2(cur.minFactor||1);

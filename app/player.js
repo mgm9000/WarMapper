@@ -169,7 +169,7 @@ function scene(){
 /* ---------- view ---------- */
 /* What the Follow camera frames: every unit on the map now, and every unit that will be on it within the look-ahead
    (playback.follow.lookahead, minutes), so a column still far off is in view before it arrives and the camera closes in as the forces meet. */
-function actionBox(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],b=[1e9,1e9,-1e9,-1e9],any=false,la=byDay?0:(F.lookahead!=null?F.lookahead:30),when=la?[t,Math.min(T1,t+la/2),Math.min(T1,t+la)]:[t];
+function actionBox(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],b=[1e9,1e9,-1e9,-1e9],any=false,la=byDay?0:(F.lookahead!=null?F.lookahead:30),when=la?[0,0.2,0.4,0.6,0.8,1].map(function(f){return Math.min(T1,t+la*f)}):[t];
   var su=F.side_from||{};   // a side left out of the frame until a time (Trenton: the garrison sits still all night while the army crosses)
   B.tracks.forEach(function(tr){if(tr.parent||tr.loose||ex.indexOf(tr.id)>=0)return;if(su[tr.side]&&t<B.time(su[tr.side]))return;when.forEach(function(tt){if(tt>=leaveAt(tr))return;var s=stateAt(tr,tt,key);if(!s||!s.g||s.hid)return;any=true;
     s.g.forEach(function(p){b[0]=Math.min(b[0],p[0]);b[1]=Math.min(b[1],p[1]);b[2]=Math.max(b[2],p[0]);b[3]=Math.max(b[3],p[1])})})});
@@ -194,8 +194,14 @@ function focusPoint(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],U=[],mov=[]
   return cen(mov.length?mov:U.map(function(u){return u.c}))}
 /* The Follow camera. At its widest it frames every unit. Zoomed in from there with + (followK above 1) it cannot show them all,
    so it centres on where the action is and keeps doing so as time moves. */
-var FOL={rate:(P.follow&&P.follow.ease)||0.1,pause_ms:((P.follow&&P.follow.pause_seconds!=null)?P.follow.pause_seconds:4)*1000,glide_rate:0.03,glide_ms:(P.follow&&P.follow.glide_seconds!=null?P.follow.glide_seconds:6)*1000};
+var FOL={rate:(P.follow&&P.follow.ease)||0.035,zoom_rate:0.02,pause_ms:((P.follow&&P.follow.pause_seconds!=null)?P.follow.pause_seconds:4)*1000,glide_rate:0.03,glide_ms:(P.follow&&P.follow.glide_seconds!=null?P.follow.glide_seconds:6)*1000};
 var followK=1,glide=0;   // glide: until when (ms) the camera eases in slowly, after play is first pressed
+/* The Follow camera must not pulse. It zooms out as soon as the units need more room, but zooms in only when a view at least
+   ZIN_MIN closer has been wanted for ZIN_WAIT ms; small wishes to come closer are ignored. Pans and zooms ease over about a second. */
+var ZIN_MIN=0.3,ZIN_WAIT=1500,zinSince=0;
+function calmTarget(){var tg=target(),z=mv.map.getZoom(),now=Date.now();
+  if(tg.zoom>z){if(tg.zoom-z<ZIN_MIN){zinSince=0;tg.zoom=z}else{if(!zinSince)zinSince=now;if(now-zinSince<ZIN_WAIT)tg.zoom=z}}else zinSince=0;
+  return tg}
 function target(){var n=mv.size().w<520?36:56,W=WORLDS[worldOf(base)],cam=mv.cameraFor(actionBox(),{t:n+34,b:n+26,l:n,r:n},followMax());
   if(followK!==1){cam.zoom=Math.min(cam.zoom+Math.log2(followK),mv.zoomFor(W.maxScale));
     if(followK>1){var f=focusPoint();if(f)cam.center=W.toLL(f)}}
@@ -250,13 +256,14 @@ var BRK_MS=2500,brk={},lastW=null,lastT=null,holdUntil=0;
 function parentsOf(uid){var out=[],d=stamp(t),seen=0;while(uid&&seen++<6){var u=B.units[uid];if(!u)break;var as=u.assignments||[],a=null;
     as.forEach(function(x){var f=x.from?B.time(x.from):-1e9,e=x.to?B.time(x.to)+((!byDay&&x.to.length===10)?1439:0):1e9;if(d>=f&&d<=e)a=x});
     a=a||as[as.length-1];if(!a||!a.parent)break;out.push(a.parent);uid=a.parent}return out}
-function breakouts(L){var now=Date.now(),W={},inv=function(q){return mv.map.unproject(q)},ok=clk&&clk.playing&&lastW&&lastT!=null&&t>=lastT&&t-lastT<(byDay?2:30),born={};
+function zoomSig(){return [FM&&(fmForced()||(fmOn&&!base.own&&sNow<FM.below)),sNow<(Z.fold||0)].concat((P.groups||[]).map(function(G){return sNow<G.below})).join()}
+function breakouts(L){var now=Date.now(),W={},inv=function(q){return mv.map.unproject(q)},sig=zoomSig(),ok=clk&&clk.playing&&lastW&&lastT!=null&&t>=lastT&&t-lastT<(byDay?2:30)&&lastW.sig===sig,born={};
   L.forEach(function(u){var tr=u.o.tr;if(!tr.id||u.noSym)return;var ll=inv([u.c[0],u.c[1]]);W[tr.unit]=W[tr.unit]||[ll.lng,ll.lat];
     if(ok&&!lastW.ids[tr.id]&&!brk[tr.id]){var ps=parentsOf(tr.unit);for(var i=0;i<ps.length;i++){if(lastW.pos[ps[i]]){(born[ps[i]]=born[ps[i]]||[]).push(tr.id);break}}}});
   Object.keys(born).forEach(function(p){if(born[p].length<2)return;born[p].forEach(function(id){brk[id]={from:lastW.pos[p],t0:now}});holdUntil=now+BRK_MS});
   L.forEach(function(u){var tr=u.o.tr,b=tr.id&&brk[tr.id];if(!b)return;var f=(now-b.t0)/BRK_MS;if(f>=1){delete brk[tr.id];return}
     var e=1-Math.pow(1-f,3),q=mv.map.project(b.from),dx=(q.x-u.c[0])*(1-e),dy=(q.y-u.c[1])*(1-e);u.x+=dx;u.y+=dy;u.pts=u.pts.map(function(p){return [p[0]+dx,p[1]+dy]});mv.kick()});
-  var ids={};L.forEach(function(u){if(u.o.tr.id&&!u.noSym)ids[u.o.tr.id]=1});lastW={pos:W,ids:ids};lastT=t}
+  var ids={};L.forEach(function(u){if(u.o.tr.id&&!u.noSym)ids[u.o.tr.id]=1});lastW={pos:W,ids:ids,sig:sig};lastT=t}
 function layout(sc){
   var L=[],Zs=mv.size(),rear=(P.rear&&!base.own)?S(B.fromLL(P.rear.at)):null,ag={},FOES=[],reach=(compact?8000:2500)*(base.own?0.5:sNow);   // how far off an enemy still decides which way a line faces (screen px)
   sc.forEach(function(o){if(o.s.g&&!o.hidden)o.s.g.forEach(function(p){FOES.push([o.tr.side,S(p)])})});
@@ -655,7 +662,7 @@ try{ mv=WM.mapView({container:'map',wrap:wrap,world:worldOf(base),worlds:WORLDS,
   onDraw:draw,onPick:select,
   onUserMove:function(){if(follow)pauseFollow();if(preset||goal)setPreset(null)},
   onResize:function(){if(preset){mv.jump(cameraOf(preset));goal=null}else if(follow&&!landing)mv.jump(target());else if(landing)mv.jump(home())},
-  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(mv.chase(target(),glide>Date.now()?FOL.glide_rate:FOL.rate))more=true}}return more}});
+  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(glide>Date.now()?mv.chase(target(),FOL.glide_rate):mv.chase(calmTarget(),FOL.rate,FOL.zoom_rate))more=true}}return more}});
 }catch(err){WM.noMap(wrap,err);return null}
 S=mv.S;
 mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
