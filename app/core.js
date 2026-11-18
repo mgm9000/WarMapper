@@ -82,7 +82,7 @@ WM.battle=function(raw){
   function step(s){var loc=s.location||{},g=s.at?s.at.map(B.fromLL):null,mid=null;
     if(s.at){var n=s.at.length,i=n>>1;mid=(n%2)?s.at[i]:[(s.at[i-1][0]+s.at[i][0])/2,(s.at[i-1][1]+s.at[i][1])/2]}
     return {id:s.id,t0:B.time(s.show[0]),t1:B.time(s.show[1]),ts:B.rangeText(s.start),te:B.rangeText(s.end),open:s.end[1]==null?1:0,
-      g:g,via:s.via?s.via.map(B.fromLL):null,on:s.on||null,
+      g:g,via:s.via?s.via.map(B.fromLL):null,on:s.on||null,vo:s.via_on||null,
       act:s.activity||'',place:s.place||'',say:s.quote||'',method:s.method,oc:s.confidence,tb:s.time_basis||'',
       basis:loc.basis||'',cb:loc.basis||(g?'':'No position on record'),cs:loc.source||'none',cc:loc.confidence||'',prec:loc.precision_m||null,
       pl:(loc.places||[]).map(function(p){return [p.name||'',p.today||'',p.source,p.precision_m]}),
@@ -107,6 +107,10 @@ WM.battle=function(raw){
       images:m.images.map(function(im){var c=im.corners||null,box=null;
         if(c){var f=c.map(B.fromLL);box=[Math.min(f[0][0],f[3][0]),Math.min(f[0][1],f[1][1]),Math.max(f[1][0],f[2][0]),Math.max(f[2][1],f[3][1])]}
         return {file:im.file,ll:c,box:box,detail:!!im.detail,reduced:im.reduced||0}})};
+    var I=v.images,cut=I.length>1&&I.every(function(im){return im.box&&!im.detail});   // a map cut into pieces side by side (no piece is wider than a phone can show)
+    if(cut){var b=[1e18,1e18,-1e18,-1e18];I.forEach(function(im){b=[Math.min(b[0],im.box[0]),Math.min(b[1],im.box[1]),Math.max(b[2],im.box[2]),Math.max(b[3],im.box[3])]});
+      v.box=b;v.ll=[[b[0],b[1]],[b[2],b[1]],[b[2],b[3]],[b[0],b[3]]].map(B.toLL);var t=v.ll[0][1]>v.ll[3][1];if(!t)v.ll=[v.ll[3],v.ll[2],v.ll[1],v.ll[0]]}
+    else if(I.length){v.box=I[0].box;v.ll=I[0].ll}
     B.maps[m.id]=v; return v});
   /* the current map's lines and areas, as lists of [longitude, latitude] */
   function unpack(s){var out=[],x=0,y=0;s.split(';').forEach(function(t,i){var a=t.split(',');x=i?x+(+a[0]):+a[0];y=i?y+(+a[1]):+a[1];out.push([x/1e5,y/1e5])});return out}

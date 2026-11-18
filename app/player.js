@@ -44,7 +44,7 @@ var bases=(P.bases&&P.bases.length)?P.bases:[{id:'now',label:'Current map',short
 var series=B.mapList.filter(function(m){return m.t0!=null});
 bases.forEach(function(b){b.m=b.map?B.maps[b.map]:null;b.own=!!(b.m&&b.m.own);b.sat=!!(b.imagery&&b.imagery.tiles)});
 var SKK=1e-5; function ownLL(p){return [p[0]*SKK,-p[1]*SKK]}   // a not-to-scale map: its pixels laid out as a small patch of pretend ground
-var bm=P.bounds&&B.maps[P.bounds],EXT=bm?bm.images[0].box:B.ext;
+var bm=P.bounds&&B.maps[P.bounds],EXT=bm?bm.box:B.ext;
 var WORLDS={ground:{toLL:B.toLL,ext:EXT,mPerUnit:1,maxScale:Z.max||2,minFactor:Z.min_factor||0.9}};
 bases.forEach(function(b){if(b.own)WORLDS['own:'+b.map]={toLL:ownLL,ext:[0,0,b.m.size[0],b.m.size[1]],mPerUnit:SKK*EARTH/360,maxScale:3,minFactor:0.9}});
 /* The modern map: today's topographic map from a tile service. It is the current map, it shows through a period map that is turned down,
@@ -52,17 +52,20 @@ bases.forEach(function(b){if(b.own)WORLDS['own:'+b.map]={toLL:ownLL,ext:[0,0,b.m
    and water (the base data) is the fall-back, shown only if the service cannot be reached. */
 var MOD=(function(){var m=P.modern||P.surround;return m&&m.tiles?m:null})(),modOn=null,modFail=0,modOff=false;
 function topo(){return !!MOD&&!modOff}
-if(MOD){(function(){var f=(+MOD.reach||(bm?4:2))/2,cx=(EXT[0]+EXT[2])/2,cy=(EXT[1]+EXT[3])/2,hw=Math.abs(EXT[2]-EXT[0])*f,hh=Math.abs(EXT[3]-EXT[1])*f;WORLDS.ground.reach=[cx-hw,cy-hh,cx+hw,cy+hh]})()}
+if(MOD){(function(){var f=(+MOD.reach||(bm?4:2))/2,cx=(EXT[0]+EXT[2])/2,cy=(EXT[1]+EXT[3])/2,hw=Math.abs(EXT[2]-EXT[0])*f,hh=Math.abs(EXT[3]-EXT[1])*f;var r=[cx-hw,cy-hh,cx+hw,cy+hh];
+  B.mapList.forEach(function(m){if(m.own)return;m.images.forEach(function(im){var b=im.box;if(!b)return;b=[Math.min(b[0],b[2]),Math.min(b[1],b[3]),Math.max(b[0],b[2]),Math.max(b[1],b[3])];var mx=(b[2]-b[0])*0.3,my=(b[3]-b[1])*0.3;   // room to zoom out past every period map, so the modern map is seen around it
+    r=[Math.min(r[0],b[0]-mx),Math.min(r[1],b[1]-my),Math.max(r[2],b[2]+mx),Math.max(r[3],b[3]+my)]})});
+  WORLDS.ground.reach=r})()}
 function inQuad(p,Q){var s=0,i,a,b,c;for(i=0;i<4;i++){a=Q[i];b=Q[(i+1)%4];c=(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]);if(c){if(s&&(c>0)!==(s>0))return false;s=c}}return true}
 /* Under a period map at full strength the modern map is asked for only while some of the screen lies beyond the picture, so nothing is fetched until the reader zooms or pans out past it. */
 function paintModern(H){ if(!MOD) return; var on=false;
-  if(!modOff&&!base.own&&!base.sat){var m=base.series?H:base.m,Q=m&&!m.own?m.images[0].ll:null,z=mv.size();
+  if(!modOff&&!base.own&&!base.sat){var m=base.series?H:base.m,Q=m&&!m.own?m.ll:null,z=mv.size();
     on=!!(base.current||base.backdrop==='current'||through()||!Q||[[0,0],[z.w,0],[z.w,z.h],[0,z.h]].some(function(q){var l=mv.map.unproject(q);return !inQuad([l.lng,l.lat],Q)}))}
   if(on!==modOn){modOn=on;mv.show('sur',on);panelKey=''} }
 /* The map a battle opens on: a period map if it covers all of the opening view, otherwise the current map. `start_base` overrides. */
 function startBase(){ var byId=P.start_base&&bases.filter(function(b){return b.id===P.start_base})[0]; if(byId) return byId;
   var V=raw.view,bx=(P.views&&V.presets&&V.presets[P.views[0].preset])||V.extent,dx=(bx[2]-bx[0])*0.04,dy=(bx[3]-bx[1])*0.04,C=[[bx[0]+dx,bx[1]+dy],[bx[2]-dx,bx[1]+dy],[bx[2]-dx,bx[3]-dy],[bx[0]+dx,bx[3]-dy]];
-  var per=bases.filter(function(b){return b.m&&!b.own&&!b.series&&C.every(function(c){return inQuad(c,b.m.images[0].ll)})})[0];
+  var per=bases.filter(function(b){return b.m&&!b.own&&!b.series&&C.every(function(c){return inQuad(c,b.m.ll)})})[0];
   return per||bases.filter(function(b){return b.current})[0]||bases[0]}
 function worldOf(b){return b.own?'own:'+b.map:'ground'}
 
@@ -89,7 +92,8 @@ function prevGeo(ks,i,key){for(var j=i-1;j>=0;j--){var g=geo(ks[j],key);if(g)ret
 function noPlace(k,key){return (key!=='g'&&k.g)?'offthis':'unplaced'}   // on a map of its own, a unit placed on the ground but not on that map
 function placed(k){return k.method==='inferred'?'inferred':'stated'}
 function move(a,b,f,key){ // from step a to step b: along the route the record gives (via) if it has one, else straight
-  if(key==='g'&&b.via&&b.via.length>1){ if(f>0.92&&b.g.length>1){return lerpG([alongP(b.via,0.92)],b.g,(f-0.92)/0.08)} return [alongP(b.via,Math.min(f/0.92,1))]; }
+  var V=key==='g'?b.via:(b.vo&&b.vo[key]),G=geo(b,key);   // a picture not to scale may carry the route in its own pixels (vo)
+  if(V&&V.length>1&&G){ if(f>0.92&&G.length>1){return lerpG([alongP(V,0.92)],G,(f-0.92)/0.08)} return [alongP(V,Math.min(f/0.92,1))]; }
   return lerpG(geo(a,key),geo(b,key),f)}
 /* A battle followed by the clock. A unit stands at a step's place for the step's time; between two steps it moves; where one step
    ends as the next begins it shifts over the last few minutes; after its last step it stays, faded, unless the record says it left. */
@@ -166,7 +170,8 @@ function scene(){
 /* What the Follow camera frames: every unit on the map now, and every unit that will be on it within the look-ahead
    (playback.follow.lookahead, minutes), so a column still far off is in view before it arrives and the camera closes in as the forces meet. */
 function actionBox(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],b=[1e9,1e9,-1e9,-1e9],any=false,la=byDay?0:(F.lookahead!=null?F.lookahead:30),when=la?[t,Math.min(T1,t+la/2),Math.min(T1,t+la)]:[t];
-  B.tracks.forEach(function(tr){if(tr.parent||tr.loose||ex.indexOf(tr.id)>=0)return;when.forEach(function(tt){var s=stateAt(tr,tt,key);if(!s||!s.g||s.hid)return;any=true;
+  var su=F.side_from||{};   // a side left out of the frame until a time (Trenton: the garrison sits still all night while the army crosses)
+  B.tracks.forEach(function(tr){if(tr.parent||tr.loose||ex.indexOf(tr.id)>=0)return;if(su[tr.side]&&t<B.time(su[tr.side]))return;when.forEach(function(tt){var s=stateAt(tr,tt,key);if(!s||!s.g||s.hid)return;any=true;
     s.g.forEach(function(p){b[0]=Math.min(b[0],p[0]);b[1]=Math.min(b[1],p[1]);b[2]=Math.max(b[2],p[0]);b[3]=Math.max(b[3],p[1])})})});
   if(!any) return base.own?[0,0,base.m.size[0]*0.75,base.m.size[1]]:((F.empty&&B.presets[F.empty])||EXT);
   var mn=base.own?[520,400]:(F.min||[1400,900]),mg=base.own?70:(F.margin||140);
@@ -271,6 +276,19 @@ function formationOf(uid){ var seen=0,d=stamp(t),want=FM.echelon||'division';
   return null}
 function setFormations(v){fmOn=v;tick('cForm',v);remember('form',v);mv.kick()}
 function f1(v){return v.toFixed(1)}
+/* Routes taken: the road each unit has marched so far (the routes the record gives), drawn under the units and growing with the clock.
+   Each side's lines are one group at reduced strength, so roads that several units took are not drawn darker. */
+var TRL=P.trails||null,trlOn=!!(TRL&&TRL.on!==false);
+function setTrails(v){trlOn=v;tick('cTrail',v);remember('trail',v);mv.kick()}
+function subPath(V,f){if(f>=1)return V;var L=0,i,seg=[];for(i=1;i<V.length;i++)L+=Math.hypot(V[i][0]-V[i-1][0],V[i][1]-V[i-1][1]);var want=L*f,out=[V[0]];
+  for(i=1;i<V.length;i++){var d=Math.hypot(V[i][0]-V[i-1][0],V[i][1]-V[i-1][1]);if(d>=want){var u=d?want/d:0;out.push([V[i-1][0]+(V[i][0]-V[i-1][0])*u,V[i-1][1]+(V[i][1]-V[i-1][1])*u]);return out}want-=d;out.push(V[i])}return out}
+function trailsSvg(){ if(!TRL||!trlOn||landing||!unitsOn) return ''; var key=base.own?base.map:'g',by={};
+  B.tracks.forEach(function(tr){var ks=tr.k;for(var i=1;i<ks.length;i++){var a=ks[i-1],b=ks[i],V=key==='g'?b.via:(b.vo&&b.vo[key]);if(!V||V.length<2)continue;
+    var end=a.t1;if(t<=end)break;var f=Math.min(1,(t-end)/Math.max(0.01,b.t0-end)),pts=subPath(V,Math.min(f/0.92,1)).map(S);
+    (by[tr.side]=by[tr.side]||[]).push(pts.map(function(p,j){return (j?'L':'M')+f1(p[0])+' '+f1(p[1])}).join(''))}});
+  var h='',w=compact?3:4;Object.keys(by).forEach(function(sd){var c=look({side:sd}).col;
+    h+='<g class="trail" opacity="'+(TRL.opacity||0.55)+'" style="pointer-events:none"><path d="'+by[sd].join('')+'" fill="none" style="stroke:'+c+'" stroke-width="'+w+'" stroke-linecap="round" stroke-linejoin="round"/></g>'});
+  return h}
 function unitSvg(u,part){   // the last position on record stays plain to see: dashed, barely faded
   var o=u.o,tr=o.tr,s=o.s,pts=u.pts,lk=look(tr),col=lk.col,k=s.kind;
   var soft=(k==='moving'||k==='early'||k==='after'||k==='unplaced'),low=u.low,op=k==='unplaced'?0.5:k==='after'?0.8:1,isSel=!!tr.id&&sel===tr.id,h='',x=u.x,y=u.y,c=u.c;
@@ -363,10 +381,10 @@ function paintCredit(H){var c,mc=MOD?(MOD.link?'<a href="'+esc(MOD.link)+'" targ
 function draw(){
   sNow=mv.scale(); mv.hits.length=0;
   var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintModern(H); paintCredit(H);
-  var cover=base.backdrop==='current'?(H||base.m).images[0].box:null;
+  var cover=base.backdrop==='current'?(H||base.m).box:null;
   var sc=scene(),L=layout(unitsOn&&!landing?sc:[]),h=mapNames(L,cover);   // on landing the map is shown alone; the units come on when the battle is started
   L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});   // the selected unit last, so it sits on top
-  L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h;
+  h+=trailsSvg(); L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h;
   var su=P.scale_bar||(byDay?'km':'yards'),sk=$('scale');
   if(!base.own) WM.scaleBar(sk,mv.mPerPx(),su);
   else if(base.m.raw.approx_m_per_px) WM.scaleBar(sk,base.m.raw.approx_m_per_px/sNow,su,true,base.m.raw.scale_note||'Roughly: this map is not to scale');   // a sketch: a rough scale where it is nearest to true
@@ -393,7 +411,7 @@ function buildBase(){
     if(l.kind==='rail'){f.push(WM.feat('line',l.ll,{k:'rail'}));return}
     var w=W[l.cls]||W[W._];f.push(WM.feat('line',l.ll,{k:'road',major:(!compact&&(l.cls==='m'||l.cls==='p'))?1:0,e:w[0],w:w[1],minor:(minor&&(l.cls==='r'||l.cls==='v'))?1:0}))});
   if(mask){ // everything outside the period map is covered, so the current map ends where the period map does
-    var c=B.maps[mask.clip].images[0].ll,far=[[-9,-9],[10,-9],[10,10],[-9,10],[-9,-9]].map(function(q){return B.toLL([EXT[0]+(EXT[2]-EXT[0])*q[0],EXT[1]+(EXT[3]-EXT[1])*q[1]])});
+    var c=B.maps[mask.clip].ll,far=[[-9,-9],[10,-9],[10,10],[-9,10],[-9,-9]].map(function(q){return B.toLL([EXT[0]+(EXT[2]-EXT[0])*q[0],EXT[1]+(EXT[3]-EXT[1])*q[1]])});
     f.push({type:'Feature',properties:{k:'mask'},geometry:{type:'Polygon',coordinates:[far,[c[0],c[3],c[2],c[1],c[0]]]}})}
   mv.geo('base',f);
   var is=function(k){return ['==',['get','k'],k]},round={'line-cap':'round','line-join':'round'},mz=minor?mv.zoomFor(Z.minor_roads_from):0;
@@ -464,7 +482,7 @@ function updateTiles(){
   for(k in want) if(!TILES[k]){var id='iiif-'+(tileSeq++);TILES[k]=id;
     mv.map.addSource(id,{type:'image',url:want[k].url,coordinates:want[k].q});
     mv.layer({id:id,type:'raster',source:id,paint:{'raster-fade-duration':0,'raster-resampling':'linear','raster-brightness-max':function(c){return +c('--raster-max')||1}}},'iiif-slot')}
-  var b11=$('z11'); if(b11) b11.hidden=!m;
+  var b11=$('z11'); if(b11){b11.hidden=!m&&!sheetOf(base);b11.title=sheetOf(base)?'The engraving as printed, unstretched, at full detail':'Full detail: one pixel of the scan to one pixel of the screen'}
 }
 function queueTiles(){clearTimeout(tileTimer);tileTimer=setTimeout(updateTiles,160)}
 function tileError(e){ // three failures and the library is left alone for the rest of the visit
@@ -474,7 +492,7 @@ function tileError(e){ // three failures and the library is left alone for the r
 function setBase(b,first){
   if(typeof b==='string') b=bases.filter(function(x){return x.id===b})[0]; if(!b) return;
   var moved=first||worldOf(b)!==worldOf(base); base=b;
-  bases.forEach(function(x){press('b-'+x.id,x===b);(PICS[x.id]||[]).forEach(function(p){mv.show(p.id,x===b)})});
+  bases.forEach(function(x){if(!x.of)press('b-'+x.id,x===b||b.of===x.id);(PICS[x.id]||[]).forEach(function(p){mv.show(p.id,x===b)})});
   if(moved) mv.setWorld(worldOf(b));
   if(!b.series&&series.length){mv.show('pic-series',false);seriesShown=null}
   if(b.series) series.forEach(function(m){if(!m.pre){m.pre=new Image();m.pre.src=WM.asset(m.images[0].file)}});
@@ -572,7 +590,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
 (function(){var h='',seg=function(label,items){return '<div class="seg" role="group" aria-label="'+label+'">'+items.join('')+'</div>'},
     btn=function(id,x){return '<button id="'+id+'" aria-pressed="false"'+(x.title?' title="'+esc(x.title)+'"':'')+'><span class="lg">'+esc(x.label)+'</span><span class="sm">'+esc(x.short||x.label)+'</span></button>'},
     chipb=function(id,label,title,on){return '<button class="chipbtn" id="'+id+'" aria-pressed="'+(on?'true':'false')+'" title="'+esc(title)+'"><span class="dot"></span><span>'+label+'</span></button>'};
-  if(bases.length>1) h+=seg('Base map',bases.map(function(b){return btn('b-'+b.id,b)}));
+  if(bases.length>1) h+=seg('Base map',bases.filter(function(b){return !b.of}).map(function(b){return btn('b-'+b.id,b)}));
   if(P.views) h+=seg('Map view',P.views.map(function(v){return btn('v-'+v.preset,v)}));
   if(P.follow) h+=chipb('bFollow','Follow<span class="long"> the action</span>','Keep the units in view as time moves (F)',true);
   h+='<button class="chipbtn" id="bLayers" aria-expanded="false" aria-controls="layers" title="What is drawn on the map, and how"><span>Layers</span><span class="car">&#9662;</span></button>';
@@ -580,7 +598,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   // the Layers menu: what is drawn, how units are drawn, and how much of the period map shows
   var ck=function(id,label,on,key){return '<label class="ck"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span>'+label+(key?'<kbd>'+key+'</kbd>':'')+'</span></label>'},
       sb=function(id,label,on){return '<button id="'+id+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>'},L='';
-  L+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')
+  L+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')+(TRL?ck('cTrail','Routes taken',trlOn):'')
     +ck('cPlaces','Place names',true)+ck('cLines','Road and stream names',true)+ck('cNarr','The current event, in words, on the map',false)+'</div>';
   L+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Symbol style',[sb('sy-standard','Standard',true),sb('sy-period','Period style',false)])+'<p class="gn">Period style drops the frames: a line is a bar, as on maps of the time.</p></div>';
   L+='<div class="grp"><div class="gh">Seen from</div>'+seg('Seen from',[sb('fr-none','Neither side',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Seen from one side, the other side takes the diamond frame of the standard military symbols.</p></div>';
@@ -647,7 +665,7 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*RNG
   onKey:function(e){var k=e.key.toLowerCase();
     if(e.key==='['||e.key==='PageUp'){toEvent(-1);e.preventDefault()}else if(e.key===']'||e.key==='PageDown'){toEvent(1);e.preventDefault()}
     else if(e.key==='Escape')select(null);else if(k==='n')setNames(!names);else if(k==='u')setUnits(!unitsOn);else if(k==='f'&&P.follow)setFollow(!follow);
-    else if(k==='m'&&bases.length>1)setBase(bases[(bases.indexOf(base)+1)%bases.length])}});
+    else if(k==='m'&&bases.length>1){var vis=bases.filter(function(x){return !x.of}),cb=base.of?bases.filter(function(x){return x.id===base.of})[0]:base;setBase(vis[(vis.indexOf(cb)+1)%vis.length])}}});
 
 /* timeline furniture: ticks, the part the data covers best, and the events */
 (function(){var tl=$('tl'),pc=function(m){return (t2u(m)*100)+'%'},h='',m,lg=!byDay&&(T1-TM)>360,fmt=function(v){var c=WM.fmtClock(v).replace(' a.m.','');return lg?c.replace(':00',''):c};
@@ -662,7 +680,7 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*RNG
   tl.addEventListener('click',function(ev){var b=ev.target.closest('.ev');if(b){clk.setPlaying(false);clk.setTime(+b.dataset.t)}});
 })();
 function on(id,fn){var e=$(id);if(e)e.addEventListener('click',fn)}
-bases.forEach(function(b){on('b-'+b.id,function(){setBase(b)})});
+bases.forEach(function(b){if(!b.of)on('b-'+b.id,function(){if(base.of===b.id){var p=sheetToGround(base,mv.map.getCenter());setBase(b);if(p)mv.map.jumpTo({center:p,zoom:mv.zoomFor(0.2)})}else setBase(b)})});
 (P.views||[]).forEach(function(v){on('v-'+v.preset,function(){setPreset(v.preset)})});
 on('bFollow',function(){setFollow(!follow)});
 document.addEventListener('keydown',function(e){var tg=(e.target&&e.target.tagName)||''; if(tg==='INPUT'||tg==='TEXTAREA'||e.metaKey||e.ctrlKey||e.altKey) return;
@@ -674,13 +692,24 @@ on('bLayers',function(){openLayers($('layers').hidden)});
 document.addEventListener('pointerdown',function(e){if(!$('layers').hidden&&!e.target.closest('#layers')&&!e.target.closest('#bLayers'))openLayers(false)});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('layers').hidden){openLayers(false);$('bLayers').focus();e.stopPropagation()}},true);
 function onCheck(id,fn){var e=$(id);if(e)e.addEventListener('change',function(){fn(e.checked)})}
-onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations);
+onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations); onCheck('cTrail',setTrails);
 onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
 on('sy-standard',function(){setSymbols('standard')}); on('sy-period',function(){setSymbols('period')});
 on('fr-none',function(){setSeenFrom('')}); raw.sides.forEach(function(sd){on('fr-'+sd.code,function(){setSeenFrom(sd.code)})});
 var opr=$('opac'); if(opr) opr.addEventListener('input',function(){setOpacity(+opr.value/100)});
 on('zin',function(){zoomStep(1.45)}); on('zout',function(){zoomStep(1/1.45)});
-on('z11',function(){var m=scanOf();if(!m)return;setFollow(false);setPreset(null);mv.zoomBy(1/scanScale(m))});
+on('z11',function(){var sb=sheetOf(base);
+  if(sb){var c=mv.map.getCenter(),xy=groundToSheet(sb,[c.lng,c.lat]);setFollow(false);setPreset(null);setBase(sb);if(xy)mv.map.jumpTo({center:ownLL(xy)});var m2=scanOf();if(m2)mv.zoomBy(1/scanScale(m2));return}
+  var m=scanOf();if(!m)return;setFollow(false);setPreset(null);mv.zoomBy(1/scanScale(m))});
+/* A fitted map that is stretched to lie on the ground can have its engraving shown as printed (a base with `of` naming the fitted one):
+   1:1 opens it at full detail where the reader is looking, and its own button brings the fitted map back. A table laid over the ground
+   (lookup) gives the engraving's pixel for each place; units carry their own positions on it. */
+function sheetOf(b){return bases.filter(function(x){return x.of===b.id})[0]||null}
+function groundToSheet(sb,ll){var L=sb.m.raw.lookup;if(!L)return null;var e=L.ext,n=L.n,fx=(ll[0]-e[0])/(e[2]-e[0])*(n[0]-1),fy=(e[3]-ll[1])/(e[3]-e[1])*(n[1]-1);
+  if(fx<0||fy<0||fx>n[0]-1||fy>n[1]-1)return null;var i=Math.min(n[0]-2,Math.floor(fx)),j=Math.min(n[1]-2,Math.floor(fy)),u=fx-i,v=fy-j,P=function(a,b){return L.xy[b*n[0]+a]};
+  var a=P(i,j),b=P(i+1,j),c=P(i,j+1),d=P(i+1,j+1);return [0,1].map(function(k){return a[k]*(1-u)*(1-v)+b[k]*u*(1-v)+c[k]*(1-u)*v+d[k]*u*v})}
+function sheetToGround(sb,c){var L=sb.m.raw.lookup;if(!L)return null;var x=c.lng/SKK,y=-c.lat/SKK,best=1e18,bi=0;L.xy.forEach(function(p,i){var d=(p[0]-x)*(p[0]-x)+(p[1]-y)*(p[1]-y);if(d<best){best=d;bi=i}});
+  var e=L.ext,n=L.n,i=bi%n[0],j=Math.floor(bi/n[0]);return [e[0]+(e[2]-e[0])*i/(n[0]-1),e[3]-(e[3]-e[1])*j/(n[1]-1)]}
 on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.own?WORLDS[worldOf(base)].ext:EXT,{t:48,b:22,l:14,r:14}))});
 (function(){var app=document.querySelector('.app'),b=$('zfull'); if(!b) return;   // full screen is not offered where the browser does not allow it (inside some embedded views)
   if(!document.fullscreenEnabled||!app.requestFullscreen){b.hidden=true;return}
@@ -708,7 +737,7 @@ on('bLink',function(){var url=location.href.split('#')[0]+linkHash(),ok=$('linko
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,function(){ok.textContent='Copy it from the address bar';done()});else{ok.textContent='Copy it from the address bar';done()}});
 
 /* ---------- start ---------- */
-try{if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)}}catch(_){ }
+try{if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)} var ts=localStorage.getItem('wm.'+B.id+'.trail'); if(TRL&&ts!=null){trlOn=ts==='1';tick('cTrail',trlOn)}}catch(_){ }
 setStep(stepNear(P.rate||(byDay?1:5)));
 if(P.views) preset=P.views[0].preset;
 base=startBase();
