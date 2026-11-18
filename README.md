@@ -55,6 +55,17 @@ Python 3 with `openpyxl` (and `Pillow` and `numpy` for the two map scripts).
 - It also lists every place where one side's symbol is drawn within 50 m of the other's, minute by minute ("contact"). Close fights show up there, and so does a unit overrun on the map without the data saying what became of it: that one needs a row that has it fall back, or `show_to` so it leaves the map.
 - A new battle is new rows: a row on `Playbacks`, its units, positions and sources, its symbols on `Tracks`, and a current map in `data/base/`. No code.
 
+### Editing the workbook
+
+The workbook is a binary file, so GitHub cannot show what changed in it or merge two edited copies. If two people start from different copies, one set of edits overwrites the other. So work from a fresh download, and do not edit the file on GitHub's web page, which has no spreadsheet editor.
+
+1. **Download the current workbook** from `data/` on the `main` branch before each editing session. Do not start from an older copy on your computer.
+2. **Edit that copy** in Excel and save it.
+3. **Send it back**, either by uploading it to the repository as a replacement for the file in `data/`, or by handing it to whoever is running the export. They run the two scripts above, which regenerate every `battle.json` and page from it, and open a pull request.
+4. **Merge the pull request.** The site updates a minute or two later.
+
+Tell the other person before you start editing, and have them hold off on workbook changes until your file comes back. Only one person should be changing the workbook at a time.
+
 The Gettysburg playback covers the first day, 7:15 a.m. to 5:30 p.m. After 10:15 a.m. it rests on Bachelder's 1876 map alone: brigade positions and the times printed beside them. The reports for the afternoon have not been read, and the Union brigades' places on Cemetery Hill at the end of the day are estimates.
 
 ## How the playbacks are built
