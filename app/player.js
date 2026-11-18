@@ -134,7 +134,7 @@ function stateDaily(tr,tt,key){
   var ks=tr.k,n=ks.length; if(tt<ks[0].t0-LEAD_IN) return null;
   for(var i=0;i<n;i++){
     var k=ks[i],nx=ks[i+1],s=k.t0-LEAD_IN,e=k.t1,g=geo(k,key),gn=nx?geo(nx,key):null;
-    if(tt>=s&&tt<=e) return {k:k,g:g,kind:!g?noPlace(k,key):placed(k)};
+    if(tt>=s&&tt<=e) return {k:k,g:g,kind:!g?noPlace(k,key):k.virtual?'moving':placed(k)};   // a stand-in start (an approach not recorded) is drawn dashed
     if(nx&&tt>e&&tt<nx.t0-LEAD_IN){
       var ms=Math.max(e,nx.t0-1),me=nx.t0-LEAD_IN;            // the move takes the last day before the next record
       if(tt<ms) return (g&&tt<=e+LINGER)?{k:k,g:g,kind:'after'}:{k:k,g:null,kind:g?'lost':noPlace(k,key)};
@@ -233,7 +233,7 @@ function layout(sc){
     var conf=(P.question_mark==='location'&&o.s.k.cc)||o.s.k.oc,low=(conf==='low'&&o.s.kind!=='moving'),txt=tr.label+((low&&!compact)?' ?':'');
     L.push({o:o,pts:pts,len:len,c:c,x:x,y:y,low:low,txt:txt,w:txt.length*(compact?6.7:7.1)+6,pr:rank(tr),nudged:!!(nx||ny),line:len>7})});
   if(fmOn&&FM&&!base.own&&sNow<FM.below){ var F={};
-    L.forEach(function(u){var tr=u.o.tr;if(!tr.id||tr.parent||tr.id===sel)return;var f=formationOf(tr.unit);if(!f||f.side==null)return;(F[f.id]=F[f.id]||{f:f,u:[]}).u.push(u)});
+    L.forEach(function(u){var tr=u.o.tr;if(!tr.id||tr.parent||tr.id===sel)return;var me=B.units[tr.unit],f=(me&&String(me.echelon||'').toLowerCase()===(FM.echelon||'division'))?me:formationOf(tr.unit);if(!f||f.side==null)return;(F[f.id]=F[f.id]||{f:f,u:[]}).u.push(u)});
     Object.keys(F).forEach(function(id){var g=F[id],n=g.u.length,x=0,y=0,cx=0,cy=0,mov=0,tr0=g.u[0].o.tr; if(n<(FM.min_units||1)) return;
       g.u.forEach(function(u){u.noSym=true;x+=u.x;y+=u.y;cx+=u.c[0];cy+=u.c[1];if(u.o.s.kind==='moving')mov++});
       var lab=g.f.label||g.f.name,tr={id:'F:'+id,unit:id,label:lab,side:tr0.side,nation:tr0.nation,ech:FM.echelon||'division',branch:tr0.branch,parent:'',formation:true};

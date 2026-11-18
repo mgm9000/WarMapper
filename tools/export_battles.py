@@ -21,6 +21,7 @@ import battlefile as bf
 WORKBOOK = os.path.join(ROOT, 'data', 'WarMapper battle data.xlsx')
 BRANCH = {'horse artillery': 'artillery'}
 ECHELON = {'regiment (part)': 'regiment'}
+ARRIVAL_NOTE = "The approach is not recorded in the sources read. The unit is drawn coming up from %s the day before it is first placed."
 VIRTUAL_NOTE = "Shown leaving its division's last recorded position. Where the unit itself was at this moment is not in the sources read."
 
 
@@ -105,6 +106,36 @@ def export(pb, W):
                 'confidence': text(p['overall_confidence']), 'time_basis': text(p['time_basis']), 'location': loc, 'sources': bf.ids(p['source_ids']), 'notes': text(p['notes']),
                 'review': text(p['review_status']), 'battle': text(p['battle_id']), 'shared': True if p['unit_id'] != tr['unit_id'] else None}
 
+    ARR = settings(mine(W['Playback settings'])).get('arrival')   # units that come into the battle late are drawn coming up, not appearing
+    code = {x['side_id']: x['code'] for x in W['Sides']}; T0 = when(pb['time_start'])
+    def parent_of(uid, day):   # who the unit answered to on that day, by its assignment records
+        rows = [a for a in W['Assignments'] if a['unit_id'] == uid and not blank(a.get('parent_unit_id'))]
+        now = [a for a in rows if (when(a['valid_from']) or '')[:10] <= day <= ((when(a['valid_to']) or '9999')[:10])]
+        return (now or rows[-1:] or [{}])[0].get('parent_unit_id')
+    placed = {}   # track id -> its steps, for a unit that comes up out of its parent formation
+
+    def arrive(tr, steps):
+        first = steps[0]
+        if not first['at'] or first['show'][0] <= T0 or first.get('virtual'): return
+        day = dt.date.fromisoformat(first['show'][0][:10]) - dt.timedelta(days=int(ARR.get('lead', 1)))
+        at = day.isoformat()
+        if at < T0: return
+        pid = parent_of(tr['unit_id'], at); par = placed.get(pid)
+        prev = [s for s in (par or []) if s['at'] and s['show'][0] <= at] if par else []
+        if prev:   # its parent formation is on the map: the unit comes out of it
+            g = prev[-1]['at']; c = [sum(p[0] for p in g) / len(g), sum(p[1] for p in g) / len(g)]; geo = [c]
+            whence = units[pid]['map_label'] + "'s line"
+        else:      # from behind its own side's lines
+            side = ARR.get(code.get(units[tr['unit_id']]['side_id'], ''), {})
+            g = first['at']; c = [sum(p[0] for p in g) / len(g), sum(p[1] for p in g) / len(g)]; km = float(ARR.get('km', 10))
+            if 'lat' in side: dx, dy = (side['lon'] - c[0]) * math.cos(math.radians(c[1])), side['lat'] - c[1]
+            else: b = math.radians(float(side.get('bearing', 90))); dx, dy = math.sin(b), math.cos(b)
+            n = math.hypot(dx, dy) or 1; dlat = km / 111.32 * dy / n; dlon = km / (111.32 * math.cos(math.radians(c[1]))) * dx / n
+            geo = [[round(p[0] + dlon, 5), round(p[1] + dlat, 5)] for p in g]; whence = 'behind its own lines'
+        v = dict(first); v.update(id=first['id'], show=[at, at], start=[at, at], end=[at, at], at=geo, on=None, virtual=True, shared=None, along=None, march=None,
+                                  activity='Coming up (approach not recorded)', place='Not recorded', quote=None, method='interpolated', confidence='low', notes=ARRIVAL_NOTE % whence)
+        steps.insert(0, v)
+
     tracks = []
     for tr in mine(W['Tracks']):
         ids = bf.ids(tr.get('rows')) or [k for k, p in P.items() if p['unit_id'] == tr['unit_id']]
@@ -114,12 +145,19 @@ def export(pb, W):
             v.update(show=[at, at], virtual=True, shared=None, activity="With %s's column" % who, method='interpolated', confidence='low', notes=VIRTUAL_NOTE)
             steps.insert(0, v)
         steps.sort(key=lambda s: (s['show'][0], s['show'][1]))
+        if ARR and blank(tr.get('starts_from_row')) and blank(tr.get('part_of_track')) and not text(tr.get('off_map')): arrive(tr, steps)
         for a, b in zip(steps, steps[1:]):
             if b['show'][0] < a['show'][1]: a['show'][1] = b['show'][0]          # two rows of one symbol cannot overlap: the earlier one gives way
             r = link.get((a['id'], b['id']))
             if r and a['at'] and b['at']: b['via'] = way(r)                       # the record gives the route between the two rows
-            elif a.get('virtual') and not blank(tr.get('start_route')) and b['at']:
-                b['via'] = way(routes[tr['start_route']])[:int(tr['start_route_points'])] + [b['at'][0]]
+            elif (a.get('virtual') or (a.get('shared') and not b.get('shared'))) and not blank(tr.get('start_route')) and b['at']:   # from the stand-in start, or from the last row it shares   # one route, or several in order ("RT01; RT02"); the points cap the last
+                names = bf.ids(tr['start_route']); via = []
+                for i, n in enumerate(names):
+                    w = way(routes[n])
+                    if i == len(names) - 1 and not blank(tr.get('start_route_points')): w = w[:int(tr['start_route_points'])]
+                    via += w[1:] if via and w and w[0] == via[-1] else w
+                b['via'] = via + [b['at'][0]]
+        placed[tr['unit_id']] = steps
         tracks.append({'id': tr['track_id'], 'unit': tr['unit_id'], 'label': text(tr.get('label')), 'echelon': text(tr.get('echelon')), 'parent': text(tr.get('part_of_track')),
                        'hide_after': True if yes(tr.get('hide_after_last_row')) else None, 'hold_until': when(tr.get('hold_until')), 'loose': True if yes(tr.get('loose')) else None,
                        'off_map': text(tr.get('off_map')), 'nudge': [float(v) for v in str(tr['nudge']).split(',')] if not blank(tr.get('nudge')) else None, 'steps': steps})
