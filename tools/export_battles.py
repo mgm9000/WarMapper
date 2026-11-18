@@ -50,6 +50,27 @@ def points(s):
     return [bf.ll(*[float(x) for x in q.split(',')]) for q in str(s).split(';') if q.strip()]
 
 
+def sheet_positions(mp, fit, tracks):
+    """Positions on an engraving shown as printed, from the same thin-plate spline that stretches it onto the ground (scan pixel <- place),
+    in the pixels of the picture that comes with the page. Also a coarse table of the same (lookup) for the player to move between the two."""
+    import numpy as np
+    from scipy.interpolate import RBFInterpolator
+    R = 6378137.0
+    merc = lambda q: (R * math.radians(q[0]), R * math.log(math.tan(math.pi / 4 + math.radians(q[1]) / 2)))
+    G = np.array([merc((p['lon'], p['lat'])) for p in fit['points']]); S = np.array([p['scan_px'] for p in fit['points']], float)
+    f = RBFInterpolator(G, S, kernel='thin_plate_spline'); x0, y0 = fit['crop'][:2]; red = fit['sheet']['reduced']
+    def px(pts):
+        q = f(np.array([merc(p) for p in pts]))
+        return [[round((a - x0) * red, 1), round((b - y0) * red, 1)] for a, b in q]
+    for tr in tracks:
+        for st in tr['steps']:
+            if st.get('at') and not (st.get('on') or {}).get(mp['id']): st['on'] = dict(st.get('on') or {}, **{mp['id']: px(st['at'])})
+            if st.get('via'): st['via_on'] = {mp['id']: px(st['via'])}
+    P = fit['pieces']; w = min(c[0][0] for c in P); e = max(c[1][0] for c in P); s_ = min(c[2][1] for c in P); n = max(c[0][1] for c in P); N = 40
+    grid = [(w + (e - w) * i / (N - 1), n - (n - s_) * j / (N - 1)) for j in range(N) for i in range(N)]
+    mp['lookup'] = {'ext': [w, s_, e, n], 'n': [N, N], 'xy': [[round(a), round(b)] for a, b in px(grid)]}
+
+
 def settings(rows):
     """The Playback settings sheet -> nested settings. 'bases.1.label' is the label of the first base; a value written [..] is a list."""
     root = {}
@@ -144,13 +165,17 @@ def export(pb, W):
             v = step(tr['starts_from_row'], tr); at = when(tr['starts_at']); who = units[P[v['id']]['unit_id']]['map_label']
             v.update(show=[at, at], virtual=True, shared=None, activity="With %s's column" % who, method='interpolated', confidence='low', notes=VIRTUAL_NOTE)
             steps.insert(0, v)
-        steps.sort(key=lambda s: (s['show'][0], s['show'][1]))
+        steps.sort(key=lambda s: (not s.get('virtual'), s['show'][0], s['show'][1]))   # a stand-in start comes first, whatever the rows after it say
+        if steps and steps[0].get('virtual') and len(steps) > 1 and not blank(tr.get('start_move_minutes')):   # it takes this long to reach its first row (a crossing)
+            t1 = (dt.datetime.fromisoformat(steps[0]['show'][0]) + dt.timedelta(minutes=int(tr['start_move_minutes']))).isoformat()[:16]
+            b = steps[1]
+            if b['show'][0] < t1: b['show'] = [t1, max(t1, b['show'][1])]
         if ARR and blank(tr.get('starts_from_row')) and blank(tr.get('part_of_track')) and not text(tr.get('off_map')): arrive(tr, steps)
         for a, b in zip(steps, steps[1:]):
             if b['show'][0] < a['show'][1]: a['show'][1] = b['show'][0]          # two rows of one symbol cannot overlap: the earlier one gives way
             r = link.get((a['id'], b['id']))
             if r and a['at'] and b['at']: b['via'] = way(r)                       # the record gives the route between the two rows
-            elif (a.get('virtual') or (a.get('shared') and not b.get('shared'))) and not blank(tr.get('start_route')) and b['at']:   # from the stand-in start, or from the last row it shares   # one route, or several in order ("RT01; RT02"); the points cap the last
+            elif ((a.get('virtual') and not b.get('shared')) or (a.get('shared') and not b.get('shared'))) and not blank(tr.get('start_route')) and b['at']:   # from the stand-in start, or from the last row it shares   # one route, or several in order ("RT01; RT02"); the points cap the last
                 names = bf.ids(tr['start_route']); via = []
                 for i, n in enumerate(names):
                     w = way(routes[n])
@@ -195,6 +220,9 @@ def export(pb, W):
                           'scale_factors': json.loads(m['iiif_scale_factors']), 'region': [int(v) for v in str(m['iiif_region']).split(',')], 'reduced': float(m['iiif_reduced'])}
         mp['images'].append({'file': m['file'], 'detail': True if yes(m.get('detail')) else None, 'reduced': float(m['iiif_reduced']) if not blank(m.get('iiif_reduced')) else None,
                              'corners': None if blank(m.get('tl_lat')) else [bf.ll(m[c + '_lat'], m[c + '_lon']) for c in ('tl', 'tr', 'br', 'bl')]})
+    for m in mine(W['Maps']):   # a picture not to scale whose pixel for each place comes from a fit (the unstretched Faden sheet): place every step on it
+        if blank(m.get('xy_from')) or maps[m['map_id']].get('lookup'): continue
+        sheet_positions(maps[m['map_id']], json.load(open(os.path.join(ROOT, m['xy_from']))), tracks)
     S = settings(mine(W['Playback settings'])); presets = S.pop('preset', None)
     if 'rear' in S: S['rear']['at'] = bf.ll(S['rear'].pop('lat'), S['rear'].pop('lon'))
     base = json.load(open(os.path.join(ROOT, 'data', 'base', name + '.json'), encoding='utf-8'))
