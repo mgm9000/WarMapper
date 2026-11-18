@@ -326,6 +326,8 @@ function f1(v){return v.toFixed(1)}
 /* Routes taken: the road each unit has marched so far (the routes the record gives), drawn under the units and growing with the clock.
    Each side's lines are one group at reduced strength, so roads that several units took are not drawn darker. */
 var TRL=P.trails||null,trlOn=!!(TRL&&TRL.on!==false);
+var muteOn=true;
+function setMute(v){muteOn=v;tick('cMute',v);remember('mute',v);wrap.classList.toggle('vivid',!v);mv.retheme();mv.kick()}
 function setTrails(v){trlOn=v;tick('cTrail',v);remember('trail',v);mv.kick()}
 function subPath(V,f){if(f>=1)return V;var L=0,i,seg=[];for(i=1;i<V.length;i++)L+=Math.hypot(V[i][0]-V[i-1][0],V[i][1]-V[i-1][1]);var want=L*f,out=[V[0]];
   for(i=1;i<V.length;i++){var d=Math.hypot(V[i][0]-V[i-1][0],V[i][1]-V[i-1][1]);if(d>=want){var u=d?want/d:0;out.push([V[i-1][0]+(V[i][0]-V[i-1][0])*u,V[i-1][1]+(V[i][1]-V[i-1][1])*u]);return out}want-=d;out.push(V[i])}return out}
@@ -334,7 +336,7 @@ function trailsSvg(){ if(!TRL||!trlOn||landing||!unitsOn) return ''; var key=bas
     var end=a.t1;if(t<=end)break;var f=Math.min(1,(t-end)/Math.max(0.01,b.t0-end)),pts=subPath(V,Math.min(f/0.92,1)).map(S);
     (by[tr.side]=by[tr.side]||[]).push(pts.map(function(p,j){return (j?'L':'M')+f1(p[0])+' '+f1(p[1])}).join(''))}});
   var h='',w=compact?3:4;Object.keys(by).forEach(function(sd){var c=look({side:sd}).col;
-    h+='<g class="trail" opacity="'+(TRL.opacity||0.55)+'" style="pointer-events:none"><path d="'+by[sd].join('')+'" fill="none" style="stroke:'+c+'" stroke-width="'+w+'" stroke-linecap="round" stroke-linejoin="round"/></g>'});
+    var dd=by[sd].join('');h+='<g class="trail" opacity="'+(TRL.opacity||0.55)+'" style="pointer-events:none" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="'+dd+'" stroke="var(--u-halo)" stroke-width="'+(w+3)+'"/><path d="'+dd+'" style="stroke:'+c+'" stroke-width="'+w+'"/></g>'});
   return h}
 function unitSvg(u,part){   // the last position on record stays plain to see: dashed, barely faded
   var o=u.o,tr=o.tr,s=o.s,pts=u.pts,lk=look(tr),col=lk.col,k=s.kind;
@@ -364,14 +366,14 @@ function unitSvg(u,part){   // the last position on record stays plain to see: d
   h+='<g transform="translate('+f1(x)+' '+f1(y)+')">';
   if(isSel) h+='<rect x="'+(-W-5)+'" y="'+(foe?-D-4:-H-5)+'" width="'+(2*W+10)+'" height="'+(foe?2*D+8:2*H+10)+'" rx="4" fill="none" stroke="var(--m-sel)" stroke-width="4"/>';
   var dsh=((soft||low)?' stroke-dasharray="3 2.5"':''),q=D/2;
-  if(foe){h+='<path d="M0 '+(-D)+'L'+D+' 0L0 '+D+'L'+(-D)+' 0Z" fill="'+lk.fill+'" stroke="'+col+'" stroke-width="1.8"'+dsh+'/>';
+  if(foe){h+='<path d="M0 '+(-D)+'L'+D+' 0L0 '+D+'L'+(-D)+' 0Z" fill="none" stroke="var(--u-halo)" stroke-width="5" stroke-linejoin="round"/>'+'<path d="M0 '+(-D)+'L'+D+' 0L0 '+D+'L'+(-D)+' 0Z" fill="'+lk.fill+'" stroke="'+col+'" stroke-width="1.8"'+dsh+'/>';
     if(tr.ech==='headquarters') h+='<text class="ech in" text-anchor="middle" y="3.5" style="stroke:none">HQ</text>';
     else if(tr.branch==='inf') h+='<path d="M'+(-q)+' '+(-q)+'L'+q+' '+q+'M'+(-q)+' '+q+'L'+q+' '+(-q)+'" stroke="'+col+'" stroke-width="1.4"/>';
     else if(tr.branch==='cav') h+='<path d="M'+(-q)+' '+q+'L'+q+' '+(-q)+'" stroke="'+col+'" stroke-width="1.4"/>';
     else h+='<circle r="3.2" fill="'+col+'"/>';
     h+='<text class="ech" text-anchor="middle" y="'+(-D-3)+'">'+(ECH[tr.ech]||'')+'</text></g>';}
   else{
-  h+='<rect x="'+(-W)+'" y="'+(-H)+'" width="'+2*W+'" height="'+2*H+'" fill="'+lk.fill+'" stroke="'+col+'" stroke-width="1.8"'+dsh+'/>';
+  h+='<rect x="'+(-W)+'" y="'+(-H)+'" width="'+2*W+'" height="'+2*H+'" fill="none" stroke="var(--u-halo)" stroke-width="5"/>'+'<rect x="'+(-W)+'" y="'+(-H)+'" width="'+2*W+'" height="'+2*H+'" fill="'+lk.fill+'" stroke="'+col+'" stroke-width="1.8"'+dsh+'/>';
   if(tr.ech==='headquarters') h+='<path d="M'+(-W)+' '+(-H)+'V'+(H+7)+'" stroke="'+col+'" stroke-width="1.8"/><text class="ech in" text-anchor="middle" y="4" style="stroke:none">HQ</text>';
   else if(tr.branch==='inf') h+='<path d="M'+(-W)+' '+(-H)+'L'+W+' '+H+'M'+(-W)+' '+H+'L'+W+' '+(-H)+'" stroke="'+col+'" stroke-width="1.4"/>';
   else if(tr.branch==='cav') h+='<path d="M'+(-W)+' '+H+'L'+W+' '+(-H)+'" stroke="'+col+'" stroke-width="1.4"/>';
@@ -442,6 +444,7 @@ function draw(){
 
 /* ---------- the base maps ---------- */
 var CUR=[],PICS={};
+var cssNum=function(n,d){return function(c){var v=parseFloat(c(n));return isNaN(v)?d:v}};   // a paint value read from the page's settings, so it follows the theme and the Muted switch
 function buildBase(){
   var W=ROADS[style],f=[],lat=raw.view.origin[1],minor=!!Z.minor_roads_from,wide=(raw.base&&raw.base.widths)||{},mask=bases.filter(function(b){return b.clip})[0];
   if(MOD){ // the modern map, under the pictures and over the battle's own drawing of today's ground (which it replaces)
@@ -450,7 +453,7 @@ function buildBase(){
   // imagery bases: tiles from the provider's own service, under everything else. MapLibre fetches tiles only while the layer is shown.
   bases.forEach(function(b){if(!b.sat)return;var im=b.imagery,id='sat-'+b.id;
     mv.map.addSource(id,{type:'raster',tiles:[im.tiles],tileSize:im.tile_size||256,minzoom:im.min_zoom||0,maxzoom:im.max_zoom||18});
-    mv.layer({id:id,type:'raster',source:id,layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-brightness-max':function(c){return +c('--raster-max')||1}}})});
+    mv.layer({id:id,type:'raster',source:id,layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-saturation':cssNum('--img-sat',0),'raster-brightness-min':cssNum('--img-lo',0),'raster-brightness-max':function(c){return +c('--raster-max')||1}}})});
   B.base.areas.forEach(function(a){f.push(WM.feat('area',a.ll,{k:a.kind==='wood'?'wood':'lake'}))});
   B.base.lines.forEach(function(l){
     if(l.kind==='water'){f.push(WM.feat('line',l.ll,wide[l.name]?{k:'river',gw:wide[l.name]}:{k:'water',w:compact?(l.cls==='river'?3.6:2.6):(l.cls==='river'?3.2:1.6)}));return}
@@ -478,7 +481,7 @@ function buildBase(){
   add({id:'b-road-minor',type:'line',minzoom:mz,filter:mn(1),layout:round,paint:{'line-color':'var(--road)','line-width':['get','w']}});
   add({id:'b-road',type:'line',filter:mn(0),layout:round,paint:{'line-color':col,'line-width':['get','w']}});
   mv.layer({id:'b-mask',type:'fill',source:'base',filter:is('mask'),paint:{'fill-color':'var(--bg)'}});
-  if(MOD) mv.layer({id:'sur',type:'raster',source:'sur',layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-saturation':-0.2,'raster-brightness-max':function(c){return +c('--raster-max')||1}}});
+  if(MOD) mv.layer({id:'sur',type:'raster',source:'sur',layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-saturation':cssNum('--mod-sat',-0.2),'raster-brightness-min':cssNum('--mod-lo',0),'raster-contrast':cssNum('--mod-con',0),'raster-brightness-max':function(c){return +c('--raster-max')||1}}});
   // the period maps: each base's pictures; the map of the day is one picture, re-pointed when the date calls for another
   bases.forEach(function(b){PICS[b.id]=[];
     if(b.series){ if(series.length){mv.image('pic-series',WM.asset(series[0].images[0].file),series[0].images[0].ll);mv.show('pic-series',false)} return }
@@ -646,7 +649,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   var ck=function(id,label,on,key){return '<label class="ck"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span>'+label+(key?'<kbd>'+key+'</kbd>':'')+'</span></label>'},
       sb=function(id,label,on){return '<button id="'+id+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>'},L='';
   L+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')+(TRL?ck('cTrail','Routes taken',trlOn):'')
-    +ck('cPlaces','Place names',true)+ck('cLines','Road and stream names',true)+ck('cNarr','The current event, in words, on the map',false)+'</div>';
+    +((MOD||bases.some(function(b){return b.sat}))?ck('cMute','Today\'s map in muted colours',muteOn):'')+ck('cPlaces','Place names',true)+ck('cLines','Road and stream names',true)+ck('cNarr','The current event, in words, on the map',false)+'</div>';
   L+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Symbol style',[sb('sy-standard','Standard',true),sb('sy-period','Period style',false)])+'<p class="gn">Period style drops the frames: a line is a bar, as on maps of the time.</p></div>';
   L+='<div class="grp"><div class="gh">Seen from</div>'+seg('Seen from',[sb('fr-none','Neither side',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Seen from one side, the other side takes the diamond frame of the standard military symbols.</p></div>';
   if(bases.some(function(b){return !b.current&&!b.own&&!b.sat})) L+='<div class="grp" id="gOpac"><div class="gh"><span>Period map</span><span id="opv">100%</span></div><input type="range" id="opac" min="0" max="100" step="5" value="100" aria-label="How strongly the period map is drawn"><p class="gn">Turn it down to see today&rsquo;s map through the period map.</p></div>';
@@ -739,7 +742,7 @@ on('bLayers',function(){openLayers($('layers').hidden)});
 document.addEventListener('pointerdown',function(e){if(!$('layers').hidden&&!e.target.closest('#layers')&&!e.target.closest('#bLayers'))openLayers(false)});
 document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('layers').hidden){openLayers(false);$('bLayers').focus();e.stopPropagation()}},true);
 function onCheck(id,fn){var e=$(id);if(e)e.addEventListener('change',function(){fn(e.checked)})}
-onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations); onCheck('cTrail',setTrails);
+onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations); onCheck('cTrail',setTrails); onCheck('cMute',setMute);
 onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
 on('sy-standard',function(){setSymbols('standard')}); on('sy-period',function(){setSymbols('period')});
 on('fr-none',function(){setSeenFrom('')}); raw.sides.forEach(function(sd){on('fr-'+sd.code,function(){setSeenFrom(sd.code)})});
@@ -787,14 +790,14 @@ on('bLink',function(){var url=location.href.split('#')[0]+linkHash(),ok=$('linko
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,function(){ok.textContent='Copy it from the address bar';done()});else{ok.textContent='Copy it from the address bar';done()}});
 
 /* ---------- start ---------- */
-try{if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)} var ts=localStorage.getItem('wm.'+B.id+'.trail'); if(TRL&&ts!=null){trlOn=ts==='1';tick('cTrail',trlOn)}}catch(_){ }
+try{if(localStorage.getItem('wm.'+B.id+'.mute')==='0'){muteOn=false;tick('cMute',false);wrap.classList.add('vivid')} if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)} var ts=localStorage.getItem('wm.'+B.id+'.trail'); if(TRL&&ts!=null){trlOn=ts==='1';tick('cTrail',trlOn)}}catch(_){ }
 setStep(stepNear(P.rate||(byDay?1:5)));
 if(P.views) preset=P.views[0].preset;
 base=startBase();
 mv.start(function(){buildBase();paintTime(T0);(P.views||[]).forEach(function(v){press('v-'+v.preset,preset===v.preset)});setBase(base,true);clk.setTime(T0);readLink();WM.hint(mv)});
 var api={battle:B,setTime:clk.setTime,select:select,setFollow:setFollow,setBase:setBase,setNames:setNames,setUnits:setUnits,setFold:setFold,setPreset:setPreset,mv:mv,
   focus:function(){var f=focusPoint();return f?WORLDS[worldOf(base)].toLL(f):null},setNarrative:setNarr,setSymbols:setSymbols,setSeenFrom:setSeenFrom,setOpacity:setOpacity,setStep:setStep,link:linkHash,
-  begin:function(){landing=false;panelKey='';mv.kick()},setFormations:setFormations,
+  begin:function(){landing=false;panelKey='';mv.kick()},setFormations:setFormations,setMute:setMute,
   scene:function(){return scene().map(function(o){return {id:o.tr.id,kind:o.s.kind,row:o.s.k.id,drawn:o.drawn}})}};
 Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}}); Object.defineProperty(api,'landing',{get:function(){return landing}}); Object.defineProperty(api,'modern',{get:function(){return {on:!!modOn,off:modOff}}});
 global.__wm=api; return api;

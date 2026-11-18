@@ -7,18 +7,21 @@
   --m-ink:#141a24; --m-halo:#fdf8ea; --m-paper:#e8dcc0; --m-sel:#f2a900;
   --display:"Zilla Slab",Rockwell,Georgia,serif; --body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   /* current map */
+  --mod-sat:-.8; --mod-lo:.22; --mod-con:-.12; --img-sat:-.55; --img-lo:.14;
   --raster-max:1; --land:#e6e9e0; --relief:#7b4f24; --wood:#cfe0c3; --road:#ffffff; --road-major:#fbf0c9; --road-edge:#b4bcae; --rail:#8d94a0; --water:#a8cde6; --water-text:#2c6c9c; --map-text:#3b4654; --map-halo:#eef1ea; --map-ink:#141a24;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
   --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
   --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
+  --mod-sat:-.8; --mod-lo:0; --mod-con:-.1; --img-sat:-.55; --img-lo:0;
   --raster-max:.88; --land:#1b232d; --relief:#d9ad7c; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
   color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
   --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
   --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
+  --mod-sat:-.8; --mod-lo:0; --mod-con:-.1; --img-sat:-.55; --img-lo:0;
   --raster-max:.88; --land:#1b232d; --relief:#d9ad7c; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
   color-scheme:dark }
 
@@ -52,6 +55,7 @@ button{font:inherit;color:inherit}
 /* over aerial or satellite imagery: dark text on a light halo in both themes, so names read against any ground */
 .mapwrap.sat .rl,.mapwrap.sat .hl{stroke:rgba(43,28,12,.85)}
 .mapwrap.sat{--relief:#fff1d6;--u-ink:#141a24;--u-halo:#f4f5ef;--map-text:#141a24;--map-halo:rgba(244,245,239,.92);--water-text:#174f78;--raster-max:1}
+.mapwrap.vivid{--mod-sat:-.2;--mod-lo:0;--mod-con:0;--img-sat:0;--img-lo:0}   /* full colour: today's map as its provider draws it */
 #map{position:absolute;inset:0}
 #map .maplibregl-canvas{outline:none}
 #ov{position:absolute;inset:0;width:100%;height:100%;overflow:hidden;pointer-events:none;z-index:2}
@@ -73,7 +77,7 @@ button{font:inherit;color:inherit}
 .lm{font-size:11.5px;font-weight:600;fill:var(--map-text);stroke:var(--map-halo);stroke-width:3.5px}
 .mapwrap.paper .lm{font-size:11px;font-weight:400;font-style:italic;fill:var(--m-ink);stroke:var(--m-halo);stroke-width:3px;opacity:.85}
 #ov text{font-family:var(--body);paint-order:stroke;stroke-linejoin:round}
-.ulab{font-size:12.5px;font-weight:600;fill:var(--u-ink);stroke:var(--u-halo);stroke-width:3.5px}
+.ulab{font-size:12.5px;font-weight:600;fill:var(--u-ink);stroke:var(--u-halo);stroke-width:4px}
 .ech{font-size:9px;font-weight:700;fill:var(--u-ink);stroke:var(--u-halo);stroke-width:2.5px;letter-spacing:.06em}
 .ech.in{fill:var(--m-ink)}
 
