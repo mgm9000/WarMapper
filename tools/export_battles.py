@@ -174,7 +174,9 @@ def export(pb, W):
         for a, b in zip(steps, steps[1:]):
             if b['show'][0] < a['show'][1]: a['show'][1] = b['show'][0]          # two rows of one symbol cannot overlap: the earlier one gives way
             r = link.get((a['id'], b['id']))
-            if r and a['at'] and b['at']: b['via'] = way(r)                       # the record gives the route between the two rows
+            if r and a['at'] and b['at']:
+                b['via'] = way(r)                                                   # the record gives the route between the two rows
+                if text(r.get('kind')) == 'escape': b['leaving'] = True   # Follow lets a unit getting away go off the screen
             elif ((a.get('virtual') and not b.get('shared')) or (a.get('shared') and not b.get('shared'))) and not blank(tr.get('start_route')) and b['at']:   # from the stand-in start, or from the last row it shares   # one route, or several in order ("RT01; RT02"); the points cap the last
                 names = bf.ids(tr['start_route']); via = []
                 for i, n in enumerate(names):

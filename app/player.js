@@ -171,16 +171,19 @@ function scene(){
    (playback.follow.lookahead, minutes), so a column still far off is in view before it arrives and the camera closes in as the forces meet. */
 function actionBox(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],b=[1e9,1e9,-1e9,-1e9],any=false,la=byDay?0:(F.lookahead!=null?F.lookahead:30),when=la?[t,Math.min(T1,t+la/2),Math.min(T1,t+la)]:[t];
   var su=F.side_from||{};   // a side left out of the frame until a time (Trenton: the garrison sits still all night while the army crosses)
-  B.tracks.forEach(function(tr){if(tr.parent||tr.loose||ex.indexOf(tr.id)>=0)return;if(su[tr.side]&&t<B.time(su[tr.side]))return;when.forEach(function(tt){var s=stateAt(tr,tt,key);if(!s||!s.g||s.hid)return;any=true;
+  B.tracks.forEach(function(tr){if(tr.parent||tr.loose||ex.indexOf(tr.id)>=0)return;if(su[tr.side]&&t<B.time(su[tr.side]))return;when.forEach(function(tt){if(tt>=leaveAt(tr))return;var s=stateAt(tr,tt,key);if(!s||!s.g||s.hid)return;any=true;
     s.g.forEach(function(p){b[0]=Math.min(b[0],p[0]);b[1]=Math.min(b[1],p[1]);b[2]=Math.max(b[2],p[0]);b[3]=Math.max(b[3],p[1])})})});
   if(!any) return base.own?[0,0,base.m.size[0]*0.75,base.m.size[1]]:((F.empty&&B.presets[F.empty])||EXT);
   var mn=base.own?[520,400]:(F.min||[1400,900]),mg=base.own?70:(F.margin||140);
   var mx=Math.max(mg,(mn[0]-(b[2]-b[0]))/2),my=Math.max(mg,(mn[1]-(b[3]-b[1]))/2);
   return [b[0]-mx,b[1]-my,b[2]+mx,b[3]+my]}
+/* A unit that gets away (a route of kind escape) leaves the Follow frame when it sets off, so the camera stays on the fight
+   and lets it go off the screen. */
+function leaveAt(tr){if(tr._leave===undefined){tr._leave=1e12;for(var i=1;i<tr.k.length;i++)if(tr.k[i].leaving){tr._leave=tr.k[i-1].t1;break}}return tr._leave}
 /* Where the action is. If two opposing units are close enough to be in contact, it is where they meet (the closest pairs, averaged);
    otherwise it is where units are on the move; otherwise the middle of everything on the map. */
 function focusPoint(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],U=[],mov=[];
-  B.tracks.forEach(function(tr){if(tr.parent||ex.indexOf(tr.id)>=0)return;var s=stateAt(tr,t,key);if(!s||!s.g||s.hid)return;
+  B.tracks.forEach(function(tr){if(tr.parent||ex.indexOf(tr.id)>=0||t>=leaveAt(tr))return;var s=stateAt(tr,t,key);if(!s||!s.g||s.hid)return;
     var c=cen(s.g);U.push({side:tr.side,c:c,pts:s.g.length>1?s.g.concat([c]):[c]});if(s.kind==='moving')mov.push(c)});
   if(!U.length) return null;
   var lim=base.own?260:(F.contact||(compact?5000:800)),best=1e18,pairs=[];   // how close counts as contact: metres on the ground
@@ -201,6 +204,12 @@ function target(){var n=mv.size().w<520?36:56,W=WORLDS[worldOf(base)],cam=mv.cam
    (FOL.pause_ms after the last touch), then carries on from there, keeping the reader's zoom as a tighter or wider Follow view.
    Only the Follow button, Fit, 1:1 or a link to a view switch it off. */
 var fpause=0;
+/* Skips (playback.skip): a long stretch where little happens is shown for a moment, then the clock jumps to its end
+   (Trenton: the crossing begins at 18:00; two seconds later the army is over the river). Moving the clock by hand is not affected. */
+var SKIP=(function(x){x=x?(Array.isArray(x)?x:Object.keys(x).sort().map(function(k){return x[k]})):[];return x.map(function(s){return {a:B.time(s.from),b:B.time(s.to),ms:(s.after_seconds!=null?s.after_seconds:2)*1000,note:s.note||''}})})(P.skip),skipAcc=0,skipTs=0;
+function doSkip(ts){if(!clk.playing||!SKIP.length){skipTs=0;return}var dt=skipTs?Math.min(100,ts-skipTs):0;skipTs=ts;
+  var s=SKIP.filter(function(x){return t>=x.a&&t<x.b})[0];if(!s){skipAcc=0;return}skipAcc+=dt;if(skipAcc>=s.ms){skipAcc=0;lastW=null;clk.setTime(s.b);if(s.note)toast(s.note)}}
+function toast(msg){var e=document.createElement('div');e.className='toast';e.textContent=msg;wrap.appendChild(e);setTimeout(function(){e.classList.add('off')},3200);setTimeout(function(){e.remove()},3800)}
 /* How close Follow may come: on a fitted period map with no detail to stream, no closer than about 2.5 screen pixels to a pixel of the picture,
    so the 1777 map is not blown up into a blur. */
 function followMax(){if(base.own)return 1.3;var mx=Z.follow_max||Z.max||2,m=base.m&&!base.current&&!base.sat?base.m:null,f=m&&m.raw&&m.raw.fit,mpp=f&&(f.m_per_px||f.metres_per_pixel);
@@ -234,6 +243,20 @@ function rank(tr){ // which names are kept when the map is crowded: 1 first
   if(tr.parent||tr.branch==='art') return 3;
   if(compact) return (tr.ech==='corps'||tr.ech==='army')?1:tr.ech==='division'?2:3;
   return (tr.ech==='regiment'||tr.ech==='brigade')?1:2}
+/* Breakouts: when, during play, a higher unit divides into the units under it (the army into its divisions, a division into its
+   brigades at the end of formations.until, a corps unfolding when zoomed in), the new symbols spread out from where the higher unit
+   stood over BRK_MS, and the clock waits for them. Two or more new units from the same parent make a breakout; a seek does not. */
+var BRK_MS=2500,brk={},lastW=null,lastT=null,holdUntil=0;
+function parentsOf(uid){var out=[],d=stamp(t),seen=0;while(uid&&seen++<6){var u=B.units[uid];if(!u)break;var as=u.assignments||[],a=null;
+    as.forEach(function(x){var f=x.from?B.time(x.from):-1e9,e=x.to?B.time(x.to)+((!byDay&&x.to.length===10)?1439:0):1e9;if(d>=f&&d<=e)a=x});
+    a=a||as[as.length-1];if(!a||!a.parent)break;out.push(a.parent);uid=a.parent}return out}
+function breakouts(L){var now=Date.now(),W={},inv=function(q){return mv.map.unproject(q)},ok=clk&&clk.playing&&lastW&&lastT!=null&&t>=lastT&&t-lastT<(byDay?2:30),born={};
+  L.forEach(function(u){var tr=u.o.tr;if(!tr.id||u.noSym)return;var ll=inv([u.c[0],u.c[1]]);W[tr.unit]=W[tr.unit]||[ll.lng,ll.lat];
+    if(ok&&!lastW.ids[tr.id]&&!brk[tr.id]){var ps=parentsOf(tr.unit);for(var i=0;i<ps.length;i++){if(lastW.pos[ps[i]]){(born[ps[i]]=born[ps[i]]||[]).push(tr.id);break}}}});
+  Object.keys(born).forEach(function(p){if(born[p].length<2)return;born[p].forEach(function(id){brk[id]={from:lastW.pos[p],t0:now}});holdUntil=now+BRK_MS});
+  L.forEach(function(u){var tr=u.o.tr,b=tr.id&&brk[tr.id];if(!b)return;var f=(now-b.t0)/BRK_MS;if(f>=1){delete brk[tr.id];return}
+    var e=1-Math.pow(1-f,3),q=mv.map.project(b.from),dx=(q.x-u.c[0])*(1-e),dy=(q.y-u.c[1])*(1-e);u.x+=dx;u.y+=dy;u.pts=u.pts.map(function(p){return [p[0]+dx,p[1]+dy]});mv.kick()});
+  var ids={};L.forEach(function(u){if(u.o.tr.id&&!u.noSym)ids[u.o.tr.id]=1});lastW={pos:W,ids:ids};lastT=t}
 function layout(sc){
   var L=[],Zs=mv.size(),rear=(P.rear&&!base.own)?S(B.fromLL(P.rear.at)):null,ag={},FOES=[],reach=(compact?8000:2500)*(base.own?0.5:sNow);   // how far off an enemy still decides which way a line faces (screen px)
   sc.forEach(function(o){if(o.s.g&&!o.hidden)o.s.g.forEach(function(p){FOES.push([o.tr.side,S(p)])})});
@@ -256,6 +279,7 @@ function layout(sc){
       var lab=g.f.label||g.f.name,tr={id:'F:'+id,unit:id,label:lab,side:tr0.side,nation:tr0.nation,ech:String(g.f.echelon||FM.echelon||'division').toLowerCase(),branch:tr0.branch,parent:'',formation:true};
       L.push({o:{tr:tr,s:{kind:mov===n?'moving':'stated',k:{oc:'high'}}},pts:[[cx/n,cy/n]],len:0,c:[cx/n,cy/n],x:x/n,y:y/n,low:false,txt:lab,w:lab.length*7.1+6,pr:0,nudged:false,line:false,kids:g.u.map(function(u){return u.o.tr.id})})});
     L=L.filter(function(u){return !u.noSym||u.line}); }   // a gathered unit keeps only its line
+  breakouts(L);
   Object.keys(ag).forEach(function(gi){var G=P.groups[gi],gc=cen(ag[gi]);
     L.push({o:{tr:{id:'',label:G.label,side:G.side,nation:'',ech:G.echelon||'brigade',branch:G.branch||'inf'},s:{kind:'stated',k:{oc:'high'}}},pts:[gc],len:0,c:gc,x:gc[0],y:gc[1],low:false,txt:G.label,w:G.label.length*7.1+6,pr:1,nudged:false,line:false})});
   L.sort(function(a,b){return a.pr-b.pr});
@@ -631,7 +655,7 @@ try{ mv=WM.mapView({container:'map',wrap:wrap,world:worldOf(base),worlds:WORLDS,
   onDraw:draw,onPick:select,
   onUserMove:function(){if(follow)pauseFollow();if(preset||goal)setPreset(null)},
   onResize:function(){if(preset){mv.jump(cameraOf(preset));goal=null}else if(follow&&!landing)mv.jump(target());else if(landing)mv.jump(home())},
-  onStep:function(ts){var more=clk.step(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(mv.chase(target(),glide>Date.now()?FOL.glide_rate:FOL.rate))more=true}}return more}});
+  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(mv.chase(target(),glide>Date.now()?FOL.glide_rate:FOL.rate))more=true}}return more}});
 }catch(err){WM.noMap(wrap,err);return null}
 S=mv.S;
 mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
@@ -732,6 +756,9 @@ on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.
   b.addEventListener('click',function(){if(document.fullscreenElement)document.exitFullscreen();else app.requestFullscreen()})})();
 on('binfo',function(){sel=null;info=!info;panelKey='';mv.kick()});
 // back and forward one step; [ and ] jump between key events
+on('restart',restart);   // start over: the first moment, the opening map and view, no unit picked
+function restart(){clk.setPlaying(false);select(null);setPreset(null);fpause=0;followK=1;glide=0;skipAcc=0;brk={};lastW=null;holdUntil=0;
+  if(P.follow){follow=true;press('bFollow',true)} landing=true;panelKey='';clk.setTime(T0);setBase(startBase(),true);mv.jump(home());mv.kick()}
 on('evprev',function(){clk.setPlaying(false);clk.setTime(stepBy(-1,t))}); on('evnext',function(){clk.setPlaying(false);clk.setTime(stepBy(1,t))}); on('step',function(){setStep(stepI+1)});
 WM.panelClicks(panel,select);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-ev]');if(!b)return;var ev=B.events.filter(function(x){return x.id===b.getAttribute('data-ev')})[0];if(ev){clk.setPlaying(false);clk.setTime(ev.t)}});

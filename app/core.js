@@ -82,7 +82,7 @@ WM.battle=function(raw){
   function step(s){var loc=s.location||{},g=s.at?s.at.map(B.fromLL):null,mid=null;
     if(s.at){var n=s.at.length,i=n>>1;mid=(n%2)?s.at[i]:[(s.at[i-1][0]+s.at[i][0])/2,(s.at[i-1][1]+s.at[i][1])/2]}
     return {id:s.id,t0:B.time(s.show[0]),t1:B.time(s.show[1]),ts:B.rangeText(s.start),te:B.rangeText(s.end),open:s.end[1]==null?1:0,
-      g:g,via:s.via?s.via.map(B.fromLL):null,on:s.on||null,vo:s.via_on||null,
+      g:g,via:s.via?s.via.map(B.fromLL):null,on:s.on||null,vo:s.via_on||null,leaving:!!s.leaving,
       act:s.activity||'',place:s.place||'',say:s.quote||'',method:s.method,oc:s.confidence,tb:s.time_basis||'',
       basis:loc.basis||'',cb:loc.basis||(g?'':'No position on record'),cs:loc.source||'none',cc:loc.confidence||'',prec:loc.precision_m||null,
       pl:(loc.places||[]).map(function(p){return [p.name||'',p.today||'',p.source,p.precision_m]}),
