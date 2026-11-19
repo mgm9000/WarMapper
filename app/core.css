@@ -7,21 +7,21 @@
   --m-ink:#141a24; --m-halo:#fdf8ea; --m-paper:#e8dcc0; --m-sel:#f2a900;
   --display:"Zilla Slab",Rockwell,Georgia,serif; --body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   /* current map */
-  --mod-sat:-.8; --mod-lo:.22; --mod-con:-.12; --img-sat:-.55; --img-lo:.14;
+  --mod-sat:-.8; --mod-lo:.22; --mod-con:-.12; --img-sat:-.55; --img-lo:.14; --hs-shadow:rgba(52,40,26,.62); --hs-light:rgba(255,255,250,.35);
   --raster-max:1; --land:#e6e9e0; --relief:#7b4f24; --wood:#cfe0c3; --road:#ffffff; --road-major:#fbf0c9; --road-edge:#b4bcae; --rail:#8d94a0; --water:#a8cde6; --water-text:#2c6c9c; --map-text:#3b4654; --map-halo:#eef1ea; --map-ink:#141a24;
 }
 @media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
   --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
   --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
   --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
-  --mod-sat:-.8; --mod-lo:0; --mod-con:-.1; --img-sat:-.55; --img-lo:0;
+  --mod-sat:-.8; --mod-lo:0; --mod-con:-.1; --img-sat:-.55; --img-lo:0; --hs-shadow:rgba(0,0,0,.6); --hs-light:rgba(255,255,255,.12);
   --raster-max:.88; --land:#1b232d; --relief:#d9ad7c; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
   color-scheme:dark } }
 :root[data-theme="dark"]{
   --bg:#10141b; --surface:#191f29; --surface-2:#212936; --fg:#e7ebf1; --muted:#9ba6b7; --line:#2f3847;
   --accent:#e2b45a; --accent-fg:#1a1405; --accent-soft:#3a2f17;
   --good:#7ccf93; --good-soft:#1c3a25; --warn:#e6c063; --warn-soft:#3d3113; --bad:#f0897c; --bad-soft:#4a211c;
-  --mod-sat:-.8; --mod-lo:0; --mod-con:-.1; --img-sat:-.55; --img-lo:0;
+  --mod-sat:-.8; --mod-lo:0; --mod-con:-.1; --img-sat:-.55; --img-lo:0; --hs-shadow:rgba(0,0,0,.6); --hs-light:rgba(255,255,255,.12);
   --raster-max:.88; --land:#1b232d; --relief:#d9ad7c; --wood:#1f3128; --road:#465366; --road-major:#62697a; --road-edge:#11161d; --rail:#6a7382; --water:#1f4a68; --water-text:#7fb6de; --map-text:#b9c3d1; --map-halo:#1b232d; --map-ink:#f1f4f8;
   color-scheme:dark }
 
@@ -218,3 +218,20 @@ details.evs{margin-top:10px} details.evs summary{cursor:pointer;font-size:12.5px
 @media (max-width:860px){ .credit{max-width:calc(100% - 172px)} .narr{bottom:auto;top:96px;max-width:calc(100% - 70px);left:10px;transform:none;font-size:12px} .tb{display:none} .tb.rs{display:grid;margin-inline:0 -4px} .pop{top:92px} }
 .mapwrap.narr-on .hint{display:none}
 .sq.one{font-size:11px;font-weight:600;letter-spacing:-.02em}
+
+/* ---------- phones: more map, less text ---------- */
+@media (max-width:860px){
+  .bar{padding-block:6px}
+  .ttl{display:flex;align-items:center;gap:10px}
+  .ttl .home{margin:0;font-size:0;line-height:1;flex:none;padding:4px 2px}              /* the way home becomes an arrow beside the title */
+  .ttl .home::before{content:'\2190';font-size:19px;font-weight:600}
+  .stage{grid-template-rows:minmax(0,1fr) minmax(108px,17vh)}                           /* the map takes about 70% of a phone screen */
+  .panel{padding-top:8px}
+  .panel .phase{font-size:14.5px;line-height:1.4}
+  .credit{display:none}                                                                  /* credits move to the i button's panel */
+  .when .bn{display:none}                                                                /* the battle's name is already in the title */
+  /* while it plays, the optional buttons step aside; they come back on pause, at the end, on start over, or on a tap */
+  .mapwrap .ctl,.mapwrap .pop{transition:opacity .35s}
+  .wm-playing .mapwrap:not(.peek) .ctl,.wm-playing .mapwrap:not(.peek) .pop{opacity:0;pointer-events:none}
+}
+.panel .credits{margin:12px 0 0}
