@@ -232,7 +232,7 @@ WM.mapView=function(opt){
         snap(t)->t (optional: where time settles when it stops), onKey(e) (optional: other keys)} */
 WM.clock=function(o){
   var $=WM.$,range=$('time'),t=o.T0,playing=false,last=0,wheelT=0;
-  function icon(){$('play').setAttribute('aria-label',playing?'Pause':'Play');$('playico').innerHTML=playing?'<path d="M3 1.5h3.5v13H3zM9.5 1.5H13v13H9.5z"/>':'<path d="M3 1.5v13l11-6.5z"/>'}
+  function icon(){document.documentElement.classList.toggle('wm-playing',playing);$('play').setAttribute('aria-label',playing?'Pause':'Play');$('playico').innerHTML=playing?'<path d="M3 1.5h3.5v13H3zM9.5 1.5H13v13H9.5z"/>':'<path d="M3 1.5v13l11-6.5z"/>'}
   function setTime(v,fromRange){t=Math.max(o.T0,Math.min(o.T1,v));if(!fromRange)range.value=o.toRange(t);o.onTime(t);o.mv.kick()}
   function settle(){if(o.snap&&t<o.T1){var s=o.snap(t);if(Math.abs(s-t)>0.001)setTime(s)}}
   function setPlaying(v){if(v===playing)return;playing=v;last=0;icon();if(v){if(t>=o.T1-0.01)setTime(o.T0);o.mv.kick()}else settle()}

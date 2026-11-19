@@ -218,3 +218,20 @@ details.evs{margin-top:10px} details.evs summary{cursor:pointer;font-size:12.5px
 @media (max-width:860px){ .credit{max-width:calc(100% - 172px)} .narr{bottom:auto;top:96px;max-width:calc(100% - 70px);left:10px;transform:none;font-size:12px} .tb{display:none} .tb.rs{display:grid;margin-inline:0 -4px} .pop{top:92px} }
 .mapwrap.narr-on .hint{display:none}
 .sq.one{font-size:11px;font-weight:600;letter-spacing:-.02em}
+
+/* ---------- phones: more map, less text ---------- */
+@media (max-width:860px){
+  .bar{padding-block:6px}
+  .ttl{display:flex;align-items:center;gap:10px}
+  .ttl .home{margin:0;font-size:0;line-height:1;flex:none;padding:4px 2px}              /* the way home becomes an arrow beside the title */
+  .ttl .home::before{content:'\2190';font-size:19px;font-weight:600}
+  .stage{grid-template-rows:minmax(0,1fr) minmax(108px,17vh)}                           /* the map takes about 70% of a phone screen */
+  .panel{padding-top:8px}
+  .panel .phase{font-size:14.5px;line-height:1.4}
+  .credit{display:none}                                                                  /* credits move to the i button's panel */
+  .when .bn{display:none}                                                                /* the battle's name is already in the title */
+  /* while it plays, the optional buttons step aside; they come back on pause, at the end, on start over, or on a tap */
+  .mapwrap .ctl,.mapwrap .pop{transition:opacity .35s}
+  .wm-playing .mapwrap:not(.peek) .ctl,.wm-playing .mapwrap:not(.peek) .pop{opacity:0;pointer-events:none}
+}
+.panel .credits{margin:12px 0 0}
