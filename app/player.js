@@ -340,11 +340,17 @@ function setTrails(v){trlOn=v;tick('cTrail',v);remember('trail',v);mv.kick()}
 function subPath(V,f){if(f>=1)return V;var L=0,i,seg=[];for(i=1;i<V.length;i++)L+=Math.hypot(V[i][0]-V[i-1][0],V[i][1]-V[i-1][1]);var want=L*f,out=[V[0]];
   for(i=1;i<V.length;i++){var d=Math.hypot(V[i][0]-V[i-1][0],V[i][1]-V[i-1][1]);if(d>=want){var u=d?want/d:0;out.push([V[i-1][0]+(V[i][0]-V[i-1][0])*u,V[i-1][1]+(V[i][1]-V[i-1][1])*u]);return out}want-=d;out.push(V[i])}return out}
 function trailsSvg(){ if(!TRL||!trlOn||landing||!unitsOn) return ''; var key=base.own?base.map:'g',by={};
+  /* fade_after (time units): once a unit has stopped this long, the roads it took to get there fade out over fade_over */
+  var FA=TRL.fade_after,FO=Math.max(0.01,TRL.fade_over||FA||1),base0=TRL.opacity||0.55;
   B.tracks.forEach(function(tr){var ks=tr.k;for(var i=1;i<ks.length;i++){var a=ks[i-1],b=ks[i],V=key==='g'?b.via:(b.vo&&b.vo[key]);if(!V||V.length<2)continue;
-    var end=a.t1;if(t<=end)break;var f=Math.min(1,(t-end)/Math.max(0.01,b.t0-end)),pts=subPath(V,Math.min(f/0.92,1)).map(S);
-    (by[tr.side]=by[tr.side]||[]).push(pts.map(function(p,j){return (j?'L':'M')+f1(p[0])+' '+f1(p[1])}).join(''))}});
-  var h='',w=compact?3:4;Object.keys(by).forEach(function(sd){var c=look({side:sd}).col;
-    var dd=by[sd].join('');h+='<g class="trail" opacity="'+(TRL.opacity||0.55)+'" style="pointer-events:none" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="'+dd+'" stroke="var(--u-halo)" stroke-width="'+(w+3)+'"/><path d="'+dd+'" style="stroke:'+c+'" stroke-width="'+w+'"/></g>'});
+    var end=a.t1;if(t<=end)break;var op=1;
+    if(FA!=null){ // when does the unit next stand still for FA or more after this leg?
+      var j=i;while(j<ks.length-1&&(ks[j].t1-ks[j].t0)<FA)j++;var gone=ks[j].t0+FA;
+      if(t>gone){op=1-(t-gone)/FO;if(op<=0)continue}}
+    var f=Math.min(1,(t-end)/Math.max(0.01,b.t0-end)),pts=subPath(V,Math.min(f/0.92,1)).map(S);
+    var g=(by[tr.side]=by[tr.side]||{}),k=op.toFixed(2);(g[k]=g[k]||[]).push(pts.map(function(p,j){return (j?'L':'M')+f1(p[0])+' '+f1(p[1])}).join(''))}});
+  var h='',w=compact?3:4;Object.keys(by).forEach(function(sd){var c=look({side:sd}).col;Object.keys(by[sd]).forEach(function(k){
+    var dd=by[sd][k].join('');h+='<g class="trail" opacity="'+(base0*k).toFixed(3)+'" style="pointer-events:none" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="'+dd+'" stroke="var(--u-halo)" stroke-width="'+(w+3)+'"/><path d="'+dd+'" style="stroke:'+c+'" stroke-width="'+w+'"/></g>'})});
   return h}
 function unitSvg(u,part){   // the last position on record stays plain to see: dashed, barely faded
   var o=u.o,tr=o.tr,s=o.s,pts=u.pts,lk=look(tr),col=lk.col,k=s.kind;
