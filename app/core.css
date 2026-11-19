@@ -259,3 +259,36 @@ details.evs{margin-top:10px} details.evs summary{cursor:pointer;font-size:12.5px
   .narr{top:56px}
   .ctl.c-r{gap:4px} .sq{width:30px;height:30px}
 }
+
+/* ---------- tablets: a narrower text pane so the map gets more of the screen ---------- */
+@media (min-width:861px) and (max-width:1366px){
+  .stage{grid-template-columns:minmax(0,1fr) clamp(272px,25vw,320px)}
+  .panel{padding-inline:14px}
+  /* a one-line title bar: the subtitle goes, the way home becomes an arrow beside the title */
+  .bar{padding-block:7px} .ttl{display:flex;align-items:center;gap:10px} .ttl p{display:none} .ttl h1{font-size:18px}
+  .ttl .home{margin:0;font-size:0;line-height:1;flex:none;padding:4px 2px} .ttl .home::before{content:'\2190';font-size:19px;font-weight:600}
+  /* a smaller clock and scale */
+  .when .bn{display:none}
+  .when{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:7px;padding:4px 10px 5px;min-width:0;max-width:200px}
+  .when .dayn{margin:0} .when .t{font-size:19px} .when .d{flex-basis:100%;font-size:10.5px;margin:0} .when.date .t{font-size:16px}
+  .when .n{flex-basis:100%}
+  .scale{padding:2px 7px 3px} .scale .sb+.sb,.scale .sn{display:none}
+}
+/* the text pane can be folded away so the map takes the whole width (wherever the text sits beside the map) */
+.sq.pane[aria-pressed="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+@media (max-width:860px){ .sq.pane{display:none} }
+@media (min-width:861px),(orientation:landscape) and (max-height:500px){
+  .sq.pane{display:grid}
+  .stage.nopane{grid-template-columns:minmax(0,1fr) 0 !important}
+  .stage.nopane .panel{display:none}
+}
+/* touch screens (tablets as well as phones): map credits move to the i button's panel; the map's buttons step aside while it plays
+   (a tap brings them back for a few seconds); the timeline handle is bigger to take with a finger */
+@media (pointer:coarse){
+  .credit{display:none}
+  .mapwrap .ctl,.mapwrap .pop{transition:opacity .35s}
+  .wm-playing .mapwrap:not(.peek) .ctl,.wm-playing .mapwrap:not(.peek) .pop{opacity:0;pointer-events:none}
+  .tl input{top:10px;height:34px}
+  .tl input::-webkit-slider-thumb{width:28px;height:34px;border-radius:7px}
+  .tl input::-moz-range-thumb{width:24px;height:30px;border-radius:7px}
+}

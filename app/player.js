@@ -630,7 +630,7 @@ function select(id){
   if(id&&String(id).indexOf('F:')===0){ // a formation drawn zoomed out: zoom in on it until it breaks out into its units
     var hit=null;mv.hits.forEach(function(h){if(h.id===id&&h.r)hit=h}); if(hit){setFollow(false);setPreset(null);var W=WORLDS[worldOf(base)],c=mv.map.unproject([(hit.r[0]+hit.r[2])/2,(hit.r[1]+hit.r[3])/2]);
       mv.map.easeTo({center:c,zoom:mv.zoomFor(FM.below*1.15),duration:700})} return }
-  sel=id||null;info=false;panelKey='';if(sel&&sheet)sheet.open();mv.kick()}
+  sel=id||null;info=false;panelKey='';if(sel&&sheet)sheet.open();if(sel&&pane)pane.show();mv.kick()}
 var evOpen=false;
 /* what lies around the map on screen, where the battle has a surround */
 function aroundNote(){ if(!topo()||base.own||base.sat||base.current) return '';
@@ -779,7 +779,7 @@ on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.
 (function(){var app=document.querySelector('.app'),b=$('zfull'); if(!b) return;   // full screen is not offered where the browser does not allow it (inside some embedded views)
   if(!document.fullscreenEnabled||!app.requestFullscreen){b.hidden=true;return}
   b.addEventListener('click',function(){if(document.fullscreenElement)document.exitFullscreen();else app.requestFullscreen()})})();
-on('binfo',function(){sel=null;info=!info;panelKey='';if(info)sheet.open();mv.kick()});
+on('binfo',function(){sel=null;info=!info;panelKey='';if(info){sheet.open();pane.show()}mv.kick()});
 /* phones: the text sheet under the map. It starts as a strip; a tap on the handle opens it to about half the screen and closes it
    again, and dragging the handle sets any height in between. Tapping a unit opens it so the unit's details can be read. */
 var sheet=(function(){var st=document.querySelector('.stage'),bar=$('sheetbar'),MIN=72,DEF=96,h=DEF,drag=null;
@@ -794,6 +794,12 @@ var sheet=(function(){var st=document.querySelector('.stage'),bar=$('sheetbar'),
   bar.addEventListener('pointercancel',function(){drag=null});
   $('grab').addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
   return {open:open,phone:phone}})();
+/* the text pane beside the map folds away and comes back; choosing a unit or the i panel brings it back */
+var pane=(function(){var st=document.querySelector('.stage'),b=$('bpane');
+  function set(hide){st.classList.toggle('nopane',hide);b.setAttribute('aria-pressed',hide?'true':'false');var t=hide?'Show the text':'Hide the text';b.setAttribute('aria-label',t);b.title=t;remember('pane',!hide);mv.kick()}
+  b.addEventListener('click',function(){set(!st.classList.contains('nopane'))});
+  try{if(localStorage.getItem('wm.'+B.id+'.pane')==='0')set(true)}catch(e){}
+  return {show:function(){if(st.classList.contains('nopane'))set(false)}}})();
 /* phones: while playing, a tap on the map brings the hidden buttons back for a few seconds */
 (function(){var tmo=0;wrap.addEventListener('touchstart',function(){if(!document.documentElement.classList.contains('wm-playing'))return;wrap.classList.add('peek');clearTimeout(tmo);tmo=setTimeout(function(){wrap.classList.remove('peek')},4000)},{passive:true})})();
 // back and forward one step; [ and ] jump between key events
