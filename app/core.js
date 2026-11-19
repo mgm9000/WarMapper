@@ -206,7 +206,13 @@ WM.mapView=function(opt){
       else if(h.pts){for(var j=1;j<h.pts.length;j++){var a=h.pts[j-1],b=h.pts[j],vx=b[0]-a[0],vy=b[1]-a[1],L=vx*vx+vy*vy,u=L?Math.max(0,Math.min(1,((pt.x-a[0])*vx+(pt.y-a[1])*vy)/L)):0;
         if(Math.hypot(pt.x-(a[0]+vx*u),pt.y-(a[1]+vy*u))<=h.tol)return h}}}
     return null}
-  map.on('click',function(e){var h=pick(e.point);opt.onPick(h?h.id:null)});
+  /* a finger is less exact than a mouse: if nothing is right under it, take the nearest thing within 14 px */
+  var coarse=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+  function pickNear(pt){var h=pick(pt);if(h||!coarse)return h;var best=null,bd=15;
+    hits.forEach(function(q){var d=1e9;if(q.r){var dx=Math.max(q.r[0]-pt.x,0,pt.x-q.r[2]),dy=Math.max(q.r[1]-pt.y,0,pt.y-q.r[3]);d=Math.hypot(dx,dy)}
+      else if(q.pts){for(var j=1;j<q.pts.length;j++){var a=q.pts[j-1],b=q.pts[j],vx=b[0]-a[0],vy=b[1]-a[1],L=vx*vx+vy*vy,u=L?Math.max(0,Math.min(1,((pt.x-a[0])*vx+(pt.y-a[1])*vy)/L)):0;d=Math.min(d,Math.hypot(pt.x-(a[0]+vx*u),pt.y-(a[1]+vy*u))-q.tol)}}
+      if(d<bd){bd=d;best=q}});return best}
+  map.on('click',function(e){var h=pickNear(e.point);opt.onPick(h?h.id:null)});
   map.on('mousemove',function(e){map.getCanvas().style.cursor=pick(e.point)?'pointer':''});
   function userMove(){if(opt.onUserMove)opt.onUserMove()}   // the reader moved the map: stop following the action
   map.on('movestart',function(e){if(e.originalEvent)userMove()});map.on('wheel',userMove);map.on('dblclick',userMove);

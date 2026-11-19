@@ -220,18 +220,42 @@ details.evs{margin-top:10px} details.evs summary{cursor:pointer;font-size:12.5px
 .sq.one{font-size:11px;font-weight:600;letter-spacing:-.02em}
 
 /* ---------- phones: more map, less text ---------- */
+.sheetbar{display:none}
 @media (max-width:860px){
   .bar{padding-block:6px}
   .ttl{display:flex;align-items:center;gap:10px}
   .ttl .home{margin:0;font-size:0;line-height:1;flex:none;padding:4px 2px}              /* the way home becomes an arrow beside the title */
   .ttl .home::before{content:'\2190';font-size:19px;font-weight:600}
-  .stage{grid-template-rows:minmax(0,1fr) minmax(108px,17vh)}                           /* the map takes about 70% of a phone screen */
+  /* the text is a sheet under the map: a strip to start with, dragged or tapped up to read more */
+  .stage{grid-template-rows:minmax(0,1fr) auto var(--sheet-h,96px)}
+  .sheetbar{display:flex;justify-content:center;background:var(--surface);border-top:1px solid var(--line);touch-action:none}
+  .grab{appearance:none;border:0;background:none;padding:6px 40px 4px;cursor:grab;touch-action:none}
+  .grab span{display:block;width:38px;height:4px;border-radius:2px;background:var(--line-strong,#b9b4a8)}
+  .panel{border-top:0;padding-top:0}
+  .stage.sheet-anim{transition:grid-template-rows .25s ease}
   .panel{padding-top:8px}
   .panel .phase{font-size:14.5px;line-height:1.4}
   .credit{display:none}                                                                  /* credits move to the i button's panel */
   .when .bn{display:none}                                                                /* the battle's name is already in the title */
+  /* clock and scale shrink to small labels so they cover less of the map */
+  .bl{gap:4px}
+  .when{display:flex;flex-wrap:wrap;align-items:baseline;column-gap:6px;padding:3px 8px 4px;border-radius:6px;max-width:170px}
+  .when .dayn{margin:0;font-size:9.5px} .when .t{font-size:16px} .when .d{flex-basis:100%;font-size:10px;margin:0} .when.date .t{font-size:14px}
+  .when .n{flex-basis:100%;font-size:9.5px}
+  .scale{padding:2px 6px 3px;font-size:10px} .scale .sb+.sb,.scale .sn{display:none}
   /* while it plays, the optional buttons step aside; they come back on pause, at the end, on start over, or on a tap */
   .mapwrap .ctl,.mapwrap .pop{transition:opacity .35s}
   .wm-playing .mapwrap:not(.peek) .ctl,.wm-playing .mapwrap:not(.peek) .pop{opacity:0;pointer-events:none}
 }
 .panel .credits{margin:12px 0 0}
+
+/* phones on their side: the map fills the height, the text sits in a narrow column on the right */
+@media (orientation:landscape) and (max-height:500px){
+  .bar{padding-block:3px} .ttl .home{padding:2px} .ttl h1{font-size:14.5px}
+  .stage{grid-template-columns:minmax(0,1fr) min(34%,300px);grid-template-rows:minmax(0,1fr)}
+  .sheetbar{display:none}
+  .panel{border-top:0;border-left:1px solid var(--line);padding:8px 12px 10px}
+  .tlbar{padding-block:4px}
+  .narr{top:56px}
+  .ctl.c-r{gap:4px} .sq{width:30px;height:30px}
+}

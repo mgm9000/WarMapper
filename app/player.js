@@ -145,7 +145,7 @@ function stateDaily(tr,tt,key){
     var k=ks[i],nx=ks[i+1],s=k.t0-LEAD_IN,e=k.t1,g=geo(k,key),gn=nx?geo(nx,key):null;
     if(tt>=s&&tt<=e) return {k:k,g:g,kind:!g?noPlace(k,key):k.virtual?'moving':placed(k)};   // a stand-in start (an approach not recorded) is drawn dashed
     if(nx&&tt>e&&tt<nx.t0-LEAD_IN){
-      var ms=Math.max(e,nx.t0-1),me=nx.t0-LEAD_IN;            // the move takes the last day before the next record
+      var ms=Math.max(e,nx.t0-1-LEAD_IN),me=nx.t0-LEAD_IN;   // the move takes a whole day, ending as the next record comes in
       if(tt<ms) return (g&&tt<=e+LINGER)?{k:k,g:g,kind:'after'}:{k:k,g:null,kind:g?'lost':noPlace(k,key)};
       if(g&&gn) return {k:nx,from:k,g:morph(g,gn,ease((tt-ms)/Math.max(0.01,me-ms))),kind:'moving'};
       if(g) return {k:k,g:g,kind:'after'};
@@ -302,9 +302,10 @@ function layout(sc){
     if(!compact) for(var i=1;i<u.pts.length&&u.line;i++){var a=u.pts[i-1],b=u.pts[i],d=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.round(d/11));
       for(var j=0;j<=n;j++){var qx=a[0]+(b[0]-a[0])*j/n,qy=a[1]+(b[1]-a[1])*j/n;R.push([qx-4,qy-4,qx+4,qy+4])}}});
   // names, most important units first; a crowded name is dropped (the unit stays tappable)
-  var force=!compact&&sNow>=(Z.force_names_from||0);
+  var phoneW=wrap.clientWidth<=560,force=!phoneW&&!compact&&sNow>=(Z.force_names_from||0);
+  var fewer=phoneW&&sNow<(Z.phone_names||(compact?(Z.full_names||1e9):0.6));   // phones, zoomed out: no names for small parts (artillery, detachments, sub-units) until zoomed in
   L.forEach(function(u){
-    u.lab=null; if(u.noSym||(!names&&!(sel&&u.o.tr.id===sel))) return;
+    u.lab=null; if(u.noSym||(!names&&!(sel&&u.o.tr.id===sel))) return; if(fewer&&u.pr>=3) return;
     var x=u.x,y=u.y,w=u.w,C=[[x+16,y-8,x+16+w,y+8,'start',x+17,y+4.5],[x-16-w,y-8,x-16,y+8,'end',x-17,y+4.5],[x-w/2,y+11,x+w/2,y+26,'middle',x,y+23],[x-w/2,y-35,x+w/2,y-20,'middle',x,y-23]];
     for(var i=0;i<C.length;i++){ if(C[i][0]>=3&&C[i][2]<=Zs.w-3&&!hit(C[i])){u.lab=C[i];break} }
     if(!u.lab&&(u.pr===0||(force&&u.pr===1))) u.lab=C[0];
@@ -629,7 +630,7 @@ function select(id){
   if(id&&String(id).indexOf('F:')===0){ // a formation drawn zoomed out: zoom in on it until it breaks out into its units
     var hit=null;mv.hits.forEach(function(h){if(h.id===id&&h.r)hit=h}); if(hit){setFollow(false);setPreset(null);var W=WORLDS[worldOf(base)],c=mv.map.unproject([(hit.r[0]+hit.r[2])/2,(hit.r[1]+hit.r[3])/2]);
       mv.map.easeTo({center:c,zoom:mv.zoomFor(FM.below*1.15),duration:700})} return }
-  sel=id||null;info=false;panelKey='';mv.kick()}
+  sel=id||null;info=false;panelKey='';if(sel&&sheet)sheet.open();mv.kick()}
 var evOpen=false;
 /* what lies around the map on screen, where the battle has a surround */
 function aroundNote(){ if(!topo()||base.own||base.sat||base.current) return '';
@@ -720,7 +721,8 @@ function stepBy(dir,v){var n=STEPS[stepI][0];
   return Math.round(v)+dir*n}   // always exactly one step, so every press moves time the same amount
 var rng=$('time'); rng.min=0; rng.max=RNG; rng.step=1; rng.value=0; rng.setAttribute('aria-label',byDay?'Day of the battle':'Time of day');
 clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*RNG)},fromRange:function(v){return u2t(v/RNG)},
-  rate:function(v){var n=STEPS[stepI][0];return (LD&&v<TM)?Math.max(LD.rate,n):n},onTime:paintTime,
+  rate:function(v){var n=STEPS[stepI][0];if(byDay&&stepI===0&&P.rate>0&&P.rate<1)return P.rate;   /* a day battle can play slower than a day a second (Ypres: half a day) */
+    return (LD&&v<TM)?Math.max(LD.rate,n):n},onTime:paintTime,
   snap:byDay?function(v){return Math.round(v)}:null,   // the sources give one position a day, so time settles on nightfall
   arrow:stepBy,
   wheel:function(dd,v){if(stepI===0)return u2t(Math.max(0,Math.min(1,t2u(v)+dd*0.0002)));   // at the finest step scrolling is smooth; at a coarser one each notch is one step
@@ -777,7 +779,21 @@ on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.
 (function(){var app=document.querySelector('.app'),b=$('zfull'); if(!b) return;   // full screen is not offered where the browser does not allow it (inside some embedded views)
   if(!document.fullscreenEnabled||!app.requestFullscreen){b.hidden=true;return}
   b.addEventListener('click',function(){if(document.fullscreenElement)document.exitFullscreen();else app.requestFullscreen()})})();
-on('binfo',function(){sel=null;info=!info;panelKey='';mv.kick()});
+on('binfo',function(){sel=null;info=!info;panelKey='';if(info)sheet.open();mv.kick()});
+/* phones: the text sheet under the map. It starts as a strip; a tap on the handle opens it to about half the screen and closes it
+   again, and dragging the handle sets any height in between. Tapping a unit opens it so the unit's details can be read. */
+var sheet=(function(){var st=document.querySelector('.stage'),bar=$('sheetbar'),MIN=72,DEF=96,h=DEF,drag=null;
+  function phone(){return getComputedStyle(bar).display!=='none'}
+  function maxH(){return Math.round(st.getBoundingClientRect().height*0.72)}
+  function set(v,anim){h=Math.max(MIN,Math.min(maxH(),v));st.classList.toggle('sheet-anim',!!anim);st.style.setProperty('--sheet-h',h+'px');$('grab').setAttribute('aria-expanded',h>DEF+20?'true':'false')}
+  function open(){if(phone()&&h<DEF+40)set(st.getBoundingClientRect().height*0.5,true)}
+  function toggle(){if(h>DEF+20)set(DEF,true);else open()}
+  bar.addEventListener('pointerdown',function(e){if(!phone())return;drag={y:e.clientY,h:h,moved:false};bar.setPointerCapture(e.pointerId);e.preventDefault()});
+  bar.addEventListener('pointermove',function(e){if(!drag)return;var dy=drag.y-e.clientY;if(Math.abs(dy)>4)drag.moved=true;if(drag.moved)set(drag.h+dy,false)});
+  bar.addEventListener('pointerup',function(){if(!drag)return;var m=drag.moved;drag=null;if(!m)toggle()});
+  bar.addEventListener('pointercancel',function(){drag=null});
+  $('grab').addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
+  return {open:open,phone:phone}})();
 /* phones: while playing, a tap on the map brings the hidden buttons back for a few seconds */
 (function(){var tmo=0;wrap.addEventListener('touchstart',function(){if(!document.documentElement.classList.contains('wm-playing'))return;wrap.classList.add('peek');clearTimeout(tmo);tmo=setTimeout(function(){wrap.classList.remove('peek')},4000)},{passive:true})})();
 // back and forward one step; [ and ] jump between key events
