@@ -313,3 +313,9 @@ details.evs{margin-top:10px} details.evs summary{cursor:pointer;font-size:12.5px
 .wm-playing .cont{display:none}
 .cont{white-space:nowrap}
 @media (max-width:860px){ .cont{left:auto;right:10px;transform:none;bottom:12px;font-size:14px;padding:9px 16px} }
+
+/* the Now text as a fold-away section, and the lists of units on the map as drop-downs like Key events */
+details.nowd>summary{cursor:pointer}
+details.nowd .phase{margin-top:6px}
+details.onmap summary .cnt{color:var(--muted)}
+details.onmap .ulist{margin-top:6px}

@@ -670,7 +670,8 @@ function renderPanel(sc){
       else h+=rowHtml(me.s.k,(kd==='after'||kd==='lost')?'Last record':'Current record');}
     if(tr.notes) h+='<p class="meta" style="margin-top:12px">'+esc(tr.notes)+'</p>';
   } else {
-    h+='<div class="eyebrow">'+esc(ev?'Now: '+ev.name:B.opening.label)+'</div><p class="phase">'+esc(ev?ev.text:B.opening.text)+'</p>';
+    /* the Now text and the lists of units share the pane: opening a list folds the Now text away, and closing every list opens it again */
+    h+='<details class="nowd"'+(nowOpen?' open':'')+'><summary class="eyebrow">'+esc(ev?'Now: '+ev.name:B.opening.label)+'</summary><p class="phase">'+esc(ev?ev.text:B.opening.text)+'</p></details>';
     if(landing) h+='<p class="meta start">Press play to begin. The units come onto the map as the battle starts.</p>';
     if(B.events.length){h+='<details class="evs"'+(evOpen?' open':'')+'><summary>Key events: jump to one</summary><ul class="evl">';
       B.events.forEach(function(e){h+='<li><button data-ev="'+esc(e.id)+'"'+(ev&&ev.id===e.id?' class="cur"':'')+'><span class="tm">'+esc(whenText(e.t))+'</span><span>'+esc(e.full)+'</span></button></li>'});h+='</ul></details>'}
@@ -678,7 +679,7 @@ function renderPanel(sc){
       SUMS.forEach(function(x){if(x.kind!=='day')return;var bb=dayEndOf(x.from);h+='<li><button data-day="'+bb+'"><span class="tm">'+esc(shortDay(x.from))+'</span><span>'+esc(x.title)+'</span></button></li>'});h+='</ul></details>'}
     var groups=[],seen={}; (byNation?(raw.nations||[]).map(function(n){return [n.name,n.short]}):raw.sides.map(function(s){return [s.code,s.short]})).forEach(function(g){groups.push(g);seen[g[0]]=1});
     groups.forEach(function(g){var Ls=sc.filter(function(o){return (o.drawn||o.folded)&&look(o.tr).group===g[0]});if(!Ls.length)return;
-      h+='<h3>'+esc(g[1])+' on the map</h3><ul class="ulist">';Ls.forEach(function(o){h+=item(o,status(o))});h+='</ul>'});
+      h+='<details class="evs onmap" data-g="'+esc(g[0])+'"'+(grpOpen[g[0]]?' open':'')+'><summary>'+esc(g[1])+' on the map <span class="cnt">('+Ls.length+')</span></summary><ul class="ulist">';Ls.forEach(function(o){h+=item(o,status(o))});h+='</ul></details>'});
     var nd=sc.filter(function(o){return !o.hidden&&!o.folded&&o.s.kind!=='lost'&&(!o.drawn||o.s.kind==='unplaced')});
     if(nd.length){h+='<h3>'+(base.own?'Not on this map or not placed':'Not placed right now')+'</h3><ul class="nd">';
       nd.forEach(function(o){var kd=o.s.kind;h+='<li><b>'+esc(o.tr.label)+'</b>: '+esc(kd==='offmap'?o.tr.offmap:o.s.k.act+(kd==='offthis'?' (not on this map)':'. No position on record.'))+'</li>'});h+='</ul>'}
@@ -693,7 +694,7 @@ function select(id){
     var hit=null;mv.hits.forEach(function(h){if(h.id===id&&h.r)hit=h}); if(hit){setFollow(false);setPreset(null);var W=WORLDS[worldOf(base)],c=mv.map.unproject([(hit.r[0]+hit.r[2])/2,(hit.r[1]+hit.r[3])/2]);
       mv.map.easeTo({center:c,zoom:mv.zoomFor(FM.below*1.15),duration:700})} return }
   if(id)closeSummary();sel=id||null;info=false;panelKey='';if(sel&&sheet)sheet.open();if(sel&&pane)pane.show();mv.kick()}
-var evOpen=false,sumsOpen=false;
+var evOpen=false,sumsOpen=false,nowOpen=true,grpOpen={};
 /* what lies around the map on screen, where the battle has a surround */
 function aroundNote(){ if(!topo()||base.own||base.sat||base.current) return '';
   return '<div class="eyebrow" style="margin-top:18px">Around this map</div><p>Zoom out past the edge of this map and today\'s topographic map is drawn around it.</p><dl><dt>Source</dt><dd>'+esc(MOD.name?MOD.name+' ('+MOD.credit+')':MOD.credit)+'</dd>'+(MOD.rights?'<dt>Rights</dt><dd>'+esc(MOD.rights)+'</dd>':'')+'</dl>'}
@@ -891,7 +892,11 @@ function restart(){closeSummary();$('ask').hidden=true;clk.setPlaying(false);sel
 on('evprev',function(){clk.setPlaying(false);clk.setTime(stepBy(-1,t))}); on('evnext',function(){clk.setPlaying(false);clk.setTime(stepBy(1,t))}); on('step',function(){setStep(stepI+1)});
 WM.panelClicks(panel,select);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-ev]');if(!b)return;var ev=B.events.filter(function(x){return x.id===b.getAttribute('data-ev')})[0];if(ev){clk.setPlaying(false);clk.setTime(ev.t)}});
-panel.addEventListener('toggle',function(e){if(!e.target.classList)return;if(e.target.classList.contains('sums'))sumsOpen=e.target.open;else if(e.target.classList.contains('evs'))evOpen=e.target.open},true);
+panel.addEventListener('toggle',function(e){if(!e.target.classList)return;
+  if(e.target.classList.contains('nowd')){nowOpen=e.target.open;return}
+  if(e.target.classList.contains('onmap')){grpOpen[e.target.getAttribute('data-g')]=e.target.open;
+    var any=Object.keys(grpOpen).some(function(k){return grpOpen[k]}),nd=panel.querySelector('details.nowd');nowOpen=!any;if(nd&&nd.open!==nowOpen)nd.open=nowOpen;return}
+  if(e.target.classList.contains('sums'))sumsOpen=e.target.open;else if(e.target.classList.contains('evs'))evOpen=e.target.open},true);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-day]');if(b){jumpToDay(+b.getAttribute('data-day'),'day');return} if(e.target.closest('#sumgo'))goOn()});
 function goOn(){closeSummary();glide=Date.now()+FOL.glide_ms;clk.setPlaying(true)}
 on('cont',goOn);
