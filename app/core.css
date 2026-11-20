@@ -319,3 +319,5 @@ details.nowd>summary{cursor:pointer}
 details.nowd .phase{margin-top:6px}
 details.onmap summary .cnt{color:var(--muted)}
 details.onmap .ulist{margin-top:6px}
+details.umd>.umdb{margin:6px 0 0 14px} details.umd>.umdb>details.evs{margin-top:8px}
+details.umd>summary{font-size:13.5px;font-weight:600;color:var(--fg)}
