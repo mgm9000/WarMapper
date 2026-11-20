@@ -353,7 +353,7 @@ function trailsSvg(){ if(!TRL||!trlOn||landing||!unitsOn) return ''; var key=bas
     var dd=by[sd][k].join('');h+='<g class="trail" opacity="'+(base0*k).toFixed(3)+'" style="pointer-events:none" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="'+dd+'" stroke="var(--u-halo)" stroke-width="'+(w+3)+'"/><path d="'+dd+'" style="stroke:'+c+'" stroke-width="'+w+'"/></g>'})});
   return h}
 /* ---------- days: pauses with a summary, and where units began and ended each day ----------
-   A battle longer than two days can stop at the end of each day (or week) while it plays: the map frames that day's fighting and the
+   A battle longer than two days can stop at the end of each day (or week) while it plays: the map stays as it is, and the
    text pane gives a summary; Continue goes on. Up to a week long it stops each day unless the reader turns it off; longer, it asks first.
    playback.day_pause: false (never), or "day", "week", "off" or "ask" to set the starting choice. Days end at midnight (time_zero is a
    midnight); a battle followed by the day ends each day at nightfall, when its positions are given. */
@@ -375,11 +375,7 @@ function longDate(iso){var p=iso.split('-'),d=new Date(Date.UTC(+p[0],+p[1]-1,+p
 function setPause(m,keep){pzMode=m;['off','day','week'].forEach(function(k){press('pz-'+k,m===k)});if(!keep)try{localStorage.setItem('wm.'+B.id+'.pause',m)}catch(e){}}
 /* units whose record changes during the day that ends at b (a new step begins), for the summary's list and for the day's map view */
 function dayMoves(b){var a=b-DAYLEN,out=[];B.tracks.forEach(function(tr){tr.k.forEach(function(k){if(!k.virtual&&k.t0>a+1e-6&&k.t0<=b+1e-6&&geo(k,gkey()))out.push({tr:tr,k:k})})});return out}
-function dayBox(b){var key=gkey(),bx=[1e9,1e9,-1e9,-1e9],n=0,add=function(g){if(!g)return;g.forEach(function(p){bx[0]=Math.min(bx[0],p[0]);bx[1]=Math.min(bx[1],p[1]);bx[2]=Math.max(bx[2],p[0]);bx[3]=Math.max(bx[3],p[1]);n++})};
-  dayMoves(b).forEach(function(m){add(geo(m.k,key));var s=stateAt(m.tr,b-DAYLEN,key);if(s)add(s.g)});return n?bx:null}
 function openSummary(b,m){sumAt=b;sumMode=m;sel=null;info=false;panelKey='';
-  var bx=dayBox(b);if(bx&&!base.own){var F=P.follow||{},mn=F.min||[1400,900],mg=Math.max(F.margin||140,0.12*Math.max(bx[2]-bx[0],bx[3]-bx[1])),mx=Math.max(mg,(mn[0]-(bx[2]-bx[0]))/2),my=Math.max(mg,(mn[1]-(bx[3]-bx[1]))/2);
-    goal=mv.cameraFor([bx[0]-mx,bx[1]-my,bx[2]+mx,bx[3]+my],{t:60,b:40,l:20,r:20})}
   var c=$('cont');if(b<T1-1e-6){var nx=stopsFor(m).filter(function(x){return x>b+1e-6})[0];$('contTx').textContent='Continue'+(m==='week'?' to the next week':' to '+(byDay?(function(){var d=B.dateOf(Math.round(b)+1);return d.day+' '+d.mon}):function(){return 'the next day'})());c.hidden=false}else c.hidden=true;
   if(sheet)sheet.open();if(pane)pane.show();mv.kick()}
 function closeSummary(){if(sumAt==null)return;sumAt=null;sumMode=null;panelKey='';$('cont').hidden=true;mv.kick()}
@@ -744,9 +740,8 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   // Battle options
   G+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')+(TRL?ck('cTrail','Routes taken',trlOn):'')
     +(DE_OK?ck('cDayEnds','Where units began and ended each day',deOn):'')+ck('cNarr','The current event, in words, on the map',false)+(DE_OK?'<p class="gn">Dashed: where a unit began the day. Thin solid: where it ended it.</p>':'')+'</div>';
-  G+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Symbol style',[sb('sy-standard','Standard',true),sb('sy-period','Period style',false)])+'<p class="gn">Period style drops the frames: a line is a bar, as on maps of the time.</p></div>';
-  G+='<div class="grp"><div class="gh">Seen from</div>'+seg('Seen from',[sb('fr-none','Neither side',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Seen from one side, the other side takes the diamond frame of the standard military symbols.</p></div>';
-  if(PZ_OK) G+='<div class="grp"><div class="gh">Pause and summary</div>'+seg('Pause and summary',[sb('pz-off','Off',pzMode==='off'),sb('pz-day','Each day',pzMode==='day'),sb('pz-week','Each week',pzMode==='week')])+'<p class="gn">While it plays, the battle stops at the end of each day or week, frames that day&rsquo;s fighting and shows a summary. Press Continue to go on.</p></div>';
+  G+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Unit symbols',[sb('fr-none','Neutral',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Choose a side to see the battle from its point of view: the other side&rsquo;s units take the diamond frame of the standard military symbols.</p></div>';
+  if(PZ_OK) G+='<div class="grp"><div class="gh">Pause and summary</div>'+seg('Pause and summary',[sb('pz-off','Off',pzMode==='off'),sb('pz-day','Each day',pzMode==='day'),sb('pz-week','Each week',pzMode==='week')])+'<p class="gn">While it plays, the battle stops at the end of each day or week and shows a summary. Press Continue to go on.</p></div>';
   $('pBattle').innerHTML=G;
   var cb=$('clockbattle'); if(cb){cb.textContent=P.clock_title||B.title;cb.hidden=P.clock_title===''}   // the battle's name in the date box
   wrap.classList.toggle('compact',compact); $('when').classList.toggle('date',byDay); $('tl').classList.toggle('days',byDay);
@@ -758,7 +753,7 @@ try{ mv=WM.mapView({container:'map',wrap:wrap,world:worldOf(base),worlds:WORLDS,
   onDraw:draw,onPick:select,
   onUserMove:function(){if(follow)pauseFollow();if(preset||goal)setPreset(null)},
   onResize:function(){if(preset){mv.jump(cameraOf(preset));goal=null}else if(follow&&!landing)mv.jump(target());else if(landing)mv.jump(home())},
-  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing&&sumAt==null){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(glide>Date.now()?mv.chase(target(),FOL.glide_rate):mv.chase(calmTarget(),FOL.rate,FOL.zoom_rate))more=true}}return more}});
+  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(glide>Date.now()?mv.chase(target(),FOL.glide_rate):mv.chase(calmTarget(),FOL.rate,FOL.zoom_rate))more=true}}return more}});
 }catch(err){WM.noMap(wrap,err);return null}
 S=mv.S;
 mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
