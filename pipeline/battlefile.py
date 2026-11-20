@@ -206,6 +206,11 @@ def validate(b, folder=None):
         if g.get('side') not in codes: bad.append('playback group %r: unknown side code' % g.get('label'))
     for n in b.get('nations', []): need(n, ['name', 'short'], 'nation')
     last = None
+    for x in b.get('summaries', []):   # optional: day and week summaries for the pauses
+        w = 'summary %s %s' % (x.get('kind'), x.get('from')); need(x, ['kind', 'from', 'to', 'title', 'text'], w)
+        if x.get('kind') not in ('day', 'week'): bad.append(w + ': kind must be "day" or "week"')
+        for k in ('from', 'to'): time_ok(x.get(k), w + '.' + k)
+        if isinstance(x.get('from'), str) and isinstance(x.get('to'), str) and x['to'] < x['from']: bad.append(w + ': ends before it starts')
     for e in b['events']:
         w = 'event %s' % e.get('id'); need(e, ['id', 'start', 'end', 'at', 'name', 'text'], w)
         for k in ('start', 'end', 'at'): time_ok(e.get(k), w + '.' + k)

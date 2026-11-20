@@ -27,7 +27,11 @@
         <button class="sq info" id="binfo" aria-label="About the map on screen" title="About the map on screen">i</button>
         <button class="sq pane" id="bpane" aria-label="Hide the text" title="Hide the text" aria-pressed="false"><svg viewBox="0 0 16 16" width="15" height="15"><rect x="1.8" y="2.8" width="12.4" height="10.4" rx="1" fill="none" stroke="currentColor" stroke-width="1.5"/><rect x="9.5" y="3.5" width="4" height="9" fill="currentColor"/></svg></button>
       </div>
+      <div class="pop" id="pType" hidden></div>
       <div class="pop" id="layers" hidden></div>
+      <div class="pop" id="pBattle" hidden></div>
+      <button class="cont" id="cont" hidden><svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 1.5v13l11-6.5z" fill="currentColor"/></svg><span id="contTx">Continue</span></button>
+      <div class="ask" id="ask" role="dialog" aria-labelledby="askq" hidden><p id="askq"></p><div class="askb"><button id="ask-day">Each day</button><button id="ask-week">Each week</button><button id="ask-off">Play straight through</button></div><p class="gn">You can change this later in Battle options.</p></div>
       <div class="offnote" id="offnote" hidden></div>
       <div class="narr" id="narr" hidden></div>
       <div class="bl"><div class="when" id="when" aria-live="off"><div class="bn" id="clockbattle"></div><div class="dayn" id="dayn" hidden></div><div class="t" id="clock"></div><div class="d" id="clockdate"></div><div class="n" id="clocknote" hidden></div></div>

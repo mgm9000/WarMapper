@@ -352,6 +352,62 @@ function trailsSvg(){ if(!TRL||!trlOn||landing||!unitsOn) return ''; var key=bas
   var h='',w=compact?3:4;Object.keys(by).forEach(function(sd){var c=look({side:sd}).col;Object.keys(by[sd]).forEach(function(k){
     var dd=by[sd][k].join('');h+='<g class="trail" opacity="'+(base0*k).toFixed(3)+'" style="pointer-events:none" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="'+dd+'" stroke="var(--u-halo)" stroke-width="'+(w+3)+'"/><path d="'+dd+'" style="stroke:'+c+'" stroke-width="'+w+'"/></g>'})});
   return h}
+/* ---------- days: pauses with a summary, and where units began and ended each day ----------
+   A battle longer than two days can stop at the end of each day (or week) while it plays: the map frames that day's fighting and the
+   text pane gives a summary; Continue goes on. Up to a week long it stops each day unless the reader turns it off; longer, it asks first.
+   playback.day_pause: false (never), or "day", "week", "off" or "ask" to set the starting choice. Days end at midnight (time_zero is a
+   midnight); a battle followed by the day ends each day at nightfall, when its positions are given. */
+var DAYLEN=byDay?1:1440,NDAYS=(T1-T0)/DAYLEN,DAY0=byDay?T0-1:Math.floor(T0/1440)*1440;   // DAY0: when the first day began
+var DE_OK=NDAYS>1.5,deOn=false;
+var PZ_OK=P.day_pause!==false&&NDAYS>2,PZ_DEF=(typeof P.day_pause==='string')?P.day_pause:(NDAYS<=7?'day':'ask'),pzMode=PZ_DEF==='ask'?null:PZ_DEF;
+try{var pzs=localStorage.getItem('wm.'+B.id+'.pause');if(pzs&&/^(off|day|week)$/.test(pzs))pzMode=pzs}catch(e){}
+var SUMS=raw.summaries||[],sumAt=null,sumMode=null;
+function dayEnds(){var out=[];for(var b=DAY0+DAYLEN;b<T1-1e-6;b+=DAYLEN)if(b>T0+1e-6)out.push(b);return out}
+function weekEnds(){var d=dayEnds().filter(function(b){return Math.round((b-DAY0)/DAYLEN)%7===0});if(d.length&&(T1-d[d.length-1])/DAYLEN<=2)d.pop();return d}
+function stopsFor(m){return m==='day'?dayEnds():m==='week'?weekEnds():[]}
+function stopAt(a,b){if(!PZ_OK||!pzMode||pzMode==='off')return null;var st=stopsFor(pzMode);for(var i=0;i<st.length;i++)if(st[i]>a+1e-6&&st[i]<=b+1e-9)return st[i];
+  if(b>=T1&&a<T1-1e-6)return T1;return null}   // and at the very end, for the last summary
+function isoDay(b){return byDay?B.isoOf(Math.round(b)):B.isoOf(b-1).slice(0,10)}   // the day that has just ended at b
+function dayNo(b){return Math.round((b-DAY0)/DAYLEN)}
+function sumFor(b,m){var d=isoDay(b),hit=null;SUMS.forEach(function(x){if(x.kind===m&&x.from<=d&&x.to>=d&&(m==='day'||x.to===d||b>=T1-1e-6))hit=x});
+  if(!hit&&m==='week')SUMS.forEach(function(x){if(x.kind==='week'&&x.from<=d&&x.to>=d)hit=x});return hit}
+function longDate(iso){var p=iso.split('-'),d=new Date(Date.UTC(+p[0],+p[1]-1,+p[2]));return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getUTCDay()]+' '+(+p[2])+' '+['January','February','March','April','May','June','July','August','September','October','November','December'][+p[1]-1]+' '+p[0]}
+function setPause(m,keep){pzMode=m;['off','day','week'].forEach(function(k){press('pz-'+k,m===k)});if(!keep)try{localStorage.setItem('wm.'+B.id+'.pause',m)}catch(e){}}
+/* units whose record changes during the day that ends at b (a new step begins), for the summary's list and for the day's map view */
+function dayMoves(b){var a=b-DAYLEN,out=[];B.tracks.forEach(function(tr){tr.k.forEach(function(k){if(!k.virtual&&k.t0>a+1e-6&&k.t0<=b+1e-6&&geo(k,gkey()))out.push({tr:tr,k:k})})});return out}
+function dayBox(b){var key=gkey(),bx=[1e9,1e9,-1e9,-1e9],n=0,add=function(g){if(!g)return;g.forEach(function(p){bx[0]=Math.min(bx[0],p[0]);bx[1]=Math.min(bx[1],p[1]);bx[2]=Math.max(bx[2],p[0]);bx[3]=Math.max(bx[3],p[1]);n++})};
+  dayMoves(b).forEach(function(m){add(geo(m.k,key));var s=stateAt(m.tr,b-DAYLEN,key);if(s)add(s.g)});return n?bx:null}
+function openSummary(b,m){sumAt=b;sumMode=m;sel=null;info=false;panelKey='';
+  var bx=dayBox(b);if(bx&&!base.own){var F=P.follow||{},mn=F.min||[1400,900],mg=Math.max(F.margin||140,0.12*Math.max(bx[2]-bx[0],bx[3]-bx[1])),mx=Math.max(mg,(mn[0]-(bx[2]-bx[0]))/2),my=Math.max(mg,(mn[1]-(bx[3]-bx[1]))/2);
+    goal=mv.cameraFor([bx[0]-mx,bx[1]-my,bx[2]+mx,bx[3]+my],{t:60,b:40,l:20,r:20})}
+  var c=$('cont');if(b<T1-1e-6){var nx=stopsFor(m).filter(function(x){return x>b+1e-6})[0];$('contTx').textContent='Continue'+(m==='week'?' to the next week':' to '+(byDay?(function(){var d=B.dateOf(Math.round(b)+1);return d.day+' '+d.mon}):function(){return 'the next day'})());c.hidden=false}else c.hidden=true;
+  if(sheet)sheet.open();if(pane)pane.show();mv.kick()}
+function closeSummary(){if(sumAt==null)return;sumAt=null;sumMode=null;panelKey='';$('cont').hidden=true;mv.kick()}
+function summaryHtml(){var b=sumAt,m=sumMode,x=sumFor(b,m),d=isoDay(b),h='',n=dayNo(b);
+  if(m==='week'){var st=stopsFor('week'),i=st.indexOf(b);h+='<div class="eyebrow">'+(b>=T1-1e-6?'End of the battle':'End of week '+(i+1))+(x?' &middot; '+esc(shortRange(x.from,x.to)):'')+'</div>'}
+  else h+='<div class="eyebrow">'+(b>=T1-1e-6?'End of the battle &middot; ':'End of day '+n+' &middot; ')+esc(longDate(d))+'</div>';
+  h+='<h2 class="sumh">'+esc(x?x.title:(m==='week'?'This week':'This day'))+'</h2>';
+  if(x)h+='<p class="sumtx">'+esc(x.text)+'</p>';else{var ev=B.events.filter(function(e){return e.t>b-DAYLEN*(m==='week'?7:1)+1e-6&&e.t<=b+1e-6});h+=ev.length?ev.map(function(e){return '<p class="sumtx">'+esc(e.text||e.full)+'</p>'}).join(''):'<p class="sumtx meta">No summary written for this '+(m==='week'?'week':'day')+' yet.</p>'}
+  if(m==='week'&&x){var days=SUMS.filter(function(y){return y.kind==='day'&&y.from>=x.from&&y.from<=x.to});if(days.length){h+='<h3>Day by day</h3><ul class="evl">';days.forEach(function(y){var bb=dayEndOf(y.from);h+='<li><button data-day="'+bb+'"><span class="tm">'+esc(shortDay(y.from))+'</span><span>'+esc(y.title)+'</span></button></li>'});h+='</ul>'}}
+  else{var mv0=dayMoves(b),seen={};if(mv0.length){h+='<h3>On record this day</h3><ul class="ulist">';mv0.forEach(function(o){if(seen[o.tr.id])return;seen[o.tr.id]=1;h+='<li><button data-pick="'+o.tr.id+'"><span class="sd" style="background:'+look(o.tr).ui+'"></span><span class="nm">'+esc(o.tr.name)+'</span><span class="st">'+esc(o.k.act||o.k.place||'')+'</span></button></li>'});h+='</ul>'}}
+  if(x&&x.sources&&x.sources.length)h+='<p class="meta" style="margin-top:12px">Drawn from: '+x.sources.map(function(id){var s=B.sources[id];return esc(s?(s.author?s.author.split(',')[0]+', ':'')+s.title:id)}).join('; ')+'.</p>';
+  h+=(b<T1-1e-6?'<p style="margin-top:14px"><button class="lnk" id="sumgo">&#9654; '+esc($('contTx').textContent)+'</button></p>':'');
+  return h}
+function shortDay(iso){var p=iso.split('-');return (+p[2])+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][+p[1]-1]}
+function shortRange(a,b){return a===b?shortDay(a):shortDay(a)+' – '+shortDay(b)}
+function dayEndOf(iso){for(var b=DAY0+DAYLEN;b<=T1+1e-6;b+=DAYLEN)if(isoDay(b)===iso)return b;return T1}
+function jumpToDay(b,m){clk.setPlaying(false);clk.setTime(b);openSummary(b,m||'day')}
+/* where units began and ended the day now on screen: the day's first position dashed, its last thin and solid, joined by a line */
+function dayEndsSvg(sc){ if(!DE_OK||!deOn||landing||!unitsOn) return ''; var key=gkey(),e=byDay?Math.max(T0,stamp(t)):Math.min(T1,DAY0+(Math.floor((t-DAY0)/DAYLEN)+1)*DAYLEN),a=Math.max(T0,e-DAYLEN),h='';
+  var cen=function(P){var x=0,y=0;P.forEach(function(p){x+=p[0];y+=p[1]});return [x/P.length,y/P.length]},pth=function(P){return P.map(function(p,j){return (j?'L':'M')+f1(p[0])+' '+f1(p[1])}).join('')};
+  sc.forEach(function(o){if(!o.drawn)return;var s0=stateAt(o.tr,a+1e-4,key),s1=stateAt(o.tr,e,key);if(!s0||!s1||!s0.g||!s1.g)return;
+    var P0=s0.g.map(S),P1=s1.g.map(S),c0=cen(P0),c1=cen(P1);if(Math.hypot(c1[0]-c0[0],c1[1]-c0[1])<4)return;var c=look(o.tr).col;
+    h+='<g class="dayend" style="pointer-events:none" fill="none" stroke-linecap="round">';
+    if(P0.length>1)h+='<path d="'+pth(P0)+'" style="stroke:'+c+'" stroke-width="2" stroke-dasharray="5 4" opacity=".6"/>';else h+='<circle cx="'+f1(c0[0])+'" cy="'+f1(c0[1])+'" r="5" style="stroke:'+c+'" stroke-width="1.6" stroke-dasharray="3 2" opacity=".7"/>';
+    if(P1.length>1)h+='<path d="'+pth(P1)+'" style="stroke:'+c+'" stroke-width="1.4" opacity=".85"/>';else h+='<rect x="'+f1(c1[0]-5)+'" y="'+f1(c1[1]-5)+'" width="10" height="10" style="stroke:'+c+'" stroke-width="1.6" opacity=".85"/>';
+    h+='<path d="M'+f1(c0[0])+' '+f1(c0[1])+'L'+f1(c1[0])+' '+f1(c1[1])+'" style="stroke:'+c+'" stroke-width="1" stroke-dasharray="2 3" opacity=".6"/></g>'});
+  return h}
+function setDayEnds(v){deOn=v;tick('cDayEnds',v);remember('dayends',v);mv.kick()}
 function unitSvg(u,part){   // the last position on record stays plain to see: dashed, barely faded
   var o=u.o,tr=o.tr,s=o.s,pts=u.pts,lk=look(tr),col=lk.col,k=s.kind;
   var soft=(k==='moving'||k==='early'||k==='after'||k==='unplaced'),low=u.low,op=k==='unplaced'?0.5:k==='after'?0.8:1,isSel=!!tr.id&&sel===tr.id,h='',x=u.x,y=u.y,c=u.c;
@@ -448,7 +504,7 @@ function draw(){
   var cover=base.backdrop==='current'?(H||base.m).box:null;
   var sc=scene(),L=layout(unitsOn&&!landing?sc:[]),h=mapNames(L,cover);   // on landing the map is shown alone; the units come on when the battle is started
   L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});   // the selected unit last, so it sits on top
-  h+=trailsSvg(); L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h;
+  h+=trailsSvg()+dayEndsSvg(sc); L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h;
   var su=P.scale_bar||(byDay?'km':'yards'),sk=$('scale');
   if(!base.own) WM.scaleBar(sk,mv.mPerPx(),su);
   else if(base.m.raw.approx_m_per_px) WM.scaleBar(sk,base.m.raw.approx_m_per_px/sNow,su,true,base.m.raw.scale_note||'Roughly: this map is not to scale');   // a sketch: a rough scale where it is nearest to true
@@ -561,6 +617,7 @@ function tileError(e){ // three failures and the library is left alone for the r
 function setBase(b,first){
   if(typeof b==='string') b=bases.filter(function(x){return x.id===b})[0]; if(!b) return;
   var moved=first||worldOf(b)!==worldOf(base); base=b;
+  var tc=$('typeCur');if(tc){var tb=b.of?bases.filter(function(x){return x.id===b.of})[0]||b:b;tc.textContent=tb.label}
   bases.forEach(function(x){if(!x.of)press('b-'+x.id,x===b||b.of===x.id);(PICS[x.id]||[]).forEach(function(p){mv.show(p.id,x===b)})});
   if(moved) mv.setWorld(worldOf(b));
   if(!b.series&&series.length){mv.show('pic-series',false);seriesShown=null}
@@ -601,6 +658,7 @@ function item(o,text){return '<li><button data-pick="'+o.tr.id+'"><span class="s
 var panelKey='';
 function renderPanel(sc){
   var me=sel?sc.filter(function(o){return o.tr.id===sel})[0]:null,ev=curEvent();
+  if(sumAt!=null){var sk='sum|'+sumAt+'|'+sumMode;if(sk!==panelKey){panelKey=sk;panel.innerHTML=summaryHtml();panel.scrollTop=0}return}
   if(info&&!sel){var ik='info|'+base.id+'|'+(seriesShown?seriesShown.id:'');if(ik!==panelKey){panelKey=ik;panel.innerHTML=mapDetails()+aroundNote();panel.scrollTop=0}return}
   var key=base.id+'|'+(sel?sel+'|'+(me?me.s.k.id+me.s.kind+(byDay?stamp(t):''):'x'):'now|'+(landing?'L':'')+(ev?ev.id:0)+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(','));
   if(key===panelKey) return; panelKey=key; var h='';
@@ -620,6 +678,8 @@ function renderPanel(sc){
     if(landing) h+='<p class="meta start">Press play to begin. The units come onto the map as the battle starts.</p>';
     if(B.events.length){h+='<details class="evs"'+(evOpen?' open':'')+'><summary>Key events: jump to one</summary><ul class="evl">';
       B.events.forEach(function(e){h+='<li><button data-ev="'+esc(e.id)+'"'+(ev&&ev.id===e.id?' class="cur"':'')+'><span class="tm">'+esc(whenText(e.t))+'</span><span>'+esc(e.full)+'</span></button></li>'});h+='</ul></details>'}
+    if(SUMS.length){h+='<details class="evs sums"'+(sumsOpen?' open':'')+'><summary>Day by day: summaries</summary><ul class="evl">';
+      SUMS.forEach(function(x){if(x.kind!=='day')return;var bb=dayEndOf(x.from);h+='<li><button data-day="'+bb+'"><span class="tm">'+esc(shortDay(x.from))+'</span><span>'+esc(x.title)+'</span></button></li>'});h+='</ul></details>'}
     var groups=[],seen={}; (byNation?(raw.nations||[]).map(function(n){return [n.name,n.short]}):raw.sides.map(function(s){return [s.code,s.short]})).forEach(function(g){groups.push(g);seen[g[0]]=1});
     groups.forEach(function(g){var Ls=sc.filter(function(o){return (o.drawn||o.folded)&&look(o.tr).group===g[0]});if(!Ls.length)return;
       h+='<h3>'+esc(g[1])+' on the map</h3><ul class="ulist">';Ls.forEach(function(o){h+=item(o,status(o))});h+='</ul>'});
@@ -636,8 +696,8 @@ function select(id){
   if(id&&String(id).indexOf('F:')===0){ // a formation drawn zoomed out: zoom in on it until it breaks out into its units
     var hit=null;mv.hits.forEach(function(h){if(h.id===id&&h.r)hit=h}); if(hit){setFollow(false);setPreset(null);var W=WORLDS[worldOf(base)],c=mv.map.unproject([(hit.r[0]+hit.r[2])/2,(hit.r[1]+hit.r[3])/2]);
       mv.map.easeTo({center:c,zoom:mv.zoomFor(FM.below*1.15),duration:700})} return }
-  sel=id||null;info=false;panelKey='';if(sel&&sheet)sheet.open();if(sel&&pane)pane.show();mv.kick()}
-var evOpen=false;
+  if(id)closeSummary();sel=id||null;info=false;panelKey='';if(sel&&sheet)sheet.open();if(sel&&pane)pane.show();mv.kick()}
+var evOpen=false,sumsOpen=false;
 /* what lies around the map on screen, where the battle has a surround */
 function aroundNote(){ if(!topo()||base.own||base.sat||base.current) return '';
   return '<div class="eyebrow" style="margin-top:18px">Around this map</div><p>Zoom out past the edge of this map and today\'s topographic map is drawn around it.</p><dl><dt>Source</dt><dd>'+esc(MOD.name?MOD.name+' ('+MOD.credit+')':MOD.credit)+'</dd>'+(MOD.rights?'<dt>Rights</dt><dd>'+esc(MOD.rights)+'</dd>':'')+'</dl>'}
@@ -657,24 +717,37 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   h+='<p class="meta" style="margin-top:12px">'+(I&&!tilesOff?'The picture that comes with this page is a reduced copy. When you zoom in, the full scan is streamed in pieces from '+esc(host)+'; the 1:1 button shows it at full size.':I?'The picture shown is a reduced copy. The full scan could not be reached at '+esc(host)+' from here.':'The picture shown here is a reduced copy of the scan.')+'</p>';return h}
 
 /* ---------- controls ---------- */
+/* Three menus over the map, plus Follow: Type of map (which map is under the units), Map options (how today's map and the names look),
+   Battle options (how units are drawn, what else is shown, and the pauses with day or week summaries). */
 (function(){var h='',seg=function(label,items){return '<div class="seg" role="group" aria-label="'+label+'">'+items.join('')+'</div>'},
-    btn=function(id,x){return '<button id="'+id+'" aria-pressed="false"'+(x.title?' title="'+esc(x.title)+'"':'')+'><span class="lg">'+esc(x.label)+'</span><span class="sm">'+esc(x.short||x.label)+'</span></button>'},
-    chipb=function(id,label,title,on){return '<button class="chipbtn" id="'+id+'" aria-pressed="'+(on?'true':'false')+'" title="'+esc(title)+'"><span class="dot"></span><span>'+label+'</span></button>'};
-  if(bases.length>1) h+=seg('Base map',bases.filter(function(b){return !b.of}).map(function(b){return btn('b-'+b.id,b)}));
-  if(P.views) h+=seg('Map view',P.views.map(function(v){return btn('v-'+v.preset,v)}));
+    opt=function(id,x){return '<button class="opt" id="'+id+'" aria-pressed="false"'+(x.title?' title="'+esc(x.title)+'"':'')+'>'+esc(x.label)+'</button>'},
+    chipb=function(id,label,title,on){return '<button class="chipbtn" id="'+id+'" aria-pressed="'+(on?'true':'false')+'" title="'+esc(title)+'"><span class="dot"></span><span>'+label+'</span></button>'},
+    dd=function(id,pop,label,title,extra){return '<button class="chipbtn dd" id="'+id+'" aria-expanded="false" aria-controls="'+pop+'" title="'+esc(title)+'"><span>'+label+'</span>'+(extra||'')+'<span class="car">&#9662;</span></button>'};
+  var many=bases.filter(function(b){return !b.of}).length>1||P.views;
+  if(many) h+=dd('bType','pType','Type of map','Which map the battle is drawn on','<span class="cur" id="typeCur"></span>');
   if(P.follow) h+=chipb('bFollow','Follow<span class="long"> the action</span>','Keep the units in view as time moves (F)',true);
-  h+='<button class="chipbtn" id="bLayers" aria-expanded="false" aria-controls="layers" title="What is drawn on the map, and how"><span>Layers</span><span class="car">&#9662;</span></button>';
+  h+=dd('bLayers','layers','Map options','How the map and its names are drawn');
+  h+=dd('bBattle','pBattle','Battle options','How the units are drawn, and pauses with summaries');
   $('ctl').innerHTML=h;
-  // the Layers menu: what is drawn, how units are drawn, and how much of the period map shows
   var ck=function(id,label,on,key){return '<label class="ck"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span>'+label+(key?'<kbd>'+key+'</kbd>':'')+'</span></label>'},
-      sb=function(id,label,on){return '<button id="'+id+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>'},L='';
-  L+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')+(TRL?ck('cTrail','Routes taken',trlOn):'')
-    +((MOD||bases.some(function(b){return b.sat}))?ck('cMute','Today\'s map in muted colours',muteOn):'')+(HS?ck('cHill','Terrain shading on today\'s map',hsOn):'')+ck('cPlaces','Place names',true)+ck('cLines','Road and stream names',true)+ck('cNarr','The current event, in words, on the map',false)+'</div>';
-  L+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Symbol style',[sb('sy-standard','Standard',true),sb('sy-period','Period style',false)])+'<p class="gn">Period style drops the frames: a line is a bar, as on maps of the time.</p></div>';
-  L+='<div class="grp"><div class="gh">Seen from</div>'+seg('Seen from',[sb('fr-none','Neither side',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Seen from one side, the other side takes the diamond frame of the standard military symbols.</p></div>';
+      sb=function(id,label,on){return '<button id="'+id+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>'},T='',L='',G='';
+  // Type of map
+  if(many){T+='<div class="grp"><div class="gh">Map</div>'+bases.filter(function(b){return !b.of}).map(function(b){return opt('b-'+b.id,b)}).join('')+'</div>';
+    if(P.views) T+='<div class="grp"><div class="gh">View</div>'+P.views.map(function(v){return opt('v-'+v.preset,v)}).join('')+'</div>';
+    $('pType').innerHTML=T}
+  // Map options
+  if(MOD||bases.some(function(b){return b.sat})||HS) L+='<div class="grp"><div class="gh">Today\'s map</div>'+((MOD||bases.some(function(b){return b.sat}))?ck('cMute','Muted colours',muteOn):'')+(HS?ck('cHill','Terrain shading',hsOn):'')+'</div>';
+  L+='<div class="grp"><div class="gh">Names on the map</div>'+ck('cPlaces','Place names',true)+ck('cLines','Road and stream names',true)+'</div>';
   if(bases.some(function(b){return !b.current&&!b.own&&!b.sat})) L+='<div class="grp" id="gOpac"><div class="gh"><span>Period map</span><span id="opv">100%</span></div><input type="range" id="opac" min="0" max="100" step="5" value="100" aria-label="How strongly the period map is drawn"><p class="gn">Turn it down to see today&rsquo;s map through the period map.</p></div>';
   L+='<div class="grp"><button class="lnk" id="bLink">Copy a link to this view</button><span class="ok" id="linkok" hidden>Copied</span></div>';
   $('layers').innerHTML=L;
+  // Battle options
+  G+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')+(TRL?ck('cTrail','Routes taken',trlOn):'')
+    +(DE_OK?ck('cDayEnds','Where units began and ended each day',deOn):'')+ck('cNarr','The current event, in words, on the map',false)+(DE_OK?'<p class="gn">Dashed: where a unit began the day. Thin solid: where it ended it.</p>':'')+'</div>';
+  G+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Symbol style',[sb('sy-standard','Standard',true),sb('sy-period','Period style',false)])+'<p class="gn">Period style drops the frames: a line is a bar, as on maps of the time.</p></div>';
+  G+='<div class="grp"><div class="gh">Seen from</div>'+seg('Seen from',[sb('fr-none','Neither side',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Seen from one side, the other side takes the diamond frame of the standard military symbols.</p></div>';
+  if(PZ_OK) G+='<div class="grp"><div class="gh">Pause and summary</div>'+seg('Pause and summary',[sb('pz-off','Off',pzMode==='off'),sb('pz-day','Each day',pzMode==='day'),sb('pz-week','Each week',pzMode==='week')])+'<p class="gn">While it plays, the battle stops at the end of each day or week, frames that day&rsquo;s fighting and shows a summary. Press Continue to go on.</p></div>';
+  $('pBattle').innerHTML=G;
   var cb=$('clockbattle'); if(cb){cb.textContent=P.clock_title||B.title;cb.hidden=P.clock_title===''}   // the battle's name in the date box
   wrap.classList.toggle('compact',compact); $('when').classList.toggle('date',byDay); $('tl').classList.toggle('days',byDay);
   if(byDay){$('hint').innerHTML=$('hint').innerHTML.replace('to move time','to move through the days')}
@@ -685,7 +758,7 @@ try{ mv=WM.mapView({container:'map',wrap:wrap,world:worldOf(base),worlds:WORLDS,
   onDraw:draw,onPick:select,
   onUserMove:function(){if(follow)pauseFollow();if(preset||goal)setPreset(null)},
   onResize:function(){if(preset){mv.jump(cameraOf(preset));goal=null}else if(follow&&!landing)mv.jump(target());else if(landing)mv.jump(home())},
-  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(glide>Date.now()?mv.chase(target(),FOL.glide_rate):mv.chase(calmTarget(),FOL.rate,FOL.zoom_rate))more=true}}return more}});
+  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing&&sumAt==null){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(glide>Date.now()?mv.chase(target(),FOL.glide_rate):mv.chase(calmTarget(),FOL.rate,FOL.zoom_rate))more=true}}return more}});
 }catch(err){WM.noMap(wrap,err);return null}
 S=mv.S;
 mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
@@ -693,7 +766,7 @@ mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
 var LD=(P.lead&&B.focus&&B.focus[0]>T0)?P.lead:null,TM=LD?B.focus[0]:T0,UM=LD?LD.share:0,RNG=4000;
 function u2t(u){return (LD&&u<=UM)?T0+(TM-T0)*u/UM:TM+(T1-TM)*(u-UM)/(1-UM)}
 function t2u(v){return (LD&&v<=TM)?UM*(v-T0)/(TM-T0):UM+(1-UM)*(v-TM)/(T1-TM)}
-function paintTime(v){t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms}   // the battle has been started: the units come on, and Follow takes the camera
+function paintTime(v){if(sumAt!=null&&Math.abs(v-sumAt)>1e-6)closeSummary();t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms}   // the battle has been started: the units come on, and Follow takes the camera
 
   if(byDay){var n=stamp(t),d=B.dateOf(n),night=Math.abs(t-Math.round(t))<0.02;
     $('clock').textContent=d.day+' '+d.mon+' '+d.year;$('clockdate').textContent=d.wd+' · '+(night?'at nightfall':'during the day');WM.paintDayNumber(B.cal.numbered?n+1:0)}
@@ -726,7 +799,8 @@ function stepBy(dir,v){var n=STEPS[stepI][0];
   if(stepI===0) return v+dir*((LD&&(dir>0?v<TM:v<=TM))?(LD.step||5):1);
   return Math.round(v)+dir*n}   // always exactly one step, so every press moves time the same amount
 var rng=$('time'); rng.min=0; rng.max=RNG; rng.step=1; rng.value=0; rng.setAttribute('aria-label',byDay?'Day of the battle':'Time of day');
-clk=WM.clock({T0:T0,T1:T1,mv:mv,toRange:function(v){return Math.round(t2u(v)*RNG)},fromRange:function(v){return u2t(v/RNG)},
+clk=WM.clock({T0:T0,T1:T1,mv:mv,stopAt:stopAt,onStop:function(b){openSummary(b,b>=T1-1e-6&&pzMode==='week'?'week':pzMode)},
+  beforePlay:function(){if(PZ_OK&&pzMode==null&&t<T1-1e-6){ask();return false}},toRange:function(v){return Math.round(t2u(v)*RNG)},fromRange:function(v){return u2t(v/RNG)},
   rate:function(v){var n=STEPS[stepI][0];if(byDay&&stepI===0&&P.rate>0&&P.rate<1)return P.rate;   /* a day battle can play slower than a day a second (Ypres: half a day) */
     return (LD&&v<TM)?Math.max(LD.rate,n):n},onTime:paintTime,
   snap:byDay?function(v){return Math.round(v)}:null,   // the sources give one position a day, so time settles on nightfall
@@ -758,10 +832,17 @@ document.addEventListener('keydown',function(e){var tg=(e.target&&e.target.tagNa
   var d={ArrowLeft:[-1,0],ArrowRight:[1,0],ArrowUp:[0,-1],ArrowDown:[0,1]}[e.key];
   if(d&&e.shiftKey){setFollow(false);setPreset(null);mv.map.panBy([d[0]*120,d[1]*120],{duration:160});e.preventDefault();e.stopPropagation();return}   // shift + arrows move the map; plain arrows move time
   if(e.key==='+'||e.key==='='){zoomStep(1.45);e.preventDefault()} else if(e.key==='-'||e.key==='_'){zoomStep(1/1.45);e.preventDefault()}},true);
-function openLayers(v){$('layers').hidden=!v;$('bLayers').setAttribute('aria-expanded',v?'true':'false')}
-on('bLayers',function(){openLayers($('layers').hidden)});
-document.addEventListener('pointerdown',function(e){if(!$('layers').hidden&&!e.target.closest('#layers')&&!e.target.closest('#bLayers'))openLayers(false)});
-document.addEventListener('keydown',function(e){if(e.key==='Escape'&&!$('layers').hidden){openLayers(false);$('bLayers').focus();e.stopPropagation()}},true);
+/* the three menus over the map: one open at a time, each under its own button */
+var POPS=[['bType','pType'],['bLayers','layers'],['bBattle','pBattle']].filter(function(x){return $(x[0])&&$(x[1])});
+function openPop(id,v){POPS.forEach(function(x){var on=x[1]===id&&v,p=$(x[1]);p.hidden=!on;$(x[0]).setAttribute('aria-expanded',on?'true':'false');
+  if(on){var bt=$(x[0]),wl=wrap.getBoundingClientRect().left,l=bt.getBoundingClientRect().left-wl;p.style.left=Math.max(10,Math.min(l,wrap.clientWidth-p.offsetWidth-10))+'px'}})}
+function openLayers(v){openPop('layers',v)}
+POPS.forEach(function(x){on(x[0],function(){openPop(x[1],$(x[1]).hidden)})});
+document.addEventListener('pointerdown',function(e){POPS.forEach(function(x){if(!$(x[1]).hidden&&!e.target.closest('#'+x[1])&&!e.target.closest('#'+x[0]))openPop(x[1],false)})});
+document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;POPS.forEach(function(x){if(!$(x[1]).hidden){openPop(x[1],false);$(x[0]).focus();e.stopPropagation()}})},true);
+/* a choice of map closes its menu */
+bases.forEach(function(b){var e=$('b-'+b.id);if(e)e.addEventListener('click',function(){openPop('pType',false)})});
+(P.views||[]).forEach(function(v){var e=$('v-'+v.preset);if(e)e.addEventListener('click',function(){openPop('pType',false)})});
 function onCheck(id,fn){var e=$(id);if(e)e.addEventListener('change',function(){fn(e.checked)})}
 onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations); onCheck('cTrail',setTrails); onCheck('cMute',setMute); onCheck('cHill',setHill);
 onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
@@ -785,7 +866,7 @@ on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.
 (function(){var app=document.querySelector('.app'),b=$('zfull'); if(!b) return;   // full screen is not offered where the browser does not allow it (inside some embedded views)
   if(!document.fullscreenEnabled||!app.requestFullscreen){b.hidden=true;return}
   b.addEventListener('click',function(){if(document.fullscreenElement)document.exitFullscreen();else app.requestFullscreen()})})();
-on('binfo',function(){sel=null;info=!info;panelKey='';if(info){sheet.open();pane.show()}mv.kick()});
+on('binfo',function(){closeSummary();sel=null;info=!info;panelKey='';if(info){sheet.open();pane.show()}mv.kick()});
 /* phones: the text sheet under the map. It starts as a strip; a tap on the handle opens it to about half the screen and closes it
    again, and dragging the handle sets any height in between. Tapping a unit opens it so the unit's details can be read. */
 var sheet=(function(){var st=document.querySelector('.stage'),bar=$('sheetbar'),MIN=72,DEF=96,h=DEF,drag=null;
@@ -810,12 +891,20 @@ var pane=(function(){var st=document.querySelector('.stage'),b=$('bpane');
 (function(){var tmo=0;wrap.addEventListener('touchstart',function(){if(!document.documentElement.classList.contains('wm-playing'))return;wrap.classList.add('peek');clearTimeout(tmo);tmo=setTimeout(function(){wrap.classList.remove('peek')},4000)},{passive:true})})();
 // back and forward one step; [ and ] jump between key events
 on('restart',restart);   // start over: the first moment, the opening map and view, no unit picked
-function restart(){clk.setPlaying(false);select(null);setPreset(null);fpause=0;followK=1;glide=0;skipAcc=0;brk={};lastW=null;holdUntil=0;
+function restart(){closeSummary();$('ask').hidden=true;clk.setPlaying(false);select(null);setPreset(null);fpause=0;followK=1;glide=0;skipAcc=0;brk={};lastW=null;holdUntil=0;
   if(P.follow){follow=true;press('bFollow',true)} landing=true;panelKey='';clk.setTime(T0);setBase(startBase(),true);mv.jump(home());mv.kick()}
 on('evprev',function(){clk.setPlaying(false);clk.setTime(stepBy(-1,t))}); on('evnext',function(){clk.setPlaying(false);clk.setTime(stepBy(1,t))}); on('step',function(){setStep(stepI+1)});
 WM.panelClicks(panel,select);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-ev]');if(!b)return;var ev=B.events.filter(function(x){return x.id===b.getAttribute('data-ev')})[0];if(ev){clk.setPlaying(false);clk.setTime(ev.t)}});
-panel.addEventListener('toggle',function(e){if(e.target.classList&&e.target.classList.contains('evs'))evOpen=e.target.open},true);
+panel.addEventListener('toggle',function(e){if(!e.target.classList)return;if(e.target.classList.contains('sums'))sumsOpen=e.target.open;else if(e.target.classList.contains('evs'))evOpen=e.target.open},true);
+panel.addEventListener('click',function(e){var b=e.target.closest('[data-day]');if(b){jumpToDay(+b.getAttribute('data-day'),'day');return} if(e.target.closest('#sumgo'))goOn()});
+function goOn(){closeSummary();glide=Date.now()+FOL.glide_ms;clk.setPlaying(true)}
+on('cont',goOn);
+['off','day','week'].forEach(function(k){on('pz-'+k,function(){setPause(k)})});
+onCheck('cDayEnds',setDayEnds);
+/* a long battle asks, the first time it is played, whether to stop at the end of each day */
+function ask(){var a=$('ask');$('askq').textContent='This battle runs '+Math.round(NDAYS+(byDay?1:0))+' days. Stop at the end of each day for a summary of what happened?';a.hidden=false;$('ask-day').focus()}
+['day','week','off'].forEach(function(k){on('ask-'+k,function(){$('ask').hidden=true;setPause(k);glide=Date.now()+FOL.glide_ms;clk.setPlaying(true)})});
 
 /* ---------- a link to this view ---------- */
 /* The page address carries the moment, the map, the place and zoom, and the unit picked, so a copied link opens the same view. */
@@ -833,6 +922,7 @@ on('bLink',function(){var url=location.href.split('#')[0]+linkHash(),ok=$('linko
   if(navigator.clipboard&&navigator.clipboard.writeText)navigator.clipboard.writeText(url).then(done,function(){ok.textContent='Copy it from the address bar';done()});else{ok.textContent='Copy it from the address bar';done()}});
 
 /* ---------- start ---------- */
+try{if(DE_OK&&localStorage.getItem('wm.'+B.id+'.dayends')==='1'){deOn=true;tick('cDayEnds',true)}}catch(e){}
 try{if(localStorage.getItem('wm.'+B.id+'.hill')==='0'){hsOn=false;tick('cHill',false)} if(localStorage.getItem('wm.'+B.id+'.mute')==='0'){muteOn=false;tick('cMute',false);wrap.classList.add('vivid')} if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)} var ts=localStorage.getItem('wm.'+B.id+'.trail'); if(TRL&&ts!=null){trlOn=ts==='1';tick('cTrail',trlOn)}}catch(_){ }
 setStep(stepNear(P.rate||(byDay?1:5)));
 if(P.views) preset=P.views[0].preset;
@@ -842,7 +932,9 @@ var api={battle:B,setTime:clk.setTime,select:select,setFollow:setFollow,setBase:
   focus:function(){var f=focusPoint();return f?WORLDS[worldOf(base)].toLL(f):null},setNarrative:setNarr,setSymbols:setSymbols,setSeenFrom:setSeenFrom,setOpacity:setOpacity,setStep:setStep,link:linkHash,
   begin:function(){landing=false;panelKey='';mv.kick()},setFormations:setFormations,setMute:setMute,setHill:setHill,
   scene:function(){return scene().map(function(o){return {id:o.tr.id,kind:o.s.kind,row:o.s.k.id,drawn:o.drawn}})}};
-Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}}); Object.defineProperty(api,'landing',{get:function(){return landing}}); Object.defineProperty(api,'modern',{get:function(){return {on:!!modOn,off:modOff,hill:!!hsVis}}});
+Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}}); Object.defineProperty(api,'landing',{get:function(){return landing}}); Object.defineProperty(api,'summary',{get:function(){return sumAt==null?null:{at:sumAt,mode:sumMode}}});
+api.stops=function(m){return stopsFor(m)};api.stopAt=stopAt;
+Object.defineProperty(api,'modern',{get:function(){return {on:!!modOn,off:modOff,hill:!!hsVis}}});
 global.__wm=api; return api;
 };
 })(window);

@@ -208,6 +208,10 @@ def export(pb, W):
                        'label': text(e.get('playback_label')), 'text': text(e.get('playback_text')) or e['summary'], 'quiet': True if str(e.get('timeline')).lower() == 'dot' else None,
                        'steps': [s for s in bf.ids(e['pos_ids']) if s in used], 'sources': bf.ids(e['source_ids']), 'battle': text(e['battle_id'])})
     events.sort(key=lambda e: e['at'])
+    # summaries of a day or a week, shown when the playback stops at the end of one (Summaries sheet; optional)
+    summaries = [{'kind': r['kind'], 'from': when(r['from']), 'to': when(r['to']), 'title': r['title'], 'text': r['text'], 'sources': bf.ids(r.get('source_ids'))}
+                 for r in W.get('Summaries', []) if r['playback_id'] == pb['playback_id']]
+    summaries.sort(key=lambda x: (x['from'], x['kind']))
     labels = [{'text': l['text'], 'alt': text(l.get('other_name')), 'at': bf.ll(l['lat'], l['lon']), 'angle': num(l['angle']) if not blank(l.get('angle')) else None,
                'level': num(l['level']) if not blank(l.get('level')) else None, 'kind': l['kind'], 'show': text(l.get('show')), 'approximate': True if yes(l.get('approximate')) else None} for l in mine(W['Labels'])]
     maps = {}
@@ -237,6 +241,7 @@ def export(pb, W):
               'opening': {'label': text(pb.get('opening_label')), 'text': text(pb.get('opening_text'))}, 'playback': S,
               'sides': sides, 'nations': [{k: n[k] for k in ('name', 'short', 'code', 'colour', 'dark', 'paper')} for n in mine(W.get('Nations', []))],
               'units': ulist, 'tracks': tracks, 'events': events, 'labels': labels, 'maps': list(maps.values()), 'base': base}
+    if summaries: battle['summaries'] = summaries
     catalogue = {s['source_id']: {'title': s['title'], 'author': text(s.get('author')), 'date': str(s['date']) if not blank(s.get('date')) else None, 'citation': text(s['citation']),
                                   'type': text(s['type']), 'url': text(s['url']), 'rights': text(s.get('rights'))} for s in W['Sources']}
     battle['sources'] = bf.used_sources(bf.clean(battle), catalogue, [base['source']] if base.get('source') in catalogue else [])
