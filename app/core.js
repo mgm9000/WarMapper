@@ -243,18 +243,20 @@ WM.clock=function(o){
   function settle(){if(o.snap&&t<o.T1){var s=o.snap(t);if(Math.abs(s-t)>0.001)setTime(s)}}
   function setPlaying(v){if(v===playing)return;playing=v;last=0;icon();if(v){if(t>=o.T1-0.01)setTime(o.T0);o.mv.kick()}else settle()}
   function step(ts){if(!playing)return false;var dt=last?Math.min(0.1,(ts-last)/1000):0;last=ts;var nt=t+dt*o.rate(t);
-    if(nt>=o.T1){nt=o.T1;playing=false;icon()} t=nt;range.value=o.toRange(t);o.onTime(t);return playing}
+    var stop=o.stopAt?o.stopAt(t,nt):null; if(stop!=null){nt=stop;playing=false;icon()}   // the battle may ask to stop at a moment on the way (the end of a day)
+    if(nt>=o.T1){nt=o.T1;playing=false;icon()} t=nt;range.value=o.toRange(t);o.onTime(t);if(stop!=null&&o.onStop)o.onStop(stop);return playing}
+  function wantPlay(){if(!playing&&o.beforePlay&&o.beforePlay()===false)return;setPlaying(!playing)}   // the battle may ask a question before it first plays
   range.addEventListener('input',function(){setPlaying(false);setTime(o.fromRange(+range.value),true)});
   range.addEventListener('change',settle);
-  $('play').addEventListener('click',function(){setPlaying(!playing)});
+  $('play').addEventListener('click',wantPlay);
   /* over the timeline bar, scrolling moves time (over the map it zooms) */
   document.querySelector('.tlbar').addEventListener('wheel',function(e){e.preventDefault();var dy=e.deltaY*(e.deltaMode===1?16:e.deltaMode===2?400:1),dd=Math.abs(e.deltaX)>Math.abs(dy)?e.deltaX:dy;
     setPlaying(false);setTime(o.wheel(dd,t));if(o.snap){clearTimeout(wheelT);wheelT=setTimeout(settle,350)}},{passive:false});
   document.addEventListener('keydown',function(e){var tag=e.target.tagName;if(tag==='BUTTON'||tag==='SUMMARY')return;
     if(e.key==='ArrowRight'||e.key==='ArrowLeft'){if(tag==='INPUT'&&!o.snap)return;setPlaying(false);setTime(o.arrow(e.key==='ArrowRight'?1:-1,t));e.preventDefault();return}
     if(tag==='INPUT')return;
-    if(e.key===' '){setPlaying(!playing);e.preventDefault()} else if(o.onKey)o.onKey(e)});
-  return {setTime:setTime,setPlaying:setPlaying,step:step,get t(){return t},get playing(){return playing}};
+    if(e.key===' '){wantPlay();e.preventDefault()} else if(o.onKey)o.onKey(e)});
+  return {setTime:setTime,setPlaying:setPlaying,wantPlay:wantPlay,step:step,get t(){return t},get playing(){return playing}};
 };
 
 /* clicks in the side panel: a unit in a list, or the "All units" link */

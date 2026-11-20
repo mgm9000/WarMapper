@@ -292,3 +292,24 @@ details.evs{margin-top:10px} details.evs summary{cursor:pointer;font-size:12.5px
   .tl input::-webkit-slider-thumb{width:28px;height:34px;border-radius:7px}
   .tl input::-moz-range-thumb{width:24px;height:30px;border-radius:7px}
 }
+
+/* ---------- the three menus over the map ---------- */
+.chipbtn.dd .cur{color:var(--muted);font-weight:500;max-width:9em;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pop .opt{display:flex;align-items:center;gap:8px;width:100%;text-align:left;padding:6px 8px;border:0;background:none;border-radius:5px;cursor:pointer;font:inherit;font-size:13px;color:var(--fg)}
+.pop .opt::before{content:'';width:8px;height:8px;border-radius:50%;border:1.5px solid var(--muted);flex:none}
+.pop .opt[aria-pressed="true"]{font-weight:600} .pop .opt[aria-pressed="true"]::before{background:var(--accent);border-color:var(--accent)}
+.pop .opt:hover{background:var(--surface-2)}
+@media (max-width:860px){ .chipbtn.dd .cur{display:none} }
+/* ---------- pauses: the Continue button and the question asked before a long battle first plays ---------- */
+.cont{position:absolute;left:50%;bottom:22px;transform:translateX(-50%);z-index:6;display:flex;align-items:center;gap:8px;padding:10px 20px;border:0;border-radius:999px;
+  background:var(--accent);color:#fff;font:inherit;font-size:15px;font-weight:600;box-shadow:0 3px 12px rgba(0,0,0,.3);cursor:pointer}
+.cont:hover{filter:brightness(1.08)}
+.ask{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);z-index:7;width:min(380px,calc(100% - 32px));background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  box-shadow:0 8px 30px rgba(0,0,0,.3);padding:16px 18px}
+.ask p{margin:0 0 12px;font-size:14.5px;line-height:1.45} .ask .gn{margin:10px 0 0;font-size:12px;color:var(--muted)}
+.askb{display:flex;flex-wrap:wrap;gap:8px} .askb button{flex:1 1 auto;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font:inherit;font-size:13.5px;cursor:pointer}
+.askb button:first-child{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.panel .sumh{margin:4px 0 8px} .panel .sumtx{line-height:1.5}
+.wm-playing .cont{display:none}
+.cont{white-space:nowrap}
+@media (max-width:860px){ .cont{left:auto;right:10px;transform:none;bottom:12px;font-size:14px;padding:9px 16px} }
