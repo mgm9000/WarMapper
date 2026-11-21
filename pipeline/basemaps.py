@@ -1,7 +1,7 @@
 """The current map under each battle: today's roads, water, railways and woods, cut down from the OpenStreetMap extracts in data/osm/
 and saved as data/base/<battle>.json (the "base" part of a battle file: docs/battle-file.md). Run it when an extract changes:
 
-  python3 pipeline/basemaps.py            all three
+  python3 pipeline/basemaps.py            all four
   python3 pipeline/basemaps.py ypres      one
 
 Each battle's extract was taken a little differently, so each has its own short reader here.
@@ -121,7 +121,53 @@ def ypres():
     return {'credit': CREDIT, 'source': 'S39', 'lines': lines, 'areas': areas}
 
 
-MAKE = {'gettysburg': gettysburg, 'trenton': trenton, 'ypres': ypres}
+def manila():
+    """Metro Manila from data/osm/manila.txt (cut by pipeline/osm_manila.py). The base is the fall-back map, read at the scale of the
+    whole battle, so it carries only the main roads (motorway and trunk, primary, and secondary roads that have a name), railways,
+    rivers and canals, named streams (the esteros) and the larger water bodies; the extract also holds tertiary roads. Ways of one
+    name and class that meet end to end are joined, pieces under 150 m that join nothing are dropped, and lines are thinned to 15 m."""
+    import osm_manila as om
+    ROAD = {'Hm': 'm', 'Hp': 'p', 'Hs': 's'}
+    groups = {}; areas = []
+    for ln in open(ROOT + '/data/osm/manila.txt', encoding='utf-8'):
+        code, name, body = ln.rstrip('\n').split('|', 2); la = lo = 0; pts = []
+        for i, pr in enumerate(body.split(';')):
+            a, b = pr.split(','); la, lo = (int(a), int(b)) if i == 0 else (la + int(a), lo + int(b)); pts.append((la, lo))
+        if code == 'Ht' or (code == 'Hs' and not name): continue
+        if code == 'Fl': areas.append(['water', name, bf.pack([bf.ll(a / 1e5, b / 1e5) for a, b in pts])]); continue
+        groups.setdefault((code, name), []).append(pts)
+    lines = []
+    for (code, name), ways in sorted(groups.items()):
+        joined = True
+        while joined:                                   # join ways that share an end point
+            joined = False; ends = {}
+            for k, w in enumerate(ways):
+                if w is None: continue
+                for e in (w[0], w[-1]):
+                    o = ends.get(e)
+                    if o is not None and o != k and ways[o] is not None and ways[k] is not None:
+                        a, b = ways[o], ways[k]
+                        if a[-1] == b[0]: m = a + b[1:]
+                        elif a[0] == b[-1]: m = b + a[1:]
+                        elif a[0] == b[0]: m = a[::-1] + b[1:]
+                        else: m = a + b[::-1][1:]
+                        ways[o] = m; ways[k] = None; joined = True; break
+                    ends[e] = k
+                if joined: break
+        for w in ways:
+            if w is None: continue
+            pts = [(a / 1e5, b / 1e5) for a, b in w]
+            length = sum(math.hypot((q[1] - p[1]) * om.KX, (q[0] - p[0]) * om.KY) for p, q in zip(pts, pts[1:]))
+            if length < 150: continue
+            text = bf.pack([bf.ll(a, b) for a, b in om.thin(pts, 15)])
+            if ';' not in text: continue
+            if code in ROAD: lines.append(['road', ROAD[code], name, text])
+            elif code == 'Rr': lines.append(['rail', '', name, text])
+            else: lines.append(['water', 'river' if code == 'Wr' else 'stream', name, text])
+    return {'credit': CREDIT, 'source': 'S39', 'lines': lines, 'areas': areas, 'widths': {'Pasig River': 90}}
+
+
+MAKE = {'gettysburg': gettysburg, 'trenton': trenton, 'ypres': ypres, 'manila': manila}
 if __name__ == '__main__':
     for b in (sys.argv[1:] or list(MAKE)):
         base = MAKE[b](); path = '%s/data/base/%s.json' % (ROOT, b)
