@@ -128,11 +128,13 @@ def manila():
     name and class that meet end to end are joined, pieces under 150 m that join nothing are dropped, and lines are thinned to 15 m."""
     import osm_manila as om
     ROAD = {'Hm': 'm', 'Hp': 'p', 'Hs': 's'}
-    groups = {}; areas = []
+    groups = {}; areas = []; shore = None; islands = []
     for ln in open(ROOT + '/data/osm/manila.txt', encoding='utf-8'):
         code, name, body = ln.rstrip('\n').split('|', 2); la = lo = 0; pts = []
         for i, pr in enumerate(body.split(';')):
             a, b = pr.split(','); la, lo = (int(a), int(b)) if i == 0 else (la + int(a), lo + int(b)); pts.append((la, lo))
+        if code == 'Cs': shore = pts; continue
+        if code == 'Ci': islands.append(pts); continue
         if code == 'Ht' or (code == 'Hs' and not name): continue
         if code == 'Fl': areas.append(['water', name, bf.pack([bf.ll(a / 1e5, b / 1e5) for a, b in pts])]); continue
         groups.setdefault((code, name), []).append(pts)
@@ -164,7 +166,34 @@ def manila():
             if code in ROAD: lines.append(['road', ROAD[code], name, text])
             elif code == 'Rr': lines.append(['rail', '', name, text])
             else: lines.append(['water', 'river' if code == 'Wr' else 'stream', name, text])
+    if shore: areas.insert(0, ['water', 'Manila Bay', bf.pack([bf.ll(a, b) for a, b in bay(shore, islands, om)])])
     return {'credit': CREDIT, 'source': 'S39', 'lines': lines, 'areas': areas, 'widths': {'Pasig River': 90}}
+
+
+def bay(shore, islands, om):
+    """Manila Bay as one ring, from the shore (north to south, water on its right, as OpenStreetMap draws a coastline) closed down a
+    line out in the bay west of both its ends. An area in a battle file is a single ring, so each island of 3 hectares or more is cut
+    out of it by a slit: the ring runs from its nearest clear corner out to the island, round it the other way, and back."""
+    def m(p): return (p[1] / 1e5 * om.KX, p[0] / 1e5 * om.KY)
+    def signed(r): return sum(m(a)[0] * m(b)[1] - m(b)[0] * m(a)[1] for a, b in zip(r, r[1:] + r[:1]))
+    def crosses(a, b, c, d):
+        if a in (c, d) or b in (c, d): return False
+        def side(p, q, r): return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
+        return (side(a, b, c) > 0) != (side(a, b, d) > 0) and (side(c, d, a) > 0) != (side(c, d, b) > 0)
+    def thin(r, tol=15): return [(round(a * 1e5), round(b * 1e5)) for a, b in om.thin([(a / 1e5, b / 1e5) for a, b in r], tol)]
+    west = min(shore[0][1], shore[-1][1]) - 1000                      # about a kilometre out
+    ring = thin(shore) + [(shore[-1][0], west), (shore[0][0], west)]
+    holes = [thin(i[:-1] if i[0] == i[-1] else i, 10) for i in islands if om.area_ha([(a / 1e5, b / 1e5) for a, b in i]) >= 3]
+    out = signed(ring) > 0
+    for h in sorted(holes, key=lambda h: -len(h)):
+        if (signed(h) > 0) == out: h = h[::-1]
+        edges = list(zip(ring, ring[1:] + ring[:1])) + [e for o in holes for e in zip(o, o[1:] + o[:1])]
+        best = None
+        for d, i, j in sorted((math.hypot(m(p)[0] - m(q)[0], m(p)[1] - m(q)[1]), i, j) for i, p in enumerate(ring) for j, q in enumerate(h)):
+            if not any(crosses(ring[i], h[j], c, e) for c, e in edges): best = (i, j); break
+        if best is None: continue                                      # no clear slit: the island is left as water
+        i, j = best; ring = ring[:i + 1] + h[j:] + h[:j + 1] + ring[i:]
+    return [(a / 1e5, b / 1e5) for a, b in ring]
 
 
 MAKE = {'gettysburg': gettysburg, 'trenton': trenton, 'ypres': ypres, 'manila': manila}
