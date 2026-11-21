@@ -2,7 +2,7 @@
 
 WarMapper is a battlefield study guide on a map: pick a battle, then watch it unfold over maps drawn at the time and over today's ground.
 
-This repository holds the proof-of-concept work: battle data for four pilot battles and a playback prototype of each.
+This repository holds the proof-of-concept work: battle data for five pilot playbacks (four battles and one campaign) and a prototype of each.
 
 **Status: prototype. None of the history here has been checked by a historian.** Every position cites a source and states how sure it is, but treat all of it as unreviewed.
 
@@ -19,10 +19,10 @@ The playbacks are served with GitHub Pages at https://mgm9000.github.io/WarMappe
 | `app/` | The playback, the same for every battle: `page.html` (the page), `player.js` (the rules of a playback), `core.js` (reading a battle file, the map, the clock), `core.css`, and the map library in `app/vendor/`. |
 | `tools/` | `export_battles.py`, which writes every battle file from the workbook and checks it, and `build.py`, which builds the pages. |
 | `docs/` | `battle-file.md`: the layout of a battle file. |
-| `data/` | **`WarMapper battle data.xlsx`, the master copy of the battle data**; `base/`, the current map under each battle; `osm/`, the OpenStreetMap extracts those were cut from; `legacy/`, the two older workbooks. |
+| `data/` | **`WarMapper battle data.xlsx`, the master copy of the battle data**; `base/`, the current map under each battle; `osm/`, the OpenStreetMap extracts those were cut from (Natural Earth for Luzon 1899); `legacy/`, the two older workbooks. |
 | `pipeline/` | `battlefile.py` (checks a battle file against the format), `basemaps.py` (cuts the current maps from the extracts), `pictures.py` (cuts the period-map pictures from the full scans), `georef/` (how the period maps were fitted to the ground), and `legacy/` (retired scripts). |
 
-The four pilots:
+The five pilots:
 
 | Battle | Dates | Scale | Position rows |
 | --- | --- | --- | --- |
@@ -30,6 +30,7 @@ The four pilots:
 | First Battle of Trenton | 25 to 26 December 1776 | Regiments, by the minute | 61 |
 | First Ypres | 18 October to 22 November 1914 | Corps and divisions, by the day | 215 |
 | Manila (Philippine War), data pilot | 4 to 5 February 1899 | Brigades and regiments, by the hour; Filipino commands inferred | 38 |
+| Luzon 1899 (Philippine War), data pilot | 4 February to 15 December 1899 | Columns and headquarters at the towns the reports name, by the day; the Filipino side from American reports | 82 |
 
 ## What is not here yet
 
@@ -88,7 +89,7 @@ Positions are rows in linked tables: wars, campaigns, battles, units, assignment
 
 ## Credits and licence
 
-Base-map lines and place names are derived from OpenStreetMap data, © OpenStreetMap contributors, available under the Open Database License. The historical sources for each battle are listed on the `Sources` sheet of the workbook.
+Base-map lines and place names are derived from OpenStreetMap data, © OpenStreetMap contributors, available under the Open Database License. The drawing under the Luzon 1899 playback is made with Natural Earth, which is in the public domain. The historical sources for each battle are listed on the `Sources` sheet of the workbook.
 
 The map library is MapLibre GL JS, © MapLibre contributors, under the BSD 3-Clause licence (`app/vendor/MAPLIBRE-LICENSE.txt`).
 
@@ -100,8 +101,9 @@ The period maps shown in the playbacks:
 | Trenton | Lt. Andreas Wiederhold, *Sketch of the engagement at Trenton, given on the 26th of December 1776* | Library of Congress, Geography and Map Division |
 | First Ypres | Sketch maps in J. E. Edmonds, *Military Operations, France and Belgium, 1914*, volume II (Macmillan, 1925) | Internet Archive |
 | Manila | Sgt. J. H. Warking, Signal Corps, *Map of Manila and vicinity showing positions of troops prior to the battle of February 5th ...*, 1899 | Library of Congress, Geography and Map Division |
+| Luzon 1899 | Capt. W. L. Siebert, Corps of Engineers, *Map of central Luzon, showing a portion of the field of operations of the 8th Army Corps*, 1899; Lt. H. P. Howard, *Map of northern Luzon* prepared under Brig. Gen. S. B. M. Young, 1900 | Boston Public Library, Norman B. Leventhal Map Center |
 
-The pictures in this repository are reduced copies. When a reader zooms in on the Gettysburg or Trenton map, the playback fetches the full scan in tiles straight from the holding library's own image service (IIIF): the Boston Public Library's for the Bachelder map, the Library of Congress's for the Wiederhold sketch. Faden's 1777 map of Trenton is warped to fit the ground, so it is shown only as the copy in this repository. If the library cannot be reached, the reduced copy stays on screen. The First Ypres sketches are pages of a scanned book and have no such service set up here.
+The pictures in this repository are reduced copies. When a reader zooms in on the Gettysburg or Trenton map, the playback fetches the full scan in tiles straight from the holding library's own image service (IIIF): the Boston Public Library's for the Bachelder map, the Library of Congress's for the Wiederhold sketch. Faden's 1777 map of Trenton is warped to fit the ground, so it is shown only as the copy in this repository. If the library cannot be reached, the reduced copy stays on screen. The two Luzon maps are fetched the same way from the Boston Public Library. The First Ypres sketches are pages of a scanned book and have no such service set up here.
 
 The maps themselves are old enough to be in the public domain in the United States. The Boston Public Library marks its scans "no known copyright restrictions" and the Library of Congress its as free to use; NOTICE.md lists each one.
 

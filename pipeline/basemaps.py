@@ -1,7 +1,7 @@
 """The current map under each battle: today's roads, water, railways and woods, cut down from the OpenStreetMap extracts in data/osm/
 and saved as data/base/<battle>.json (the "base" part of a battle file: docs/battle-file.md). Run it when an extract changes:
 
-  python3 pipeline/basemaps.py            all four
+  python3 pipeline/basemaps.py            all of them
   python3 pipeline/basemaps.py ypres      one
 
 Each battle's extract was taken a little differently, so each has its own short reader here.
@@ -170,20 +170,15 @@ def manila():
     return {'credit': CREDIT, 'source': 'S39', 'lines': lines, 'areas': areas, 'widths': {'Pasig River': 90}}
 
 
-def bay(shore, islands, om):
-    """Manila Bay as one ring, from the shore (north to south, water on its right, as OpenStreetMap draws a coastline) closed down a
-    line out in the bay west of both its ends. An area in a battle file is a single ring, so each island of 3 hectares or more is cut
-    out of it by a slit: the ring runs from its nearest clear corner out to the island, round it the other way, and back."""
+def cut_out(ring, holes, om):
+    """One ring that is `ring` with each of `holes` cut out of it by a slit (points are (lat, lon) in units of 0.00001 degree): the
+    ring runs from its nearest clear corner out to the hole, round it the other way, and back. A hole with no clear slit is left in."""
     def m(p): return (p[1] / 1e5 * om.KX, p[0] / 1e5 * om.KY)
     def signed(r): return sum(m(a)[0] * m(b)[1] - m(b)[0] * m(a)[1] for a, b in zip(r, r[1:] + r[:1]))
     def crosses(a, b, c, d):
         if a in (c, d) or b in (c, d): return False
         def side(p, q, r): return (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0])
         return (side(a, b, c) > 0) != (side(a, b, d) > 0) and (side(c, d, a) > 0) != (side(c, d, b) > 0)
-    def thin(r, tol=15): return [(round(a * 1e5), round(b * 1e5)) for a, b in om.thin([(a / 1e5, b / 1e5) for a, b in r], tol)]
-    west = min(shore[0][1], shore[-1][1]) - 1000                      # about a kilometre out
-    ring = thin(shore) + [(shore[-1][0], west), (shore[0][0], west)]
-    holes = [thin(i[:-1] if i[0] == i[-1] else i, 10) for i in islands if om.area_ha([(a / 1e5, b / 1e5) for a, b in i]) >= 3]
     out = signed(ring) > 0
     for h in sorted(holes, key=lambda h: -len(h)):
         if (signed(h) > 0) == out: h = h[::-1]
@@ -191,12 +186,46 @@ def bay(shore, islands, om):
         best = None
         for d, i, j in sorted((math.hypot(m(p)[0] - m(q)[0], m(p)[1] - m(q)[1]), i, j) for i, p in enumerate(ring) for j, q in enumerate(h)):
             if not any(crosses(ring[i], h[j], c, e) for c, e in edges): best = (i, j); break
-        if best is None: continue                                      # no clear slit: the island is left as water
+        if best is None: continue
         i, j = best; ring = ring[:i + 1] + h[j:] + h[:j + 1] + ring[i:]
+    return ring
+
+
+def luzon1899():
+    """Luzon north of Manila from data/osm/luzon1899.txt (Natural Earth, cut by pipeline/ne_luzon.py): roads, railways, the Cagayan,
+    Laguna de Bay, and the sea, which is the box of the extract with the land cut out of it (see cut_out)."""
+    import osm_manila as om, ne_luzon as ne
+    ROAD = {'Hm': 'm', 'Hp': 'p', 'Hs': 's'}; lines = []; areas = []; land = []
+    for ln in open(ROOT + '/data/osm/luzon1899.txt', encoding='utf-8'):
+        code, name, body = ln.rstrip('\n').split('|', 2); la = lo = 0; pts = []
+        for i, pr in enumerate(body.split(';')):
+            a, b = pr.split(','); la, lo = (int(a), int(b)) if i == 0 else (la + int(a), lo + int(b)); pts.append((la, lo))
+        if code == 'Ci': land.append(pts[:-1] if pts[0] == pts[-1] else pts); continue
+        text = bf.pack([bf.ll(a / 1e5, b / 1e5) for a, b in pts])
+        if code == 'Fl': areas.append(['water', name, text])
+        elif code in ROAD: lines.append(['road', ROAD[code], name, text])
+        elif code == 'Rr': lines.append(['rail', '', name, text])
+        else: lines.append(['water', 'river', name, text])
+    W, S, E, N = (round(v * 1e5) for v in (ne.W, ne.S, ne.E, ne.N)); step = 10000; box = []      # the box, with a corner every 0.1 degree
+    box += [(S, x) for x in range(W, E, step)] + [(y, E) for y in range(S, N, step)] + [(N, x) for x in range(E, W, -step)] + [(y, W) for y in range(N, S, -step)]
+    sea = cut_out(box, land, om)
+    areas.insert(0, ['water', 'Sea', bf.pack([bf.ll(a / 1e5, b / 1e5) for a, b in sea])])
+    return {'credit': 'Made with Natural Earth', 'source': 'S76', 'lines': lines, 'areas': areas, 'widths': {'Cagayan': 300}}
+
+
+def bay(shore, islands, om):
+    """Manila Bay as one ring, from the shore (north to south, water on its right, as OpenStreetMap draws a coastline) closed down a
+    line out in the bay west of both its ends. An area in a battle file is a single ring, so each island of 3 hectares or more is cut
+    out of it by a slit: the ring runs from its nearest clear corner out to the island, round it the other way, and back."""
+    def thin(r, tol=15): return [(round(a * 1e5), round(b * 1e5)) for a, b in om.thin([(a / 1e5, b / 1e5) for a, b in r], tol)]
+    west = min(shore[0][1], shore[-1][1]) - 1000                      # about a kilometre out
+    ring = thin(shore) + [(shore[-1][0], west), (shore[0][0], west)]
+    holes = [thin(i[:-1] if i[0] == i[-1] else i, 10) for i in islands if om.area_ha([(a / 1e5, b / 1e5) for a, b in i]) >= 3]
+    ring = cut_out(ring, holes, om)
     return [(a / 1e5, b / 1e5) for a, b in ring]
 
 
-MAKE = {'gettysburg': gettysburg, 'trenton': trenton, 'ypres': ypres, 'manila': manila}
+MAKE = {'gettysburg': gettysburg, 'trenton': trenton, 'ypres': ypres, 'manila': manila, 'luzon1899': luzon1899}
 if __name__ == '__main__':
     for b in (sys.argv[1:] or list(MAKE)):
         base = MAKE[b](); path = '%s/data/base/%s.json' % (ROOT, b)

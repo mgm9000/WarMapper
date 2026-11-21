@@ -500,7 +500,7 @@ function mapNames(L,cover){
 function seriesAt(){var d=Math.max(T0,stamp(t));for(var i=0;i<series.length;i++)if(d>=series[i].t0&&d<=series[i].t1)return series[i];return series[series.length-1]}
 var seriesShown=null,lastCredit='';
 function showSeries(H){ if(H===seriesShown) return; if(H){mv.moveImage('pic-series',WM.asset(H.images[0].file),H.images[0].ll);if(!seriesShown)mv.show('pic-series',true)} else mv.show('pic-series',false); seriesShown=H }
-function paintCredit(H){var c,mc=MOD?(MOD.link?'<a href="'+esc(MOD.link)+'" target="_blank" rel="noopener">'+esc(MOD.credit)+'</a>':esc(MOD.credit)):'',now=topo()?mc:WM.OSM_CREDIT;
+function paintCredit(H){var c,mc=MOD?(MOD.link?'<a href="'+esc(MOD.link)+'" target="_blank" rel="noopener">'+esc(MOD.credit)+'</a>':esc(MOD.credit)):'',now=topo()?mc:(raw.base&&raw.base.credit&&!/OpenStreetMap/.test(raw.base.credit)?'Map data: '+esc(raw.base.credit):WM.OSM_CREDIT);
   if(base.current) c=now;
   else if(base.sat){var im=base.imagery;c=(im.link?'<a href="'+esc(im.link)+'" target="_blank" rel="noopener">'+esc(im.credit)+'</a>':esc(im.credit))+' &middot; Names: '+WM.OSM_CREDIT}
   else{var m=H||base.m,und=base.backdrop==='current'||through(); c=(H?esc(m.short)+', '+esc(m.label)+(stamp(t)>m.t1?' (the last one)':'')+' &middot; ':'')+esc(m.credit)+(und?' &middot; '+now:(modOn?' &middot; Around it: '+mc:''))}
@@ -825,7 +825,10 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,stopAt:stopAt,onStop:function(b){openSummary(b,b
 /* timeline furniture: ticks, the part the data covers best, and the events */
 (function(){var tl=$('tl'),pc=function(m){return (t2u(m)*100)+'%'},h='',m,lg=!byDay&&(T1-TM)>360,fmt=function(v){return WM.fmtClock(v)};
   var win=$('win'); if(B.focus){win.style.left=pc(B.focus[0]);win.style.width=((t2u(B.focus[1])-t2u(B.focus[0]))*100)+'%';if(B.focus[1]>=T1)win.style.borderRadius='0 5px 5px 0'} else win.hidden=true;
-  if(byDay){var nth=0;for(m=T0;m<=T1;m++){var d=B.dateOf(m),maj=d.day%5===0;h+='<span class="tick'+(maj?' maj':'')+'" style="left:'+pc(m)+'"></span>';
+  if(byDay&&(T1-T0)>120){for(m=T0;m<=T1;m++){var dl=B.dateOf(m);   // a campaign of months: a tick at each month's start and middle, the month named at its start
+      if(dl.day===1){h+='<span class="tick maj" style="left:'+pc(m)+'"></span><span class="tk" style="left:'+pc(m)+'">'+dl.mon.slice(0,3)+'</span>'}
+      else if(dl.day===15)h+='<span class="tick" style="left:'+pc(m)+'"></span>'}}
+  else if(byDay){var nth=0;for(m=T0;m<=T1;m++){var d=B.dateOf(m),maj=d.day%5===0;h+='<span class="tick'+(maj?' maj':'')+'" style="left:'+pc(m)+'"></span>';
       if(maj){h+='<span class="tk'+(nth%2?' minor':'')+'" style="left:'+pc(m)+'">'+d.day+' '+d.mon.slice(0,3)+'</span>';nth++}}}
   else{for(m=Math.ceil(T0/60)*60;m<TM;m+=60){h+='<span class="tick" style="left:'+pc(m)+'"></span>';if(m%120===0)h+='<span class="tk minor" style="left:'+pc(m)+'">'+fmt(m)+'</span>'}
     var st=lg?30:15,lb=lg?60:30;   // a long day: a tick each half hour and a time each hour
@@ -918,7 +921,9 @@ on('cont',goOn);
 ['off','day','week'].forEach(function(k){on('pz-'+k,function(){setPause(k)})});
 onCheck('cDayEnds',setDayEnds);
 /* a long battle asks, the first time it is played, whether to stop at the end of each day */
-function ask(){var a=$('ask');$('askq').textContent='This battle runs '+Math.round(NDAYS+(byDay?1:0))+' days. Stop at the end of each day for a summary of what happened?';a.hidden=false;$('ask-day').focus()}
+function ask(){var a=$('ask'),n=Math.round(NDAYS+(byDay?1:0)),long=n>60;   // a campaign of months is not offered a stop every day: there would be hundreds
+  $('askq').textContent=(long?'This campaign runs '+n+' days. Stop at the end of each week':'This battle runs '+n+' days. Stop at the end of each day')+' for a summary of what happened?';
+  $('ask-day').hidden=long;a.hidden=false;$(long?'ask-week':'ask-day').focus()}
 ['day','week','off'].forEach(function(k){on('ask-'+k,function(){$('ask').hidden=true;setPause(k);glide=Date.now()+FOL.glide_ms;clk.setPlaying(true)})});
 
 /* ---------- a link to this view ---------- */

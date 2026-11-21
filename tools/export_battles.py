@@ -193,17 +193,31 @@ def export(pb, W):
     sides = [{'id': s['side_id'], 'code': s['code'], 'name': s['name'], 'short': s['short'], 'colour': s['frame']} for s in W['Sides'] if s['war_id'] == war]
     side_ids = {s['id'] for s in sides}; assign = {}
     for a in W['Assignments']: assign.setdefault(a['unit_id'], []).append(a)
+    def needed(pid):      # the units a playback draws, and the formations above them
+        out = set(); todo = [text(r['unit_id']) for r in W['Tracks'] if r['playback_id'] == pid]
+        while todo:
+            i = todo.pop()
+            if not i or i in out: continue
+            out.add(i); todo += [text(x['parent_unit_id']) for x in assign.get(i, [])]
+        return out
+    drawn = needed(pb['playback_id']); theirs = set().union(*[needed(o['playback_id']) for o in W['Playbacks'] if o['playback_id'] != pb['playback_id']] or [set()])
+    # a war can hold several playbacks: a unit only another playback draws stays out of this one, and so does a unit nobody draws that sits under one
+    keep = {u['unit_id'] for u in W['Units'] if u['unit_id'] in drawn or u['unit_id'] not in theirs}; shrinking = True
+    while shrinking:
+        gone = {i for i in keep - drawn if any(text(x['parent_unit_id']) and text(x['parent_unit_id']) not in keep for x in assign.get(i, []))}
+        keep -= gone; shrinking = bool(gone)
     ulist = []
     for u in W['Units']:
-        if u['side_id'] not in side_ids: continue
+        if u['side_id'] not in side_ids or u['unit_id'] not in keep: continue
         br = str(u['branch']).lower(); ech = str(u['echelon']).lower()
         ulist.append({'id': u['unit_id'], 'name': u['unit_name'], 'label': u['map_label'], 'side': u['side_id'], 'nation': text(u.get('nation')), 'branch': BRANCH.get(br, br), 'echelon': ECHELON.get(ech, ech),
                       'sources': bf.ids(u['source_ids']), 'notes': text(u['notes']),
                       'assignments': [{'from': when(a['valid_from']), 'to': when(a['valid_to']), 'parent': text(a['parent_unit_id']), 'commander': text(a['commander']),
                                        'strength': text(a['strength / equipment']), 'sources': bf.ids(a['source_ids']), 'notes': text(a['notes'])} for a in assign.get(u['unit_id'], [])]})
-    events = []
+    events = []; battles_of = bf.ids(pb.get('record_battles'))
     for e in W['Events']:
         if e['campaign_id'] != camp or str(e.get('timeline') or 'name').lower() == 'off': continue
+        if battles_of and text(e['battle_id']) and text(e['battle_id']) not in battles_of: continue      # a campaign can hold several playbacks: each takes the events of its own battles
         events.append({'id': e['event_id'], 'start': when(e['time_earliest']), 'end': when(e['time_latest']), 'at': when(e.get('playback_at')) or when(e['time_earliest']), 'name': e['name'],
                        'label': text(e.get('playback_label')), 'text': text(e.get('playback_text')) or e['summary'], 'quiet': True if str(e.get('timeline')).lower() == 'dot' else None,
                        'steps': [s for s in bf.ids(e['pos_ids']) if s in used], 'sources': bf.ids(e['source_ids']), 'battle': text(e['battle_id'])})
