@@ -260,7 +260,7 @@ defaults.
 | `arrival` | Optional, for the exporter (not read by the player). A unit first placed after the battle opens gets a stand-in first step `lead` days earlier (1 by default), marked as an approach not recorded: at the middle of its parent formation's line if that formation is already on the map, otherwise `km` (10) behind its own first position, towards the point `<side code>.lat, lon` or along `<side code>.bearing` (degrees from north). Tracks with `starts_from_row`, `part_of_track` or `off_map` are left alone. |
 | `groups` | Zoomed out below `below`, the units of a `side` (but for `except`) are drawn as one symbol with this `label`. |
 | `rear` | A unit's symbol sits behind its own line: on the side away from the nearest enemy within about 2.5 km (8 km for an operational battle). Where no enemy is that near, `rear` decides: a point (`at`) behind one `side`'s line, so that side's symbols sit on that side of their lines and the other side's on the far side. Failing both, symbols sit to the east. |
-| `rules` | `blend`: minutes over which a unit shifts from one step to the next when they meet. `near`: metres within which no march is drawn. `pace`: march pace in metres a minute, one number or one per branch (`infantry`, `cavalry`, `artillery`), used for moves into a step marked `march`. For day battles, `lead` (the part of a day before nightfall in which the move happens) and `linger` (days a unit stays after the sources drop it). |
+| `rules` | `blend`: minutes over which a unit shifts from one step to the next when they meet. `near`: metres within which no march is drawn. `pace`: march pace in metres a minute, one number or one per branch (`infantry`, `cavalry`, `artillery`), used for moves into a step marked `march`. For day battles, `lead` (the part of a day before nightfall in which the move happens) and `linger` (days a unit stays after the sources drop it, fading as they pass). |
 | `texts`, `found` | Wording for this battle: the sentence under each state (`stated`, `inferred`, `moving`, `after`, `unplaced`, `offthis`, `lost`), and the words for how a place was found (`map_read`, `sketch_read` and so on). |
 | `about` | The paragraphs under "About this prototype". |
 
@@ -292,11 +292,11 @@ battle file into the page.
 | `playback`, and `view.presets` | `Playback settings`: one setting per row. `bases.1.label` is the label of the first base; a value written `[..]` is a list |
 | `sides` | `Sides` (`code` and `short` are the playback's) |
 | `nations` | `Nations` |
-| `units` and their `assignments` | `Units`, `Assignments`: every unit of the campaign's war |
+| `units` and their `assignments` | `Units`, `Assignments`: every unit of the campaign's war, but for units that only another playback of that war draws (Manila and Luzon 1899 share one war) |
 | `tracks` | `Tracks`: one row per symbol. `rows` lists the `Positions` rows it follows; left empty, it follows every row of its unit. `starts_from_row`, `starts_at` and `start_route` (and `start_move_minutes`, how long it takes to reach its first row, such as a river crossing) give a symbol a stand-in start from a row of its division's (`start_route` may name several routes in order, `RT01; RT02`; `start_route_points` caps the points taken from the last) |
 | steps | `Positions`. `show_from` and `show_to` are when the playback draws the row; left empty, it is drawn from its latest start to its earliest end. Where two rows of one symbol overlap, the earlier gives way. `arrive_at_pace` (yes) is the step's `march` |
 | a step's `via` | `Routes`: a route from one row to the next, where its `playback` column says yes |
-| `events` | `Events`. `timeline` is `name`, `dot` or `off`; `playback_at`, `playback_label` and `playback_text` are the playback's moment, short name and wording where they differ from the record's |
+| `events` | `Events`: those of the battles the playback's `record_battles` names. `timeline` is `name`, `dot` or `off`; `playback_at`, `playback_label` and `playback_text` are the playback's moment, short name and wording where they differ from the record's |
 | `summaries` | `Summaries`: one row per day or week (`kind`, `from`, `to`, `title`, `text`, `source_ids`) |
 | `sources` | `Sources`: only those the battle cites |
 | `labels` | `Labels` |
