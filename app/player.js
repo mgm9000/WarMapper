@@ -128,7 +128,8 @@ function stateClock(tr,tt,key){
   var un=noPlace(last,key); return {k:last,g:un==='unplaced'?prevGeo(ks,n-1,key):null,kind:un};
 }
 /* A battle followed by the day. The sources give a position at nightfall, so a step runs from the evening of its first date to the evening
-   of its last, and the move to the next takes the day before it. A unit the sources stop following stays, faded, for two days, then leaves the map. */
+   of its last, and the move to the next takes the day before it. Where the record gives the route between two steps (a march of several
+   days, a voyage), the move takes the whole time between them and follows the route. A unit the sources stop following stays, faded, for two days, then leaves the map. */
 function ease(f){return f<0?0:f>1?1:f*f*(3-2*f)}
 function resample(g,n){if(g.length===1){var o=[];for(var i=0;i<n;i++)o.push(g[0]);return o}
   var L=plen(g),out=[g[0]],seg=1,acc=0;if(L<1){for(var j=1;j<n;j++)out.push(g[0]);return out}
@@ -145,7 +146,10 @@ function stateDaily(tr,tt,key){
     var k=ks[i],nx=ks[i+1],s=k.t0-LEAD_IN,e=k.t1,g=geo(k,key),gn=nx?geo(nx,key):null;
     if(tt>=s&&tt<=e) return {k:k,g:g,kind:!g?noPlace(k,key):k.virtual?'moving':placed(k)};   // a stand-in start (an approach not recorded) is drawn dashed
     if(nx&&tt>e&&tt<nx.t0-LEAD_IN){
-      var ms=Math.max(e,nx.t0-1-LEAD_IN),me=nx.t0-LEAD_IN;   // the move takes a whole day, ending as the next record comes in
+      var V=key==='g'?nx.via:(nx.vo&&nx.vo[key]);
+      if(V&&V.length>1&&g&&gn){var fr=(tt-e)/Math.max(0.01,nx.t0-LEAD_IN-e);   // the record gives the route (a march of days, a voyage): the move takes the whole gap, along it
+        return {k:nx,from:k,g:(g.length===1&&gn.length===1)?[alongP(V,fr)]:morph(g,gn,fr),kind:'moving'}}
+      var ms=Math.max(e,nx.t0-1-LEAD_IN),me=nx.t0-LEAD_IN;   // no route: the move takes a whole day, ending as the next record comes in
       if(tt<ms) return (g&&tt<=e+LINGER)?{k:k,g:g,kind:'after'}:{k:k,g:null,kind:g?'lost':noPlace(k,key)};
       if(g&&gn) return {k:nx,from:k,g:morph(g,gn,ease((tt-ms)/Math.max(0.01,me-ms))),kind:'moving'};
       if(g) return {k:k,g:g,kind:'after'};
@@ -351,6 +355,30 @@ function setMute(v){muteOn=v;tick('cMute',v);remember('mute',v);wrap.classList.t
 function setTrails(v){trlOn=v;tick('cTrail',v);remember('trail',v);mv.kick()}
 function subPath(V,f){if(f>=1)return V;var L=0,i,seg=[];for(i=1;i<V.length;i++)L+=Math.hypot(V[i][0]-V[i-1][0],V[i][1]-V[i-1][1]);var want=L*f,out=[V[0]];
   for(i=1;i<V.length;i++){var d=Math.hypot(V[i][0]-V[i-1][0],V[i][1]-V[i-1][1]);if(d>=want){var u=d?want/d:0;out.push([V[i-1][0]+(V[i][0]-V[i-1][0])*u,V[i-1][1]+(V[i][1]-V[i-1][1])*u]);return out}want-=d;out.push(V[i])}return out}
+/* Arrows ahead (playback.arrows): shortly before a unit sets off on a long move, and while it is on it, an arrow runs from the unit to
+   where the record next puts it, along the route the record gives (straight where it gives none). min_km: how long a move earns an
+   arrow; lead: how long before the unit sets off the arrow appears, in the battle's time unit. */
+var ARW=P.arrows||null,arwOn=!!(ARW&&ARW.on!==false);
+function setArrows(v){arwOn=v;tick('cArrow',v);remember('arrow',v);mv.kick()}
+function ahead(V,c){ // the route from the point on it nearest c to its end
+  var best=1e18,bi=0,bq=V[0],i; for(i=1;i<V.length;i++){var ax=V[i-1][0],ay=V[i-1][1],dx=V[i][0]-ax,dy=V[i][1]-ay,L2=dx*dx+dy*dy,u=L2?Math.max(0,Math.min(1,((c[0]-ax)*dx+(c[1]-ay)*dy)/L2)):0,
+      q=[ax+dx*u,ay+dy*u],d=Math.hypot(q[0]-c[0],q[1]-c[1]); if(d<best){best=d;bi=i;bq=q}}
+  return [bq].concat(V.slice(bi))}
+function arrowsSvg(sc){ if(!ARW||!arwOn||landing||!unitsOn||base.own) return '';
+  var minU=(ARW.min_km!=null?ARW.min_km:20)*1000,lead=ARW.lead!=null?ARW.lead:(byDay?3:30),h='';
+  sc.forEach(function(o){ if(!o.drawn||o.hidden||o.folded||!o.s.g) return; var tr=o.tr,ks=tr.k,st=o.s,a,b,moving=st.kind==='moving'&&st.from;
+    if(moving){a=st.from;b=st.k} else {a=st.k;b=ks[ks.indexOf(a)+1]; if(!b||st.kind==='lost'||t<a.t1-lead) return}
+    var ga=geo(a,'g'),gb=geo(b,'g'); if(!ga||!gb) return;
+    var V=(b.via&&b.via.length>1)?b.via:[cen(ga),cen(gb)]; if(plen(V)<minU) return;
+    var pts=(moving?ahead(V,cen(st.g)):V).map(S),n=pts.length,L=plen(pts); if(L<46) return;   // too short on screen to read as an arrow
+    var e=WM.along(pts,1-9/L),s0=WM.along(pts,Math.min(0.4,18/L)),d='M'+f1(s0.p[0])+' '+f1(s0.p[1]),acc=0,i;   // clear of the symbol at one end, room for the head at the other
+    for(i=1;i<n;i++){acc+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); if(acc>18&&acc<L-9) d+='L'+f1(pts[i][0])+' '+f1(pts[i][1])}
+    d+='L'+f1(e.p[0])+' '+f1(e.p[1]);
+    var tip=pts[n-1],vx=tip[0]-e.p[0],vy=tip[1]-e.p[1],vl=Math.hypot(vx,vy)||1; vx/=vl; vy/=vl;
+    var hd='M'+f1(tip[0])+' '+f1(tip[1])+'L'+f1(e.p[0]-vx*4-vy*6)+' '+f1(e.p[1]-vy*4+vx*6)+'L'+f1(e.p[0]-vx*4+vy*6)+' '+f1(e.p[1]-vy*4-vx*6)+'Z',col=look(tr).col,w=compact?2.4:3;
+    h+='<g class="ahead" style="pointer-events:none" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="'+(moving?0.9:0.75)+'"><path d="'+d+'" stroke="var(--u-halo)" stroke-width="'+(w+3)+'"/><path d="'+hd+'" fill="var(--u-halo)" stroke="var(--u-halo)" stroke-width="4"/>'
+      +'<path d="'+d+'" style="stroke:'+col+'" stroke-width="'+w+'" stroke-dasharray="'+(moving?'':'7 6')+'"/><path d="'+hd+'" style="fill:'+col+';stroke:'+col+'" stroke-width="1"/></g>'});
+  return h}
 function trailsSvg(){ if(!TRL||!trlOn||landing||!unitsOn) return ''; var key=base.own?base.map:'g',by={};
   /* fade_after (time units): once a unit has stopped this long, the roads it took to get there fade out over fade_over */
   var FA=TRL.fade_after,FO=Math.max(0.01,TRL.fade_over||FA||1),base0=TRL.opacity||0.55;
@@ -512,7 +540,7 @@ function draw(){
   var cover=base.backdrop==='current'?(H||base.m).box:null;
   var sc=scene(),L=layout(unitsOn&&!landing?sc:[]),h=mapNames(L,cover);   // on landing the map is shown alone; the units come on when the battle is started
   L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});   // the selected unit last, so it sits on top
-  h+=trailsSvg()+dayEndsSvg(sc); L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h;
+  h+=trailsSvg()+dayEndsSvg(sc)+arrowsSvg(sc); L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h;
   var su=P.scale_bar||(byDay?'km':'yards'),sk=$('scale');
   if(!base.own) WM.scaleBar(sk,mv.mPerPx(),su);
   else if(base.m.raw.approx_m_per_px) WM.scaleBar(sk,base.m.raw.approx_m_per_px/sNow,su,true,base.m.raw.scale_note||'Roughly: this map is not to scale');   // a sketch: a rough scale where it is nearest to true
@@ -753,7 +781,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   L+='<div class="grp"><button class="lnk" id="bLink">Copy a link to this view</button><span class="ok" id="linkok" hidden>Copied</span></div>';
   $('layers').innerHTML=L;
   // Battle options
-  G+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')+(TRL?ck('cTrail','Routes taken',trlOn):'')
+  G+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')+(TRL?ck('cTrail','Routes taken',trlOn):'')+(ARW?ck('cArrow','Arrows to where units go next',arwOn):'')
     +(DE_OK?ck('cDayEnds','Where units began and ended each day',deOn):'')+ck('cNarr','The current event, in words, on the map',false)+(DE_OK?'<p class="gn">Dashed: where a unit began the day. Thin solid: where it ended it.</p>':'')+'</div>';
   G+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Unit symbols',[sb('fr-none','Neutral',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Choose a side to see the battle from its point of view: the other side&rsquo;s units take the diamond frame of the standard military symbols.</p></div>';
   if(PZ_OK) G+='<div class="grp"><div class="gh">Pause and summary</div>'+seg('Pause and summary',[sb('pz-off','Off',pzMode==='off'),sb('pz-day','Each day',pzMode==='day'),sb('pz-week','Each week',pzMode==='week')])+'<p class="gn">While it plays, the battle stops at the end of each day or week and shows a summary. Press Continue to go on.</p></div>';
@@ -857,7 +885,7 @@ document.addEventListener('keydown',function(e){if(e.key!=='Escape')return;POPS.
 bases.forEach(function(b){var e=$('b-'+b.id);if(e)e.addEventListener('click',function(){openPop('pType',false)})});
 (P.views||[]).forEach(function(v){var e=$('v-'+v.preset);if(e)e.addEventListener('click',function(){openPop('pType',false)})});
 function onCheck(id,fn){var e=$(id);if(e)e.addEventListener('change',function(){fn(e.checked)})}
-onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations); onCheck('cTrail',setTrails); onCheck('cMute',setMute); onCheck('cHill',setHill);
+onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations); onCheck('cTrail',setTrails); onCheck('cArrow',setArrows); onCheck('cMute',setMute); onCheck('cHill',setHill);
 onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
 on('sy-standard',function(){setSymbols('standard')}); on('sy-period',function(){setSymbols('period')});
 on('fr-none',function(){setSeenFrom('')}); raw.sides.forEach(function(sd){on('fr-'+sd.code,function(){setSeenFrom(sd.code)})});
@@ -943,6 +971,7 @@ on('bLink',function(){var url=location.href.split('#')[0]+linkHash(),ok=$('linko
 
 /* ---------- start ---------- */
 try{if(DE_OK&&localStorage.getItem('wm.'+B.id+'.dayends')==='1'){deOn=true;tick('cDayEnds',true)}}catch(e){}
+try{if(ARW&&localStorage.getItem('wm.'+B.id+'.arrow')==='0'){arwOn=false;tick('cArrow',false)}}catch(e){}
 try{if(localStorage.getItem('wm.'+B.id+'.hill')==='0'){hsOn=false;tick('cHill',false)} if(localStorage.getItem('wm.'+B.id+'.mute')==='0'){muteOn=false;tick('cMute',false);wrap.classList.add('vivid')} if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)} var ts=localStorage.getItem('wm.'+B.id+'.trail'); if(TRL&&ts!=null){trlOn=ts==='1';tick('cTrail',trlOn)}}catch(_){ }
 setStep(stepNear(P.rate||(byDay?1:5)));
 if(P.views) preset=P.views[0].preset;
