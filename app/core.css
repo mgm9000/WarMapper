@@ -95,7 +95,10 @@ button{font:inherit;color:inherit}
 .seg button+button{border-left:1px solid var(--line)}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-fg)}
 .seg .sm{display:none}
-.credit{position:absolute;right:max(8px,env(safe-area-inset-right,0px));bottom:6px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:10.5px;color:var(--muted);max-width:70%}
+/* Map credits live in the i button's panel. They are also shown on the map for five seconds when the page opens and when the reader
+   changes the map, then fade: OpenStreetMap's attribution guideline asks that the credit be shown before it is tucked away. */
+.credit{position:absolute;right:max(8px,env(safe-area-inset-right,0px));bottom:6px;z-index:3;background:var(--surface);border:1px solid var(--line);border-radius:5px;padding:2px 7px;font-size:10.5px;color:var(--muted);max-width:70%;transition:opacity .6s}
+.credit.gone{opacity:0;pointer-events:none}
 .credit a{color:inherit}
 .scale{position:absolute;left:max(12px,env(safe-area-inset-left,0px));bottom:10px;z-index:3;font-size:11px;line-height:1.25;color:var(--fg);pointer-events:none;background:var(--surface);border:1px solid var(--line);border-radius:6px;padding:4px 8px 5px;box-shadow:0 1px 2px rgba(0,0,0,.08);font-variant-numeric:tabular-nums}
 /* the clock and the scale share the bottom-left corner, one above the other, whatever height the scale takes */
@@ -235,7 +238,7 @@ details.evs{margin-top:10px} details.evs summary{cursor:pointer;font-size:12.5px
   .stage.sheet-anim{transition:grid-template-rows .25s ease}
   .panel{padding-top:8px}
   .panel .phase{font-size:14.5px;line-height:1.4}
-  .credit{display:none}                                                                  /* credits move to the i button's panel */
+  .credit{max-width:calc(100% - 16px);bottom:112px}                                       /* shown for a moment above the clock, then found under the i button */
   .when .bn{display:none}                                                                /* the battle's name is already in the title */
   /* clock and scale shrink to small labels so they cover less of the map */
   .bl{gap:4px}
@@ -282,10 +285,9 @@ details.evs{margin-top:10px} details.evs summary{cursor:pointer;font-size:12.5px
   .stage.nopane{grid-template-columns:minmax(0,1fr) 0 !important}
   .stage.nopane .panel{display:none}
 }
-/* touch screens (tablets as well as phones): map credits move to the i button's panel; the map's buttons step aside while it plays
+/* touch screens (tablets as well as phones): the map's buttons step aside while it plays
    (a tap brings them back for a few seconds); the timeline handle is bigger to take with a finger */
 @media (pointer:coarse){
-  .credit{display:none}
   .mapwrap .ctl,.mapwrap .pop{transition:opacity .35s}
   .wm-playing .mapwrap:not(.peek) .ctl,.wm-playing .mapwrap:not(.peek) .pop{opacity:0;pointer-events:none}
   .tl input{top:10px;height:34px}

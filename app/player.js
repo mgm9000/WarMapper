@@ -541,7 +541,11 @@ function paintCredit(H){var c,mc=MOD?(MOD.link?'<a href="'+esc(MOD.link)+'" targ
   else if(base.sat){var im=base.imagery;c=(im.link?'<a href="'+esc(im.link)+'" target="_blank" rel="noopener">'+esc(im.credit)+'</a>':esc(im.credit))+' &middot; Names: '+WM.OSM_CREDIT}
   else{var m=H||base.m,und=base.backdrop==='current'||through(); c=(H?esc(m.short)+', '+esc(m.label)+(stamp(t)>m.t1?' (the last one)':'')+' &middot; ':'')+esc(m.credit)+(und?' &middot; '+now:(modOn?' &middot; Around it: '+mc:''))}
   if(hsVis) c+=' &middot; Terrain shading: <a href="'+esc(HS.link)+'" target="_blank" rel="noopener">'+esc(HS.credit)+'</a>';
-  if(c!==lastCredit){lastCredit=c;$('credit').innerHTML=c}}
+  if(c!==lastCredit){lastCredit=c;$('credit').innerHTML=c;if(info)panelKey=''}}   // the i panel lists the credits: redraw it if it is open
+/* The credits are under the i button. They also show on the map for five seconds when the page opens and when the reader changes the
+   map, then fade (OpenStreetMap's attribution guideline: show the credit first; after five seconds it may collapse behind an "i"). */
+var creditTimer=0;
+function flashCredit(){var e=$('credit');e.classList.remove('gone');clearTimeout(creditTimer);creditTimer=setTimeout(function(){e.classList.add('gone')},5000)}
 function draw(){
   sNow=mv.scale(); mv.hits.length=0;
   var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintModern(H); paintHill(); paintCredit(H);
@@ -655,12 +659,12 @@ function updateTiles(){
 function queueTiles(){clearTimeout(tileTimer);tileTimer=setTimeout(updateTiles,160)}
 function tileError(e){ // three failures and the library is left alone for the rest of the visit
   if(e&&e.sourceId==='dem'){ if(++hsFail>=4){hsVis=null;mv.show('hill',false);lastCredit='';mv.kick()} return }
-  if(e&&e.sourceId==='sur'){ if(++modFail>=4&&!modOff){modOff=true;modOn=null;mv.show('sur',false);paintFade();lastCredit='';panelKey='';mv.kick()} return }   // the modern map cannot be reached: fall back to the drawing
+  if(e&&e.sourceId==='sur'){ if(++modFail>=4&&!modOff){modOff=true;modOn=null;mv.show('sur',false);paintFade();lastCredit='';panelKey='';flashCredit();mv.kick()} return }   // the modern map cannot be reached: fall back to the drawing
   var er=e&&e.error,txt=String((er&&(er.url||er.message))||''),mine=(e&&/^iiif-/.test(String(e.sourceId||'')))||/iiif/i.test(txt)||(Object.keys(TILES).length&&/fetch|network|load/i.test(txt));
   if(mine&&++tileFail>=3&&!tilesOff){tilesOff=true;updateTiles();panelKey='';mv.kick()}}
 function setBase(b,first){
   if(typeof b==='string') b=bases.filter(function(x){return x.id===b})[0]; if(!b) return;
-  var moved=first||worldOf(b)!==worldOf(base); base=b;
+  var moved=first||worldOf(b)!==worldOf(base); base=b; flashCredit();
   var tc=$('typeCur');if(tc){var tb=b.of?bases.filter(function(x){return x.id===b.of})[0]||b:b;tc.textContent=tb.label}
   bases.forEach(function(x){if(!x.of)press('b-'+x.id,x===b||b.of===x.id);(PICS[x.id]||[]).forEach(function(p){mv.show(p.id,x===b)})});
   if(moved) mv.setWorld(worldOf(b));
@@ -753,7 +757,10 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   h+='<p class="meta credits">Credits for what is on screen: '+lastCredit+'</p>';
   if(base.sat){var im=base.imagery;h+='<h2>'+esc(im.name||base.label)+'</h2><p>'+esc(im.about||'Aerial or satellite imagery of the ground today, streamed from the provider\'s tile service. The names on it come from OpenStreetMap.')+'</p><dl>'+row('Source',im.credit)+row('Rights',im.rights||'')+row('Taken',im.date||'')+'</dl>'+(im.link?'<p style="margin-top:10px"><a href="'+esc(im.link)+'" target="_blank" rel="noopener">About this imagery</a></p>':'')+'<p class="meta" style="margin-top:12px">If the tile service cannot be reached, the map shows plain ground under the units.</p>';return h}
   if(base.current&&topo()){h+='<h2>'+esc(MOD.name||'Current map')+'</h2><p>'+esc(MOD.about||'Today\'s topographic map, streamed from the provider\'s tile service.')+'</p><dl>'+row('Source',MOD.credit)+row('Rights',MOD.rights||'')+'</dl>'+(MOD.link?'<p style="margin-top:10px"><a href="'+esc(MOD.link)+'" target="_blank" rel="noopener">About this map</a></p>':'')+'<p class="meta" style="margin-top:12px">If the map service cannot be reached, a plain drawing of today\'s roads and water, made from OpenStreetMap, is shown in its place.</p>'+hillAbout();return h}
-  if(base.current){h+='<h2>Current map</h2>'+(MOD?'<p class="meta">The topographic map service could not be reached from here, so this plain drawing is shown in its place.</p>':'')+'<p>Today\'s roads, water, railways, woods and names, cut down from OpenStreetMap to what this battle needs. It is a drawing of that data, not a live map service.</p><dl>'+row('Source','OpenStreetMap contributors')+row('Rights','Open Database License')+'</dl><p style="margin-top:10px"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap copyright and licence</a></p>';return h}
+  if(base.current){h+='<h2>Current map</h2>'+(MOD?'<p class="meta">The topographic map service could not be reached from here, so this plain drawing is shown in its place.</p>':'')+(function(){var bc=raw.base&&raw.base.credit,bs=raw.base&&raw.base.source&&B.sources[raw.base.source];
+      if(bc&&!/OpenStreetMap/.test(bc))   // a drawing from other data (Luzon 1899: Natural Earth): say whose, from the source the base names
+        return '<p>Today\'s coast, main roads, railways and rivers, drawn from '+esc(bs?bs.title:bc)+'. It is a drawing of that data, not a live map service, and much coarser than a street map.</p><dl>'+row('Source',bc)+row('Rights',bs?bs.rights||'':'')+'</dl>'+(bs&&bs.url?'<p style="margin-top:10px"><a href="'+esc(bs.url)+'" target="_blank" rel="noopener">'+esc(bs.author||bs.title)+'</a></p>':'');
+      return '<p>Today\'s roads, water, railways, woods and names, cut down from OpenStreetMap to what this battle needs. It is a drawing of that data, not a live map service.</p><dl>'+row('Source','OpenStreetMap contributors')+row('Rights','Open Database License')+'</dl><p style="margin-top:10px"><a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener">OpenStreetMap copyright and licence</a></p>'})();return h}
   var m=(base.series&&seriesShown)||base.m||series[0],s=B.sources[m.raw.source]||{},f=m.raw.fit||{},fit='';
   if(m.own) fit='No. It is not to scale, so it is shown as a picture of its own and units have separate positions on it.';
   else{fit='Yes';if(f.method)fit+=': '+f.method;if(f.metres_per_pixel)fit+='; '+f.metres_per_pixel+' m per scan pixel';if(f.turn_degrees)fit+='; turned '+f.turn_degrees+'\u00b0 from north';if(f.points)fit+=': fitted on '+f.points+' points'+(f.misfit_m?', typical misfit '+f.misfit_m+' m':'');fit+='.'}
