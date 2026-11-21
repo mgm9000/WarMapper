@@ -256,11 +256,16 @@ function rank(tr){ // which names are kept when the map is crowded: 1 first
   return (tr.ech==='regiment'||tr.ech==='brigade')?1:2}
 /* Breakouts: when, during play, a higher unit divides into the units under it (the army into its divisions, a division into its
    brigades at the end of formations.until, a corps unfolding when zoomed in), the new symbols spread out from where the higher unit
-   stood over BRK_MS, and the clock waits for them. Two or more new units from the same parent make a breakout; a seek does not. */
-var BRK_MS=2500,brk={},lastW=null,lastT=null,holdUntil=0;
+   stood over BRK_MS, and the clock waits for them. Two or more new units from the same parent make a breakout; a seek does not.
+   Merges are the reverse: when, during play, units come to the end of their records while a higher unit of theirs is on the map
+   (regiments whose positions stop, their brigade going on), they slide into that unit's symbol over BRK_MS instead of vanishing. */
+var BRK_MS=2500,brk={},mrg={},lastW=null,lastT=null,holdUntil=0;
 function parentsOf(uid){var out=[],d=stamp(t),seen=0;while(uid&&seen++<6){var u=B.units[uid];if(!u)break;var as=u.assignments||[],a=null;
     as.forEach(function(x){var f=x.from?B.time(x.from):-1e9,e=x.to?B.time(x.to)+((!byDay&&x.to.length===10)?1439:0):1e9;if(d>=f&&d<=e)a=x});
     a=a||as[as.length-1];if(!a||!a.parent)break;out.push(a.parent);uid=a.parent}return out}
+/* where a higher unit stands now even while its own symbol is not drawn (its other regiments are still shown in its place) */
+function hiddenAt(uid){var tr=null;B.tracks.forEach(function(x){if(x.unit===uid&&!tr)tr=x});if(!tr)return null;var st=stateAt(tr,t,gkey());if(!st||!st.g||!st.g.length)return null;
+  var x=0,y=0;st.g.forEach(function(p){var q=S(p);x+=q[0];y+=q[1]});var ll=mv.map.unproject([x/st.g.length,y/st.g.length]);return [ll.lng,ll.lat]}
 function zoomSig(){return [FM&&(fmForced()||(fmOn&&!base.own&&sNow<FM.below)),sNow<(Z.fold||0)].concat((P.groups||[]).map(function(G){return sNow<G.below})).join()}
 function breakouts(L){var now=Date.now(),W={},inv=function(q){return mv.map.unproject(q)},sig=zoomSig(),ok=clk&&clk.playing&&lastW&&lastT!=null&&t>=lastT&&t-lastT<(byDay?2:30)&&lastW.sig===sig,born={};
   L.forEach(function(u){var tr=u.o.tr;if(!tr.id||u.noSym)return;var ll=inv([u.c[0],u.c[1]]);W[tr.unit]=W[tr.unit]||[ll.lng,ll.lat];
@@ -268,7 +273,14 @@ function breakouts(L){var now=Date.now(),W={},inv=function(q){return mv.map.unpr
   Object.keys(born).forEach(function(p){if(born[p].length<2)return;born[p].forEach(function(id){brk[id]={from:lastW.pos[p],t0:now}});holdUntil=now+BRK_MS});
   L.forEach(function(u){var tr=u.o.tr,b=tr.id&&brk[tr.id];if(!b)return;var f=(now-b.t0)/BRK_MS;if(f>=1){delete brk[tr.id];return}
     var e=1-Math.pow(1-f,3),q=mv.map.project(b.from),dx=(q.x-u.c[0])*(1-e),dy=(q.y-u.c[1])*(1-e);u.x+=dx;u.y+=dy;u.pts=u.pts.map(function(p){return [p[0]+dx,p[1]+dy]});mv.kick()});
-  var ids={};L.forEach(function(u){if(u.o.tr.id&&!u.noSym)ids[u.o.tr.id]=1});lastW={pos:W,ids:ids,sig:sig};lastT=t}
+  var ids={},items={};L.forEach(function(u){if(u.o.tr.id&&!u.noSym&&!u.ghost){ids[u.o.tr.id]=1;items[u.o.tr.id]={u:u,c:inv([u.c[0],u.c[1]]),pts:u.pts.map(function(q){return inv(q)})}}});
+  if(ok)Object.keys(lastW.ids).forEach(function(id){if(ids[id]||mrg[id]||!lastW.items[id])return;var it=lastW.items[id],ps=parentsOf(it.u.o.tr.unit);
+    for(var i=0;i<ps.length;i++){var at=W[ps[i]]||hiddenAt(ps[i]);if(at){mrg[id]={it:it,to:ps[i],at:at,t0:now};holdUntil=now+BRK_MS;break}}});
+  Object.keys(mrg).forEach(function(id){var m=mrg[id],f=(now-m.t0)/BRK_MS;if(f>=1||ids[id]){delete mrg[id];return}
+    var e=f*f*(3-2*f),to=mv.map.project(W[m.to]||m.at||m.it.c),a=mv.map.project(m.it.c),cx=a.x+(to.x-a.x)*e,cy=a.y+(to.y-a.y)*e,u=m.it.u,g={};
+    for(var k in u)g[k]=u[k];g.ghost=true;g.fade=1-0.7*e;g.lab=null;g.c=[cx,cy];g.x=cx+(u.x-u.c[0]);g.y=cy+(u.y-u.c[1]);
+    g.pts=m.it.pts.map(function(q){var p=mv.map.project(q);return [p.x+cx-a.x,p.y+cy-a.y]});L.push(g);mv.kick()});
+  lastW={pos:W,ids:ids,items:items,sig:sig};lastT=t}
 function layout(sc){
   var L=[],Zs=mv.size(),rear=(P.rear&&!base.own)?S(B.fromLL(P.rear.at)):null,ag={},FOES=[],reach=(compact?8000:2500)*(base.own?0.5:sNow);   // how far off an enemy still decides which way a line faces (screen px)
   sc.forEach(function(o){if(o.s.g&&!o.hidden)o.s.g.forEach(function(p){FOES.push([o.tr.side,S(p)])})});
@@ -296,7 +308,7 @@ function layout(sc){
     L.push({o:{tr:{id:'',label:G.label,side:G.side,nation:'',ech:G.echelon||'brigade',branch:G.branch||'inf'},s:{kind:'stated',k:{oc:'high'}}},pts:[gc],len:0,c:gc,x:gc[0],y:gc[1],low:false,txt:G.label,w:G.label.length*7.1+6,pr:1,nudged:false,line:false})});
   L.sort(function(a,b){return a.pr-b.pr});
   // spread symbols that land on the same spot
-  for(var i=0;i<L.length;i++)for(var pass=0;pass<4;pass++){var moved=false;for(var j=0;j<i;j++){var a=L[i],b=L[j];if(a.noSym||b.noSym)continue;if(Math.abs(a.x-b.x)<27&&Math.abs(a.y-b.y)<21){var sx=a.x>=b.x?1:-1,sy=a.y>=b.y?1:-1;if(Math.abs(a.x-b.x)>Math.abs(a.y-b.y))a.x=b.x+sx*28;else a.y=b.y+sy*22;a.nudged=true;moved=true}}if(!moved)break}
+  for(var i=0;i<L.length;i++)for(var pass=0;pass<4;pass++){var moved=false;for(var j=0;j<i;j++){var a=L[i],b=L[j];if(a.noSym||b.noSym||a.ghost||b.ghost)continue;if(Math.abs(a.x-b.x)<27&&Math.abs(a.y-b.y)<21){var sx=a.x>=b.x?1:-1,sy=a.y>=b.y?1:-1;if(Math.abs(a.x-b.x)>Math.abs(a.y-b.y))a.x=b.x+sx*28;else a.y=b.y+sy*22;a.nudged=true;moved=true}}if(!moved)break}
   var R=[]; function hit(r){for(var i=0;i<R.length;i++){var q=R[i];if(r[0]<q[2]&&r[2]>q[0]&&r[1]<q[3]&&r[3]>q[1])return true}return false}
   L.forEach(function(u){if(!u.noSym)R.push([u.x-14,u.y-19,u.x+14,u.y+10]);
     if(!compact) for(var i=1;i<u.pts.length&&u.line;i++){var a=u.pts[i-1],b=u.pts[i],d=Math.hypot(b[0]-a[0],b[1]-a[1]),n=Math.max(1,Math.round(d/11));
@@ -305,7 +317,7 @@ function layout(sc){
   var phoneW=wrap.clientWidth<=560,force=!phoneW&&!compact&&sNow>=(Z.force_names_from||0);
   var fewer=phoneW&&sNow<(Z.phone_names||(compact?(Z.full_names||1e9):0.6));   // phones, zoomed out: no names for small parts (artillery, detachments, sub-units) until zoomed in
   L.forEach(function(u){
-    u.lab=null; if(u.noSym||(!names&&!(sel&&u.o.tr.id===sel))) return; if(fewer&&u.pr>=3) return;
+    u.lab=null; if(u.ghost||u.noSym||(!names&&!(sel&&u.o.tr.id===sel))) return; if(fewer&&u.pr>=3) return;
     var x=u.x,y=u.y,w=u.w,C=[[x+16,y-8,x+16+w,y+8,'start',x+17,y+4.5],[x-16-w,y-8,x-16,y+8,'end',x-17,y+4.5],[x-w/2,y+11,x+w/2,y+26,'middle',x,y+23],[x-w/2,y-35,x+w/2,y-20,'middle',x,y-23]];
     for(var i=0;i<C.length;i++){ if(C[i][0]>=3&&C[i][2]<=Zs.w-3&&!hit(C[i])){u.lab=C[i];break} }
     if(!u.lab&&(u.pr===0||(force&&u.pr===1))) u.lab=C[0];
@@ -406,7 +418,7 @@ function dayEndsSvg(sc){ if(!DE_OK||!deOn||landing||!unitsOn) return ''; var key
 function setDayEnds(v){deOn=v;tick('cDayEnds',v);remember('dayends',v);mv.kick()}
 function unitSvg(u,part){   // the last position on record stays plain to see: dashed, barely faded
   var o=u.o,tr=o.tr,s=o.s,pts=u.pts,lk=look(tr),col=lk.col,k=s.kind;
-  var soft=(k==='moving'||k==='early'||k==='after'||k==='unplaced'),low=u.low,op=k==='unplaced'?0.5:k==='after'?0.8:1,isSel=!!tr.id&&sel===tr.id,h='',x=u.x,y=u.y,c=u.c;
+  var soft=(k==='moving'||k==='early'||k==='after'||k==='unplaced'),low=u.low,op=(k==='unplaced'?0.5:k==='after'?0.8:1)*(u.fade==null?1:u.fade),isSel=!!tr.id&&sel===tr.id,h='',x=u.x,y=u.y,c=u.c;
   if(part==='line'){ if(!u.line) return '';
     var d=pts.map(function(p,i){return (i?'L':'M')+f1(p[0])+' '+f1(p[1])}).join('');
     var w=compact?((tr.ech==='corps'||tr.ech==='army')?5:tr.ech==='division'?4:3):((!tr.parent&&(tr.ech==='brigade'||tr.ech==='division'))?6:4.5);
@@ -889,7 +901,7 @@ var pane=(function(){var st=document.querySelector('.stage'),b=$('bpane');
 (function(){var tmo=0;wrap.addEventListener('touchstart',function(){if(!document.documentElement.classList.contains('wm-playing'))return;wrap.classList.add('peek');clearTimeout(tmo);tmo=setTimeout(function(){wrap.classList.remove('peek')},4000)},{passive:true})})();
 // back and forward one step; [ and ] jump between key events
 on('restart',restart);   // start over: the first moment, the opening map and view, no unit picked
-function restart(){closeSummary();$('ask').hidden=true;clk.setPlaying(false);select(null);setPreset(null);fpause=0;followK=1;glide=0;skipAcc=0;brk={};lastW=null;holdUntil=0;
+function restart(){closeSummary();$('ask').hidden=true;clk.setPlaying(false);select(null);setPreset(null);fpause=0;followK=1;glide=0;skipAcc=0;brk={};mrg={};lastW=null;holdUntil=0;
   if(P.follow){follow=true;press('bFollow',true)} landing=true;panelKey='';clk.setTime(T0);setBase(startBase(),true);mv.jump(home());mv.kick()}
 on('evprev',function(){clk.setPlaying(false);clk.setTime(stepBy(-1,t))}); on('evnext',function(){clk.setPlaying(false);clk.setTime(stepBy(1,t))}); on('step',function(){setStep(stepI+1)});
 WM.panelClicks(panel,select);
@@ -936,7 +948,7 @@ var api={battle:B,setTime:clk.setTime,select:select,setFollow:setFollow,setBase:
   begin:function(){landing=false;panelKey='';mv.kick()},setFormations:setFormations,setMute:setMute,setHill:setHill,
   scene:function(){return scene().map(function(o){return {id:o.tr.id,kind:o.s.kind,row:o.s.k.id,drawn:o.drawn}})}};
 Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}}); Object.defineProperty(api,'landing',{get:function(){return landing}}); Object.defineProperty(api,'summary',{get:function(){return sumAt==null?null:{at:sumAt,mode:sumMode}}});
-api.stops=function(m){return stopsFor(m)};api.stopAt=stopAt;
+api.stops=function(m){return stopsFor(m)};api.merging=function(){return Object.keys(mrg)};api.stopAt=stopAt;
 Object.defineProperty(api,'modern',{get:function(){return {on:!!modOn,off:modOff,hill:!!hsVis}}});
 global.__wm=api; return api;
 };

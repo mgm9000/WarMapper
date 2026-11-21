@@ -85,7 +85,7 @@ skirmish line are two).
 ```
 
 A track may add: `label` and `echelon` (if the symbol's differ from the unit's), `parent` (the track this one is a
-part of: a regiment inside its brigade), `hide_after` (take the symbol off the map after its last step),
+part of: a regiment inside its brigade), `hide_after` (take the symbol off the map after its last step; during play, a unit whose higher unit is still on the map slides into that unit's symbol over 2.5 seconds instead of vanishing),
 `hold_until` (keep it on until this time), `loose` (a scattered line: skirmishers), `off_map` (text saying where
 the unit is when that is off the map), `nudge` (shift the symbol by this many screen pixels so it does not sit on
 another).
