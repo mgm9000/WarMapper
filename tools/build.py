@@ -12,7 +12,7 @@ all battles share: docs/battle-file.md; tools/export_battles.py writes them). Th
 import os, re, sys, json, html, base64, shutil
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BATTLES = ['gettysburg', 'trenton', 'ypres', 'manila']
+BATTLES = ['gettysburg', 'trenton', 'ypres', 'manila', 'luzon1899']
 APP_FILES = ['vendor/maplibre-gl.js', 'vendor/maplibre-gl.css', 'vendor/MAPLIBRE-LICENSE.txt', 'core.js', 'player.js', 'core.css']
 HEAD = ('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">%s'
         '<style>:root{color-scheme:light;padding:env(safe-area-inset-top,0px) 0 env(safe-area-inset-bottom,0px)}body{margin:0;font:14px system-ui}img{max-width:100%%}[hidden]{display:none!important}</style></head><body>\n')

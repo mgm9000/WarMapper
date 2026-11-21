@@ -308,7 +308,7 @@ details.evs{margin-top:10px} details.evs summary{cursor:pointer;font-size:12.5px
   box-shadow:0 8px 30px rgba(0,0,0,.3);padding:16px 18px}
 .ask p{margin:0 0 12px;font-size:14.5px;line-height:1.45} .ask .gn{margin:10px 0 0;font-size:12px;color:var(--muted)}
 .askb{display:flex;flex-wrap:wrap;gap:8px} .askb button{flex:1 1 auto;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface);font:inherit;font-size:13.5px;cursor:pointer}
-.askb button:first-child{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
+.askb button:first-child,.askb button[hidden]+button{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600} .askb button[hidden]{display:none}
 .panel .sumh{margin:4px 0 8px} .panel .sumtx{line-height:1.5}
 .wm-playing .cont{display:none}
 .cont{white-space:nowrap}

@@ -11,6 +11,10 @@ WarMapper's own code, data and documentation are covered by [LICENSE](LICENSE) (
 | Andreas Wiederhold, *Sketch of the engagement at Trenton* (1776) | Library of Congress, Geography and Map Division | Public domain | `playbacks/trenton/sketch.jpg` |
 | William Faden, *Plan of the operations of General Washington against the King's troops in New Jersey* (1777) | Boston Public Library, Leventhal Map Center | No known copyright restrictions | `playbacks/trenton/faden-1777.webp` (warped to fit the ground) |
 | *Military Operations, France and Belgium, 1914*, vol. 2 (1925), Sketch A and Sketches 4 to 14 | British official history | Public domain in the United States (published 1925) | `playbacks/ypres/` |
+| Sgt. J. H. Warking, Signal Corps, *Map of Manila and vicinity: showing positions of troops prior to the battle of February 5th* (1899) | Library of Congress, Geography and Map Division | Public domain (US government work) | `playbacks/manila/warking-1899.webp` (reduced copy; the full scan is streamed from the library) |
+| Capt. W. L. Siebert, Corps of Engineers, *Map of central Luzon, showing a portion of the field of operations of the 8th Army Corps* (1899) | Boston Public Library, Leventhal Map Center | No known copyright restrictions | `playbacks/luzon1899/siebert-1899.webp` (reduced copy; the full scan is streamed from the library) |
+| Lt. H. P. Howard, *Map of northern Luzon*, prepared under Brig. Gen. S. B. M. Young (1900) | Boston Public Library, Leventhal Map Center | No known copyright restrictions | `playbacks/luzon1899/young-1900.webp` (reduced copy; the full scan is streamed from the library) |
+| War Department, Military Information Division, *Theatre of military operations in Luzon, 1899* (second edition), both sheets | University of Minnesota Libraries, John R. Borchert Map Library (Minnesota Digital Library) | US War Department publication of 1899; the holder's statement is general ("may be governed by US and international copyright laws") | `playbacks/luzon1899/theatre-1899-north.webp` and `theatre-1899-south.webp` (reduced copies, joined from views of the holder's scans; the north sheet's full scan is streamed from the holder) |
 
 ## Modern map data and tiles
 
@@ -18,7 +22,8 @@ WarMapper's own code, data and documentation are covered by [LICENSE](LICENSE) (
 |---|---|---|
 | OpenStreetMap data | © OpenStreetMap contributors, [Open Database License](https://www.openstreetmap.org/copyright) | Today's roads, water and names, cut down into `data/base/` and the battle files (the fall-back current map and the place names) |
 | USGS Topo base map and aerial photography, The National Map | Public domain (US government work) | Streamed from `basemap.nationalmap.gov` for Gettysburg and Trenton |
-| OpenTopoMap | Map style CC-BY-SA, opentopomap.org; data © OpenStreetMap contributors, SRTM | Streamed from `tile.opentopomap.org` for First Ypres |
+| Natural Earth (1:10m land, roads, railroads, rivers, lakes) | Public domain, [naturalearthdata.com](https://www.naturalearthdata.com/about/terms-of-use/) | The fall-back current map under Luzon 1899 (`data/base/luzon1899.json`) |
+| OpenTopoMap | Map style CC-BY-SA, opentopomap.org; data © OpenStreetMap contributors, SRTM | Streamed from `tile.opentopomap.org` for First Ypres, Manila and Luzon 1899 |
 
 ## Software
 
