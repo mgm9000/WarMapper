@@ -78,7 +78,7 @@ WM.battle=function(raw){
   /* sides, units, tracks */
   B.sides={}; raw.sides.forEach(function(s){B.sides[s.id]=s});
   B.units={}; raw.units.forEach(function(u){B.units[u.id]=u});
-  var BR={infantry:'inf',cavalry:'cav',artillery:'art'};
+  var BR={infantry:'inf',cavalry:'cav',artillery:'art',naval:'nav'};
   function step(s){var loc=s.location||{},g=s.at?s.at.map(B.fromLL):null,mid=null;
     if(s.at){var n=s.at.length,i=n>>1;mid=(n%2)?s.at[i]:[(s.at[i-1][0]+s.at[i][0])/2,(s.at[i-1][1]+s.at[i][1])/2]}
     return {id:s.id,t0:B.time(s.show[0]),t1:B.time(s.show[1]),ts:B.rangeText(s.start),te:B.rangeText(s.end),open:s.end[1]==null?1:0,

@@ -7,7 +7,7 @@ import json, os, re
 
 FORMAT = 'warmapper-battle/1'
 ECHELONS = ['army', 'corps', 'division', 'brigade', 'regiment', 'battalion', 'squadrons', 'battery', 'company', 'section', 'detachment', 'headquarters']
-BRANCHES = ['infantry', 'cavalry', 'artillery']
+BRANCHES = ['infantry', 'cavalry', 'artillery', 'naval']      # naval (ships: transports, gunboats) added 21 Nov 2026
 METHODS = ['stated', 'inferred', 'interpolated']
 LEVELS = ['high', 'medium', 'low']
 LABEL_KINDS = ['road', 'water', 'area', 'town', 'place', 'wood', 'landmark', 'ridge', 'hill']
