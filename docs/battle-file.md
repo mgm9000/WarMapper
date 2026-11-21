@@ -69,7 +69,8 @@ boxes of the same form that the playback can jump to.
                             "commander": "Col. William Gamble", "strength": "About 1,600 strong"}]}]
 ```
 
-- `branch` is `infantry`, `cavalry` or `artillery`.
+- `branch` is `infantry`, `cavalry`, `artillery` or `naval`. A naval unit (transports, gunboats) is drawn as a ship, without a frame or
+  an echelon mark; its `echelon` is still required and means nothing.
 - `echelon` is one of `army`, `corps`, `division`, `brigade`, `regiment`, `battalion`, `squadrons`, `battery`,
   `company`, `section`, `detachment`, `headquarters`.
 - `assignments` say who the unit answered to, who commanded it and how strong it was. A unit that changed hands
@@ -111,7 +112,9 @@ A step is one row of the record: one unit, at one place, for one stretch of time
   (the middle of a range, say), kept apart from the record itself.
 - `at` is the position: one point, or the points of a line from one flank to the other. A step with no `at` is a
   record with no known position.
-- `via` is the road or route the unit took to reach this step, as a list of points.
+- `via` is the road or route the unit took to reach this step, as a list of points. In a battle followed by the day, a step with a
+  `via` is reached by moving along it over the whole time since the step before; without one the move is a straight line on the
+  last day.
 - `on` holds the position on a map that is not to scale, by map id, in that picture's own pixels.
 - `leaving` (true) marks a step reached by a route of kind `escape`: Follow lets the unit go off the screen from when it sets off.
 - `via_on` holds the route (`via`) on such a picture, by map id, where the exporter works it out (see `xy_from` below).
@@ -251,12 +254,13 @@ defaults.
 | `formations` | Optional. Zoomed out below `below` (screen pixels per metre), the units under each formation of the given `echelon` (`division` by default) are drawn as that formation: one symbol where theirs would sit, with their lines kept as its front. A unit is gathered by walking up its assignments at that moment; a unit that is itself of that echelon (a corps with its own track) is drawn as its own formation. Zooming in past `below`, or tapping the formation, breaks it out into its units. The reader turns it on and off in the Layers menu ("`label` when zoomed out"); `on` sets whether it starts on. |
 | `formations.until`, `formations.also` | Optional. Before `until` the formations are drawn whatever the zoom (Trenton: Greene, Sullivan and Knox stay whole until the first shots). `also` names units that count as formations though not of the echelon (Knox's artillery). Where a formation has its own track, its symbol stands where that track is. |
 | `trails` | Optional. `on` (true by default when the block is there) draws the routes taken: the road each unit has marched so far (its `via` routes), under the units and growing with the clock; `opacity` how strongly; `fade_after` (time units): once a unit has stood still this long, the routes it took to get there fade out, over `fade_over` (Trenton: 10 and 10 minutes). Layers menu: Routes taken. |
+| `arrows` | Optional. Before a unit sets off on a long move, and while it is on it, an arrow runs from the unit to where the record next puts it, along the step's `via` (straight where there is none). On in every battle unless `on` is false. `min_km`: how long a move earns an arrow (20 unless set). `lead`: how long before the unit sets off the arrow appears, in the battle's time unit (3 days or 45 minutes unless set). The reader can switch the arrows off; the switch is offered only where some move is long enough. |
 | `day_pause` | Optional. A battle longer than two days can stop at the end of each day (or week) while it plays: the map stays where it is, the text pane shows the summary (`summaries`) and a Continue button goes on. Up to seven days the pauses are on each day; longer, the reader is asked the first time they press play. `false` never pauses; `"day"`, `"week"`, `"off"` or `"ask"` sets the starting choice. Days end at midnight (`time.zero` is a midnight); a battle followed by the day ends each day at nightfall. Battle options: Pause and summary. Battle options also offers *Where units began and ended each day* on any battle longer than a day and a half. |
 | `hillshade` | Optional. Terrain shading drawn over today's map from elevation tiles, outside the muting, so ridges and valleys stay plain. On for every battle by default, from the Mapzen Terrain Tiles on AWS Open Data (Terrarium encoding). `false` turns it off; an object overrides `tiles`, `encoding`, `max_zoom`, `exaggeration` (0 to 1, default 0.8), `credit`, `link`. Layers menu: Terrain shading on today's map. |
 | `arrival` | Optional, for the exporter (not read by the player). A unit first placed after the battle opens gets a stand-in first step `lead` days earlier (1 by default), marked as an approach not recorded: at the middle of its parent formation's line if that formation is already on the map, otherwise `km` (10) behind its own first position, towards the point `<side code>.lat, lon` or along `<side code>.bearing` (degrees from north). Tracks with `starts_from_row`, `part_of_track` or `off_map` are left alone. |
 | `groups` | Zoomed out below `below`, the units of a `side` (but for `except`) are drawn as one symbol with this `label`. |
 | `rear` | A unit's symbol sits behind its own line: on the side away from the nearest enemy within about 2.5 km (8 km for an operational battle). Where no enemy is that near, `rear` decides: a point (`at`) behind one `side`'s line, so that side's symbols sit on that side of their lines and the other side's on the far side. Failing both, symbols sit to the east. |
-| `rules` | `blend`: minutes over which a unit shifts from one step to the next when they meet. `near`: metres within which no march is drawn. `pace`: march pace in metres a minute, one number or one per branch (`infantry`, `cavalry`, `artillery`), used for moves into a step marked `march`. For day battles, `lead` (the part of a day before nightfall in which the move happens) and `linger` (days a unit stays after the sources drop it). |
+| `rules` | `blend`: minutes over which a unit shifts from one step to the next when they meet. `near`: metres within which no march is drawn. `pace`: march pace in metres a minute, one number or one per branch (`infantry`, `cavalry`, `artillery`), used for moves into a step marked `march`. For day battles, `lead` (the part of a day before nightfall in which the move happens) and `linger` (days a unit stays after the sources drop it, fading as they pass). |
 | `texts`, `found` | Wording for this battle: the sentence under each state (`stated`, `inferred`, `moving`, `after`, `unplaced`, `offthis`, `lost`), and the words for how a place was found (`map_read`, `sketch_read` and so on). |
 | `about` | The paragraphs under "About this prototype". |
 
@@ -288,11 +292,11 @@ battle file into the page.
 | `playback`, and `view.presets` | `Playback settings`: one setting per row. `bases.1.label` is the label of the first base; a value written `[..]` is a list |
 | `sides` | `Sides` (`code` and `short` are the playback's) |
 | `nations` | `Nations` |
-| `units` and their `assignments` | `Units`, `Assignments`: every unit of the campaign's war |
+| `units` and their `assignments` | `Units`, `Assignments`: every unit of the campaign's war, but for units that only another playback of that war draws (Manila and Luzon 1899 share one war) |
 | `tracks` | `Tracks`: one row per symbol. `rows` lists the `Positions` rows it follows; left empty, it follows every row of its unit. `starts_from_row`, `starts_at` and `start_route` (and `start_move_minutes`, how long it takes to reach its first row, such as a river crossing) give a symbol a stand-in start from a row of its division's (`start_route` may name several routes in order, `RT01; RT02`; `start_route_points` caps the points taken from the last) |
 | steps | `Positions`. `show_from` and `show_to` are when the playback draws the row; left empty, it is drawn from its latest start to its earliest end. Where two rows of one symbol overlap, the earlier gives way. `arrive_at_pace` (yes) is the step's `march` |
 | a step's `via` | `Routes`: a route from one row to the next, where its `playback` column says yes |
-| `events` | `Events`. `timeline` is `name`, `dot` or `off`; `playback_at`, `playback_label` and `playback_text` are the playback's moment, short name and wording where they differ from the record's |
+| `events` | `Events`: those of the battles the playback's `record_battles` names. `timeline` is `name`, `dot` or `off`; `playback_at`, `playback_label` and `playback_text` are the playback's moment, short name and wording where they differ from the record's |
 | `summaries` | `Summaries`: one row per day or week (`kind`, `from`, `to`, `title`, `text`, `source_ids`) |
 | `sources` | `Sources`: only those the battle cites |
 | `labels` | `Labels` |

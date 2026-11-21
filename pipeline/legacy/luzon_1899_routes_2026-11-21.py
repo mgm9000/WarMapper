@@ -2,7 +2,8 @@
 approximate routes", "do large units breakdown to their subordinate units if zoomed in? If not, lets see if that works well").
 
 For the Luzon 1899 playback this adds to the master workbook:
-  - a row for Wheaton's expedition at Manila before it sailed (6 Nov), and its sea route to San Fabian;
+  - a row for Wheaton's expedition at Manila before it sailed (6 Nov), its sea route to San Fabian, and the ships that carried it
+    as a unit of their own (a ship symbol beside the troops' symbol; it stays off the beach while they land, then fades);
   - a Routes row for each move that took more than a day or went by a road, railway, river or coast the reports name or imply, so
     the symbol follows it and the player can draw an arrow ahead of the move (about 50 routes; each says what is stated and what
     is only the likely way);
@@ -94,12 +95,28 @@ pos('LZ083', 'LZ-US-WHE-X', 'PHW-FALL99', D+'11-05', D+'11-06', D+'11-03', D+'11
 T = wb['Tracks']; th = head(T)
 for r in T.iter_rows(min_row=2):
     if r[0].value == 'luzon1899' and r[1].value == 'L-WHE-F': r[th.index('rows')].value = 'LZ083; LZ049'
+# the ships that carried it (Morgan, 21 Nov: "add a ship symbol with the ground symbol next to it. Then show the ground unit landing and the ship symbol can fade away")
+add('Units', {'unit_id': 'LZ-US-SHIPS', 'unit_name': "Transports and naval convoy of Wheaton's expedition (November 1899)", 'map_label': 'Transports', 'side_id': 'PHW-US', 'nation': 'United States', 'branch': 'Naval',
+              'echelon': 'Detachment', 'source_ids': 'S74', 'sourced?': 'yes',
+              'notes': 'S74: "the Government transports Sheridan and Aztec and two coasting vessels chartered for this service", convoyed by two naval vessels and joined by the Oregon from Hongkong. The scan is poor: the transports\' names are cleaned by eye and the convoy\'s names read "C7aUao and Manila" (taken to be the gunboats Callao and Manila). Echelon means nothing for ships; the symbol shows none.'})
+n0 = max(int(str(r[0].value)[1:]) for r in wb['Assignments'].iter_rows(min_row=2) if r[0].value and str(r[0].value)[1:].isdigit())
+add('Assignments', {'assign_id': 'A%03d' % (n0 + 1), 'unit_id': 'LZ-US-SHIPS', 'parent_unit_id': 'LZ-US-WHE-X', 'valid_from': D+'11-06', 'valid_to': D+'11-08', 'source_ids': 'S74', 'notes': 'Under Wheaton for the voyage is a drawing choice: the Navy\'s ships were not his to command.'})
+ANCHOR = (16.175, 120.385)      # about 4 km off the beach at San Fabian: "arrived opposite San Fabian"
+pos('LZ094', 'LZ-US-SHIPS', 'PHW-FALL99', D+'11-05', D+'11-06', D+'11-03', D+'11-05', D+'11-06', D+'11-06', 'Manila Bay, off the city', 14.5850, 120.9550, 3000, 'low',
+    'The anchorage off Manila. The report does not name the port; not from a gazetteer.', 'Loading the expedition', 'S74',
+    'S74: "His transportation was the Government transports Sheridan and Aztec and two coasting vessels chartered for this service." "He sailed on the morning of November 6"', 'inferred', 'medium',
+    'Sailed on the morning of 6 November (stated). Shown at Manila from 3 November, as the troops are.')
+pos('LZ095', 'LZ-US-SHIPS', 'PHW-FALL99', D+'11-07', D+'11-07', D+'11-07', D+'11-08', 'unknown', 'unknown', 'Lingayen Gulf, off San Fabian', ANCHOR[0], ANCHOR[1], 4000, 'low',
+    'Offshore of San Fabian; the report says "opposite San Fabian" and no more. Not from a gazetteer.', 'Off San Fabian: the Navy shells the trenches and 2,000 men are landed in two hours and twenty minutes; stores are still coming through the surf on the 8th', 'S74',
+    'S74: "arrived opposite San Fabian the following day"; Wheaton, 8 Nov: "Landed one battalion Thirteenth and one of the Thirty-third Infantry at 4:40, the Navy firing on the insurgent trenches"; "Will soon complete unloading of supplies, which surf on beach renders difficult."',
+    'stated', 'low', 'Arrived on the afternoon of 7 November; still unloading on the 8th.', 'Not followed after the 8th: the symbol fades and leaves the map. Where the ships went next was not read.')
+add('Tracks', {'playback_id': 'luzon1899', 'track_id': 'L-SHIPS', 'unit_id': 'LZ-US-SHIPS', 'rows': 'LZ094; LZ095', 'echelon': 'detachment', 'hide_after_last_row': 'yes'})
 
 # ---------------------------------------------------------------- 3. the trial: MacArthur's division by brigade, 24-27 March
 add('Units', {'unit_id': 'LZ-US-WHE-B', 'unit_name': "Wheaton's brigade on the Caloocan line (advance on Malolos, March 1899)", 'map_label': 'Wheaton', 'side_id': 'PHW-US', 'nation': 'United States', 'branch': 'Infantry',
               'echelon': 'Brigade', 'source_ids': 'S65', 'sourced?': 'yes',
               'notes': 'S65 p. 186: Wheaton "was directed to take command of the left of this line from La Loma to Caloocan", with the 2nd Oregon, the 3rd and 22nd Infantry, a battalion of the 23rd and, some days later, the 13th Minnesota. One of the three brigades of the First Division after 17 March; Otis ordered it directly.'})
-n = max(int(str(r[0].value)[1:]) for r in wb['Assignments'].iter_rows(min_row=2) if r[0].value and str(r[0].value)[1:].isdigit())
+n = n0 + 1
 for a in [('PH-US-2-1', 'PH-US-2DIV', 'Brig. Gen. Harrison G. Otis', D+'03-17', D+'04-30', 'S65', 'S65 p. 186: after 17 March the brigades of the Second Division were "commanded by ... Brigadier Generals Hale, Otis and Hall". When Otis left the brigade was not read.'),
           ('PH-US-2-2', 'PH-US-2DIV', 'Brig. Gen. Irving Hale', D+'03-17', D+'05-31', 'S65', None),
           ('LZ-US-WHE-B', 'PH-US-CORPS', 'Brig. Gen. Loyd Wheaton', D+'03-24', D+'03-27', 'S65', None)]:
@@ -182,7 +199,8 @@ R = [
     ('LZ042', 'LZ043', ['Bangar', 'Tagudin', 'Santa Cruz (Ilocos Sur)', 'Santa Lucia', 'Candon', 'Santiago (Ilocos Sur)', 'Santa Maria (Ilocos Sur)'], 'march', 'The coast road north; S68 has Tinio holding trenches across it at Tagudin.', 'low', 'S68; S74'),
     ('LZ043', 'LZ044', ['Santa'], 'march', ROAD, 'low', 'S74'),
     ('LZ046', 'LZ047', ['San Luis (Pampanga)'], 'voyage', 'S65 p. 198: up the Rio Grande with the gunboats; they had "a sharp engagement at San Luis".', 'medium', 'S65'),
-    ('LZ083', 'LZ049', SEA, 'voyage', 'S74: "He sailed on the morning of November 6, and arrived opposite San Fabian the following day." The track is not given: drawn out past Corregidor, up the Zambales coast and round Cape Bolinao.', 'low', 'S74'),
+    ('LZ094', 'LZ095', SEA, 'voyage', 'S74: "He sailed on the morning of November 6, and arrived opposite San Fabian the following day." The track is not given: drawn out past Corregidor, up the Zambales coast and round Cape Bolinao.', 'low', 'S74'),
+    ('LZ083', 'LZ049', SEA + [ANCHOR], 'voyage', 'S74: "He sailed on the morning of November 6, and arrived opposite San Fabian the following day." The track is not given: drawn out past Corregidor, up the Zambales coast and round Cape Bolinao, then from the ships to the beach.', 'low', 'S74'),
     ('LZ051', 'LZ052', ['Salcedo', 'Concepcion (Gregorio del Pilar)'], 'march', 'S68 gives Candon and the pass; the trail between is drawn through the towns at the foot of it.', 'low', 'S68'),
     ('LZ052', 'LZ053', ['Angaqui'], 'march', 'S71 marks the fight of 2 Dec "between Lingay and Angaqui"; March reached Cervantes on the 3rd.', 'medium', 'S71; S68'),
     ('LZ055', 'LZ056', ['Solano', 'Bagabag', 'Cordon', 'Santiago (Isabela)', 'Cauayan', 'Ilagan', 'Tumauini', 'Cabagan', 'Tuguegarao', 'Iguig', 'Amulung'], 'march',
@@ -226,4 +244,4 @@ add('Gaps', {'gap_id': 'G-LZ8', 'battle_id': 'PHW-FALL99', 'gap': 'Routes are to
              'effect on the data': 'A symbol on the move, and the arrow ahead of it, can be a few kilometres off the road, railway or river. %d of the %d routes rest on a report\'s wording; the rest follow the railway or main road because the reports give only the two ends.' % (sum(1 for r in R if r[5] in ('medium', 'high')), len(R)),
              'how to close it': 'Trace the railway, the roads and the lines of operation from the 1899 maps (S69, S71, S77).', 'status in v2': 'Open (21 Nov 2026).'})
 wb.save(WB)
-print('routes', len(R), 'stated or part-stated', sum(1 for r in R if r[5] in ('medium', 'high')), 'new position rows', 2 + len(B))
+print('routes', len(R), 'stated or part-stated', sum(1 for r in R if r[5] in ('medium', 'high')), 'new position rows', 4 + len(B))
