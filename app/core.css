@@ -342,12 +342,7 @@ details.umd>summary{font-size:13.5px;font-weight:600;color:var(--fg)}
 
 /* ---------- a reconstructed base map (playback base with `recon`) ---------- */
 /* the label that says so, on the map for as long as the base is shown */
-.rcnote{position:absolute;left:50%;transform:translateX(-50%);top:56px;z-index:2;max-width:min(520px,calc(100% - 150px));padding:4px 11px 5px;border:1px solid #33291f;outline:1px solid #33291f;outline-offset:2px;background:#efe4c8;color:#33291f;
   font-family:'IM Fell English',Georgia,'Times New Roman',serif;font-size:13px;line-height:1.25;text-align:center;cursor:pointer;border-radius:0}
-.rcnote b{font-family:'IM Fell English SC','IM Fell English',Georgia,serif;font-weight:400;letter-spacing:.14em;text-transform:uppercase;font-size:12.5px}
-.rcnote:hover{background:#f6ecd2}
-@media (max-width:1180px){ .rcnote span{display:none} .rcnote b::after{content:' \00b7  not a period map';letter-spacing:.04em;text-transform:none;font-family:'IM Fell English',Georgia,serif} }
-@media (max-width:860px){ .rcnote{left:max(10px,env(safe-area-inset-left,0px));transform:none;top:96px;max-width:calc(100% - 70px);font-size:12px;padding:3px 8px 4px} .mapwrap.narr-on .rcnote{top:auto;bottom:118px} }
 /* lettering in the manner of the time: districts in spaced capitals, water in italics, small names in an old-style roman */
 .mapwrap.recon{--u-halo:#f1e6c9;--m-halo:#f1e6c9;--map-halo:#efe4c8;--relief:#6b4a26}
 .mapwrap.recon #ov .al,.mapwrap.recon #ov .pl,.mapwrap.recon #ov .lm,.mapwrap.recon #ov .sl,.mapwrap.recon #ov .wl{font-family:'IM Fell English',Georgia,'Times New Roman',serif;fill:#33291f;stroke:#efe4c8}
