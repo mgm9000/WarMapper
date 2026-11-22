@@ -190,6 +190,17 @@ def validate(b, folder=None):
             if not (isinstance(im, dict) and im.get('credit')): bad.append('playback base %s: imagery needs a credit' % bs.get('id'))
         if not (bs.get('current') or bs.get('map') or bs.get('series') or im or bs.get('recon')): bad.append('playback base %s: needs "current", "map", "series", "imagery" or "recon"' % bs.get('id'))
         if bs.get('recon') and bs['recon'] not in [r.get('id') for r in b.get('reconstructions', [])]: bad.append('playback base %s: reconstruction %r is not in reconstructions' % (bs.get('id'), bs['recon']))
+        tr = bs.get('terrain')   # the terrain version of a reconstruction (22 Nov 2026): relief and contours worked out in the page
+        if tr is not None:
+            if not bs.get('recon'): bad.append('playback base %s: terrain needs a reconstruction ("recon")' % bs.get('id'))
+            if not isinstance(tr, dict): bad.append('playback base %s: terrain must be an object' % bs.get('id'))
+            else:
+                for k in ('zoom', 'open_m', 'smooth_m', 'relief', 'index'):
+                    if k in tr and not (isinstance(tr[k], (int, float)) and tr[k] > 0): bad.append('playback base %s: terrain.%s must be a positive number' % (bs.get('id'), k))
+                st = tr.get('steps', [])
+                if not (isinstance(st, list) and all(isinstance(q, list) and len(q) == 2 and all(isinstance(v, (int, float)) and v > 0 for v in q) for q in st)):
+                    bad.append('playback base %s: terrain.steps must be [[zoom, metres], ...]' % bs.get('id'))
+                elif [q[0] for q in st] != sorted(q[0] for q in st): bad.append('playback base %s: terrain.steps must go from the lowest zoom up' % bs.get('id'))
     if P.get('surround') is not None: bad.append("playback.surround is now called playback.modern")
     su = P.get('modern')
     if su is not None:

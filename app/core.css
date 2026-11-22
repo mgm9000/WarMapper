@@ -6,7 +6,7 @@
   /* drawn on the paper map, so the same in both themes */
   --m-ink:#141a24; --m-halo:#fdf8ea; --m-paper:#e8dcc0; --m-sel:#f2a900;
   /* a reconstructed map in period dress: toned paper, brown-black ink, water in a pale wash. The same in both themes, like the paper maps */
-  --rc-paper:#e7d9b8; --rc-ink:#33291f; --rc-road:#f3e9cf; --rc-water:#bfd0cc; --rc-water-ink:#4f666c; --rc-wall:#5c2f24; --rc-town:rgba(120,84,52,.10); --rc-shade:rgba(84,58,30,.55); --rc-light:rgba(255,250,232,.38);
+  --rc-paper:#e7d9b8; --rc-ink:#33291f; --rc-road:#f3e9cf; --rc-water:#bfd0cc; --rc-water-ink:#4f666c; --rc-wall:#5c2f24; --rc-town:rgba(120,84,52,.10); --rc-shade:rgba(84,58,30,.55); --rc-light:rgba(255,250,232,.38); --rc-contour:rgba(122,74,34,.75);
   --display:"Zilla Slab",Rockwell,Georgia,serif; --body:Inter,system-ui,-apple-system,"Segoe UI",sans-serif; --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
   /* current map */
   --mod-sat:-.8; --mod-lo:.22; --mod-con:-.12; --img-sat:-.55; --img-lo:.14; --hs-shadow:rgba(52,40,26,.62); --hs-light:rgba(255,255,250,.35);
@@ -72,6 +72,7 @@ button{font:inherit;color:inherit}
 .rl{font-family:var(--display);font-size:12.5px;font-weight:600;font-style:italic;letter-spacing:.2em;fill:var(--relief);stroke:var(--map-halo);stroke-width:3.5px}
 .hl{font-family:var(--display);font-size:12.5px;font-weight:600;font-style:italic;fill:var(--relief);stroke:var(--map-halo);stroke-width:3.5px}
 .rl.under,.hl.under{opacity:.7}
+.cl{font-family:var(--display);font-size:10px;font-weight:600;fill:#7a4a22;stroke:var(--rc-paper);stroke-width:3px;paint-order:stroke}
 .hm{fill:var(--relief);stroke:var(--map-halo);stroke-width:1.5px;paint-order:stroke}
 .pl{font-size:11px;fill:var(--map-text);stroke:var(--map-halo);stroke-width:3px}
 .pl.big{font-size:12.5px;font-weight:600}
