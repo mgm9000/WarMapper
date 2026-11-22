@@ -60,7 +60,7 @@ function topo(){return !!MOD&&!modOff}
    lie of the land stays plain. Every battle gets it unless its file says hillshade:false; hillshade:{exaggeration, tiles, ...} tunes it. */
 var HS=(function(){if(P.hillshade===false)return null;var h={tiles:'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',encoding:'terrarium',max_zoom:15,exaggeration:0.8,
   credit:'Terrain Tiles (Mapzen, AWS Open Data)',link:'https://github.com/tilezen/joerd/blob/master/docs/attribution.md'},o=P.hillshade||{};for(var k in o)h[k]=o[k];return h})(),hsOn=true,hsVis=null,hsRc=null,hsFail=0;
-function paintHill(){ if(!HS) return; var ok=hsOn&&hsFail<4,on=ok&&!base.rc&&!base.sat&&!!(modOn||base.current),onr=ok&&!!base.rc;   // on a reconstructed map the relief is drawn in the map's own ink
+function paintHill(){ if(!HS) return; var ok=hsOn&&hsFail<4,on=ok&&!base.rc&&!base.sat&&!!(modOn||base.current),onr=ok&&!!base.rc&&!trnOf();   // on a reconstructed map the relief is drawn in the map's own ink
   if(on!==hsVis||onr!==hsRc){hsVis=on;hsRc=onr;mv.show('hill',on);if(mv.map.getLayer('rc-hill'))mv.show('rc-hill',onr);lastCredit=''} }
 if(MOD){(function(){var f=(+MOD.reach||(bm?4:2))/2,cx=(EXT[0]+EXT[2])/2,cy=(EXT[1]+EXT[3])/2,hw=Math.abs(EXT[2]-EXT[0])*f,hh=Math.abs(EXT[3]-EXT[1])*f;var r=[cx-hw,cy-hh,cx+hw,cy+hh];
   B.mapList.forEach(function(m){if(m.own)return;m.images.forEach(function(im){var b=im.box;if(!b)return;b=[Math.min(b[0],b[2]),Math.min(b[1],b[3]),Math.max(b[0],b[2]),Math.max(b[1],b[3])];var mx=(b[2]-b[0])*0.3,my=(b[3]-b[1])*0.3;   // room to zoom out past every period map, so the modern map is seen around it
@@ -540,6 +540,7 @@ function mapNames(L,cover){
     var big=l.k==='place'&&l.l===0,full=l.s&&sNow>=(Z.full_names||1e9),txt=l.t+(full?' ('+l.s+')':''),w=txt.length*(big?6.6:5.9)+4,pr=[q[0]+5,q[1]-15,q[0]+8+w,q[1]-1],hid=L.hit(pr);
     h+='<circle cx="'+f1(q[0])+'" cy="'+f1(q[1])+'" r="'+(big?3:2.2)+'" fill="var(--u-ink)" opacity="'+(big?1:.7)+'"/>'; if(hid) return; L.keep(pr);
     h+='<text class="'+(l.k==='place'?'pl'+(big?' big':''):'lm')+'" x="'+f1(q[0]+7)+'" y="'+f1(q[1]-4)+'">'+esc(l.t)+(full?' <tspan class="old">('+esc(l.s)+')</tspan>':'')+'</text>'});
+  if(placeNames) h+=contourNames(L);   // last, so the names of places come first
   return h}
 function seriesAt(){var d=Math.max(T0,stamp(t));for(var i=0;i<series.length;i++)if(d>=series[i].t0&&d<=series[i].t1)return series[i];return series[series.length-1]}
 var seriesShown=null,lastCredit='';
@@ -549,7 +550,7 @@ function paintCredit(H){var c,mc=MOD?(MOD.link?'<a href="'+esc(MOD.link)+'" targ
   else if(base.sat){var im=base.imagery;c=(im.link?'<a href="'+esc(im.link)+'" target="_blank" rel="noopener">'+esc(im.credit)+'</a>':esc(im.credit))+' &middot; Names: '+WM.OSM_CREDIT}
   else if(base.rc) c=esc(base.rc.credit||'A WarMapper reconstruction');
   else{var m=H||base.m,und=base.backdrop==='current'||through(); c=(H?esc(m.short)+', '+esc(m.label)+(stamp(t)>m.t1?' (the last one)':'')+' &middot; ':'')+esc(m.credit)+(und?' &middot; '+now:(modOn?' &middot; Around it: '+mc:''))}
-  if(hsVis||hsRc) c+=' &middot; '+(hsRc?'Relief':'Terrain shading')+': <a href="'+esc(HS.link)+'" target="_blank" rel="noopener">'+esc(HS.credit)+'</a>';
+  if(hsVis||hsRc||trnOf()) c+=' &middot; '+(trnOf()?'Relief and contours':hsRc?'Relief':'Terrain shading')+': <a href="'+esc(HS.link)+'" target="_blank" rel="noopener">'+esc(HS.credit)+'</a>';
   if(c!==lastCredit){lastCredit=c;$('credit').innerHTML=c;if(info)panelKey=''}}   // the i panel lists the credits: redraw it if it is open
 /* The credits are under the i button. They also show on the map for five seconds when the page opens and when the reader changes the
    map, then fade (OpenStreetMap's attribution guideline: show the credit first; after five seconds it may collapse behind an "i"). */
@@ -657,6 +658,7 @@ function buildRecon(R,px){
      shading shows the lie of the land and not today's buildings, which the fine tiles pick up as bumps on flat ground. */
   if(HS&&!mv.map.getSource('dem-rc')) mv.map.addSource('dem-rc',{type:'raster-dem',tiles:[HS.tiles],encoding:HS.encoding,tileSize:HS.tile_size||256,maxzoom:Math.min(HS.max_zoom||11,R.relief_zoom||11)});
   if(HS&&!mv.map.getLayer('rc-hill')) add({id:'rc-hill',type:'hillshade',source:'dem-rc',paint:{'hillshade-exaggeration':1,'hillshade-illumination-direction':315,'hillshade-shadow-color':'var(--rc-shade)','hillshade-highlight-color':'var(--rc-light)','hillshade-accent-color':'var(--rc-shade)'}},true);
+  addTerrainLayers(R);   // a terrain version of this map: its contours go here, under the water and the lines
   add({id:src+'-sea',type:'fill',filter:is('sea'),paint:{'fill-color':'var(--rc-water)','fill-antialias':false}});
   [[2.6,0.9,0.5],[6,0.75,0.36],[10.5,0.6,0.24],[16,0.5,0.14]].forEach(function(q,i){   // lines drawn along the shore, fainter as they go out
     add({id:src+'-lining'+i,type:'line',filter:is('shore'),layout:{'line-join':'round'},paint:{'line-color':'var(--rc-water-ink)','line-width':zw(q[1]),'line-offset':zw(q[0]),'line-opacity':q[2]}})});
@@ -683,6 +685,101 @@ function buildRecon(R,px){
   add({id:src+'-frame2',type:'line',filter:is('frame'),paint:{'line-color':'var(--rc-ink)','line-width':0.9}});
   RCL[R.id]=ids;
 }
+/* ---------- the terrain version of a reconstructed map ----------
+   A base with `terrain` ({recon:id, terrain:{...}}) adds the lie of the land in detail: relief and contour lines worked out in this page,
+   once, from the same elevation tiles as the shading, over the reconstruction's sheet. The tiles are a radar surface (SRTM, 2000) that
+   carries the buildings of its day, so the heights are cleaned first: every bump narrower than about `open_m` (a block, a tower, a dump)
+   is taken off, and what is left is smoothed over about `smooth_m`. That leaves the broad lie of the land (a low plateau, the valleys cut
+   into it, the flat delta), which is what a reader needs to see where the ridges and the dead ground are. It is today's ground, not 1899's,
+   and the map details say so. Contours close in as the reader zooms in (`steps`: [zoom, interval in metres]); every `index` metres a
+   heavier line, with its height written along it. */
+var TRN={};
+function trnOf(b){b=b||base;var X=b&&b.terrain&&b.rc&&TRN[b.rc.id];return X&&X.state==='ready'?X:null}
+function addTerrainLayers(R){ var T=bases.filter(function(b){return b.terrain&&b.recon===R.id})[0]; if(!T||TRN[R.id]) return;
+  var tc=T.terrain,src='rt-'+R.id,steps=tc.steps||[[10.5,10],[12.5,5],[14,2],[15.5,1]],ix=tc.index||steps[0][1],X=TRN[R.id]={state:'idle',src:src,T:tc,steps:steps,ix:ix,layers:[]};
+  mv.geo(src,[]);
+  var e=['get','e'],is0=function(n){return ['==',['%',e,n],0]},not0=function(n){return ['!=',['%',e,n],0]};
+  var add=function(spec){spec.source=src;spec.layout={visibility:'none','line-join':'round'};mv.layer(spec);X.layers.push(spec.id)};
+  add({id:src+'-c0',type:'line',minzoom:steps[0][0],filter:is0(ix),paint:{'line-color':'var(--rc-contour)','line-width':['interpolate',['linear'],['zoom'],10,0.55,13,1,16,1.8,19,3]}});
+  steps.forEach(function(s,i){ if(s[1]===ix) return;
+    add({id:src+'-c'+(i+1),type:'line',minzoom:s[0],filter:['all',is0(s[1]),not0(ix)].concat(steps.slice(0,i).filter(function(c){return c[1]!==ix}).map(function(c){return not0(c[1])})),
+      paint:{'line-color':'var(--rc-contour)','line-width':['interpolate',['linear'],['zoom'],11,0.3,14,0.55,17,1,19,1.6],'line-opacity':['interpolate',['linear'],['zoom'],s[0],0.25,s[0]+0.8,0.7]}})});
+}
+function loadTerrain(R){ var X=TRN[R.id]; if(!X||X.state!=='idle'||!HS) return; X.state='loading';
+  var tc=X.T,z=tc.zoom||13,sh=R.sheet,n=256*Math.pow(2,z),wx=function(l){return (l+180)/360*n},wy=function(a){var r=a*Math.PI/180;return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n};
+  var lat0=(sh[1]+sh[3])/2,px=EARTH*Math.cos(lat0*Math.PI/180)/n,ro=Math.max(1,Math.round(((tc.open_m||230)/px-1)/2)),rs=Math.max(1,Math.round((tc.smooth_m||60)/px/1.1)),pad=ro+3*rs+2;
+  var X0=Math.floor(wx(sh[0]))-pad,X1=Math.ceil(wx(sh[2]))+pad,Y0=Math.floor(wy(sh[3]))-pad,Y1=Math.ceil(wy(sh[1]))+pad,W=X1-X0,H=Y1-Y0,g=new Float32Array(W*H),jobs=[];
+  var cv=document.createElement('canvas');cv.width=cv.height=256;var cx=cv.getContext('2d',{willReadFrequently:true}),terr=HS.encoding!=='mapbox';
+  for(var ty=Math.floor(Y0/256);ty<=Math.floor((Y1-1)/256);ty++)for(var tx=Math.floor(X0/256);tx<=Math.floor((X1-1)/256);tx++)(function(tx,ty){
+    var u=HS.tiles.replace('{z}',z).replace('{x}',tx).replace('{y}',ty);
+    jobs.push(fetch(u).catch(function(){return fetch(u,{cache:'reload'})}).then(function(r){if(!r.ok)throw new Error(r.status);return r.blob()}).then(createImageBitmap).then(function(im){
+      cx.clearRect(0,0,256,256);cx.drawImage(im,0,0);var d=cx.getImageData(0,0,256,256).data;
+      for(var j=0;j<256;j++){var y=ty*256+j-Y0;if(y<0||y>=H)continue;for(var i=0;i<256;i++){var x=tx*256+i-X0;if(x<0||x>=W)continue;var k=(j*256+i)*4;
+        g[y*W+x]=terr?d[k]*256+d[k+1]+d[k+2]/256-32768:-10000+(d[k]*65536+d[k+1]*256+d[k+2])*0.1}}}))})(tx,ty);
+  var job={g:g,W:W,H:H,X0:X0,Y0:Y0,n:n,px:px,ro:ro,rs:rs,ex:tc.relief||4,st:Math.min.apply(null,X.steps.map(function(s){return s[1]}))};
+  Promise.all(jobs).then(function(){return terrainWork(job)}).then(function(r){
+    var ll=function(x,y){var X2=X0+x,Y2=Y0+y;return [X2/n*360-180,Math.atan(Math.sinh(Math.PI*(1-2*Y2/n)))*180/Math.PI]};
+    mv.map.getSource(X.src).setData({type:'FeatureCollection',features:r.lines});
+    var cv=document.createElement('canvas');cv.width=W;cv.height=H;cv.getContext('2d').putImageData(new ImageData(r.rgba,W,H),0,0);var img=cv.toDataURL('image/png');
+    mv.map.addSource(X.src+'-img',{type:'image',url:img,coordinates:[ll(0,0),ll(W,0),ll(W,H),ll(0,H)]});
+    mv.layer({id:X.src+'-relief',type:'raster',source:X.src+'-img',layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-resampling':'linear','raster-opacity':0.95}},X.src+'-c0');
+    X.layers.unshift(X.src+'-relief'); X.state='ready'; paintHill(); paintFade(); lastCredit=''; panelKey=''; mv.kick()
+  }).catch(function(){X.state='failed';panelKey='';mv.kick()});
+}
+function terrainRun(d){var S=terrainClean(d.g,d.W,d.H,d.ro,d.rs),n=d.n,X0=d.X0,Y0=d.Y0;
+  return {lines:contours(S,d.W,d.H,d.st,function(x,y){var X2=X0+x+0.5,Y2=Y0+y+0.5;return [+(X2/n*360-180).toFixed(6),+(Math.atan(Math.sinh(Math.PI*(1-2*Y2/n)))*180/Math.PI).toFixed(6)]}),rgba:reliefRGBA(S,d.W,d.H,d.px,d.ex)}}
+function terrainWork(d){ // the heights are worked in the background, so the page keeps moving while they are (a few seconds on a phone)
+  try{ var src=[terrainClean,contours,reliefRGBA,terrainRun].map(String).join('\n')+'\nonmessage=function(m){var r=terrainRun(m.data);postMessage(r,[r.rgba.buffer])}';
+    var w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));
+    return new Promise(function(ok,no){w.onmessage=function(m){w.terminate();ok(m.data)};w.onerror=function(e){w.terminate();no(e)};w.postMessage(d,[d.g.buffer])}) }
+  catch(e){ return Promise.resolve(terrainRun(d)) }}
+/* take off what is narrower than the opening (a grey-scale opening: the lowest ground near each point, then the highest of those),
+   then smooth (three passes of a box filter, close to a Gaussian) */
+function terrainClean(g,W,H,ro,rs){
+  function run(a,r,f,init){var t=new Float32Array(W*H),o=new Float32Array(W*H),x,y,i,v;
+    for(y=0;y<H;y++)for(x=0;x<W;x++){v=init;for(i=-r;i<=r;i++){var xx=x+i;if(xx>=0&&xx<W)v=f(v,a[y*W+xx])}t[y*W+x]=v}
+    for(y=0;y<H;y++)for(x=0;x<W;x++){v=init;for(i=-r;i<=r;i++){var yy=y+i;if(yy>=0&&yy<H)v=f(v,t[yy*W+x])}o[y*W+x]=v}return o}
+  function box(a,r){var t=new Float32Array(W*H),o=new Float32Array(W*H),x,y;
+    for(y=0;y<H;y++){var s=0,c=0;for(x=0;x<=r&&x<W;x++){s+=a[y*W+x];c++}for(x=0;x<W;x++){t[y*W+x]=s/c;var ad=x+r+1,rm=x-r;if(ad<W){s+=a[y*W+ad];c++}if(rm>=0){s-=a[y*W+rm];c--}}}
+    for(x=0;x<W;x++){var s2=0,c2=0;for(y=0;y<=r&&y<H;y++){s2+=t[y*W+x];c2++}for(y=0;y<H;y++){o[y*W+x]=s2/c2;var ad2=y+r+1,rm2=y-r;if(ad2<H){s2+=t[ad2*W+x];c2++}if(rm2>=0){s2-=t[rm2*W+x];c2--}}}return o}
+  var o=run(run(g,ro,Math.min,1e9),ro,Math.max,-1e9);return box(box(box(o,rs),rs),rs)}
+/* contour lines by marching squares over the grid, joined into lines; heights in whole metres (multiples of `st`) */
+function contours(S,W,H,st,toLL){ var lv={},x,y;
+  for(y=0;y<H-1;y++)for(x=0;x<W-1;x++){ var a=S[y*W+x],b=S[y*W+x+1],c=S[(y+1)*W+x+1],d=S[(y+1)*W+x],mn=Math.min(a,b,c,d),mx=Math.max(a,b,c,d);
+    for(var L=Math.ceil(mn/st)*st;L<=mx;L+=st){ var idx=(a>=L?8:0)|(b>=L?4:0)|(c>=L?2:0)|(d>=L?1:0); if(idx===0||idx===15) continue;
+      var T=(y*W+x)*2,Bm=((y+1)*W+x)*2,Le=(y*W+x)*2+1,Ri=(y*W+x+1)*2+1,segs;   // edge keys: top, bottom, left, right
+      switch(idx){case 1:case 14:segs=[[Le,Bm]];break;case 2:case 13:segs=[[Bm,Ri]];break;case 3:case 12:segs=[[Le,Ri]];break;case 4:case 11:segs=[[T,Ri]];break;
+        case 6:case 9:segs=[[T,Bm]];break;case 7:case 8:segs=[[Le,T]];break;
+        case 5:segs=(a+b+c+d)/4>=L?[[Le,T],[Bm,Ri]]:[[Le,Bm],[T,Ri]];break;case 10:segs=(a+b+c+d)/4>=L?[[Le,Bm],[T,Ri]]:[[Le,T],[Bm,Ri]];break}
+      var q=lv[L]||(lv[L]={s:[],p:{}});
+      var pt=function(k){if(q.p[k])return;var cell=k>>1,ex=cell%W,ey=(cell/W)|0,v0=S[cell],v1,f;
+        if(k&1){v1=S[cell+W];f=(L-v0)/(v1-v0);q.p[k]=[ex,ey+f]}else{v1=S[cell+1];f=(L-v0)/(v1-v0);q.p[k]=[ex+f,ey]}};
+      segs.forEach(function(s){pt(s[0]);pt(s[1]);q.s.push(s)})}}
+  var out=[];
+  Object.keys(lv).forEach(function(L){var q=lv[L],by={},used=new Uint8Array(q.s.length);
+    q.s.forEach(function(s,i){(by[s[0]]=by[s[0]]||[]).push(i);(by[s[1]]=by[s[1]]||[]).push(i)});
+    q.s.forEach(function(s,i){ if(used[i]) return; used[i]=1; var line=[s[0],s[1]];
+      [1,0].forEach(function(end){ for(;;){var k=end?line[line.length-1]:line[0],nx=(by[k]||[]).filter(function(j){return !used[j]})[0];if(nx===undefined)break;used[nx]=1;
+        var o=q.s[nx][0]===k?q.s[nx][1]:q.s[nx][0];if(end)line.push(o);else line.unshift(o)}});
+      if(line.length<4) return;   // a speck: a ring round a cell or two
+      out.push({type:'Feature',properties:{e:+L},geometry:{type:'LineString',coordinates:line.map(function(k){var p=q.p[k];return toLL(p[0],p[1])})}})})});
+  return out}
+/* relief in the map's own inks: shadow brown on the slopes turned from the light (north-west, 45 degrees up), paper light on those
+   facing it; flat ground left clear. `ex` exaggerates the heights, as the ground round Manila rises only tens of metres. */
+function reliefRGBA(S,W,H,px,ex){ var d=new Uint8ClampedArray(W*H*4),az=315*Math.PI/180,zen=45*Math.PI/180,flat=Math.cos(zen);
+  for(var y=1;y<H-1;y++)for(var x=1;x<W-1;x++){var i=y*W+x,dzx=(S[i+1]-S[i-1])/(2*px)*ex,dzy=(S[i+W]-S[i-W])/(2*px)*ex,sl=Math.atan(Math.hypot(dzx,dzy)),asp=Math.atan2(dzy,-dzx);
+    var hs=Math.cos(zen)*Math.cos(sl)+Math.sin(zen)*Math.sin(sl)*Math.cos(az-Math.PI/2-asp),v=hs-flat,k=i*4;
+    if(v<0){d[k]=84;d[k+1]=58;d[k+2]=30;d[k+3]=Math.min(190,-v*560)}else{d[k]=255;d[k+1]=250;d[k+2]=232;d[k+3]=Math.min(120,v*420)}}
+  return d}
+/* heights written along the heavier contour lines, where there is room */
+function contourNames(L){ var X=trnOf(); if(!X||sNow<(Z.labels||0)) return ''; var z=mv.size(),h='',seen={},n=0;
+  mv.map.queryRenderedFeatures({layers:[X.src+'-c0']}).forEach(function(f){ if(n>=36) return; var c=f.geometry.type==='LineString'?f.geometry.coordinates:null; if(!c||c.length<8) return;
+    var e=f.properties.e,m=Math.floor(c.length/2),key=e+':'+c[m][0].toFixed(3)+':'+c[m][1].toFixed(3); if(seen[key]) return; seen[key]=1;
+    var p=S(B.fromLL(c[m])),p1=S(B.fromLL(c[m-3])),p2=S(B.fromLL(c[m+3])); if(p[0]<20||p[1]<20||p[0]>z.w-20||p[1]>z.h-20) return;
+    var a=Math.atan2(p2[1]-p1[1],p2[0]-p1[0])*180/Math.PI; if(a>90)a-=180; if(a<-90)a+=180;
+    var tw=String(e).length*6.2+6,r=[p[0]-tw/2,p[1]-7,p[0]+tw/2,p[1]+7]; if(L.hit(r)) return; L.keep(r); n++;
+    h+='<text class="cl" text-anchor="middle" transform="translate('+f1(p[0])+' '+f1(p[1])+') rotate('+f1(a)+')" y="3.5">'+e+'</text>'});
+  return h}
 /* tapping a line of a reconstructed map: its details go in the text pane */
 var RC_PICK=['-bh','-works','-wall','-wallfill','-roadedge','-rail','-ties','-shore','-break','-stream','-water','-detail','-sea'];
 function pickRecon(pt){ if(!base.rc) return null; var src='rc-'+base.rc.id,ls=RC_PICK.map(function(x){return src+x}).filter(function(id){return mv.map.getLayer(id)}),r=coarse?9:5;
@@ -700,10 +797,14 @@ function featureHtml(){var x=RCF[rcSel],R=base.rc,L=R.layers.filter(function(l){
   if(L.link) h+='<p style="margin-top:10px"><a href="'+esc(L.link)+'" target="_blank" rel="noopener">Open the original map: '+esc(L.link_label||s.title||'the scan')+'</a></p>';
   return h+'<p class="meta" style="margin-top:12px">Record '+esc(x.id)+' of '+esc(R.file||R.id)+'.</p>'}
 function spanText(a,b){var d=function(s){return s?(+s.slice(8,10))+' '+['January','February','March','April','May','June','July','August','September','October','November','December'][+s.slice(5,7)-1]+' '+s.slice(0,4):''};return a&&b&&a!==b?d(a).replace(/ [A-Z][a-z]+ \d{4}$/,a.slice(0,7)===b.slice(0,7)?'':'$&')+' to '+d(b):d(a||b)}
+function terrainText(){var X=base.rc&&TRN[base.rc.id],T=base.terrain,st=(X&&X.steps)||[];
+  if(!X||X.state==='failed') return 'The elevation service could not be reached, so this version shows no relief or contours.';
+  if(X.state!=='ready') return 'Loading the heights.';
+  return 'Relief and contour lines worked out by this page from today\'s elevation data ('+esc(HS.credit)+'), a radar survey of 2000 that measured the tops of buildings as well as the ground. Bumps narrower than about '+(T.open_m||230)+' m (blocks, towers, the Tondo dump) are taken off and the rest smoothed over about '+(T.smooth_m||60)+' m, which leaves the broad lie of the land: today\'s ground, little changed since 1899 away from the shore and the reclaimed land, which the 1899 water covers. Heights are in metres. Contours every '+st.map(function(s){return s[1]+' m'}).join(', then ')+' as you zoom in; every '+X.ix+' m a heavier line with its height. Read the ridges where the contours bend downhill, the valleys where they bend uphill. Large clusters of tall buildings may still show as low rises.'}
 function reconDetails(){var R=base.rc,row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+v+'</dd>':''},used=[],h='<h2>'+esc(R.title)+'</h2>';
   h+='<div class="state inferred"><b>A reconstruction, not a period map</b>'+esc(R.about||'Drawn by WarMapper from traced lines.')+'</div>';
   if(R.note) h+='<p>'+esc(R.note)+'</p>';
-  h+='<dl>'+row('Battle',esc(B.title))+row('Made',esc(spanText(R.made,R.made)))+row('Review',esc(R.review||''))+row('Relief',hsRc?'Shaded from today\'s elevation data ('+esc(HS.credit)+'), which also picks up today\'s buildings. The ground itself has changed little.':(HS?'Off, or the elevation service could not be reached.':'None.'))+'</dl>';
+  h+='<dl>'+row('Battle',esc(B.title))+row('Made',esc(spanText(R.made,R.made)))+row('Review',esc(R.review||''))+row('Relief',base.terrain?terrainText():hsRc?'Shaded from today\'s elevation data ('+esc(HS.credit)+'), which also picks up today\'s buildings. The ground itself has changed little.':(HS?'Off, or the elevation service could not be reached.':'None.'))+'</dl>';
   h+='<h3>What is drawn, and where each layer came from</h3><ul class="rcl">';
   R.layers.forEach(function(l){var s=B.sources[l.source]||{};if(used.indexOf(l.source)<0)used.push(l.source);
     h+='<li><b>'+esc(l.title)+'</b><span class="meta">'+esc(l.method)+' &middot; '+chip(l.confidence)+(l.features?' &middot; '+l.features+(l.features===1?' feature':' features'):'')+'</span><span>'+esc(l.how||'')+'</span>'
@@ -716,6 +817,7 @@ function paintFade(){(PICS[base.id]||[]).forEach(function(p){mv.opacity(p.id,opa
   bases.forEach(function(b){if(b.sat)mv.map.setLayoutProperty('sat-'+b.id,'visibility',b===base?'visible':'none')});
   var cur=!!(base.current||base.backdrop==='current'||through()),own=cur&&!topo();   // the battle's own drawing of today's ground shows only when the modern map cannot
   for(var rk in RCL) RCL[rk].forEach(function(id){mv.show(id,!!base.rc&&base.rc.id===rk)});
+  for(var tk in TRN) TRN[tk].layers.forEach(function(id){mv.show(id,!!base.terrain&&!!base.rc&&base.rc.id===tk)});   // the terrain version's relief and contours
   CUR.forEach(function(id){mv.show(id,own)});mv.show('b-mask',!topo()&&(cur||base.sat)&&!!(base.clip||(base.m&&P.bounds===base.map)));
   mv.bg(base.rc?'--rc-paper':(base.own||(base.m&&base.backdrop!=='current'&&!through()))?'--m-paper':'--land')}
 function setOpacity(v){opac=Math.max(0,Math.min(1,v));var e=$('opac');if(e)e.value=Math.round(opac*100);var o=$('opv');if(o)o.textContent=Math.round(opac*100)+'%';paintFade();updateTiles();mv.retheme();mv.kick()}
@@ -763,7 +865,7 @@ function tileError(e){ // three failures and the library is left alone for the r
   if(mine&&++tileFail>=3&&!tilesOff){tilesOff=true;updateTiles();panelKey='';mv.kick()}}
 function setBase(b,first){
   if(typeof b==='string') b=bases.filter(function(x){return x.id===b})[0]; if(!b) return;
-  var moved=first||worldOf(b)!==worldOf(base); base=b; flashCredit();
+  var moved=first||worldOf(b)!==worldOf(base); base=b; flashCredit(); if(b.terrain&&b.rc) loadTerrain(b.rc);
   var tc=$('typeCur');if(tc){var tb=b.of?bases.filter(function(x){return x.id===b.of})[0]||b:b;tc.textContent=tb.label}
   bases.forEach(function(x){if(!x.of)press('b-'+x.id,x===b||b.of===x.id);(PICS[x.id]||[]).forEach(function(p){mv.show(p.id,x===b)})});
   if(moved) mv.setWorld(worldOf(b));
