@@ -15,7 +15,7 @@ LINE_KINDS = ['road', 'rail', 'water', 'former-water']
 AREA_KINDS = ['wood', 'water']
 LABEL_SHOWS = ['current', 'period', 'both', 'recon']
 # reconstructed base maps (21 Nov 2026): what a traced feature is, how it was read, and the shapes it can take
-RECON_KINDS = ['sea', 'shore', 'river', 'stream', 'water', 'wall', 'road', 'rail', 'breakwater', 'blockhouse', 'detail', 'entrenchment']
+RECON_KINDS = ['sea', 'shore', 'river', 'stream', 'water', 'wall', 'road', 'rail', 'breakwater', 'blockhouse', 'detail', 'entrenchment', 'ink']
 RECON_METHODS = ['traced', 'AI-extracted', 'interpolated']
 RECON_SHAPES = ['point', 'line', 'area', 'lines', 'areas']
 ISO = re.compile(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$')
@@ -195,12 +195,18 @@ def validate(b, folder=None):
             if not bs.get('recon'): bad.append('playback base %s: terrain needs a reconstruction ("recon")' % bs.get('id'))
             if not isinstance(tr, dict): bad.append('playback base %s: terrain must be an object' % bs.get('id'))
             else:
-                for k in ('zoom', 'open_m', 'smooth_m', 'relief', 'index'):
+                for k in ('zoom', 'open_m', 'smooth_m', 'relief', 'spots_from'):
                     if k in tr and not (isinstance(tr[k], (int, float)) and tr[k] > 0): bad.append('playback base %s: terrain.%s must be a positive number' % (bs.get('id'), k))
                 st = tr.get('steps', [])
-                if not (isinstance(st, list) and all(isinstance(q, list) and len(q) == 2 and all(isinstance(v, (int, float)) and v > 0 for v in q) for q in st)):
-                    bad.append('playback base %s: terrain.steps must be [[zoom, metres], ...]' % bs.get('id'))
+                if not (isinstance(st, list) and all(isinstance(q, list) and len(q) in (2, 3) and all(isinstance(v, (int, float)) and v >= 0 for v in q) and q[1] > 0 for q in st)):
+                    bad.append('playback base %s: terrain.steps must be [[zoom, metres, metres of the heavier lines], ...]' % bs.get('id'))
                 elif [q[0] for q in st] != sorted(q[0] for q in st): bad.append('playback base %s: terrain.steps must go from the lowest zoom up' % bs.get('id'))
+                db = tr.get('doubt')
+                if db not in (None, False) and not (isinstance(db, dict) and all(k in ('below_m', 'rise_m', 'across_m') and isinstance(v, (int, float)) and v > 0 for k, v in db.items())):
+                    bad.append('playback base %s: terrain.doubt must be false or {below_m, rise_m, across_m}' % bs.get('id'))
+                ex = tr.get('extent')
+                if ex is not None and not (isinstance(ex, list) and len(ex) == 4 and all(isinstance(v, (int, float)) for v in ex) and ex[0] < ex[2] and ex[1] < ex[3]):
+                    bad.append('playback base %s: terrain.extent must be [west, south, east, north]' % bs.get('id'))
     if P.get('surround') is not None: bad.append("playback.surround is now called playback.modern")
     su = P.get('modern')
     if su is not None:
@@ -265,6 +271,14 @@ def validate(b, folder=None):
             if f.get('confidence') not in LEVELS: bad.append(x + ': unknown confidence %r' % f.get('confidence'))
             if f.get('source') not in sources: bad.append(x + ': source %r is not in sources' % f.get('source'))
             for k in ('from', 'to'): time_ok(f.get(k), x + '.' + k)
+            if f.get('kind') == 'ink':           # a period map's own ink as a picture (22 Nov 2026): the area is the picture's four corners, from the top-left clockwise
+                if f.get('shape') != 'area' or not f.get('file'): bad.append(x + ': an ink picture needs shape "area" (its four corners) and a file')
+                elif isinstance(f.get('at'), list) and f['at'] and isinstance(f['at'][0], str) and f['at'][0].count(';') not in (3, 4): bad.append(x + ': the area of an ink picture is its four corners')
+                if f.get('from_zoom') is not None and not isinstance(f['from_zoom'], (int, float)): bad.append(x + ': from_zoom must be a number')
+                fl = f.get('files')
+                if fl is not None and not (isinstance(fl, list) and fl and all(isinstance(q, list) and len(q) == 2 and isinstance(q[0], (int, float)) and isinstance(q[1], str) for q in fl) and [q[0] for q in fl] == sorted(q[0] for q in fl)):
+                    bad.append(x + ': files must be [[zoom, file], ...], the smallest picture first')
+            if f.get('under') and f['under'] not in [g.get('id') for g in r.get('features', []) if g.get('kind') == 'ink']: bad.append(x + ': under %r names no ink picture' % f.get('under'))
             if f.get('shape') == 'point': point_ok(f.get('at'), x + '.at')
             elif f.get('shape') == 'areas':        # several areas: each a list of packed rings, the outline first
                 if not (isinstance(f.get('at'), list) and f['at'] and all(isinstance(a, list) and a and all(isinstance(q, str) and packed.match(q) for q in a) for a in f['at'])): bad.append(x + ': at must be a list of areas, each a list of packed rings')

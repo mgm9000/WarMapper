@@ -47,6 +47,7 @@ import manila_georef as warking            # the Signal Corps map's affine fit
 FIT = json.load(open(os.path.join(ROOT, 'pipeline', 'georef', 'manila_haan_fit.json')))
 PICKS = json.load(open(os.path.join(HERE, 'manila_1899_picks.json')))
 DETAIL = json.load(open(os.path.join(HERE, 'manila_1899_detail.json')))      # the map's own ink lines and water wash, by program (manila_1899_linework.py)
+INK = json.load(open(os.path.join(HERE, 'manila_1898_ink.json')))             # the 1898 plan's ink as a picture, and the engineer-map lines it draws too (manila_1898_ink.py)
 DETAIL_S = json.load(open(os.path.join(HERE, 'manila_1898_detail.json')))    # the 1898 sheet's ink lines south of Malate, by program (manila_1898_linework.py)
 ARR = json.load(open(os.path.join(ROOT, 'pipeline', 'georef', 'manila_arrabales_fit.json')))   # the 1898 sheet's fit, and its slide in the south
 OUT = os.path.join(ROOT, 'data', 'recon', 'manila-1899.geojson')
@@ -156,7 +157,7 @@ def build():
     # ---- the Walled City ----
     w = H(PICKS['walls'])
     add('walls', 'wall', 'Polygon', [w + [w[0]]], HAAN, 'traced', 'medium', 20, B_H + ' The main wall only, in 43 points: bastions, gates and outworks are simplified away. Today\'s streets inside fall on the map\'s to a few metres.',
-        name='Intramuros', desc='Walls of the Walled City (Intramuros), main line')
+        name='Intramuros', desc='Walls of the Walled City (Intramuros), main line', under='MNL99-CITY-1898-1')   # at the closest zooms the 1898 plan draws the walls with their bastions and gates
 
     # ---- railway and roads ----
     add('rail', 'rail', 'LineString', H(PICKS['rail']), HAAN, 'traced', 'medium', 40, B_H + ' Tied across the track to today\'s line; the map is weaker north of blockhouse 1 (40-60 m).',
@@ -186,12 +187,25 @@ def build():
     B_L = ('Every dark ink line of the engineer map inside this part of the sheet, separated from the scan by a program, thinned to centre lines and vectorised (about 2 m), then placed by '
            'the map\'s fit. Small separate marks (most lettering, the dots of trails, hedge rings) were dropped by size. Nobody has checked it line by line: it holds street and block edges, '
            'dykes, fences, banks and hachures, and also what the program cannot tell from them, such as letters that touch a line and field works drawn after 4 February.')
-    groups = [[] for _ in PARTS]
-    for line in DETAIL['lines']:
+    groups = [[] for _ in PARTS]; city = [[] for _ in PARTS]; twice = set(INK['engineer_lines_drawn_here_too']['lines'])
+    for i, line in enumerate(DETAIL['lines']):
         ll = [q for q in H(line) if inside(q)]
-        if len(ll) >= 2: groups[part_of(*line[len(line) // 2])].append(ll)
+        if len(ll) >= 2: (city if i in twice else groups)[part_of(*line[len(line) // 2])].append(ll)
     for (name, *_), lines in zip(PARTS, groups):
         if lines: add('linework', 'detail', 'MultiLineString', lines, HAAN, 'AI-extracted', 'low', 30, B_L, desc='Streets, blocks, dykes and field lines: ' + name, part=name)
+    # ---- the city in fine detail: the 1898 plan's own ink, as a picture (pipeline/recon/manila_1898_ink.py) ----
+    add('city-1898', 'ink', 'Polygon', [INK['corners'] + [INK['corners'][0]]], ARRAB, 'AI-extracted', 'low', 12,
+        'Every dark mark of the War Department\'s 1898 plan of the city, kept as printed (streets and blocks at their own width, public buildings, street names, building numbers, trees and marsh signs) '
+        'with the paper made clear, and laid on the ground by the plan\'s fit to the engineer map: 31,292 matched points, half within 5.7 m and nine in ten within 10.5 m. Nothing is redrawn. '
+        'The title, the keys to the numbered buildings and the margins are left out, and the hand-drawn strip south of Malate is not in it. It is the city of 1898, six months before the battle, '
+        'and nobody has checked it mark by mark. Shown from the closer zooms, where the reconstruction\'s own lines run out of detail.',
+        name='The city in 1898: the plan\'s own ink', desc='Tondo to Malate and the bay to Sampaloc and Paco, at 1.36 m a pixel', part='The city, Tondo to Malate',
+        file=os.path.basename(INK['file']), from_zoom=INK['files'][0][0], files=INK['files'], **{'from': '1898-01-01', 'to': '1898-12-31'})
+    ink_id = feats[-1]['properties']['id']
+    for (name, *_), lines in zip(PARTS, city):
+        if lines: add('linework-city', 'detail', 'MultiLineString', lines, HAAN, 'AI-extracted', 'low', 30,
+                      B_L + ' These are the lines the 1898 plan of the city draws too (seven points in ten within 16 m of its ink): at the closest zooms they give way to the plan\'s finer drawing.',
+                      desc='Street and block edges the 1898 plan also draws: ' + name, part=name, under=ink_id)
     B_E = ('The engineer map\'s blue water wash in this part of the sheet, separated by colour and vectorised by a program (about 3 m), less the water the hand-checked layers hold. '
            'Esteros, creeks and ponds are not told apart; a creek is cut where the wash fades or lettering covers it, and a few stains may be among them.')
     wgroups = [[] for _ in PARTS]

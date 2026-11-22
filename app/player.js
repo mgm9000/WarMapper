@@ -51,6 +51,8 @@ var SKK=1e-5; function ownLL(p){return [p[0]*SKK,-p[1]*SKK]}   // a not-to-scale
 var bm=P.bounds&&B.maps[P.bounds],EXT=bm?bm.box:B.ext;
 var WORLDS={ground:{toLL:B.toLL,ext:EXT,mPerUnit:1,maxScale:Z.max||2,minFactor:Z.min_factor||0.9}};
 bases.forEach(function(b){if(b.own)WORLDS['own:'+b.map]={toLL:ownLL,ext:[0,0,b.m.size[0],b.m.size[1]],mPerUnit:SKK*EARTH/360,maxScale:3,minFactor:0.9}});
+bases.forEach(function(b){ if(!(b.terrain&&b.terrain.extent&&b.rc)) return; var e=b.terrain.extent,p=B.fromLL([e[0],e[1]]),q=B.fromLL([e[2],e[3]]);   // a terrain base that runs past its sheet: the reader stays inside its extent, so the screen is always full
+  WORLDS['terrain:'+b.id]={toLL:B.toLL,ext:[Math.min(p[0],q[0]),Math.min(p[1],q[1]),Math.max(p[0],q[0]),Math.max(p[1],q[1])],mPerUnit:1,maxScale:Z.max||2,cover:true}});
 /* The modern map: today's topographic map from a tile service. It is the current map, it shows through a period map that is turned down,
    and it lies around a period map where that ends, so the reader can zoom out past the sheet. The battle's own drawing of today's roads
    and water (the base data) is the fall-back, shown only if the service cannot be reached. */
@@ -77,7 +79,7 @@ function startBase(){ var byId=P.start_base&&bases.filter(function(b){return b.i
   var V=raw.view,bx=(P.views&&V.presets&&V.presets[P.views[0].preset])||V.extent,dx=(bx[2]-bx[0])*0.04,dy=(bx[3]-bx[1])*0.04,C=[[bx[0]+dx,bx[1]+dy],[bx[2]-dx,bx[1]+dy],[bx[2]-dx,bx[3]-dy],[bx[0]+dx,bx[3]-dy]];
   var per=bases.filter(function(b){return b.m&&!b.own&&!b.series&&C.every(function(c){return inQuad(c,b.m.ll)})})[0];
   return per||bases.filter(function(b){return b.current})[0]||bases[0]}
-function worldOf(b){return b.own?'own:'+b.map:'ground'}
+function worldOf(b){return b.own?'own:'+b.map:(WORLDS['terrain:'+b.id]?'terrain:'+b.id:'ground')}
 
 /* ---------- state ---------- */
 var base=bases[0],landing=true,t=T0,sel=null,follow=!!P.follow,names=true,unitsOn=true,foldOn=true,sNow=0.1,preset=null,goal=null,S,mv,clk;
@@ -532,6 +534,7 @@ function mapNames(L,cover){
       if(r[0]<2||r[1]<2||r[2]>z.w-2||r[3]>z.h-2||L.hit(r)) return; L.keep(r);
       h+='<text class="sl'+(l.k==='water'?' w':'')+'" text-anchor="middle" transform="translate('+f1(q[0])+' '+f1(q[1])+') rotate('+l.a+')" y="3.5">'+esc(l.t)+(l.s?' <tspan class="old">('+esc(l.s)+')</tspan>':'')+'</text>'; return}
     if(l.k==='area'||l.k==='town'||l.k==='wood'){
+      if(l.k==='area'&&inkNames(l.p)) return;   // close in, the period map's own lettering names the district
       if(l.k==='town'&&Z.towns_until&&sNow>Z.towns_until) return; if(l.k==='wood'&&sNow<(Z.woods_from||0)) return;
       var aw=l.t.length*(l.k==='town'?8.6:l.k==='wood'?5.9:base.rc?12.8:8.2)/2,ar=[q[0]-aw,q[1]-9,q[0]+aw,q[1]+7]; if(L.hit(ar)) return; L.keep(ar);
       h+='<text class="'+(l.k==='wood'?'wl':'al'+(l.k==='town'?' town':''))+'" text-anchor="middle" x="'+f1(q[0])+'" y="'+f1(q[1]+4)+'">'+esc(l.t)+'</text>'; return}
@@ -558,7 +561,7 @@ var creditTimer=0;
 function flashCredit(){var e=$('credit');e.classList.remove('gone');clearTimeout(creditTimer);creditTimer=setTimeout(function(){e.classList.add('gone')},5000)}
 function draw(){
   sNow=mv.scale(); mv.hits.length=0;
-  var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintModern(H); paintHill(); paintCredit(H);
+  var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintModern(H); paintHill(); paintCredit(H); trnTick(); inkTick();
   var cover=base.backdrop==='current'?(H||base.m).box:null;
   var sc=scene(),L=layout(unitsOn&&!landing?sc:[]),h=mapNames(L,cover);   // on landing the map is shown alone; the units come on when the battle is started
   L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});   // the selected unit last, so it sits on top
@@ -640,7 +643,9 @@ function blockhouseIcon(){var n=28,cv=document.createElement('canvas');cv.width=
   return {width:n,height:n,data:new Uint8Array(c.getImageData(0,0,n,n).data.buffer)}}
 function buildRecon(R,px){
   var src='rc-'+R.id,f=[],ids=[],sh=R.sheet,is=function(k){return ['==',['get','k'],k]},round={'line-cap':'round','line-join':'round'};
-  R.features.forEach(function(x){RCF[x.id]=x;var pr={k:x.kind,id:x.id,cls:x['class']||'',gw:x.width_m||0,lo:x.confidence==='low'?1:0},g;
+  var inks=R.features.filter(function(x){return x.kind==='ink'&&x.file}),iz=inks.length?Math.min.apply(null,inks.map(function(x){return x.from_zoom||13.5})):99;   // the zoom from which a period map's own ink comes in
+  INKS[R.id]=inks.map(function(x,n){var c=unpackLL(x.at[0]).slice(0,4),z0=x.from_zoom||13.5,fl=x.files&&x.files.length?x.files:[[z0,x.file]];return {n:n,id:x.id,corners:c,lv:fl.map(function(q){return {z:q[0],file:q[1]}})}});
+  R.features.forEach(function(x){RCF[x.id]=x;var pr={k:x.kind,id:x.id,cls:x['class']||'',gw:x.width_m||0,lo:x.confidence==='low'?1:0,un:x.under?1:0},g;
     if(x.shape==='point') g={type:'Point',coordinates:x.at};
     else if(x.shape==='areas') g={type:'MultiPolygon',coordinates:x.at.map(function(a){return a.map(unpackLL)})};   // several areas under one record (the esteros of a district)
     else{var rings=x.at.map(unpackLL);g=x.shape==='line'?{type:'LineString',coordinates:rings[0]}:x.shape==='lines'?{type:'MultiLineString',coordinates:rings}:{type:'Polygon',coordinates:rings}}
@@ -667,7 +672,9 @@ function buildRecon(R,px){
   add({id:src+'-streambank',type:'line',filter:is('stream'),layout:{'line-join':'round'},paint:{'line-color':'var(--rc-water-ink)','line-width':zw(0.9),'line-gap-width':gw}});
   add({id:src+'-bank',type:'line',filter:['any',is('river'),is('water')],layout:{'line-join':'round'},paint:{'line-color':'var(--rc-water-ink)','line-width':zw(1)}});
   /* the period map's own fine lines (street and block edges, dykes, field lines, hachures): thin ink, coming in as the reader zooms in */
-  add({id:src+'-detail',type:'line',filter:is('detail'),minzoom:11.4,layout:round,paint:{'line-color':'var(--rc-ink)','line-width':['interpolate',['linear'],['zoom'],11.4,0.3,13,0.55,15,1,17,1.7,19,3],'line-opacity':['interpolate',['linear'],['zoom'],11.4,0.3,12.5,0.6,14,0.8]}});
+  var un=['==',['get','un'],1],giveWay=function(v){return ['case',un,0,v]};   // a traced line that a period map's own ink also draws gives way to it as the ink comes in
+  add({id:src+'-detail',type:'line',filter:is('detail'),minzoom:11.4,layout:round,paint:{'line-color':'var(--rc-ink)','line-width':['interpolate',['linear'],['zoom'],11.4,0.3,13,0.55,15,1,17,1.7,19,3],
+    'line-opacity':iz<99?['interpolate',['linear'],['zoom'],11.4,0.3,12.5,0.6,iz+0.1,0.72,iz+0.9,giveWay(0.8)]:['interpolate',['linear'],['zoom'],11.4,0.3,12.5,0.6,14,0.8]}});
   add({id:src+'-shore',type:'line',filter:is('shore'),layout:round,paint:{'line-color':'var(--rc-ink)','line-width':zw(1.5),'line-dasharray':['case',['==',['get','lo'],1],['literal',[6,2.2]],['literal',[1,0]]]}});
   add({id:src+'-break',type:'line',filter:is('breakwater'),paint:{'line-color':'var(--rc-ink)','line-width':zw(0.9),'line-gap-width':zw(1.3)}});
   var rw=function(m,o){var by=function(i){return ['match',['get','cls'],'main',m[i],o[i]]};return ['interpolate',['linear'],['zoom'],10,by(0),12,by(1),14,by(2),17,by(3)]};   // zoomed out a road is one ink line; closer in it opens into the double line of the engineer's map
@@ -676,39 +683,56 @@ function buildRecon(R,px){
   add({id:src+'-rail',type:'line',filter:is('rail'),paint:{'line-color':'var(--rc-ink)','line-width':zw(1.3)}});
   add({id:src+'-ties',type:'line',filter:is('rail'),paint:{'line-color':'var(--rc-ink)','line-width':zw(5.5),'line-dasharray':[0.22,1.9]}});
   add({id:src+'-wallfill',type:'fill',filter:is('wall'),paint:{'fill-color':'var(--rc-town)'}});
-  add({id:src+'-wall',type:'line',filter:is('wall'),layout:{'line-join':'miter'},paint:{'line-color':'var(--rc-wall)','line-width':zw(3.4)}});
-  add({id:src+'-wallin',type:'line',filter:is('wall'),layout:{'line-join':'miter'},paint:{'line-color':'var(--rc-paper)','line-width':zw(0.9)}});
+  var wop=iz<99?{'line-opacity':['interpolate',['linear'],['zoom'],iz+0.1,1,iz+0.9,giveWay(1)]}:{},wp=function(o){for(var k in wop)o[k]=wop[k];return o};
+  add({id:src+'-wall',type:'line',filter:is('wall'),layout:{'line-join':'miter'},paint:wp({'line-color':'var(--rc-wall)','line-width':zw(3.4)})});
+  add({id:src+'-wallin',type:'line',filter:is('wall'),layout:{'line-join':'miter'},paint:wp({'line-color':'var(--rc-paper)','line-width':zw(0.9)})});
+  if(inks.length){ add({id:src+'-inkslot',type:'background'},true);   // the ink pictures go in here when the reader comes close enough: over the traced roads and walls, under the field works and blockhouses
+    add({id:src+'-inkhit',type:'fill',filter:is('ink'),minzoom:iz,paint:{'fill-color':'#000','fill-opacity':0.001}}) }   // nothing to see: it lets a tap on the ink find its record
   add({id:src+'-works',type:'line',filter:is('entrenchment'),paint:{'line-color':'#8c2f25','line-width':zw(3),'line-dasharray':[0.9,0.7]}});   // field works, in the colour of the side that dug them
   add({id:src+'-bh',type:'symbol',filter:is('blockhouse'),layout:{'icon-image':'rc-bh','icon-allow-overlap':true,'icon-size':['interpolate',['linear'],['zoom'],10,0.6,13,0.9,16,1.4]}});
   add({id:src+'-off',type:'fill',filter:is('off'),paint:{'fill-color':'var(--bg)'}});
   add({id:src+'-frame',type:'line',filter:is('frame'),paint:{'line-color':'var(--rc-ink)','line-width':2.4,'line-offset':-5}});
   add({id:src+'-frame2',type:'line',filter:is('frame'),paint:{'line-color':'var(--rc-ink)','line-width':0.9}});
+  addTerrainTop(R);
   RCL[R.id]=ids;
 }
 /* ---------- the terrain version of a reconstructed map ----------
-   A base with `terrain` ({recon:id, terrain:{...}}) adds the lie of the land in detail: relief and contour lines worked out in this page,
-   once, from the same elevation tiles as the shading, over the reconstruction's sheet. The tiles are a radar surface (SRTM, 2000) that
-   carries the buildings of its day, so the heights are cleaned first: every bump narrower than about `open_m` (a block, a tower, a dump)
-   is taken off, and what is left is smoothed over about `smooth_m`. That leaves the broad lie of the land (a low plateau, the valleys cut
-   into it, the flat delta), which is what a reader needs to see where the ridges and the dead ground are. It is today's ground, not 1899's,
-   and the map details say so. Contours close in as the reader zooms in (`steps`: [zoom, interval in metres]); every `index` metres a
-   heavier line, with its height written along it. */
+   A base with `terrain` ({recon:id, terrain:{...}}) adds the lie of the land, and adds more of it the closer the reader looks.
+   The page reads elevation tiles (the same service as the shading) once, over `extent` (the reconstruction's sheet if none is given), and
+   hands them to a background worker. The tiles are a radar surface (SRTM, 2000) that carries the buildings of its day, so the worker
+   cleans them first: every bump narrower than about `open_m` (a block, a tower, a dump) is taken off, and what is left is smoothed over
+   about `smooth_m`. That leaves the broad lie of the land. It is today's ground, not 1899's, and the map details say so.
+   From that surface the worker makes
+     - one relief picture for the whole extent: shadow and light in the map's own inks, a faint tint that deepens with height, and,
+       beyond the reconstruction's sheet, today's sea;
+     - contour lines for what is on screen, afresh whenever the reader moves or zooms: the interval closes in with the zoom (`steps`:
+       [zoom, interval in metres, interval of the heavier lines]) and the surface is sampled a few screen pixels apart whatever the zoom,
+       so the lines stay smooth curves however close the reader comes; half-metre lines are drawn dashed, as form lines;
+     - spot heights: the summits on screen, more of them the closer the reader looks.
+   Where `extent` is wider than the sheet the terrain runs on past the sheet's edge and fills the screen at any shape of window; a thin
+   dotted line marks where the traced maps stop, and the reader cannot move past the extent. */
 var TRN={};
 function trnOf(b){b=b||base;var X=b&&b.terrain&&b.rc&&TRN[b.rc.id];return X&&X.state==='ready'?X:null}
+function trnWide(b){b=b||base;return !!(b&&b.terrain&&b.terrain.extent&&b.rc)}
+var TRN_STEPS=[[0,20,100],[11.2,10,50],[12.4,5,25],[13.4,2,10],[14.4,1,5],[15.6,0.5,5]];
 function addTerrainLayers(R){ var T=bases.filter(function(b){return b.terrain&&b.recon===R.id})[0]; if(!T||TRN[R.id]) return;
-  var tc=T.terrain,src='rt-'+R.id,steps=tc.steps||[[10.5,10],[12.5,5],[14,2],[15.5,1]],ix=tc.index||steps[0][1],X=TRN[R.id]={state:'idle',src:src,T:tc,steps:steps,ix:ix,layers:[]};
+  var tc=T.terrain,src='rt-'+R.id,X=TRN[R.id]={state:'idle',src:src,T:tc,layers:[],top:[],z:tc.zoom||12,ext:tc.extent||R.sheet,sheet:R.sheet,req:0,busy:false,dirty:false,cur:null,
+    steps:(tc.steps||TRN_STEPS).map(function(s){return [s[0],s[1],s[2]||s[1]*5]})};
   mv.geo(src,[]);
-  var e=['get','e'],is0=function(n){return ['==',['%',e,n],0]},not0=function(n){return ['!=',['%',e,n],0]};
-  var add=function(spec){spec.source=src;spec.layout={visibility:'none','line-join':'round'};mv.layer(spec);X.layers.push(spec.id)};
-  add({id:src+'-c0',type:'line',minzoom:steps[0][0],filter:is0(ix),paint:{'line-color':'var(--rc-contour)','line-width':['interpolate',['linear'],['zoom'],10,0.55,13,1,16,1.8,19,3]}});
-  steps.forEach(function(s,i){ if(s[1]===ix) return;
-    add({id:src+'-c'+(i+1),type:'line',minzoom:s[0],filter:['all',is0(s[1]),not0(ix)].concat(steps.slice(0,i).filter(function(c){return c[1]!==ix}).map(function(c){return not0(c[1])})),
-      paint:{'line-color':'var(--rc-contour)','line-width':['interpolate',['linear'],['zoom'],11,0.3,14,0.55,17,1,19,1.6],'line-opacity':['interpolate',['linear'],['zoom'],s[0],0.25,s[0]+0.8,0.7]}})});
+  var cls=function(c){return ['==',['get','c'],c]},add=function(spec){spec.source=src;spec.layout={visibility:'none','line-join':'round'};mv.layer(spec);X.layers.push(spec.id)};
+  add({id:src+'-c3',type:'line',filter:cls(3),paint:{'line-color':'var(--rc-contour)','line-width':0.8,'line-dasharray':[0.4,2.6],'line-opacity':0.5}});                                 // doubtful: low ground where the radar most likely saw a mass of buildings
+  add({id:src+'-c0',type:'line',filter:cls(0),paint:{'line-color':'var(--rc-contour)','line-width':0.6,'line-dasharray':[5,4],'line-opacity':0.6}});                                  // half-metre form lines
+  add({id:src+'-c1',type:'line',filter:cls(1),paint:{'line-color':'var(--rc-contour)','line-width':['interpolate',['linear'],['zoom'],10,0.35,13,0.6,16,0.85],'line-opacity':0.8}});
+  add({id:src+'-c2',type:'line',filter:cls(2),paint:{'line-color':'var(--rc-contour)','line-width':['interpolate',['linear'],['zoom'],10,0.8,13,1.2,16,1.7]}});                       // the heavier lines
+  add({id:src+'-coast',type:'line',filter:cls(9),paint:{'line-color':'var(--rc-water-ink)','line-width':1.1,'line-opacity':0.85}});                                                  // today's shore, beyond the sheet
 }
+function addTerrainTop(R){ var X=TRN[R.id]; if(!X||!X.T.extent||!R.sheet) return; var sh=R.sheet;   // where the traced maps stop
+  mv.geo(X.src+'-lim',[{type:'Feature',properties:{},geometry:{type:'LineString',coordinates:[[sh[0],sh[1]],[sh[0],sh[3]],[sh[2],sh[3]],[sh[2],sh[1]],[sh[0],sh[1]]]}}]);
+  mv.layer({id:X.src+'-limit',type:'line',source:X.src+'-lim',layout:{visibility:'none'},paint:{'line-color':'var(--rc-ink)','line-width':1,'line-dasharray':[0.6,3.2],'line-opacity':0.55}}); X.top.push(X.src+'-limit')}
 function loadTerrain(R){ var X=TRN[R.id]; if(!X||X.state!=='idle'||!HS) return; X.state='loading';
-  var tc=X.T,z=tc.zoom||13,sh=R.sheet,n=256*Math.pow(2,z),wx=function(l){return (l+180)/360*n},wy=function(a){var r=a*Math.PI/180;return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n};
-  var lat0=(sh[1]+sh[3])/2,px=EARTH*Math.cos(lat0*Math.PI/180)/n,ro=Math.max(1,Math.round(((tc.open_m||230)/px-1)/2)),rs=Math.max(1,Math.round((tc.smooth_m||60)/px/1.1)),pad=ro+3*rs+2;
-  var X0=Math.floor(wx(sh[0]))-pad,X1=Math.ceil(wx(sh[2]))+pad,Y0=Math.floor(wy(sh[3]))-pad,Y1=Math.ceil(wy(sh[1]))+pad,W=X1-X0,H=Y1-Y0,g=new Float32Array(W*H),jobs=[];
+  var tc=X.T,z=X.z,e=X.ext,n=256*Math.pow(2,z),wx=function(l){return (l+180)/360*n},wy=function(a){var r=a*Math.PI/180;return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n};
+  var lat0=(e[1]+e[3])/2,px=EARTH*Math.cos(lat0*Math.PI/180)/n,ro=Math.max(1,Math.round(((tc.open_m||230)/px-1)/2)),rs=Math.max(1,Math.round((tc.smooth_m||60)/px/1.1)),pad=ro+3*rs+3;
+  var X0=Math.floor(wx(e[0]))-pad,X1=Math.ceil(wx(e[2]))+pad,Y0=Math.floor(wy(e[3]))-pad,Y1=Math.ceil(wy(e[1]))+pad,W=X1-X0,H=Y1-Y0,g=new Float32Array(W*H),jobs=[];
   var cv=document.createElement('canvas');cv.width=cv.height=256;var cx=cv.getContext('2d',{willReadFrequently:true}),terr=HS.encoding!=='mapbox';
   for(var ty=Math.floor(Y0/256);ty<=Math.floor((Y1-1)/256);ty++)for(var tx=Math.floor(X0/256);tx<=Math.floor((X1-1)/256);tx++)(function(tx,ty){
     var u=HS.tiles.replace('{z}',z).replace('{x}',tx).replace('{y}',ty);
@@ -716,72 +740,158 @@ function loadTerrain(R){ var X=TRN[R.id]; if(!X||X.state!=='idle'||!HS) return; 
       cx.clearRect(0,0,256,256);cx.drawImage(im,0,0);var d=cx.getImageData(0,0,256,256).data;
       for(var j=0;j<256;j++){var y=ty*256+j-Y0;if(y<0||y>=H)continue;for(var i=0;i<256;i++){var x=tx*256+i-X0;if(x<0||x>=W)continue;var k=(j*256+i)*4;
         g[y*W+x]=terr?d[k]*256+d[k+1]+d[k+2]/256-32768:-10000+(d[k]*65536+d[k+1]*256+d[k+2])*0.1}}}))})(tx,ty);
-  var job={g:g,W:W,H:H,X0:X0,Y0:Y0,n:n,px:px,ro:ro,rs:rs,ex:tc.relief||4,st:Math.min.apply(null,X.steps.map(function(s){return s[1]}))};
-  Promise.all(jobs).then(function(){return terrainWork(job)}).then(function(r){
-    var ll=function(x,y){var X2=X0+x,Y2=Y0+y;return [X2/n*360-180,Math.atan(Math.sinh(Math.PI*(1-2*Y2/n)))*180/Math.PI]};
-    mv.map.getSource(X.src).setData({type:'FeatureCollection',features:r.lines});
-    var cv=document.createElement('canvas');cv.width=W;cv.height=H;cv.getContext('2d').putImageData(new ImageData(r.rgba,W,H),0,0);var img=cv.toDataURL('image/png');
-    mv.map.addSource(X.src+'-img',{type:'image',url:img,coordinates:[ll(0,0),ll(W,0),ll(W,H),ll(0,H)]});
-    mv.layer({id:X.src+'-relief',type:'raster',source:X.src+'-img',layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-resampling':'linear','raster-opacity':0.95}},X.src+'-c0');
-    X.layers.unshift(X.src+'-relief'); X.state='ready'; paintHill(); paintFade(); lastCredit=''; panelKey=''; mv.kick()
-  }).catch(function(){X.state='failed';panelKey='';mv.kick()});
+  var ll=function(x,y){return [(X0+x)/n*360-180,Math.atan(Math.sinh(Math.PI*(1-2*(Y0+y)/n)))*180/Math.PI]},fail=function(){X.state='failed';panelKey='';paintFade();mv.kick()};
+  function got(m){
+    if(m.t==='fail'){ if(X.state!=='ready') fail(); X.busy=false; return }
+    if(m.t==='ready'){ var done=function(url){
+        mv.map.addSource(X.src+'-img',{type:'image',url:url,coordinates:[ll(0,0),ll(W,0),ll(W,H),ll(0,H)]});
+        mv.layer({id:X.src+'-relief',type:'raster',source:X.src+'-img',layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-resampling':'linear'}},X.src+'-c3');
+        X.layers.unshift(X.src+'-relief'); X.range=[m.lo,m.hi]; X.state='ready'; paintHill(); paintFade(); lastCredit=''; panelKey=''; mv.kick()};
+      if(m.blob) done(URL.createObjectURL(m.blob));
+      else{var c2=document.createElement('canvas');c2.width=m.w;c2.height=m.h;c2.getContext('2d').putImageData(new ImageData(m.rgba,m.w,m.h),0,0);done(c2.toDataURL('image/png'))}
+      return }
+    if(m.t==='view'){ X.busy=false; if(m.id!==X.req) return;
+      X.cur={key:m.key,box:m.box,labs:m.labs,spots:m.spots,minor:m.st<=1}; mv.map.getSource(X.src).setData({type:'FeatureCollection',features:m.lines}); mv.kick() } }
+  Promise.all(jobs).then(function(){ X.eng=terrainEngine(got);
+    X.eng({t:'init',g:g,W:W,H:H,X0:X0,Y0:Y0,n:n,px:px,ro:ro,rs:rs,ex:tc.relief||4,sheet:X.sheet,ext:X.ext,wide:!!tc.extent,tint:tc.tint!==false,
+      doubt:tc.doubt===false?null:{below:(tc.doubt&&tc.doubt.below_m)||9,rise:(tc.doubt&&tc.doubt.rise_m)||2.5,r:Math.max(1,Math.round((((tc.doubt&&tc.doubt.across_m)||600)/px-1)/2))}},[g.buffer]) }).catch(fail);
 }
-function terrainRun(d){var S=terrainClean(d.g,d.W,d.H,d.ro,d.rs),n=d.n,X0=d.X0,Y0=d.Y0;
-  return {lines:contours(S,d.W,d.H,d.st,function(x,y){var X2=X0+x+0.5,Y2=Y0+y+0.5;return [+(X2/n*360-180).toFixed(6),+(Math.atan(Math.sinh(Math.PI*(1-2*Y2/n)))*180/Math.PI).toFixed(6)]}),rgba:reliefRGBA(S,d.W,d.H,d.px,d.ex)}}
-function terrainWork(d){ // the heights are worked in the background, so the page keeps moving while they are (a few seconds on a phone)
-  try{ var src=[terrainClean,contours,reliefRGBA,terrainRun].map(String).join('\n')+'\nonmessage=function(m){var r=terrainRun(m.data);postMessage(r,[r.rgba.buffer])}';
-    var w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));
-    return new Promise(function(ok,no){w.onmessage=function(m){w.terminate();ok(m.data)};w.onerror=function(e){w.terminate();no(e)};w.postMessage(d,[d.g.buffer])}) }
-  catch(e){ return Promise.resolve(terrainRun(d)) }}
-/* take off what is narrower than the opening (a grey-scale opening: the lowest ground near each point, then the highest of those),
-   then smooth (three passes of a box filter, close to a Gaussian) */
-function terrainClean(g,W,H,ro,rs){
-  function run(a,r,f,init){var t=new Float32Array(W*H),o=new Float32Array(W*H),x,y,i,v;
+/* asked on every drawing of the map: contours and spot heights for what is on screen, if what the worker last sent no longer covers it */
+function trnTick(){ var X=trnOf(); if(!X) return; var zm=mv.map.getZoom(),b=mv.map.getBounds(),w=b.getWest(),s=b.getSouth(),e=b.getEast(),n=b.getNorth(),st=X.steps[0];
+  X.steps.forEach(function(q){if(zm>=q[0])st=q});
+  var c=Math.pow(2,zm+1-X.z),cell=Math.max(1/16,Math.min(2,Math.pow(2,Math.round(Math.log2(3.5/c))))),key=st[1]+'|'+st[2]+'|'+cell,cur=X.cur;   // c: screen pixels to a cell of the heights; samples are taken 2.5 to 5 pixels apart
+  if(cur&&cur.key===key&&w>=cur.box[0]&&e<=cur.box[2]&&s>=cur.box[1]&&n<=cur.box[3]) return;
+  if(X.busy){X.dirty=true;return}
+  var mx=(e-w)*0.3,my=(n-s)*0.3,E=X.ext,box=[Math.max(E[0],w-mx),Math.max(E[1],s-my),Math.min(E[2],e+mx),Math.min(E[3],n+my)];
+  if(cur&&cur.key===key&&cur.box.join()===box.join()) return;   // already all there is (the screen reaches past the extent)
+  X.busy=true; X.dirty=false; X.eng({t:'view',id:++X.req,key:key,box:box,st:st[1],ix:st[2],cell:cell,spots:zm>=(X.T.spots_from||12.6)?Math.max(2,Math.round(22*cell)):0});
+}
+function terrainEngine(recv){
+  try{ var src='var core=('+terrainCore+')(function(m,tr){postMessage(m,tr||[])});onmessage=function(e){try{core(e.data)}catch(x){postMessage({t:"fail",why:String(x)})}}';
+    var w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'}))); w.onmessage=function(e){recv(e.data)}; w.onerror=function(){recv({t:'fail'})};
+    return function(m,tr){w.postMessage(m,tr||[])} }
+  catch(e){ var core=terrainCore(function(m){setTimeout(function(){recv(m)},0)}); return function(m){setTimeout(function(){try{core(m)}catch(x){recv({t:'fail'})}},0)} }   // no worker to be had: on the page's own thread
+}
+/* The worker. It stands alone (it is sent to the worker as text), so it uses nothing from the page around it. */
+function terrainCore(post){
+  var G=null;
+  /* take off what is narrower than the opening (the lowest ground near each point, then the highest of those), then smooth (three passes of a box filter, close to a Gaussian) */
+  function run(a,W,H,r,f,init){var t=new Float32Array(W*H),o=new Float32Array(W*H),x,y,i,v;
     for(y=0;y<H;y++)for(x=0;x<W;x++){v=init;for(i=-r;i<=r;i++){var xx=x+i;if(xx>=0&&xx<W)v=f(v,a[y*W+xx])}t[y*W+x]=v}
     for(y=0;y<H;y++)for(x=0;x<W;x++){v=init;for(i=-r;i<=r;i++){var yy=y+i;if(yy>=0&&yy<H)v=f(v,t[yy*W+x])}o[y*W+x]=v}return o}
-  function box(a,r){var t=new Float32Array(W*H),o=new Float32Array(W*H),x,y;
+  function box(a,W,H,r){var t=new Float32Array(W*H),o=new Float32Array(W*H),x,y;
     for(y=0;y<H;y++){var s=0,c=0;for(x=0;x<=r&&x<W;x++){s+=a[y*W+x];c++}for(x=0;x<W;x++){t[y*W+x]=s/c;var ad=x+r+1,rm=x-r;if(ad<W){s+=a[y*W+ad];c++}if(rm>=0){s-=a[y*W+rm];c--}}}
     for(x=0;x<W;x++){var s2=0,c2=0;for(y=0;y<=r&&y<H;y++){s2+=t[y*W+x];c2++}for(y=0;y<H;y++){o[y*W+x]=s2/c2;var ad2=y+r+1,rm2=y-r;if(ad2<H){s2+=t[ad2*W+x];c2++}if(rm2>=0){s2-=t[rm2*W+x];c2--}}}return o}
-  var o=run(run(g,ro,Math.min,1e9),ro,Math.max,-1e9);return box(box(box(o,rs),rs),rs)}
-/* contour lines by marching squares over the grid, joined into lines; heights in whole metres (multiples of `st`) */
-function contours(S,W,H,st,toLL){ var lv={},x,y;
-  for(y=0;y<H-1;y++)for(x=0;x<W-1;x++){ var a=S[y*W+x],b=S[y*W+x+1],c=S[(y+1)*W+x+1],d=S[(y+1)*W+x],mn=Math.min(a,b,c,d),mx=Math.max(a,b,c,d);
-    for(var L=Math.ceil(mn/st)*st;L<=mx;L+=st){ var idx=(a>=L?8:0)|(b>=L?4:0)|(c>=L?2:0)|(d>=L?1:0); if(idx===0||idx===15) continue;
-      var T=(y*W+x)*2,Bm=((y+1)*W+x)*2,Le=(y*W+x)*2+1,Ri=(y*W+x+1)*2+1,segs;   // edge keys: top, bottom, left, right
-      switch(idx){case 1:case 14:segs=[[Le,Bm]];break;case 2:case 13:segs=[[Bm,Ri]];break;case 3:case 12:segs=[[Le,Ri]];break;case 4:case 11:segs=[[T,Ri]];break;
-        case 6:case 9:segs=[[T,Bm]];break;case 7:case 8:segs=[[Le,T]];break;
-        case 5:segs=(a+b+c+d)/4>=L?[[Le,T],[Bm,Ri]]:[[Le,Bm],[T,Ri]];break;case 10:segs=(a+b+c+d)/4>=L?[[Le,Bm],[T,Ri]]:[[Le,T],[Bm,Ri]];break}
-      var q=lv[L]||(lv[L]={s:[],p:{}});
-      var pt=function(k){if(q.p[k])return;var cell=k>>1,ex=cell%W,ey=(cell/W)|0,v0=S[cell],v1,f;
-        if(k&1){v1=S[cell+W];f=(L-v0)/(v1-v0);q.p[k]=[ex,ey+f]}else{v1=S[cell+1];f=(L-v0)/(v1-v0);q.p[k]=[ex+f,ey]}};
-      segs.forEach(function(s){pt(s[0]);pt(s[1]);q.s.push(s)})}}
-  var out=[];
-  Object.keys(lv).forEach(function(L){var q=lv[L],by={},used=new Uint8Array(q.s.length);
-    q.s.forEach(function(s,i){(by[s[0]]=by[s[0]]||[]).push(i);(by[s[1]]=by[s[1]]||[]).push(i)});
-    q.s.forEach(function(s,i){ if(used[i]) return; used[i]=1; var line=[s[0],s[1]];
-      [1,0].forEach(function(end){ for(;;){var k=end?line[line.length-1]:line[0],nx=(by[k]||[]).filter(function(j){return !used[j]})[0];if(nx===undefined)break;used[nx]=1;
-        var o=q.s[nx][0]===k?q.s[nx][1]:q.s[nx][0];if(end)line.push(o);else line.unshift(o)}});
-      if(line.length<4) return;   // a speck: a ring round a cell or two
-      out.push({type:'Feature',properties:{e:+L},geometry:{type:'LineString',coordinates:line.map(function(k){var p=q.p[k];return toLL(p[0],p[1])})}})})});
-  return out}
-/* relief in the map's own inks: shadow brown on the slopes turned from the light (north-west, 45 degrees up), paper light on those
-   facing it; flat ground left clear. `ex` exaggerates the heights, as the ground round Manila rises only tens of metres. */
-function reliefRGBA(S,W,H,px,ex){ var d=new Uint8ClampedArray(W*H*4),az=315*Math.PI/180,zen=45*Math.PI/180,flat=Math.cos(zen);
-  for(var y=1;y<H-1;y++)for(var x=1;x<W-1;x++){var i=y*W+x,dzx=(S[i+1]-S[i-1])/(2*px)*ex,dzy=(S[i+W]-S[i-W])/(2*px)*ex,sl=Math.atan(Math.hypot(dzx,dzy)),asp=Math.atan2(dzy,-dzx);
-    var hs=Math.cos(zen)*Math.cos(sl)+Math.sin(zen)*Math.sin(sl)*Math.cos(az-Math.PI/2-asp),v=hs-flat,k=i*4;
-    if(v<0){d[k]=84;d[k+1]=58;d[k+2]=30;d[k+3]=Math.min(190,-v*560)}else{d[k]=255;d[k+1]=250;d[k+2]=232;d[k+3]=Math.min(120,v*420)}}
-  return d}
-/* heights written along the heavier contour lines, where there is room */
-function contourNames(L){ var X=trnOf(); if(!X||sNow<(Z.labels||0)) return ''; var z=mv.size(),h='',seen={},n=0;
-  mv.map.queryRenderedFeatures({layers:[X.src+'-c0']}).forEach(function(f){ if(n>=36) return; var c=f.geometry.type==='LineString'?f.geometry.coordinates:null; if(!c||c.length<8) return;
-    var e=f.properties.e,m=Math.floor(c.length/2),key=e+':'+c[m][0].toFixed(3)+':'+c[m][1].toFixed(3); if(seen[key]) return; seen[key]=1;
-    var p=S(B.fromLL(c[m])),p1=S(B.fromLL(c[m-3])),p2=S(B.fromLL(c[m+3])); if(p[0]<20||p[1]<20||p[0]>z.w-20||p[1]>z.h-20) return;
-    var a=Math.atan2(p2[1]-p1[1],p2[0]-p1[0])*180/Math.PI; if(a>90)a-=180; if(a<-90)a+=180;
-    var tw=String(e).length*6.2+6,r=[p[0]-tw/2,p[1]-7,p[0]+tw/2,p[1]+7]; if(L.hit(r)) return; L.keep(r); n++;
-    h+='<text class="cl" text-anchor="middle" transform="translate('+f1(p[0])+' '+f1(p[1])+') rotate('+f1(a)+')" y="3.5">'+e+'</text>'});
+  /* the surface between the cells: a smooth (cubic B-spline) reading of the grid at cw x ch points, the first at (x0, y0) and `cell` cells apart.
+     Every picture and every contour is read through this, at whatever spacing the zoom calls for, so they agree with each other. */
+  function bw(f){var f2=f*f,f3=f2*f;return [(1-3*f+3*f2-f3)/6,(4-6*f2+3*f3)/6,(1+3*f+3*f2-3*f3)/6,f3/6]}
+  function sample(A,x0,y0,cw,ch,cell){var W=G.W,H=G.H,out=new Float32Array(cw*ch),r0=Math.floor(y0)-1,r1=Math.floor(y0+(ch-1)*cell)+2,nr=r1-r0+1,tmp=new Float32Array(nr*cw),i,j,r,k;
+    for(i=0;i<cw;i++){var gx=x0+i*cell,ix=Math.floor(gx),w=bw(gx-ix),xs=[0,0,0,0];for(k=0;k<4;k++)xs[k]=Math.max(0,Math.min(W-1,ix-1+k));
+      for(r=0;r<nr;r++){var row=Math.max(0,Math.min(H-1,r0+r))*W;tmp[r*cw+i]=w[0]*A[row+xs[0]]+w[1]*A[row+xs[1]]+w[2]*A[row+xs[2]]+w[3]*A[row+xs[3]]}}
+    for(j=0;j<ch;j++){var gy=y0+j*cell,iy=Math.floor(gy),v=bw(gy-iy),b=(iy-1-r0)*cw;
+      for(i=0;i<cw;i++)out[j*cw+i]=v[0]*tmp[b+i]+v[1]*tmp[b+cw+i]+v[2]*tmp[b+2*cw+i]+v[3]*tmp[b+3*cw+i]}
+    return out}
+  function lonOf(gx){return (G.X0+gx+0.5)/G.n*360-180} function latOf(gy){return Math.atan(Math.sinh(Math.PI*(1-2*(G.Y0+gy+0.5)/G.n)))*180/Math.PI}
+  function gxOf(l){return (l+180)/360*G.n-G.X0-0.5} function gyOf(a){var r=a*Math.PI/180;return (1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*G.n-G.Y0-0.5}
+  /* lines of equal value through a grid (marching squares), joined end to end. levels(mn,mx) lists the values to draw through a cell
+     whose corners run from mn to mx; skip(i,j) leaves a cell out. Returns [{L:value, p:[[x,y],...]}] in grid steps. */
+  function iso(F,cw,ch,levels,skip){ var lv={},order=[],x,y;
+    for(y=0;y<ch-1;y++)for(x=0;x<cw-1;x++){ var o=y*cw+x,a=F[o],b=F[o+1],c=F[o+cw+1],d=F[o+cw],mn=Math.min(a,b,c,d),mx=Math.max(a,b,c,d); if(mn===mx||(skip&&skip(o))) continue;
+      var Ls=levels(mn,mx); for(var q=0;q<Ls.length;q++){ var L=Ls[q],idx=(a>=L?8:0)|(b>=L?4:0)|(c>=L?2:0)|(d>=L?1:0); if(idx===0||idx===15) continue;
+        var T=o*2,Bm=(o+cw)*2,Le=o*2+1,Ri=(o+1)*2+1,segs;   // the cell's edges: top, bottom, left, right
+        switch(idx){case 1:case 14:segs=[[Le,Bm]];break;case 2:case 13:segs=[[Bm,Ri]];break;case 3:case 12:segs=[[Le,Ri]];break;case 4:case 11:segs=[[T,Ri]];break;
+          case 6:case 9:segs=[[T,Bm]];break;case 7:case 8:segs=[[Le,T]];break;
+          case 5:segs=(a+b+c+d)/4>=L?[[Le,T],[Bm,Ri]]:[[Le,Bm],[T,Ri]];break;default:segs=(a+b+c+d)/4>=L?[[Le,Bm],[T,Ri]]:[[Le,T],[Bm,Ri]]}
+        var g=lv[L]; if(!g){g=lv[L]={L:L,s:[],p:{}};order.push(g)}
+        for(var s=0;s<segs.length;s++){ for(var e=0;e<2;e++){var k=segs[s][e]; if(g.p[k]===undefined){var cell=k>>1,ex=cell%cw,ey=(cell/cw)|0,v0=F[cell],v1=(k&1)?F[cell+cw]:F[cell+1],f=(L-v0)/(v1-v0);g.p[k]=(k&1)?[ex,ey+f]:[ex+f,ey]}} g.s.push(segs[s]) } } }
+    var out=[];
+    order.forEach(function(g){var by={},used=new Uint8Array(g.s.length),i;
+      for(i=0;i<g.s.length;i++){var s=g.s[i];(by[s[0]]||(by[s[0]]=[])).push(i);(by[s[1]]||(by[s[1]]=[])).push(i)}
+      for(i=0;i<g.s.length;i++){ if(used[i]) continue; used[i]=1; var line=[g.s[i][0],g.s[i][1]];
+        for(var end=1;end>=0;end--){ for(;;){var k=end?line[line.length-1]:line[0],c2=by[k],nx=-1;for(var j=0;j<c2.length;j++)if(!used[c2[j]]){nx=c2[j];break} if(nx<0)break; used[nx]=1;
+          var o2=g.s[nx][0]===k?g.s[nx][1]:g.s[nx][0]; if(end)line.push(o2);else line.unshift(o2)} }
+        if(line.length>=4) out.push({L:g.L,p:line.map(function(k){return g.p[k]})}) } });
+    return out}
+  function init(m){ var W=m.W,H=m.H,g=m.g,i,j,N=W*H,wet=new Float32Array(N);
+    for(i=0;i<N;i++) wet[i]=g[i]<=0.01?1:0;                                                   // the radar survey sets the sea to nothing at all
+    wet=run(run(wet,W,H,1,Math.min,1),W,H,1,Math.max,0);                                        // less the specks: water narrower than three cells
+    var op=run(run(g,W,H,m.ro,Math.min,1e9),W,H,m.ro,Math.max,-1e9),S=box(box(box(op,W,H,m.rs),W,H,m.rs),W,H,m.rs),off=new Float32Array(N); for(i=0;i<N;i++) off[i]=g[i]-op[i];   // what the cleaning took off: much of it means buildings
+    /* Doubtful ground. A rise that stands well clear of low, flat ground and is narrower than `across` is, on a delta under a modern city, almost
+       always a mass of buildings the cleaning could not take off. It is marked, so its contours can be drawn as doubtful and no height given. */
+    var dbt=new Float32Array(N); if(m.doubt){ var fl=run(run(g,W,H,m.doubt.r,Math.min,1e9),W,H,m.doubt.r,Math.max,-1e9); fl=box(box(box(fl,W,H,m.rs),W,H,m.rs),W,H,m.rs);
+      for(i=0;i<N;i++) dbt[i]=(g[i]>0.01&&fl[i]<m.doubt.below&&S[i]-fl[i]>m.doubt.rise)?1:0; dbt=box(dbt,W,H,1) }
+    G={S:S,M:wet,D:dbt,B:box(box(off,W,H,4),W,H,4),W:W,H:H,X0:m.X0,Y0:m.Y0,n:m.n,px:m.px,sheet:m.sheet,wide:m.wide};
+    /* the relief picture, two points to a cell */
+    var cw=W*2,ch=H*2,F=sample(S,-0.25,-0.25,cw,ch,0.5),K=sample(wet,-0.25,-0.25,cw,ch,0.5),d=new Uint8ClampedArray(cw*ch*4),p2=m.px/2,az=315*Math.PI/180,zen=45*Math.PI/180,flat=Math.cos(zen),lo=1e9,hi=-1e9;
+    var sh=m.sheet,sx0=sh?(gxOf(sh[0])+0.5)*2:0,sx1=sh?(gxOf(sh[2])+0.5)*2:0,sy0=sh?(gyOf(sh[3])+0.5)*2:0,sy1=sh?(gyOf(sh[1])+0.5)*2:0;
+    for(j=1;j<ch-1;j++)for(i=1;i<cw-1;i++){ var o=j*cw+i,h=F[o],k=o*4,dzx=(F[o+1]-F[o-1])/(2*p2)*m.ex,dzy=(F[o+cw]-F[o-cw])/(2*p2)*m.ex,gm=Math.sqrt(dzx*dzx+dzy*dzy),sq=1/(1+gm/1.6);   // steep ground is eased, so hills do not go black
+      dzx*=sq;dzy*=sq; var sl=Math.atan(Math.sqrt(dzx*dzx+dzy*dzy)),asp=Math.atan2(dzy,-dzx),v=Math.cos(zen)*Math.cos(sl)+Math.sin(zen)*Math.sin(sl)*Math.cos(az-Math.PI/2-asp)-flat;
+      if(h<lo)lo=h; if(h>hi)hi=h;
+      var at=m.tint&&h>0?0.30*(1-Math.exp(-h/45)):0,as=v<0?Math.min(0.72,-v*2.2):Math.min(0.46,v*1.65),sr=v<0?84:255,sg=v<0?58:250,sb=v<0?30:232,oa=as+at*(1-as);   // tint (176,128,70), deeper with height; the shade over it
+      var r=oa?(sr*as+176*at*(1-as))/oa:0,gg=oa?(sg*as+128*at*(1-as))/oa:0,bb=oa?(sb*as+70*at*(1-as))/oa:0;
+      if(m.wide&&K[o]>0.35&&!(i>=sx0&&i<sx1&&j>=sy0&&j<sy1)){ var aw=Math.min(1,(K[o]-0.35)/0.3),na=aw+oa*(1-aw);   // today's sea, beyond the sheet only: inside it the 1899 water is traced
+        r=(191*aw+r*oa*(1-aw))/na;gg=(208*aw+gg*oa*(1-aw))/na;bb=(204*aw+bb*oa*(1-aw))/na;oa=na }
+      d[k]=r;d[k+1]=gg;d[k+2]=bb;d[k+3]=oa*255 }
+    var msg={t:'ready',w:cw,h:ch,lo:lo,hi:hi};
+    if(typeof OffscreenCanvas!=='undefined'&&typeof ImageData!=='undefined'){ try{ var cv=new OffscreenCanvas(cw,ch);cv.getContext('2d').putImageData(new ImageData(d,cw,ch),0,0);
+        cv.convertToBlob({type:'image/png'}).then(function(b){msg.blob=b;post(msg)},function(){msg.rgba=d;post(msg,[d.buffer])}); return }catch(e){} }
+    msg.rgba=d; post(msg,[d.buffer]) }
+  function view(m){ var cell=m.cell,W=G.W,H=G.H,x0=Math.max(0,Math.floor(gxOf(m.box[0])/cell)*cell),x1=Math.min(W-1,Math.ceil(gxOf(m.box[2])/cell)*cell),y0=Math.max(0,Math.floor(gyOf(m.box[3])/cell)*cell),y1=Math.min(H-1,Math.ceil(gyOf(m.box[1])/cell)*cell);
+    var cw=Math.round((x1-x0)/cell)+1,ch=Math.round((y1-y0)/cell)+1,out={t:'view',id:m.id,key:m.key,box:m.box,st:m.st,lines:[],labs:[],spots:[]}; if(cw<2||ch<2){post(out);return}
+    var F=sample(G.S,x0,y0,cw,ch,cell),K=sample(G.M,x0,y0,cw,ch,cell),Dk=sample(G.D,x0,y0,cw,ch,cell),st=m.st,ix2=Math.round(m.ix*2),Q=96,sh=G.sheet,r6=function(v){return Math.round(v*1e6)/1e6};
+    var LL=function(p){return [r6(lonOf(x0+p[0]*cell)),r6(latOf(y0+p[1]*cell))]};
+    /* the grid of the labels: a height is written where a line crosses every 96th row or column of points, counted from the corner of the heights, so it stays put as the reader moves */
+    var gx0=Math.round(x0/cell),gy0=Math.round(y0/cell);
+    var lev=function(mn,mx){var o=[],L=Math.ceil(mn/st)*st;if(L<=0)L=st;for(;L<=mx;L+=st)o.push(L);return o},wetAt=function(o){return (K[o]+K[o+1]+K[o+cw]+K[o+cw+1])>2},dbtAt=function(o){return (Dk[o]+Dk[o+1]+Dk[o+cw]+Dk[o+cw+1])>2};
+    iso(F,cw,ch,lev,function(o){return wetAt(o)||!dbtAt(o)}).forEach(function(c){ if(Math.round(c.L*2)%2===0) out.lines.push({type:'Feature',properties:{e:c.L,c:3},geometry:{type:'LineString',coordinates:c.p.map(LL)}}) });   // doubtful ground: whole metres only, drawn dotted, no heights
+    iso(F,cw,ch,lev,function(o){return wetAt(o)||dbtAt(o)}).forEach(function(c){
+      var L2=Math.round(c.L*2),cl=L2%ix2===0?2:(L2%2?0:1),pts=c.p.map(LL); out.lines.push({type:'Feature',properties:{e:c.L,c:cl},geometry:{type:'LineString',coordinates:pts}});
+      if(cl===0) return;
+      for(var i=1;i<c.p.length;i++){var a=c.p[i-1],b=c.p[i],ka=Math.floor((gx0+a[0])/Q),kb=Math.floor((gx0+b[0])/Q),hit=ka!==kb; if(!hit){ka=Math.floor((gy0+a[1])/Q);kb=Math.floor((gy0+b[1])/Q);hit=ka!==kb}
+        if(hit) out.labs.push([pts[i][0],pts[i][1],pts[i-1][0],pts[i-1][1],c.L,cl])} });
+    if(G.wide) iso(K,cw,ch,function(mn,mx){return mn<0.5&&mx>=0.5?[0.5]:[]}).forEach(function(c){ var runs=[[]];   // today's shore, kept only beyond the sheet
+      c.p.map(LL).forEach(function(q){ if(sh&&q[0]>sh[0]&&q[0]<sh[2]&&q[1]>sh[1]&&q[1]<sh[3]){if(runs[runs.length-1].length)runs.push([])} else runs[runs.length-1].push(q) });
+      runs.forEach(function(r){if(r.length>1)out.lines.push({type:'Feature',properties:{e:0,c:9},geometry:{type:'LineString',coordinates:r}})}) });
+    if(m.spots){ var R=m.spots,S=G.S,M=G.M,ax=Math.max(1,Math.ceil(x0)),bx=Math.min(W-2,Math.floor(x1)),ay=Math.max(1,Math.ceil(y0)),by=Math.min(H-2,Math.floor(y1)),x,y;   // summits: the highest point for R cells around, standing well clear of the ground about it
+      for(y=ay;y<=by;y++)for(x=ax;x<=bx;x++){ var o=y*W+x,v=S[o]; if(v<3||M[o]>0.5||G.D[o]>0.3||G.B[o]>(m.rough||3)) continue;   // no height is given where the radar saw mostly buildings
+        if(v<S[o-1]||v<=S[o+1]||v<S[o-W]||v<=S[o+W]||v<S[o-W-1]||v<S[o-W+1]||v<=S[o+W-1]||v<=S[o+W+1]) continue;
+        var top=true,low=v,yy,xx; for(yy=Math.max(0,y-R);top&&yy<=Math.min(H-1,y+R);yy++)for(xx=Math.max(0,x-R);xx<=Math.min(W-1,x+R);xx++){var u=S[yy*W+xx]; if(u>v||(u===v&&yy*W+xx<o)){top=false;break} if(u<low)low=u}
+        if(top&&v-low>=Math.max(1.5,v*0.06)) out.spots.push([r6(lonOf(x)),r6(latOf(y)),Math.round(v)]) } }
+    post(out) }
+  return function(m){ if(m.t==='init') init(m); else if(m.t==='view'&&G) view(m) }
+}
+/* the heights written along the contour lines, and the spot heights: drawn with the names, where there is room */
+function contourNames(L){ var X=trnOf(); if(!X||!X.cur) return ''; var z=mv.size(),h='',n=0,C=X.cur;
+  C.spots.forEach(function(sp){ var p=S(B.fromLL(sp)); if(p[0]<8||p[1]<8||p[0]>z.w-8||p[1]>z.h-8) return; var tw=String(sp[2]).length*6+4,r=[p[0]-3,p[1]-12,p[0]+5+tw,p[1]+3]; if(L.hit(r)) return; L.keep(r);
+    h+='<circle class="sh" cx="'+f1(p[0])+'" cy="'+f1(p[1])+'" r="1.6"/><text class="st" x="'+f1(p[0]+4.5)+'" y="'+f1(p[1]-2.5)+'">'+sp[2]+'</text>' });
+  C.labs.forEach(function(a){ if(n>=44||(a[5]<2&&!C.minor)) return; var p=S(B.fromLL(a)); if(p[0]<22||p[1]<22||p[0]>z.w-22||p[1]>z.h-22) return;
+    var p2=S(B.fromLL([a[2],a[3]])),g=Math.atan2(p2[1]-p[1],p2[0]-p[0])*180/Math.PI; if(g>90)g-=180; if(g<-90)g+=180;
+    var tw=String(a[4]).length*6.2+8,r=[p[0]-tw/2,p[1]-8,p[0]+tw/2,p[1]+8]; if(L.hit(r)) return; L.keep(r); n++;
+    h+='<text class="cl'+(a[5]<2?' m':'')+'" text-anchor="middle" transform="translate('+f1(p[0])+' '+f1(p[1])+') rotate('+f1(g)+')" y="3.5">'+a[4]+'</text>' });
   return h}
+/* ---------- a period map's own ink, laid over a reconstruction for the closest zooms ----------
+   A feature of kind `ink` is a picture, not a line: every dark mark of a period map with the paper made clear, laid on the ground by its
+   four corners. It comes in from its `from_zoom`, where the reconstruction's own traced lines run out of detail, so that zooming in keeps
+   showing more: blocks, public buildings, street names. `files` lists the picture at several sizes ([zoom, file], smallest first), each
+   fetched only when the reader comes that close. Traced features marked `under` (the same lines, drawn more coarsely) give way to it. */
+var INKS={};
+/* is this place under an ink picture that is showing its own lettering (from its second size up)? */
+function inkNames(p){ var R=base.rc,K=R&&INKS[R.id]; if(!K||!K.length) return false; var zm=mv.map.getZoom(),q=B.toLL(p);
+  return K.some(function(k){ if(!k.lv[1]||zm<k.lv[1].z+0.3) return false; var c=k.corners,s=0;
+    for(var i=0;i<4;i++){var a=c[i],b=c[(i+1)%4];s+=((b[0]-a[0])*(q[1]-a[1])-(b[1]-a[1])*(q[0]-a[0]))<0?1:-1} return Math.abs(s)===4 }) }
+function inkTick(){ var R=base.rc; if(!R||!INKS[R.id]) return; var zm=mv.map.getZoom(),src='rc-'+R.id;
+  INKS[R.id].forEach(function(K){ K.lv.forEach(function(v,i){ if(v.asked||zm<v.z-0.5) return; v.asked=true; var im=new Image(),id=src+'-ink-'+K.n+'-'+i,nx=K.lv[i+1];
+    im.onload=function(){ var cv=document.createElement('canvas');cv.width=im.naturalWidth;cv.height=im.naturalHeight;var c2=cv.getContext('2d');c2.drawImage(im,0,0);
+      try{c2.getImageData(0,0,1,1)}catch(e){return}   // a picture the browser will not let the map read (served from elsewhere without leave): left out
+      mv.map.addSource(id,{type:'canvas',canvas:cv,coordinates:K.corners,animate:false});
+      var full=nx?(i?0.8:0.7):0.86,op=['interpolate',['linear'],['zoom'],v.z,0,v.z+(i?0.35:0.6),full]; if(nx) op=op.concat([nx.z+0.15,full,nx.z+0.5,0]);   // the smaller pictures a little paler, as the lines crowd
+      mv.layer({id:id,type:'raster',source:id,layout:{visibility:base.rc===R?'visible':'none'},paint:{'raster-fade-duration':0,'raster-resampling':'linear','raster-opacity':op}},src+'-inkslot');
+      RCL[R.id].push(id); mv.kick() };
+    im.onerror=function(){if(window.console)console.warn('WarMapper: could not load the picture '+v.file)};
+    var u=WM.asset(v.file); if(!/^data:/.test(u)) im.crossOrigin='anonymous'; im.src=u }) });
+}
 /* tapping a line of a reconstructed map: its details go in the text pane */
-var RC_PICK=['-bh','-works','-wall','-wallfill','-roadedge','-rail','-ties','-shore','-break','-stream','-water','-detail','-sea'];
+var RC_PICK=['-bh','-works','-wall','-wallfill','-roadedge','-rail','-ties','-shore','-break','-stream','-water','-detail','-inkhit','-sea'];
 function pickRecon(pt){ if(!base.rc) return null; var src='rc-'+base.rc.id,ls=RC_PICK.map(function(x){return src+x}).filter(function(id){return mv.map.getLayer(id)}),r=coarse?9:5;
   var hit=mv.map.queryRenderedFeatures([[pt.x-r,pt.y-r],[pt.x+r,pt.y+r]],{layers:ls}),best=null,rank=function(f){var i=RC_PICK.indexOf(f.layer.id.slice(src.length));return i<0?99:i};
   hit.forEach(function(f){if(RCF[f.properties.id]&&(!best||rank(f)<rank(best)))best=f});return best?best.properties.id:null}
@@ -800,7 +910,11 @@ function spanText(a,b){var d=function(s){return s?(+s.slice(8,10))+' '+['January
 function terrainText(){var X=base.rc&&TRN[base.rc.id],T=base.terrain,st=(X&&X.steps)||[];
   if(!X||X.state==='failed') return 'The elevation service could not be reached, so this version shows no relief or contours.';
   if(X.state!=='ready') return 'Loading the heights.';
-  return 'Relief and contour lines worked out by this page from today\'s elevation data ('+esc(HS.credit)+'), a radar survey of 2000 that measured the tops of buildings as well as the ground. Bumps narrower than about '+(T.open_m||230)+' m (blocks, towers, the Tondo dump) are taken off and the rest smoothed over about '+(T.smooth_m||60)+' m, which leaves the broad lie of the land: today\'s ground, little changed since 1899 away from the shore and the reclaimed land, which the 1899 water covers. Heights are in metres. Contours every '+st.map(function(s){return s[1]+' m'}).join(', then ')+' as you zoom in; every '+X.ix+' m a heavier line with its height. Read the ridges where the contours bend downhill, the valleys where they bend uphill. Large clusters of tall buildings may still show as low rises.'}
+  var iv=[],half=false; st.forEach(function(q){if(q[1]<1)half=true;else if(iv.indexOf(q[1])<0)iv.push(q[1])});
+  return 'Relief, contour lines and spot heights worked out by this page from today\'s elevation data ('+esc(HS.credit)+'), a radar survey of 2000 that measured the tops of buildings as well as the ground. Bumps narrower than about '+(T.open_m||230)+' m (blocks, towers, the Tondo dump) are taken off and the rest smoothed over about '+(T.smooth_m||60)+' m, which leaves the broad lie of the land: today\'s ground, little changed since 1899 away from the shore. '
+    +'Heights are in metres, good to a few metres at best. Where buildings stand thick the ground may read some metres too high. Dotted contours mark low ground where the radar most likely saw a mass of buildings, not a rise: old Manila stands on low, nearly flat ground, so do not read those as hills. No height is written there. '
+    +'The closer you look, the more is drawn: contours every '+iv.join(', then ')+' m'+(half?', and closest in dashed form lines every half metre':'')+'; every fifth line is heavier and carries its height; summits are marked with theirs. Read the ridges where the contours bend downhill, the valleys where they bend uphill.'
+    +(trnWide()?' Beyond the dotted line the traced maps of 1899 stop. Only relief, contours and today\'s shore are drawn there, so the map fills the window; the reclaimed land south and north of the sheet is today\'s, not 1899\'s.':'')}
 function reconDetails(){var R=base.rc,row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+v+'</dd>':''},used=[],h='<h2>'+esc(R.title)+'</h2>';
   h+='<div class="state inferred"><b>A reconstruction, not a period map</b>'+esc(R.about||'Drawn by WarMapper from traced lines.')+'</div>';
   if(R.note) h+='<p>'+esc(R.note)+'</p>';
@@ -817,7 +931,9 @@ function paintFade(){(PICS[base.id]||[]).forEach(function(p){mv.opacity(p.id,opa
   bases.forEach(function(b){if(b.sat)mv.map.setLayoutProperty('sat-'+b.id,'visibility',b===base?'visible':'none')});
   var cur=!!(base.current||base.backdrop==='current'||through()),own=cur&&!topo();   // the battle's own drawing of today's ground shows only when the modern map cannot
   for(var rk in RCL) RCL[rk].forEach(function(id){mv.show(id,!!base.rc&&base.rc.id===rk)});
-  for(var tk in TRN) TRN[tk].layers.forEach(function(id){mv.show(id,!!base.terrain&&!!base.rc&&base.rc.id===tk)});   // the terrain version's relief and contours
+  for(var tk in TRN){ var tx=TRN[tk],ton=!!base.terrain&&!!base.rc&&base.rc.id===tk,wide=ton&&tx.state==='ready'&&trnWide();   // the terrain version's relief and contours
+    tx.layers.forEach(function(id){mv.show(id,ton)}); tx.top.forEach(function(id){mv.show(id,wide)});
+    if(wide)['-off','-frame','-frame2'].forEach(function(x){mv.show('rc-'+tk+x,false)}) }   // past the sheet's edge the terrain runs on: no frame, and nothing blanked
   CUR.forEach(function(id){mv.show(id,own)});mv.show('b-mask',!topo()&&(cur||base.sat)&&!!(base.clip||(base.m&&P.bounds===base.map)));
   mv.bg(base.rc?'--rc-paper':(base.own||(base.m&&base.backdrop!=='current'&&!through()))?'--m-paper':'--land')}
 function setOpacity(v){opac=Math.max(0,Math.min(1,v));var e=$('opac');if(e)e.value=Math.round(opac*100);var o=$('opv');if(o)o.textContent=Math.round(opac*100)+'%';paintFade();updateTiles();mv.retheme();mv.kick()}
