@@ -46,6 +46,7 @@ import manila_georef as warking            # the Signal Corps map's affine fit
 
 FIT = json.load(open(os.path.join(ROOT, 'pipeline', 'georef', 'manila_haan_fit.json')))
 PICKS = json.load(open(os.path.join(HERE, 'manila_1899_picks.json')))
+DETAIL = json.load(open(os.path.join(HERE, 'manila_1899_detail.json')))      # the map's own ink lines and water wash, by program (manila_1899_linework.py)
 OUT = os.path.join(ROOT, 'data', 'recon', 'manila-1899.geojson')
 HAAN, WARK = 'S78', 'S64'
 SHEET = [120.930, 14.520, 121.057, 14.681]   # west, south, east, north: the edge of the reconstructed sheet
@@ -156,6 +157,36 @@ def build():
         weak = num in ('2', '3', '4', '5', '6')
         add('blockhouses', 'blockhouse', 'Point', H([px])[0], HAAN, 'traced', 'low' if weak else 'medium', 80 if weak else 40,
             'The blockhouse symbol on the engineer map.' + (' No control point lies near it: the place depends on the fit between Caloocan and Santa Mesa.' if weak else ''), name='Blockhouse %s' % num, number=int(num))
+
+    # ---- the engineer map's own detail, taken from the scan by program (pipeline/recon/manila_1899_linework.py) ----
+    inside = lambda q: SHEET[0] <= q[0] <= SHEET[2] and SHEET[1] <= q[1] <= SHEET[3]
+    PARTS = [('Caloocan, La Loma, Lico and the country north of the city', 0, 0, 3840, 1150),
+             ('Tondo, Binondo and Santa Cruz', 0, 1150, 1000, 1990), ('Quiapo, San Miguel and Sampaloc', 1000, 1150, 1500, 2110), ('Santa Mesa and Pandacan', 1500, 1150, 2130, 2110),
+             ('San Juan del Monte, the reservoir and the road to the waterworks', 2130, 1150, 3840, 2110), ('The Walled City, Ermita and Malate', 0, 1990, 1000, 2847),
+             ('Paco and the esteros south of the Pasig', 1000, 2110, 1600, 2847), ('Santa Ana and the Pasig bends', 1600, 2110, 3840, 2847)]
+    part_of = lambda x, y: next(i for i, (_, x0, y0, x1, y1) in enumerate(PARTS) if x0 <= x < x1 and y0 <= y < y1)
+    B_L = ('Every dark ink line of the engineer map inside this part of the sheet, separated from the scan by a program, thinned to centre lines and vectorised (about 2 m), then placed by '
+           'the map\'s fit. Small separate marks (most lettering, the dots of trails, hedge rings) were dropped by size. Nobody has checked it line by line: it holds street and block edges, '
+           'dykes, fences, banks and hachures, and also what the program cannot tell from them, such as letters that touch a line and field works drawn after 4 February.')
+    groups = [[] for _ in PARTS]
+    for line in DETAIL['lines']:
+        ll = [q for q in H(line) if inside(q)]
+        if len(ll) >= 2: groups[part_of(*line[len(line) // 2])].append(ll)
+    for (name, *_), lines in zip(PARTS, groups):
+        if lines: add('linework', 'detail', 'MultiLineString', lines, HAAN, 'AI-extracted', 'low', 30, B_L, desc='Streets, blocks, dykes and field lines: ' + name, part=name)
+    B_E = ('The engineer map\'s blue water wash in this part of the sheet, separated by colour and vectorised by a program (about 3 m), less the water the hand-checked layers hold. '
+           'Esteros, creeks and ponds are not told apart; a creek is cut where the wash fades or lettering covers it, and a few stains may be among them.')
+    wgroups = [[] for _ in PARTS]
+    for rings in DETAIL['water']:
+        poly = [(lambda r: r + [r[0]])(H(r)) for r in rings]
+        if all(inside(q) for q in poly[0]): wgroups[part_of(*rings[0][0])].append(poly)
+    for (name, *_), polys in zip(PARTS, wgroups):
+        if polys: add('esteros', 'water', 'MultiPolygon', polys, HAAN, 'AI-extracted', 'low', 30, B_E, desc='Esteros, creeks and ponds: ' + name, part=name)
+    # insurgent field works: the legend's "Insurg." mark (a row of humps), where the map draws it by blockhouses 1 and 2
+    B_I = ('The legend\'s mark for insurgent works (a row of humps), read from a crop of the engineer map at three times its size, 3 to 5 scan px a pick. Short pieces only: the map '
+           'shows them by blockhouses 1 and 2 and nowhere else on the sheet. Those south of the American line of 5 to 10 February were Filipino works facing the city before the battle.')
+    for i, (line, desc) in enumerate(PICKS['insurgent_works']):
+        add('works-ph', 'entrenchment', 'LineString', H(line), HAAN, 'traced', 'low', 80, B_I, desc=desc, side='PH')
     for x in feats:        # nothing is drawn beyond the sheet's edge
         g = x['geometry']
         if g['type'] == 'LineString':
@@ -181,3 +212,5 @@ if __name__ == '__main__':
     for k, v in by.items(): print('%-12s %2d feature(s)  %s  %s' % (k, len(v), v[0]['properties']['method'], '/'.join(sorted(set(x['properties']['confidence'] for x in v)))))
     lon = [p[0] for x in G['features'] if x['geometry']['type'] == 'LineString' for p in x['geometry']['coordinates']]; lat = [p[1] for x in G['features'] if x['geometry']['type'] == 'LineString' for p in x['geometry']['coordinates']]
     print('lines span %.4f to %.4f E, %.4f to %.4f N; %d features, %d bytes' % (min(lon), max(lon), min(lat), max(lat), len(G['features']), os.path.getsize(OUT)))
+    for x in G['features']:
+        if x['geometry']['type'].startswith('Multi'): print('  %-22s %5d parts  %s' % (x['properties']['id'], len(x['geometry']['coordinates']), x['properties']['part']))

@@ -640,7 +640,9 @@ function blockhouseIcon(){var n=28,cv=document.createElement('canvas');cv.width=
 function buildRecon(R,px){
   var src='rc-'+R.id,f=[],ids=[],sh=R.sheet,is=function(k){return ['==',['get','k'],k]},round={'line-cap':'round','line-join':'round'};
   R.features.forEach(function(x){RCF[x.id]=x;var pr={k:x.kind,id:x.id,cls:x['class']||'',gw:x.width_m||0,lo:x.confidence==='low'?1:0},g;
-    if(x.shape==='point') g={type:'Point',coordinates:x.at}; else{var rings=x.at.map(unpackLL);g=x.shape==='line'?{type:'LineString',coordinates:rings[0]}:{type:'Polygon',coordinates:rings}}
+    if(x.shape==='point') g={type:'Point',coordinates:x.at};
+    else if(x.shape==='areas') g={type:'MultiPolygon',coordinates:x.at.map(function(a){return a.map(unpackLL)})};   // several areas under one record (the esteros of a district)
+    else{var rings=x.at.map(unpackLL);g=x.shape==='line'?{type:'LineString',coordinates:rings[0]}:x.shape==='lines'?{type:'MultiLineString',coordinates:rings}:{type:'Polygon',coordinates:rings}}
     f.push({type:'Feature',properties:pr,geometry:g})});
   if(sh){var o=[[sh[0]-3,sh[1]-3],[sh[2]+3,sh[1]-3],[sh[2]+3,sh[3]+3],[sh[0]-3,sh[3]+3],[sh[0]-3,sh[1]-3]],e=[[sh[0],sh[1]],[sh[0],sh[3]],[sh[2],sh[3]],[sh[2],sh[1]],[sh[0],sh[1]]];
     f.push({type:'Feature',properties:{k:'off'},geometry:{type:'Polygon',coordinates:[o,e]}});f.push({type:'Feature',properties:{k:'frame'},geometry:{type:'LineString',coordinates:e}})}
@@ -651,7 +653,10 @@ function buildRecon(R,px){
   var zw=function(w){return ['interpolate',['linear'],['zoom'],10,w*0.45,13,w,16,w*2,19,w*4.5]},   // line widths grow with the zoom, as a map drawn at a larger scale would have them
       gw=['interpolate',['exponential',2],['zoom'],6,['*',['get','gw'],px(6)],22,['*',['get','gw'],px(22)]];   // a width on the ground, in metres
   add({id:src+'-paper',type:'background',paint:{'background-pattern':'rc-grain','background-opacity':0.5}});
-  if(HS&&!mv.map.getLayer('rc-hill')) add({id:'rc-hill',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':1,'hillshade-illumination-direction':315,'hillshade-shadow-color':'var(--rc-shade)','hillshade-highlight-color':'var(--rc-light)','hillshade-accent-color':'var(--rc-shade)'}},true);
+  /* Relief on a reconstructed map comes from coarser elevation tiles than today's map uses (zoom 11, about 75 m a pixel, enlarged smoothly), so the
+     shading shows the lie of the land and not today's buildings, which the fine tiles pick up as bumps on flat ground. */
+  if(HS&&!mv.map.getSource('dem-rc')) mv.map.addSource('dem-rc',{type:'raster-dem',tiles:[HS.tiles],encoding:HS.encoding,tileSize:HS.tile_size||256,maxzoom:Math.min(HS.max_zoom||11,R.relief_zoom||11)});
+  if(HS&&!mv.map.getLayer('rc-hill')) add({id:'rc-hill',type:'hillshade',source:'dem-rc',paint:{'hillshade-exaggeration':1,'hillshade-illumination-direction':315,'hillshade-shadow-color':'var(--rc-shade)','hillshade-highlight-color':'var(--rc-light)','hillshade-accent-color':'var(--rc-shade)'}},true);
   add({id:src+'-sea',type:'fill',filter:is('sea'),paint:{'fill-color':'var(--rc-water)','fill-antialias':false}});
   [[2.6,0.9,0.5],[6,0.75,0.36],[10.5,0.6,0.24],[16,0.5,0.14]].forEach(function(q,i){   // lines drawn along the shore, fainter as they go out
     add({id:src+'-lining'+i,type:'line',filter:is('shore'),layout:{'line-join':'round'},paint:{'line-color':'var(--rc-water-ink)','line-width':zw(q[1]),'line-offset':zw(q[0]),'line-opacity':q[2]}})});
@@ -659,6 +664,8 @@ function buildRecon(R,px){
   add({id:src+'-stream',type:'line',filter:is('stream'),layout:round,paint:{'line-color':'var(--rc-water)','line-width':gw}});
   add({id:src+'-streambank',type:'line',filter:is('stream'),layout:{'line-join':'round'},paint:{'line-color':'var(--rc-water-ink)','line-width':zw(0.9),'line-gap-width':gw}});
   add({id:src+'-bank',type:'line',filter:['any',is('river'),is('water')],layout:{'line-join':'round'},paint:{'line-color':'var(--rc-water-ink)','line-width':zw(1)}});
+  /* the period map's own fine lines (street and block edges, dykes, field lines, hachures): thin ink, coming in as the reader zooms in */
+  add({id:src+'-detail',type:'line',filter:is('detail'),minzoom:11.4,layout:round,paint:{'line-color':'var(--rc-ink)','line-width':['interpolate',['linear'],['zoom'],11.4,0.3,13,0.55,15,1,17,1.7,19,3],'line-opacity':['interpolate',['linear'],['zoom'],11.4,0.3,12.5,0.6,14,0.8]}});
   add({id:src+'-shore',type:'line',filter:is('shore'),layout:round,paint:{'line-color':'var(--rc-ink)','line-width':zw(1.5),'line-dasharray':['case',['==',['get','lo'],1],['literal',[6,2.2]],['literal',[1,0]]]}});
   add({id:src+'-break',type:'line',filter:is('breakwater'),paint:{'line-color':'var(--rc-ink)','line-width':zw(0.9),'line-gap-width':zw(1.3)}});
   var rw=function(m,o){var by=function(i){return ['match',['get','cls'],'main',m[i],o[i]]};return ['interpolate',['linear'],['zoom'],10,by(0),12,by(1),14,by(2),17,by(3)]};   // zoomed out a road is one ink line; closer in it opens into the double line of the engineer's map
@@ -669,6 +676,7 @@ function buildRecon(R,px){
   add({id:src+'-wallfill',type:'fill',filter:is('wall'),paint:{'fill-color':'var(--rc-town)'}});
   add({id:src+'-wall',type:'line',filter:is('wall'),layout:{'line-join':'miter'},paint:{'line-color':'var(--rc-wall)','line-width':zw(3.4)}});
   add({id:src+'-wallin',type:'line',filter:is('wall'),layout:{'line-join':'miter'},paint:{'line-color':'var(--rc-paper)','line-width':zw(0.9)}});
+  add({id:src+'-works',type:'line',filter:is('entrenchment'),paint:{'line-color':'#8c2f25','line-width':zw(3),'line-dasharray':[0.9,0.7]}});   // field works, in the colour of the side that dug them
   add({id:src+'-bh',type:'symbol',filter:is('blockhouse'),layout:{'icon-image':'rc-bh','icon-allow-overlap':true,'icon-size':['interpolate',['linear'],['zoom'],10,0.6,13,0.9,16,1.4]}});
   add({id:src+'-off',type:'fill',filter:is('off'),paint:{'fill-color':'var(--bg)'}});
   add({id:src+'-frame',type:'line',filter:is('frame'),paint:{'line-color':'var(--rc-ink)','line-width':2.4,'line-offset':-5}});
@@ -676,7 +684,7 @@ function buildRecon(R,px){
   RCL[R.id]=ids;
 }
 /* tapping a line of a reconstructed map: its details go in the text pane */
-var RC_PICK=['-bh','-wall','-wallfill','-roadedge','-rail','-ties','-shore','-break','-stream','-water','-sea'];
+var RC_PICK=['-bh','-works','-wall','-wallfill','-roadedge','-rail','-ties','-shore','-break','-stream','-water','-detail','-sea'];
 function pickRecon(pt){ if(!base.rc) return null; var src='rc-'+base.rc.id,ls=RC_PICK.map(function(x){return src+x}).filter(function(id){return mv.map.getLayer(id)}),r=coarse?9:5;
   var hit=mv.map.queryRenderedFeatures([[pt.x-r,pt.y-r],[pt.x+r,pt.y+r]],{layers:ls}),best=null,rank=function(f){var i=RC_PICK.indexOf(f.layer.id.slice(src.length));return i<0?99:i};
   hit.forEach(function(f){if(RCF[f.properties.id]&&(!best||rank(f)<rank(best)))best=f});return best?best.properties.id:null}
@@ -749,7 +757,7 @@ function updateTiles(){
 }
 function queueTiles(){clearTimeout(tileTimer);tileTimer=setTimeout(updateTiles,160)}
 function tileError(e){ // three failures and the library is left alone for the rest of the visit
-  if(e&&e.sourceId==='dem'){ if(++hsFail>=4){hsVis=null;hsRc=null;mv.show('hill',false);if(mv.map.getLayer('rc-hill'))mv.show('rc-hill',false);lastCredit='';panelKey='';mv.kick()} return }
+  if(e&&(e.sourceId==='dem'||e.sourceId==='dem-rc')){ if(++hsFail>=4){hsVis=null;hsRc=null;mv.show('hill',false);if(mv.map.getLayer('rc-hill'))mv.show('rc-hill',false);lastCredit='';panelKey='';mv.kick()} return }
   if(e&&e.sourceId==='sur'){ if(++modFail>=4&&!modOff){modOff=true;modOn=null;mv.show('sur',false);paintFade();lastCredit='';panelKey='';flashCredit();mv.kick()} return }   // the modern map cannot be reached: fall back to the drawing
   var er=e&&e.error,txt=String((er&&(er.url||er.message))||''),mine=(e&&/^iiif-/.test(String(e.sourceId||'')))||/iiif/i.test(txt)||(Object.keys(TILES).length&&/fetch|network|load/i.test(txt));
   if(mine&&++tileFail>=3&&!tilesOff){tilesOff=true;updateTiles();panelKey='';mv.kick()}}

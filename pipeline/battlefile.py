@@ -15,9 +15,9 @@ LINE_KINDS = ['road', 'rail', 'water', 'former-water']
 AREA_KINDS = ['wood', 'water']
 LABEL_SHOWS = ['current', 'period', 'both', 'recon']
 # reconstructed base maps (21 Nov 2026): what a traced feature is, how it was read, and the shapes it can take
-RECON_KINDS = ['sea', 'shore', 'river', 'stream', 'water', 'wall', 'road', 'rail', 'breakwater', 'blockhouse']
+RECON_KINDS = ['sea', 'shore', 'river', 'stream', 'water', 'wall', 'road', 'rail', 'breakwater', 'blockhouse', 'detail', 'entrenchment']
 RECON_METHODS = ['traced', 'AI-extracted', 'interpolated']
-RECON_SHAPES = ['point', 'line', 'area']
+RECON_SHAPES = ['point', 'line', 'area', 'lines', 'areas']
 ISO = re.compile(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$')
 
 
@@ -255,9 +255,14 @@ def validate(b, folder=None):
             if f.get('source') not in sources: bad.append(x + ': source %r is not in sources' % f.get('source'))
             for k in ('from', 'to'): time_ok(f.get(k), x + '.' + k)
             if f.get('shape') == 'point': point_ok(f.get('at'), x + '.at')
+            elif f.get('shape') == 'areas':        # several areas: each a list of packed rings, the outline first
+                if not (isinstance(f.get('at'), list) and f['at'] and all(isinstance(a, list) and a and all(isinstance(q, str) and packed.match(q) for q in a) for a in f['at'])): bad.append(x + ': at must be a list of areas, each a list of packed rings')
+                else:
+                    q = f['at'][0][0].split(';')[0].split(','); point_ok([int(q[0]) / 1e5, int(q[1]) / 1e5], x + '.at')
             elif not (isinstance(f.get('at'), list) and f['at'] and all(isinstance(q, str) and packed.match(q) for q in f['at'])): bad.append(x + ': at must be packed lines (lon,lat;dlon,dlat;...)')
             else:
                 q = f['at'][0].split(';')[0].split(','); point_ok([int(q[0]) / 1e5, int(q[1]) / 1e5], x + '.at')
+            if f.get('side') and f['side'] not in [sd.get('code') for sd in b.get('sides', [])]: bad.append(x + ': side %r is not a side code' % f.get('side'))
     B = b['base']; need(B, ['credit', 'lines', 'areas'], 'base')
     for l in B.get('lines', []):
         if len(l) != 4 or l[0] not in LINE_KINDS or not re.match(r'^-?\d+,-?\d+(;-?\d+,-?\d+)+$', l[3]): bad.append('base line not understood: %r' % (l[:3],)); break
