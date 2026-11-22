@@ -1,0 +1,97 @@
+{
+ "scan": "Yale Digital Collections image 15249769, 4551 x 7118",
+ "affine": [
+  [
+   1.36411715,
+   -0.03782498,
+   -4253.47771877
+  ],
+  [
+   -0.03436978,
+   -1.36389188,
+   3723.80562718
+  ]
+ ],
+ "lon0": 120.99,
+ "lat0": 14.595,
+ "kx": 107727.83317630229,
+ "ky": 110574.0,
+ "rings": [
+  {
+   "what": "Bilibid prison, centre of the ring",
+   "sheet_px": [
+    2702.5,
+    1849.4
+   ],
+   "engineer_px": [
+    997.9,
+    1704.0
+   ],
+   "left_over_m": 2.3
+  },
+  {
+   "what": "Paco cemetery, centre of the ring",
+   "sheet_px": [
+    3138.0,
+    3758.0
+   ],
+   "engineer_px": [
+    1162.8,
+    2405.2
+   ],
+   "left_over_m": 4.9
+  }
+ ],
+ "matched_points": 31292,
+ "of_points": 78146,
+ "median_m": 5.7,
+ "p90_m": 10.5,
+ "m_per_px": [
+  1.3646,
+  1.3644
+ ],
+ "turn_deg": -1.44,
+ "first_placing": {
+  "m_per_px": 1.3633,
+  "turn_deg": -1.52
+ },
+ "border_division": {
+  "px": 1619,
+  "m_by_this_fit": 2209,
+  "miles_by_this_fit": 1.373,
+  "pencil_note_on_sheet_miles": 1.37
+ },
+ "south": {
+  "seam_y": 4470,
+  "crossing": {
+   "what": "Calle Real x the road to Pasay church; today F. B. Harrison Street x A. Arnaiz Avenue",
+   "sheet_px": [
+    3745,
+    6760
+   ],
+   "today": [
+    120.99387,
+    14.54613
+   ],
+   "apart_m": 287
+  },
+  "across_road_m": 122,
+  "along_road_m": 267,
+  "slides": [
+   {
+    "y": 5533,
+    "slide_m": [
+     -146.9,
+     82.3
+    ]
+   },
+   {
+    "y": 6760,
+    "slide_m": [
+     -182.5,
+     221.1
+    ]
+   }
+  ]
+ }
+}
