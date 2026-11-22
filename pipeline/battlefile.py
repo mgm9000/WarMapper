@@ -13,6 +13,11 @@ LEVELS = ['high', 'medium', 'low']
 LABEL_KINDS = ['road', 'water', 'area', 'town', 'place', 'wood', 'landmark', 'ridge', 'hill']
 LINE_KINDS = ['road', 'rail', 'water', 'former-water']
 AREA_KINDS = ['wood', 'water']
+LABEL_SHOWS = ['current', 'period', 'both', 'recon']
+# reconstructed base maps (21 Nov 2026): what a traced feature is, how it was read, and the shapes it can take
+RECON_KINDS = ['sea', 'shore', 'river', 'stream', 'water', 'wall', 'road', 'rail', 'breakwater', 'blockhouse']
+RECON_METHODS = ['traced', 'AI-extracted', 'interpolated']
+RECON_SHAPES = ['point', 'line', 'area']
 ISO = re.compile(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$')
 
 
@@ -183,7 +188,8 @@ def validate(b, folder=None):
             if not (t.startswith('https://') and all(k in t for k in ('{z}', '{x}', '{y}'))):
                 bad.append('playback base %s: imagery.tiles must be an https address with {z}, {x} and {y}' % bs.get('id'))
             if not (isinstance(im, dict) and im.get('credit')): bad.append('playback base %s: imagery needs a credit' % bs.get('id'))
-        if not (bs.get('current') or bs.get('map') or bs.get('series') or im): bad.append('playback base %s: needs "current", "map", "series" or "imagery"' % bs.get('id'))
+        if not (bs.get('current') or bs.get('map') or bs.get('series') or im or bs.get('recon')): bad.append('playback base %s: needs "current", "map", "series", "imagery" or "recon"' % bs.get('id'))
+        if bs.get('recon') and bs['recon'] not in [r.get('id') for r in b.get('reconstructions', [])]: bad.append('playback base %s: reconstruction %r is not in reconstructions' % (bs.get('id'), bs['recon']))
     if P.get('surround') is not None: bad.append("playback.surround is now called playback.modern")
     su = P.get('modern')
     if su is not None:
@@ -224,6 +230,34 @@ def validate(b, folder=None):
         need(l, ['text', 'at', 'kind'], 'label %r' % l.get('text'))
         if l.get('kind') not in LABEL_KINDS: bad.append('label %r: unknown kind %r' % (l.get('text'), l.get('kind')))
         if 'at' in l: point_ok(l['at'], 'label %r' % l.get('text'))
+        if l.get('show') and l['show'] not in LABEL_SHOWS: bad.append('label %r: show must be one of %s' % (l.get('text'), ', '.join(LABEL_SHOWS)))
+    # reconstructed base maps: every feature says what it is, where it came from, how it was read and how sure it is
+    packed = re.compile(r'^-?\d+,-?\d+(;-?\d+,-?\d+)+$')
+    for r in b.get('reconstructions', []):
+        w = 'reconstruction %s' % r.get('id'); need(r, ['id', 'title', 'label', 'about', 'layers', 'features'], w)
+        if r.get('sheet') is not None and not (len(r['sheet']) == 4 and r['sheet'][0] < r['sheet'][2] and r['sheet'][1] < r['sheet'][3]): bad.append(w + ': sheet must be [west, south, east, north]')
+        lay = {}
+        for l in r.get('layers', []):
+            x = '%s layer %s' % (w, l.get('id')); need(l, ['id', 'title', 'kind', 'source', 'method', 'confidence'], x); lay[l.get('id')] = l
+            if l.get('kind') not in RECON_KINDS: bad.append(x + ': unknown kind %r' % l.get('kind'))
+            if l.get('source') not in sources: bad.append(x + ': source %r is not in sources' % l.get('source'))
+            if l.get('link') and not str(l['link']).startswith('https://'): bad.append(x + ': link must be an https address')
+        seen = set()
+        for f in r.get('features', []):
+            x = '%s feature %s' % (w, f.get('id')); need(f, ['id', 'layer', 'kind', 'shape', 'at', 'from', 'to', 'source', 'method', 'confidence'], x)
+            if f.get('id') in seen: bad.append(x + ': listed twice')
+            seen.add(f.get('id'))
+            if f.get('layer') not in lay: bad.append(x + ': layer %r is not in layers' % f.get('layer'))
+            if f.get('kind') not in RECON_KINDS: bad.append(x + ': unknown kind %r' % f.get('kind'))
+            if f.get('shape') not in RECON_SHAPES: bad.append(x + ': unknown shape %r' % f.get('shape'))
+            if f.get('method') not in RECON_METHODS: bad.append(x + ': method must be one of %s' % ', '.join(RECON_METHODS))
+            if f.get('confidence') not in LEVELS: bad.append(x + ': unknown confidence %r' % f.get('confidence'))
+            if f.get('source') not in sources: bad.append(x + ': source %r is not in sources' % f.get('source'))
+            for k in ('from', 'to'): time_ok(f.get(k), x + '.' + k)
+            if f.get('shape') == 'point': point_ok(f.get('at'), x + '.at')
+            elif not (isinstance(f.get('at'), list) and f['at'] and all(isinstance(q, str) and packed.match(q) for q in f['at'])): bad.append(x + ': at must be packed lines (lon,lat;dlon,dlat;...)')
+            else:
+                q = f['at'][0].split(';')[0].split(','); point_ok([int(q[0]) / 1e5, int(q[1]) / 1e5], x + '.at')
     B = b['base']; need(B, ['credit', 'lines', 'areas'], 'base')
     for l in B.get('lines', []):
         if len(l) != 4 or l[0] not in LINE_KINDS or not re.match(r'^-?\d+,-?\d+(;-?\d+,-?\d+)+$', l[3]): bad.append('base line not understood: %r' % (l[:3],)); break
@@ -262,6 +296,8 @@ def used_sources(battle, catalogue, extra=()):
         for a in u.get('assignments', []): want.update(a.get('sources', []))
     for m in battle.get('maps', []):
         if m.get('source'): want.add(m['source'])
+    for r in battle.get('reconstructions', []):
+        want.update(l['source'] for l in r['layers'] if l.get('source')); want.update(f['source'] for f in r['features'] if f.get('source'))
     missing = sorted(want - set(catalogue))
     assert not missing, 'cited but not in the source list: %s' % missing
     return {k: catalogue[k] for k in sorted(want)}
