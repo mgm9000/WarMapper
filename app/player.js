@@ -711,7 +711,8 @@ function loadTerrain(R){ var X=TRN[R.id]; if(!X||X.state!=='idle'||!HS) return; 
   var X0=Math.floor(wx(sh[0]))-pad,X1=Math.ceil(wx(sh[2]))+pad,Y0=Math.floor(wy(sh[3]))-pad,Y1=Math.ceil(wy(sh[1]))+pad,W=X1-X0,H=Y1-Y0,g=new Float32Array(W*H),jobs=[];
   var cv=document.createElement('canvas');cv.width=cv.height=256;var cx=cv.getContext('2d',{willReadFrequently:true}),terr=HS.encoding!=='mapbox';
   for(var ty=Math.floor(Y0/256);ty<=Math.floor((Y1-1)/256);ty++)for(var tx=Math.floor(X0/256);tx<=Math.floor((X1-1)/256);tx++)(function(tx,ty){
-    jobs.push(fetch(HS.tiles.replace('{z}',z).replace('{x}',tx).replace('{y}',ty)).then(function(r){if(!r.ok)throw new Error(r.status);return r.blob()}).then(createImageBitmap).then(function(im){
+    var u=HS.tiles.replace('{z}',z).replace('{x}',tx).replace('{y}',ty);
+    jobs.push(fetch(u).catch(function(){return fetch(u,{cache:'reload'})}).then(function(r){if(!r.ok)throw new Error(r.status);return r.blob()}).then(createImageBitmap).then(function(im){
       cx.clearRect(0,0,256,256);cx.drawImage(im,0,0);var d=cx.getImageData(0,0,256,256).data;
       for(var j=0;j<256;j++){var y=ty*256+j-Y0;if(y<0||y>=H)continue;for(var i=0;i<256;i++){var x=tx*256+i-X0;if(x<0||x>=W)continue;var k=(j*256+i)*4;
         g[y*W+x]=terr?d[k]*256+d[k+1]+d[k+2]/256-32768:-10000+(d[k]*65536+d[k+1]*256+d[k+2])*0.1}}}))})(tx,ty);
