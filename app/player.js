@@ -716,16 +716,23 @@ function loadTerrain(R){ var X=TRN[R.id]; if(!X||X.state!=='idle'||!HS) return; 
       cx.clearRect(0,0,256,256);cx.drawImage(im,0,0);var d=cx.getImageData(0,0,256,256).data;
       for(var j=0;j<256;j++){var y=ty*256+j-Y0;if(y<0||y>=H)continue;for(var i=0;i<256;i++){var x=tx*256+i-X0;if(x<0||x>=W)continue;var k=(j*256+i)*4;
         g[y*W+x]=terr?d[k]*256+d[k+1]+d[k+2]/256-32768:-10000+(d[k]*65536+d[k+1]*256+d[k+2])*0.1}}}))})(tx,ty);
-  Promise.all(jobs).then(function(){ var S0=terrainClean(g,W,H,ro,rs);
-    X.grid={W:W,H:H,X0:X0,Y0:Y0,n:n,px:px,S:S0};
+  var job={g:g,W:W,H:H,X0:X0,Y0:Y0,n:n,px:px,ro:ro,rs:rs,ex:tc.relief||4,st:Math.min.apply(null,X.steps.map(function(s){return s[1]}))};
+  Promise.all(jobs).then(function(){return terrainWork(job)}).then(function(r){
     var ll=function(x,y){var X2=X0+x,Y2=Y0+y;return [X2/n*360-180,Math.atan(Math.sinh(Math.PI*(1-2*Y2/n)))*180/Math.PI]};
-    mv.map.getSource(X.src).setData({type:'FeatureCollection',features:contours(S0,W,H,Math.min.apply(null,X.steps.map(function(s){return s[1]})),function(x,y){return ll(x+0.5,y+0.5)})});
-    var img=reliefImage(S0,W,H,px,tc.relief||4);
+    mv.map.getSource(X.src).setData({type:'FeatureCollection',features:r.lines});
+    var cv=document.createElement('canvas');cv.width=W;cv.height=H;cv.getContext('2d').putImageData(new ImageData(r.rgba,W,H),0,0);var img=cv.toDataURL('image/png');
     mv.map.addSource(X.src+'-img',{type:'image',url:img,coordinates:[ll(0,0),ll(W,0),ll(W,H),ll(0,H)]});
     mv.layer({id:X.src+'-relief',type:'raster',source:X.src+'-img',layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-resampling':'linear','raster-opacity':0.95}},X.src+'-c0');
     X.layers.unshift(X.src+'-relief'); X.state='ready'; paintHill(); paintFade(); lastCredit=''; panelKey=''; mv.kick()
   }).catch(function(){X.state='failed';panelKey='';mv.kick()});
 }
+function terrainRun(d){var S=terrainClean(d.g,d.W,d.H,d.ro,d.rs),n=d.n,X0=d.X0,Y0=d.Y0;
+  return {lines:contours(S,d.W,d.H,d.st,function(x,y){var X2=X0+x+0.5,Y2=Y0+y+0.5;return [+(X2/n*360-180).toFixed(6),+(Math.atan(Math.sinh(Math.PI*(1-2*Y2/n)))*180/Math.PI).toFixed(6)]}),rgba:reliefRGBA(S,d.W,d.H,d.px,d.ex)}}
+function terrainWork(d){ // the heights are worked in the background, so the page keeps moving while they are (a few seconds on a phone)
+  try{ var src=[terrainClean,contours,reliefRGBA,terrainRun].map(String).join('\n')+'\nonmessage=function(m){var r=terrainRun(m.data);postMessage(r,[r.rgba.buffer])}';
+    var w=new Worker(URL.createObjectURL(new Blob([src],{type:'text/javascript'})));
+    return new Promise(function(ok,no){w.onmessage=function(m){w.terminate();ok(m.data)};w.onerror=function(e){w.terminate();no(e)};w.postMessage(d,[d.g.buffer])}) }
+  catch(e){ return Promise.resolve(terrainRun(d)) }}
 /* take off what is narrower than the opening (a grey-scale opening: the lowest ground near each point, then the highest of those),
    then smooth (three passes of a box filter, close to a Gaussian) */
 function terrainClean(g,W,H,ro,rs){
@@ -759,11 +766,11 @@ function contours(S,W,H,st,toLL){ var lv={},x,y;
   return out}
 /* relief in the map's own inks: shadow brown on the slopes turned from the light (north-west, 45 degrees up), paper light on those
    facing it; flat ground left clear. `ex` exaggerates the heights, as the ground round Manila rises only tens of metres. */
-function reliefImage(S,W,H,px,ex){ var cv=document.createElement('canvas');cv.width=W;cv.height=H;var c=cv.getContext('2d'),im=c.createImageData(W,H),d=im.data,az=315*Math.PI/180,zen=45*Math.PI/180,flat=Math.cos(zen);
+function reliefRGBA(S,W,H,px,ex){ var d=new Uint8ClampedArray(W*H*4),az=315*Math.PI/180,zen=45*Math.PI/180,flat=Math.cos(zen);
   for(var y=1;y<H-1;y++)for(var x=1;x<W-1;x++){var i=y*W+x,dzx=(S[i+1]-S[i-1])/(2*px)*ex,dzy=(S[i+W]-S[i-W])/(2*px)*ex,sl=Math.atan(Math.hypot(dzx,dzy)),asp=Math.atan2(dzy,-dzx);
     var hs=Math.cos(zen)*Math.cos(sl)+Math.sin(zen)*Math.sin(sl)*Math.cos(az-Math.PI/2-asp),v=hs-flat,k=i*4;
     if(v<0){d[k]=84;d[k+1]=58;d[k+2]=30;d[k+3]=Math.min(190,-v*560)}else{d[k]=255;d[k+1]=250;d[k+2]=232;d[k+3]=Math.min(120,v*420)}}
-  c.putImageData(im,0,0);return cv.toDataURL('image/png')}
+  return d}
 /* heights written along the heavier contour lines, where there is room */
 function contourNames(L){ var X=trnOf(); if(!X||sNow<(Z.labels||0)) return ''; var z=mv.size(),h='',seen={},n=0;
   mv.map.queryRenderedFeatures({layers:[X.src+'-c0']}).forEach(function(f){ if(n>=36) return; var c=f.geometry.type==='LineString'?f.geometry.coordinates:null; if(!c||c.length<8) return;
