@@ -180,6 +180,7 @@ def validate(b, folder=None):
     P = b.get('playback', {})
     for bs in P.get('bases', []):
         need(bs, ['id', 'label'], 'playback base')
+        if bs.get('hidden') not in (None, True, False): bad.append('playback base %s: hidden must be true or false' % bs.get('id'))
         if bs.get('map') and bs['map'] not in maps: bad.append('playback base %s: map %r is not in maps' % (bs.get('id'), bs['map']))
         if bs.get('clip') and bs['clip'] not in maps: bad.append('playback base %s: clip map %r is not in maps' % (bs.get('id'), bs['clip']))
         im = bs.get('imagery')
@@ -217,6 +218,7 @@ def validate(b, folder=None):
     fm = P.get('formations')
     if fm is not None and not (isinstance(fm, dict) and isinstance(fm.get('below'), (int, float)) and fm['below'] > 0): bad.append('playback.formations needs a number `below`')
     if P.get('start_base') and P['start_base'] not in [b.get('id') for b in P.get('bases', [])]: bad.append('playback.start_base names no base')
+    if P.get('bases') and all(b.get('hidden') or b.get('of') for b in P['bases']): bad.append('playback.bases: every base is hidden; one must be on the Type of map menu')
     if P.get('bounds') and P['bounds'] not in maps: bad.append('playback.bounds: map %r is not in maps' % P['bounds'])
     for v in P.get('views', []):
         if v.get('preset') not in V.get('presets', {}): bad.append('playback view: preset %r is not in view.presets' % v.get('preset'))

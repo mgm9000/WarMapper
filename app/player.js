@@ -1072,8 +1072,18 @@ var evOpen=false,sumsOpen=false,nowOpen=true,grpOpen={},umdOpen=false;
 function aroundNote(){ if(!topo()||base.own||base.sat||base.current) return '';
   return '<div class="eyebrow" style="margin-top:18px">Around this map</div><p>Zoom out past the edge of this map and today\'s topographic map is drawn around it.</p><dl><dt>Source</dt><dd>'+esc(MOD.name?MOD.name+' ('+MOD.credit+')':MOD.credit)+'</dd>'+(MOD.rights?'<dt>Rights</dt><dd>'+esc(MOD.rights)+'</dd>':'')+'</dl>'}
 /* the map on screen: what it is, who made it, where it is held, how it was placed */
+/* Maps of this ground that are not on the Type of map menu (`hidden`), offered in the map details instead: each opens in the playback,
+   with a link to the original where there is one. On a hidden map the panel offers the way back to the main one. */
+function otherMaps(){ var hid=bases.filter(function(b){return b.hidden&&!b.of}); if(!hid.length) return '';
+  var main=bases.filter(function(b){return !b.hidden&&!b.of&&b.id===P.start_base})[0]||bases.filter(function(b){return !b.hidden&&!b.of})[0],h='';
+  var item=function(b){var url='';if(b.m){var s=B.sources[b.m.raw.source]||{};url=s.url||''}
+    return '<li><button class="linkish" data-base="'+esc(b.id)+'">'+esc(b.label)+'</button>'+(b.note?'<span>'+esc(b.note)+'</span>':'')+(url?' <a href="'+esc(url)+'" target="_blank" rel="noopener">The original</a>':'')+'</li>'};
+  if(base.hidden){ h+='<div class="othermaps"><p>This map is not on the Type of map menu.'+(main?' <button class="linkish" data-base="'+esc(main.id)+'">Back to '+esc(main.label)+'</button>':'')+'</p>';
+    var rest=hid.filter(function(b){return b!==base}); if(rest.length) h+='<p class="meta">Also: </p><ul class="rcl">'+rest.map(item).join('')+'</ul>'; return h+'</div>' }
+  return '<div class="othermaps"><h3>Other maps of this ground</h3><ul class="rcl">'+hid.map(item).join('')+'</ul></div>'}
 function mapDetails(){var h='<button class="back" id="back">&larr; All units</button><div class="eyebrow">The map on screen</div>',row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>':''};
   var cr='<p class="meta credits">Credits for what is on screen: '+lastCredit+'</p>';
+  h+=otherMaps();
   if(base.rc) return h+reconDetails()+cr;   // a reconstruction says first that it is one (it carries no banner on the map: Morgan, 22 Nov 2026)
   h+=cr;
   if(base.sat){var im=base.imagery;h+='<h2>'+esc(im.name||base.label)+'</h2><p>'+esc(im.about||'Aerial or satellite imagery of the ground today, streamed from the provider\'s tile service. The names on it come from OpenStreetMap.')+'</p><dl>'+row('Source',im.credit)+row('Rights',im.rights||'')+row('Taken',im.date||'')+'</dl>'+(im.link?'<p style="margin-top:10px"><a href="'+esc(im.link)+'" target="_blank" rel="noopener">About this imagery</a></p>':'')+'<p class="meta" style="margin-top:12px">If the tile service cannot be reached, the map shows plain ground under the units.</p>';return h}
@@ -1098,7 +1108,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
     opt=function(id,x){return '<button class="opt" id="'+id+'" aria-pressed="false"'+(x.title?' title="'+esc(x.title)+'"':'')+'>'+esc(x.label)+'</button>'},
     chipb=function(id,label,title,on){return '<button class="chipbtn" id="'+id+'" aria-pressed="'+(on?'true':'false')+'" title="'+esc(title)+'"><span class="dot"></span><span>'+label+'</span></button>'},
     dd=function(id,pop,label,title,extra){return '<button class="chipbtn dd" id="'+id+'" aria-expanded="false" aria-controls="'+pop+'" title="'+esc(title)+'"><span>'+label+'</span>'+(extra||'')+'<span class="car">&#9662;</span></button>'};
-  var many=bases.filter(function(b){return !b.of}).length>1||P.views;
+  var many=bases.filter(function(b){return !b.of&&!b.hidden}).length>1||P.views;
   if(many) h+=dd('bType','pType','Type of map','Which map the battle is drawn on','<span class="cur" id="typeCur"></span>');
   if(P.follow) h+=chipb('bFollow','Follow<span class="long"> the action</span>','Keep the units in view as time moves (F)',true);
   h+=dd('bLayers','layers','Map options','How the map and its names are drawn');
@@ -1107,7 +1117,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   var ck=function(id,label,on,key){return '<label class="ck"><input type="checkbox" id="'+id+'"'+(on?' checked':'')+'><span>'+label+(key?'<kbd>'+key+'</kbd>':'')+'</span></label>'},
       sb=function(id,label,on){return '<button id="'+id+'" aria-pressed="'+(on?'true':'false')+'">'+esc(label)+'</button>'},T='',L='',G='';
   // Type of map
-  if(many){T+='<div class="grp"><div class="gh">Map</div>'+bases.filter(function(b){return !b.of}).map(function(b){return opt('b-'+b.id,b)}).join('')+'</div>';
+  if(many){T+='<div class="grp"><div class="gh">Map</div>'+bases.filter(function(b){return !b.of&&!b.hidden}).map(function(b){return opt('b-'+b.id,b)}).join('')+'</div>';
     if(P.views) T+='<div class="grp"><div class="gh">View</div>'+P.views.map(function(v){return opt('v-'+v.preset,v)}).join('')+'</div>';
     $('pType').innerHTML=T}
   // Map options
@@ -1296,6 +1306,7 @@ function restart(){closeSummary();$('ask').hidden=true;clk.setPlaying(false);sel
 on('evprev',function(){clk.setPlaying(false);clk.setTime(stepBy(-1,t))}); on('evnext',function(){clk.setPlaying(false);clk.setTime(stepBy(1,t))}); on('step',function(){setStep(stepI+1)});
 WM.panelClicks(panel,select);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-ev]');if(!b)return;var ev=B.events.filter(function(x){return x.id===b.getAttribute('data-ev')})[0];if(ev){clk.setPlaying(false);clk.setTime(ev.t)}});
+panel.addEventListener('click',function(e){var b=e.target.closest('[data-base]');if(!b)return;setBase(b.getAttribute('data-base'));info=true;rcSel=null;panelKey='';mv.kick()});   // a map offered in the map details
 panel.addEventListener('toggle',function(e){if(!e.target.classList)return;
   if(e.target.classList.contains('nowd')){nowOpen=e.target.open;return}
   if(e.target.classList.contains('onmap')){grpOpen[e.target.getAttribute('data-g')]=e.target.open;return}
