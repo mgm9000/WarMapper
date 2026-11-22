@@ -1030,25 +1030,45 @@ on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.
 on('rcnote',function(){closeSummary();sel=null;rcSel=null;info=true;panelKey='';sheet.open();pane.show();mv.kick()});   // the label on a reconstructed map opens its details
 on('binfo',function(){closeSummary();sel=null;rcSel=null;info=!info;panelKey='';if(info){sheet.open();pane.show()}mv.kick()});
 /* phones: the text sheet under the map. It starts as a strip; a tap on the handle opens it to about half the screen and closes it
-   again, and dragging the handle sets any height in between. Tapping a unit opens it so the unit's details can be read. */
-var sheet=(function(){var st=document.querySelector('.stage'),bar=$('sheetbar'),MIN=72,DEF=96,h=DEF,drag=null;
+   again, and dragging the handle sets any height in between. Dragged right down, or with the map's hide-text button, it goes away
+   and only the handle is left; a tap or a drag on the handle brings it back. Tapping a unit opens it so the unit's details can be read. */
+var sheet=(function(){var st=document.querySelector('.stage'),bar=$('sheetbar'),MIN=72,DEF=96,GONE=44,h=DEF,drag=null;
   function phone(){return getComputedStyle(bar).display!=='none'}
+  function hidden(){return st.classList.contains('nopane')}
   function maxH(){return Math.round(st.getBoundingClientRect().height*0.72)}
-  function set(v,anim){h=Math.max(MIN,Math.min(maxH(),v));st.classList.toggle('sheet-anim',!!anim);st.style.setProperty('--sheet-h',h+'px');$('grab').setAttribute('aria-expanded',h>DEF+20?'true':'false')}
+  function set(v,anim,free){h=Math.max(free?0:MIN,Math.min(maxH(),v));st.classList.toggle('sheet-anim',!!anim);st.style.setProperty('--sheet-h',h+'px');$('grab').setAttribute('aria-expanded',!hidden()&&h>DEF+20?'true':'false')}
   function open(){if(phone()&&h<DEF+40)set(st.getBoundingClientRect().height*0.5,true)}
-  function toggle(){if(h>DEF+20)set(DEF,true);else open()}
-  bar.addEventListener('pointerdown',function(e){if(!phone())return;drag={y:e.clientY,h:h,moved:false};bar.setPointerCapture(e.pointerId);e.preventDefault()});
-  bar.addEventListener('pointermove',function(e){if(!drag)return;var dy=drag.y-e.clientY;if(Math.abs(dy)>4)drag.moved=true;if(drag.moved)set(drag.h+dy,false)});
-  bar.addEventListener('pointerup',function(){if(!drag)return;var m=drag.moved;drag=null;if(!m)toggle()});
-  bar.addEventListener('pointercancel',function(){drag=null});
+  function toggle(){if(hidden()){set(DEF,false);pane.show();return}if(h>DEF+20)set(DEF,true);else open()}
+  bar.addEventListener('pointerdown',function(e){if(!phone())return;drag={y:e.clientY,h:hidden()?0:h,moved:false};bar.setPointerCapture(e.pointerId);e.preventDefault()});
+  bar.addEventListener('pointermove',function(e){if(!drag)return;var dy=drag.y-e.clientY;if(Math.abs(dy)>4)drag.moved=true;if(!drag.moved)return;
+    set(drag.h+dy,false,true);if(hidden()&&h>0)pane.show(true)});
+  bar.addEventListener('pointerup',function(){if(!drag)return;var m=drag.moved;drag=null;if(!m)toggle();else if(h<GONE){set(DEF,false);pane.hide()}else if(h<MIN)set(MIN,true)});
+  bar.addEventListener('pointercancel',function(){drag=null;if(h<MIN&&!hidden())set(MIN,true)});
   $('grab').addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
-  return {open:open,phone:phone}})();
-/* the text pane beside the map folds away and comes back; choosing a unit or the i panel brings it back */
+  return {open:open,phone:phone,sync:function(){$('grab').setAttribute('aria-label',hidden()?'Show the text':'Show more of the text')}}})();
+/* the text pane beside the map (under it on a phone) folds away and comes back; choosing a unit or the i panel brings it back */
 var pane=(function(){var st=document.querySelector('.stage'),b=$('bpane');
-  function set(hide){st.classList.toggle('nopane',hide);b.setAttribute('aria-pressed',hide?'true':'false');var t=hide?'Show the text':'Hide the text';b.setAttribute('aria-label',t);b.title=t;remember('pane',!hide);mv.kick()}
+  function set(hide){st.classList.remove('sheet-anim');st.classList.toggle('nopane',hide);b.setAttribute('aria-pressed',hide?'true':'false');var t=hide?'Show the text':'Hide the text';b.setAttribute('aria-label',t);b.title=t;remember('pane',!hide);sheet.sync();mv.kick()}
   b.addEventListener('click',function(){set(!st.classList.contains('nopane'))});
   try{if(localStorage.getItem('wm.'+B.id+'.pane')==='0')set(true)}catch(e){}
-  return {show:function(){if(st.classList.contains('nopane'))set(false)}}})();
+  return {show:function(){if(st.classList.contains('nopane'))set(false)},hide:function(){if(!st.classList.contains('nopane'))set(true)}}})();
+/* the edge between the map and the text pane beside it: drag it to make the text wider or narrower; double-click, or Home, puts it
+   back to the usual width. The width chosen is kept for every battle on this browser. */
+(function(){var st=document.querySelector('.stage'),s=$('split'),KEY='wm.panew',w=null,drag=null,raf=0;
+  function lim(v){var W=st.getBoundingClientRect().width;return Math.round(Math.max(240,Math.min(W*0.7,W-320,v)))}
+  function now(){return Math.round(panel.getBoundingClientRect().width)}
+  function apply(){raf=0;if(w==null)st.style.removeProperty('--pane-w');else st.style.setProperty('--pane-w',lim(w)+'px');s.setAttribute('aria-valuenow',now())}
+  function set(v,save){w=v==null?null:lim(v);if(!raf)raf=requestAnimationFrame(apply);
+    if(save)try{if(w==null)localStorage.removeItem(KEY);else localStorage.setItem(KEY,String(w))}catch(e){}}
+  s.addEventListener('pointerdown',function(e){if(e.button)return;drag={x:e.clientX,w:now()};s.setPointerCapture(e.pointerId);st.classList.add('resizing');e.preventDefault()});
+  s.addEventListener('pointermove',function(e){if(drag)set(drag.w+(drag.x-e.clientX))});
+  function end(){if(!drag)return;drag=null;st.classList.remove('resizing');set(w,true)}
+  s.addEventListener('pointerup',end);s.addEventListener('pointercancel',end);
+  s.addEventListener('dblclick',function(){set(null,true)});
+  s.addEventListener('keydown',function(e){var k=e.key;if(k==='ArrowLeft'||k==='ArrowRight'){e.preventDefault();set(now()+(k==='ArrowLeft'?40:-40),true)}else if(k==='Home'){e.preventDefault();set(null,true)}});
+  s.setAttribute('aria-valuemin','240');
+  window.addEventListener('resize',function(){if(w!=null&&!raf)raf=requestAnimationFrame(apply)});   // the wish is kept; it is fitted to the window as it now is
+  try{var v=+localStorage.getItem(KEY);if(v>0){w=v;apply();requestAnimationFrame(function(){mv.map.resize()})}}catch(e){}})();   // MapLibre does not notice a change made before its first look at the page
 /* phones: while playing, a tap on the map brings the hidden buttons back for a few seconds */
 (function(){var tmo=0;wrap.addEventListener('touchstart',function(){if(!document.documentElement.classList.contains('wm-playing'))return;wrap.classList.add('peek');clearTimeout(tmo);tmo=setTimeout(function(){wrap.classList.remove('peek')},4000)},{passive:true})})();
 // back and forward one step; [ and ] jump between key events
