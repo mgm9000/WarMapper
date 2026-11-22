@@ -812,8 +812,8 @@ function terrainCore(post){
   function init(m){ var W=m.W,H=m.H,g=m.g,i,j,N=W*H,wet=new Float32Array(N);
     for(i=0;i<N;i++) wet[i]=g[i]<=0.01?1:0;                                                   // the radar survey sets the sea to nothing at all
     wet=run(run(wet,W,H,1,Math.min,1),W,H,1,Math.max,0);                                        // less the specks: water narrower than three cells
-    var S=run(run(g,W,H,m.ro,Math.min,1e9),W,H,m.ro,Math.max,-1e9); S=box(box(box(S,W,H,m.rs),W,H,m.rs),W,H,m.rs);
-    G={S:S,M:wet,W:W,H:H,X0:m.X0,Y0:m.Y0,n:m.n,px:m.px,sheet:m.sheet,wide:m.wide};
+    var op=run(run(g,W,H,m.ro,Math.min,1e9),W,H,m.ro,Math.max,-1e9),S=box(box(box(op,W,H,m.rs),W,H,m.rs),W,H,m.rs),off=new Float32Array(N); for(i=0;i<N;i++) off[i]=g[i]-op[i];   // what the cleaning took off: much of it means buildings
+    G={S:S,M:wet,B:box(box(off,W,H,4),W,H,4),W:W,H:H,X0:m.X0,Y0:m.Y0,n:m.n,px:m.px,sheet:m.sheet,wide:m.wide};
     /* the relief picture, two points to a cell */
     var cw=W*2,ch=H*2,F=sample(S,-0.25,-0.25,cw,ch,0.5),K=sample(wet,-0.25,-0.25,cw,ch,0.5),d=new Uint8ClampedArray(cw*ch*4),p2=m.px/2,az=315*Math.PI/180,zen=45*Math.PI/180,flat=Math.cos(zen),lo=1e9,hi=-1e9;
     var sh=m.sheet,sx0=sh?(gxOf(sh[0])+0.5)*2:0,sx1=sh?(gxOf(sh[2])+0.5)*2:0,sy0=sh?(gyOf(sh[3])+0.5)*2:0,sy1=sh?(gyOf(sh[1])+0.5)*2:0;
@@ -844,7 +844,7 @@ function terrainCore(post){
       c.p.map(LL).forEach(function(q){ if(sh&&q[0]>sh[0]&&q[0]<sh[2]&&q[1]>sh[1]&&q[1]<sh[3]){if(runs[runs.length-1].length)runs.push([])} else runs[runs.length-1].push(q) });
       runs.forEach(function(r){if(r.length>1)out.lines.push({type:'Feature',properties:{e:0,c:9},geometry:{type:'LineString',coordinates:r}})}) });
     if(m.spots){ var R=m.spots,S=G.S,M=G.M,ax=Math.max(1,Math.ceil(x0)),bx=Math.min(W-2,Math.floor(x1)),ay=Math.max(1,Math.ceil(y0)),by=Math.min(H-2,Math.floor(y1)),x,y;   // summits: the highest point for R cells around, standing well clear of the ground about it
-      for(y=ay;y<=by;y++)for(x=ax;x<=bx;x++){ var o=y*W+x,v=S[o]; if(v<3||M[o]>0.5) continue;
+      for(y=ay;y<=by;y++)for(x=ax;x<=bx;x++){ var o=y*W+x,v=S[o]; if(v<3||M[o]>0.5||G.B[o]>(m.rough||3)) continue;   // no height is given where the radar saw mostly buildings
         if(v<S[o-1]||v<=S[o+1]||v<S[o-W]||v<=S[o+W]||v<S[o-W-1]||v<S[o-W+1]||v<=S[o+W-1]||v<=S[o+W+1]) continue;
         var top=true,low=v,yy,xx; for(yy=Math.max(0,y-R);top&&yy<=Math.min(H-1,y+R);yy++)for(xx=Math.max(0,x-R);xx<=Math.min(W-1,x+R);xx++){var u=S[yy*W+xx]; if(u>v||(u===v&&yy*W+xx<o)){top=false;break} if(u<low)low=u}
         if(top&&v-low>=Math.max(1.5,v*0.06)) out.spots.push([r6(lonOf(x)),r6(latOf(y)),Math.round(v)]) } }
@@ -868,13 +868,14 @@ function contourNames(L){ var X=trnOf(); if(!X||!X.cur) return ''; var z=mv.size
 var INKS={};
 function inkTick(){ var R=base.rc; if(!R||!INKS[R.id]) return; var zm=mv.map.getZoom(),src='rc-'+R.id;
   INKS[R.id].forEach(function(K){ K.lv.forEach(function(v,i){ if(v.asked||zm<v.z-0.5) return; v.asked=true; var im=new Image(),id=src+'-ink-'+K.n+'-'+i,nx=K.lv[i+1];
-    im.onload=function(){ var cv=document.createElement('canvas');cv.width=im.naturalWidth;cv.height=im.naturalHeight;cv.getContext('2d').drawImage(im,0,0);
+    im.onload=function(){ var cv=document.createElement('canvas');cv.width=im.naturalWidth;cv.height=im.naturalHeight;var c2=cv.getContext('2d');c2.drawImage(im,0,0);
+      try{c2.getImageData(0,0,1,1)}catch(e){return}   // a picture the browser will not let the map read (served from elsewhere without leave): left out
       mv.map.addSource(id,{type:'canvas',canvas:cv,coordinates:K.corners,animate:false});
-      var op=['interpolate',['linear'],['zoom'],v.z,0,v.z+(i?0.35:0.6),0.92]; if(nx) op=op.concat([nx.z+0.15,0.92,nx.z+0.5,0]);
+      var full=nx?(i?0.8:0.7):0.86,op=['interpolate',['linear'],['zoom'],v.z,0,v.z+(i?0.35:0.6),full]; if(nx) op=op.concat([nx.z+0.15,full,nx.z+0.5,0]);   // the smaller pictures a little paler, as the lines crowd
       mv.layer({id:id,type:'raster',source:id,layout:{visibility:base.rc===R?'visible':'none'},paint:{'raster-fade-duration':0,'raster-resampling':'linear','raster-opacity':op}},src+'-inkslot');
       RCL[R.id].push(id); mv.kick() };
     im.onerror=function(){if(window.console)console.warn('WarMapper: could not load the picture '+v.file)};
-    im.src=WM.asset(v.file) }) });
+    var u=WM.asset(v.file); if(!/^data:/.test(u)) im.crossOrigin='anonymous'; im.src=u }) });
 }
 /* tapping a line of a reconstructed map: its details go in the text pane */
 var RC_PICK=['-bh','-works','-wall','-wallfill','-roadedge','-rail','-ties','-shore','-break','-stream','-water','-detail','-inkhit','-sea'];
@@ -896,7 +897,11 @@ function spanText(a,b){var d=function(s){return s?(+s.slice(8,10))+' '+['January
 function terrainText(){var X=base.rc&&TRN[base.rc.id],T=base.terrain,st=(X&&X.steps)||[];
   if(!X||X.state==='failed') return 'The elevation service could not be reached, so this version shows no relief or contours.';
   if(X.state!=='ready') return 'Loading the heights.';
-  return 'Relief and contour lines worked out by this page from today\'s elevation data ('+esc(HS.credit)+'), a radar survey of 2000 that measured the tops of buildings as well as the ground. Bumps narrower than about '+(T.open_m||230)+' m (blocks, towers, the Tondo dump) are taken off and the rest smoothed over about '+(T.smooth_m||60)+' m, which leaves the broad lie of the land: today\'s ground, little changed since 1899 away from the shore and the reclaimed land, which the 1899 water covers. Heights are in metres. Contours every '+st.map(function(s){return s[1]+' m'}).join(', then ')+' as you zoom in; every '+X.ix+' m a heavier line with its height. Read the ridges where the contours bend downhill, the valleys where they bend uphill. Large clusters of tall buildings may still show as low rises.'}
+  var iv=[],half=false; st.forEach(function(q){if(q[1]<1)half=true;else if(iv.indexOf(q[1])<0)iv.push(q[1])});
+  return 'Relief, contour lines and spot heights worked out by this page from today\'s elevation data ('+esc(HS.credit)+'), a radar survey of 2000 that measured the tops of buildings as well as the ground. Bumps narrower than about '+(T.open_m||230)+' m (blocks, towers, the Tondo dump) are taken off and the rest smoothed over about '+(T.smooth_m||60)+' m, which leaves the broad lie of the land: today\'s ground, little changed since 1899 away from the shore. '
+    +'Heights are in metres, good to a few metres at best. Where buildings stand thick the ground may read some metres too high; no spot height is given there. '
+    +'The closer you look, the more is drawn: contours every '+iv.join(', then ')+' m'+(half?', and closest in dashed form lines every half metre':'')+'; every fifth line is heavier and carries its height; summits are marked with theirs. Read the ridges where the contours bend downhill, the valleys where they bend uphill.'
+    +(trnWide()?' Beyond the dotted line the traced maps of 1899 stop. Only relief, contours and today\'s shore are drawn there, so the map fills the window; the reclaimed land south and north of the sheet is today\'s, not 1899\'s.':'')}
 function reconDetails(){var R=base.rc,row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+v+'</dd>':''},used=[],h='<h2>'+esc(R.title)+'</h2>';
   h+='<div class="state inferred"><b>A reconstruction, not a period map</b>'+esc(R.about||'Drawn by WarMapper from traced lines.')+'</div>';
   if(R.note) h+='<p>'+esc(R.note)+'</p>';
