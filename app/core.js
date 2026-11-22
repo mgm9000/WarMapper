@@ -134,7 +134,7 @@ WM.scaleBar=function(el,mPerPx,units,about,note){
 function merc(ll){var s=Math.sin(ll[1]*Math.PI/180);return [(ll[0]+180)/360,0.5-Math.log((1+s)/(1-s))/(4*Math.PI)]}
 function unmerc(m){return [m[0]*360-180,Math.atan(Math.sinh(Math.PI*(1-2*m[1])))*180/Math.PI]}
 /* A "world" is one flat frame the battle's data is drawn in, with the way to turn its points into longitude and latitude:
-   {toLL:function(p)->[lng,lat], ext:[x0,y0,x1,y1], mPerUnit:metres per unit of the frame, maxScale:most screen pixels per unit, minFactor:how far out past "the whole frame fits",
+   {toLL:function(p)->[lng,lat], ext:[x0,y0,x1,y1], mPerUnit:metres per unit of the frame, maxScale:most screen pixels per unit, minFactor:how far out past "the whole frame fits", cover:true if the frame must always fill the window,
     reach:[x0,y0,x1,y1] a larger box the reader may zoom out to, where another map lies around the frame (optional)}
    opt = {container, wrap, worlds:{name:world}, world:name, onDraw(), onStep(ts)->still moving?, onPick(id), onUserMove(), onResize()} */
 WM.mapView=function(opt){
@@ -170,9 +170,10 @@ WM.mapView=function(opt){
     map.jumpTo({center:unmerc([a[0]+(b[0]-a[0])*pr,a[1]+(b[1]-a[1])*pr]),zoom:z+dz*zr});return true}
   function limits(){var e=cur.reach||cur.ext,z=size(),c=corners(e).map(merc),x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
     c.forEach(function(m){x0=Math.min(x0,m[0]);x1=Math.max(x1,m[0]);y0=Math.min(y0,m[1]);y1=Math.max(y1,m[1])});
-    var lat=unmerc([(x0+x1)/2,(y0+y1)/2])[1],fit=Math.log2(Math.min(z.w/(x1-x0),z.h/(y1-y0))/TILE)+Math.log2(cur.minFactor||1);
+    /* a world marked `cover` fills the screen: the reader can go no further out than where its frame just covers the window, nor past its edge */
+    var cov=!!cur.cover,lat=unmerc([(x0+x1)/2,(y0+y1)/2])[1],fit=cov?Math.log2(Math.max(z.w/(x1-x0),z.h/(y1-y0))/TILE)+0.002:Math.log2(Math.min(z.w/(x1-x0),z.h/(y1-y0))/TILE)+Math.log2(cur.minFactor||1);
     map.setMaxBounds(null); map.setMinZoom(0); map.setMaxZoom(24); map.setMinZoom(Math.max(0,Math.min(23,fit))); map.setMaxZoom(Math.min(24,Math.max(fit+0.5,zoomFor(cur.maxScale,lat))));
-    var mx=(x1-x0)*2.5,my=(y1-y0)*2.5,sw=unmerc([x0-mx,y1+my]),ne=unmerc([x1+mx,y0-my]); map.setMaxBounds([sw,ne])}
+    var mx=cov?0:(x1-x0)*2.5,my=cov?0:(y1-y0)*2.5,sw=unmerc([x0-mx,y1+my]),ne=unmerc([x1+mx,y0-my]); map.setMaxBounds([sw,ne])}
   function setWorld(name){curName=name;cur=opt.worlds[name];limits()}
   function zoomBy(f){map.easeTo({zoom:map.getZoom()+Math.log2(f),duration:180})}
 
