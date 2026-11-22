@@ -719,6 +719,7 @@ function addTerrainLayers(R){ var T=bases.filter(function(b){return b.terrain&&b
     steps:(tc.steps||TRN_STEPS).map(function(s){return [s[0],s[1],s[2]||s[1]*5]})};
   mv.geo(src,[]);
   var cls=function(c){return ['==',['get','c'],c]},add=function(spec){spec.source=src;spec.layout={visibility:'none','line-join':'round'};mv.layer(spec);X.layers.push(spec.id)};
+  add({id:src+'-c3',type:'line',filter:cls(3),paint:{'line-color':'var(--rc-contour)','line-width':0.8,'line-dasharray':[0.4,2.6],'line-opacity':0.5}});                                 // doubtful: low ground where the radar most likely saw a mass of buildings
   add({id:src+'-c0',type:'line',filter:cls(0),paint:{'line-color':'var(--rc-contour)','line-width':0.6,'line-dasharray':[5,4],'line-opacity':0.6}});                                  // half-metre form lines
   add({id:src+'-c1',type:'line',filter:cls(1),paint:{'line-color':'var(--rc-contour)','line-width':['interpolate',['linear'],['zoom'],10,0.35,13,0.6,16,0.85],'line-opacity':0.8}});
   add({id:src+'-c2',type:'line',filter:cls(2),paint:{'line-color':'var(--rc-contour)','line-width':['interpolate',['linear'],['zoom'],10,0.8,13,1.2,16,1.7]}});                       // the heavier lines
@@ -743,7 +744,7 @@ function loadTerrain(R){ var X=TRN[R.id]; if(!X||X.state!=='idle'||!HS) return; 
     if(m.t==='fail'){ if(X.state!=='ready') fail(); X.busy=false; return }
     if(m.t==='ready'){ var done=function(url){
         mv.map.addSource(X.src+'-img',{type:'image',url:url,coordinates:[ll(0,0),ll(W,0),ll(W,H),ll(0,H)]});
-        mv.layer({id:X.src+'-relief',type:'raster',source:X.src+'-img',layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-resampling':'linear'}},X.src+'-c0');
+        mv.layer({id:X.src+'-relief',type:'raster',source:X.src+'-img',layout:{visibility:'none'},paint:{'raster-fade-duration':0,'raster-resampling':'linear'}},X.src+'-c3');
         X.layers.unshift(X.src+'-relief'); X.range=[m.lo,m.hi]; X.state='ready'; paintHill(); paintFade(); lastCredit=''; panelKey=''; mv.kick()};
       if(m.blob) done(URL.createObjectURL(m.blob));
       else{var c2=document.createElement('canvas');c2.width=m.w;c2.height=m.h;c2.getContext('2d').putImageData(new ImageData(m.rgba,m.w,m.h),0,0);done(c2.toDataURL('image/png'))}
@@ -751,7 +752,8 @@ function loadTerrain(R){ var X=TRN[R.id]; if(!X||X.state!=='idle'||!HS) return; 
     if(m.t==='view'){ X.busy=false; if(m.id!==X.req) return;
       X.cur={key:m.key,box:m.box,labs:m.labs,spots:m.spots,minor:m.st<=1}; mv.map.getSource(X.src).setData({type:'FeatureCollection',features:m.lines}); mv.kick() } }
   Promise.all(jobs).then(function(){ X.eng=terrainEngine(got);
-    X.eng({t:'init',g:g,W:W,H:H,X0:X0,Y0:Y0,n:n,px:px,ro:ro,rs:rs,ex:tc.relief||4,sheet:X.sheet,ext:X.ext,wide:!!tc.extent,tint:tc.tint!==false},[g.buffer]) }).catch(fail);
+    X.eng({t:'init',g:g,W:W,H:H,X0:X0,Y0:Y0,n:n,px:px,ro:ro,rs:rs,ex:tc.relief||4,sheet:X.sheet,ext:X.ext,wide:!!tc.extent,tint:tc.tint!==false,
+      doubt:tc.doubt===false?null:{below:(tc.doubt&&tc.doubt.below_m)||9,rise:(tc.doubt&&tc.doubt.rise_m)||2.5,r:Math.max(1,Math.round((((tc.doubt&&tc.doubt.across_m)||600)/px-1)/2))}},[g.buffer]) }).catch(fail);
 }
 /* asked on every drawing of the map: contours and spot heights for what is on screen, if what the worker last sent no longer covers it */
 function trnTick(){ var X=trnOf(); if(!X) return; var zm=mv.map.getZoom(),b=mv.map.getBounds(),w=b.getWest(),s=b.getSouth(),e=b.getEast(),n=b.getNorth(),st=X.steps[0];
@@ -813,7 +815,11 @@ function terrainCore(post){
     for(i=0;i<N;i++) wet[i]=g[i]<=0.01?1:0;                                                   // the radar survey sets the sea to nothing at all
     wet=run(run(wet,W,H,1,Math.min,1),W,H,1,Math.max,0);                                        // less the specks: water narrower than three cells
     var op=run(run(g,W,H,m.ro,Math.min,1e9),W,H,m.ro,Math.max,-1e9),S=box(box(box(op,W,H,m.rs),W,H,m.rs),W,H,m.rs),off=new Float32Array(N); for(i=0;i<N;i++) off[i]=g[i]-op[i];   // what the cleaning took off: much of it means buildings
-    G={S:S,M:wet,B:box(box(off,W,H,4),W,H,4),W:W,H:H,X0:m.X0,Y0:m.Y0,n:m.n,px:m.px,sheet:m.sheet,wide:m.wide};
+    /* Doubtful ground. A rise that stands well clear of low, flat ground and is narrower than `across` is, on a delta under a modern city, almost
+       always a mass of buildings the cleaning could not take off. It is marked, so its contours can be drawn as doubtful and no height given. */
+    var dbt=new Float32Array(N); if(m.doubt){ var fl=run(run(g,W,H,m.doubt.r,Math.min,1e9),W,H,m.doubt.r,Math.max,-1e9); fl=box(box(box(fl,W,H,m.rs),W,H,m.rs),W,H,m.rs);
+      for(i=0;i<N;i++) dbt[i]=(g[i]>0.01&&fl[i]<m.doubt.below&&S[i]-fl[i]>m.doubt.rise)?1:0; dbt=box(dbt,W,H,1) }
+    G={S:S,M:wet,D:dbt,B:box(box(off,W,H,4),W,H,4),W:W,H:H,X0:m.X0,Y0:m.Y0,n:m.n,px:m.px,sheet:m.sheet,wide:m.wide};
     /* the relief picture, two points to a cell */
     var cw=W*2,ch=H*2,F=sample(S,-0.25,-0.25,cw,ch,0.5),K=sample(wet,-0.25,-0.25,cw,ch,0.5),d=new Uint8ClampedArray(cw*ch*4),p2=m.px/2,az=315*Math.PI/180,zen=45*Math.PI/180,flat=Math.cos(zen),lo=1e9,hi=-1e9;
     var sh=m.sheet,sx0=sh?(gxOf(sh[0])+0.5)*2:0,sx1=sh?(gxOf(sh[2])+0.5)*2:0,sy0=sh?(gyOf(sh[3])+0.5)*2:0,sy1=sh?(gyOf(sh[1])+0.5)*2:0;
@@ -831,11 +837,13 @@ function terrainCore(post){
     msg.rgba=d; post(msg,[d.buffer]) }
   function view(m){ var cell=m.cell,W=G.W,H=G.H,x0=Math.max(0,Math.floor(gxOf(m.box[0])/cell)*cell),x1=Math.min(W-1,Math.ceil(gxOf(m.box[2])/cell)*cell),y0=Math.max(0,Math.floor(gyOf(m.box[3])/cell)*cell),y1=Math.min(H-1,Math.ceil(gyOf(m.box[1])/cell)*cell);
     var cw=Math.round((x1-x0)/cell)+1,ch=Math.round((y1-y0)/cell)+1,out={t:'view',id:m.id,key:m.key,box:m.box,st:m.st,lines:[],labs:[],spots:[]}; if(cw<2||ch<2){post(out);return}
-    var F=sample(G.S,x0,y0,cw,ch,cell),K=sample(G.M,x0,y0,cw,ch,cell),st=m.st,ix2=Math.round(m.ix*2),Q=96,sh=G.sheet,r6=function(v){return Math.round(v*1e6)/1e6};
+    var F=sample(G.S,x0,y0,cw,ch,cell),K=sample(G.M,x0,y0,cw,ch,cell),Dk=sample(G.D,x0,y0,cw,ch,cell),st=m.st,ix2=Math.round(m.ix*2),Q=96,sh=G.sheet,r6=function(v){return Math.round(v*1e6)/1e6};
     var LL=function(p){return [r6(lonOf(x0+p[0]*cell)),r6(latOf(y0+p[1]*cell))]};
     /* the grid of the labels: a height is written where a line crosses every 96th row or column of points, counted from the corner of the heights, so it stays put as the reader moves */
     var gx0=Math.round(x0/cell),gy0=Math.round(y0/cell);
-    iso(F,cw,ch,function(mn,mx){var o=[],L=Math.ceil(mn/st)*st;if(L<=0)L=st;for(;L<=mx;L+=st)o.push(L);return o},function(o){return (K[o]+K[o+1]+K[o+cw]+K[o+cw+1])>2}).forEach(function(c){
+    var lev=function(mn,mx){var o=[],L=Math.ceil(mn/st)*st;if(L<=0)L=st;for(;L<=mx;L+=st)o.push(L);return o},wetAt=function(o){return (K[o]+K[o+1]+K[o+cw]+K[o+cw+1])>2},dbtAt=function(o){return (Dk[o]+Dk[o+1]+Dk[o+cw]+Dk[o+cw+1])>2};
+    iso(F,cw,ch,lev,function(o){return wetAt(o)||!dbtAt(o)}).forEach(function(c){ if(Math.round(c.L*2)%2===0) out.lines.push({type:'Feature',properties:{e:c.L,c:3},geometry:{type:'LineString',coordinates:c.p.map(LL)}}) });   // doubtful ground: whole metres only, drawn dotted, no heights
+    iso(F,cw,ch,lev,function(o){return wetAt(o)||dbtAt(o)}).forEach(function(c){
       var L2=Math.round(c.L*2),cl=L2%ix2===0?2:(L2%2?0:1),pts=c.p.map(LL); out.lines.push({type:'Feature',properties:{e:c.L,c:cl},geometry:{type:'LineString',coordinates:pts}});
       if(cl===0) return;
       for(var i=1;i<c.p.length;i++){var a=c.p[i-1],b=c.p[i],ka=Math.floor((gx0+a[0])/Q),kb=Math.floor((gx0+b[0])/Q),hit=ka!==kb; if(!hit){ka=Math.floor((gy0+a[1])/Q);kb=Math.floor((gy0+b[1])/Q);hit=ka!==kb}
@@ -844,7 +852,7 @@ function terrainCore(post){
       c.p.map(LL).forEach(function(q){ if(sh&&q[0]>sh[0]&&q[0]<sh[2]&&q[1]>sh[1]&&q[1]<sh[3]){if(runs[runs.length-1].length)runs.push([])} else runs[runs.length-1].push(q) });
       runs.forEach(function(r){if(r.length>1)out.lines.push({type:'Feature',properties:{e:0,c:9},geometry:{type:'LineString',coordinates:r}})}) });
     if(m.spots){ var R=m.spots,S=G.S,M=G.M,ax=Math.max(1,Math.ceil(x0)),bx=Math.min(W-2,Math.floor(x1)),ay=Math.max(1,Math.ceil(y0)),by=Math.min(H-2,Math.floor(y1)),x,y;   // summits: the highest point for R cells around, standing well clear of the ground about it
-      for(y=ay;y<=by;y++)for(x=ax;x<=bx;x++){ var o=y*W+x,v=S[o]; if(v<3||M[o]>0.5||G.B[o]>(m.rough||3)) continue;   // no height is given where the radar saw mostly buildings
+      for(y=ay;y<=by;y++)for(x=ax;x<=bx;x++){ var o=y*W+x,v=S[o]; if(v<3||M[o]>0.5||G.D[o]>0.3||G.B[o]>(m.rough||3)) continue;   // no height is given where the radar saw mostly buildings
         if(v<S[o-1]||v<=S[o+1]||v<S[o-W]||v<=S[o+W]||v<S[o-W-1]||v<S[o-W+1]||v<=S[o+W-1]||v<=S[o+W+1]) continue;
         var top=true,low=v,yy,xx; for(yy=Math.max(0,y-R);top&&yy<=Math.min(H-1,y+R);yy++)for(xx=Math.max(0,x-R);xx<=Math.min(W-1,x+R);xx++){var u=S[yy*W+xx]; if(u>v||(u===v&&yy*W+xx<o)){top=false;break} if(u<low)low=u}
         if(top&&v-low>=Math.max(1.5,v*0.06)) out.spots.push([r6(lonOf(x)),r6(latOf(y)),Math.round(v)]) } }
@@ -899,7 +907,7 @@ function terrainText(){var X=base.rc&&TRN[base.rc.id],T=base.terrain,st=(X&&X.st
   if(X.state!=='ready') return 'Loading the heights.';
   var iv=[],half=false; st.forEach(function(q){if(q[1]<1)half=true;else if(iv.indexOf(q[1])<0)iv.push(q[1])});
   return 'Relief, contour lines and spot heights worked out by this page from today\'s elevation data ('+esc(HS.credit)+'), a radar survey of 2000 that measured the tops of buildings as well as the ground. Bumps narrower than about '+(T.open_m||230)+' m (blocks, towers, the Tondo dump) are taken off and the rest smoothed over about '+(T.smooth_m||60)+' m, which leaves the broad lie of the land: today\'s ground, little changed since 1899 away from the shore. '
-    +'Heights are in metres, good to a few metres at best. Where buildings stand thick the ground may read some metres too high; no spot height is given there. '
+    +'Heights are in metres, good to a few metres at best. Where buildings stand thick the ground may read some metres too high. Dotted contours mark low ground where the radar most likely saw a mass of buildings, not a rise: old Manila stands on low, nearly flat ground, so do not read those as hills. No height is written there. '
     +'The closer you look, the more is drawn: contours every '+iv.join(', then ')+' m'+(half?', and closest in dashed form lines every half metre':'')+'; every fifth line is heavier and carries its height; summits are marked with theirs. Read the ridges where the contours bend downhill, the valleys where they bend uphill.'
     +(trnWide()?' Beyond the dotted line the traced maps of 1899 stop. Only relief, contours and today\'s shore are drawn there, so the map fills the window; the reclaimed land south and north of the sheet is today\'s, not 1899\'s.':'')}
 function reconDetails(){var R=base.rc,row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+v+'</dd>':''},used=[],h='<h2>'+esc(R.title)+'</h2>';

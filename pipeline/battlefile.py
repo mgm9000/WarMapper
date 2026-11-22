@@ -201,6 +201,9 @@ def validate(b, folder=None):
                 if not (isinstance(st, list) and all(isinstance(q, list) and len(q) in (2, 3) and all(isinstance(v, (int, float)) and v >= 0 for v in q) and q[1] > 0 for q in st)):
                     bad.append('playback base %s: terrain.steps must be [[zoom, metres, metres of the heavier lines], ...]' % bs.get('id'))
                 elif [q[0] for q in st] != sorted(q[0] for q in st): bad.append('playback base %s: terrain.steps must go from the lowest zoom up' % bs.get('id'))
+                db = tr.get('doubt')
+                if db not in (None, False) and not (isinstance(db, dict) and all(k in ('below_m', 'rise_m', 'across_m') and isinstance(v, (int, float)) and v > 0 for k, v in db.items())):
+                    bad.append('playback base %s: terrain.doubt must be false or {below_m, rise_m, across_m}' % bs.get('id'))
                 ex = tr.get('extent')
                 if ex is not None and not (isinstance(ex, list) and len(ex) == 4 and all(isinstance(v, (int, float)) for v in ex) and ex[0] < ex[2] and ex[1] < ex[3]):
                     bad.append('playback base %s: terrain.extent must be [west, south, east, north]' % bs.get('id'))
