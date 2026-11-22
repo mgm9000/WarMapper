@@ -534,6 +534,7 @@ function mapNames(L,cover){
       if(r[0]<2||r[1]<2||r[2]>z.w-2||r[3]>z.h-2||L.hit(r)) return; L.keep(r);
       h+='<text class="sl'+(l.k==='water'?' w':'')+'" text-anchor="middle" transform="translate('+f1(q[0])+' '+f1(q[1])+') rotate('+l.a+')" y="3.5">'+esc(l.t)+(l.s?' <tspan class="old">('+esc(l.s)+')</tspan>':'')+'</text>'; return}
     if(l.k==='area'||l.k==='town'||l.k==='wood'){
+      if(l.k==='area'&&inkNames(l.p)) return;   // close in, the period map's own lettering names the district
       if(l.k==='town'&&Z.towns_until&&sNow>Z.towns_until) return; if(l.k==='wood'&&sNow<(Z.woods_from||0)) return;
       var aw=l.t.length*(l.k==='town'?8.6:l.k==='wood'?5.9:base.rc?12.8:8.2)/2,ar=[q[0]-aw,q[1]-9,q[0]+aw,q[1]+7]; if(L.hit(ar)) return; L.keep(ar);
       h+='<text class="'+(l.k==='wood'?'wl':'al'+(l.k==='town'?' town':''))+'" text-anchor="middle" x="'+f1(q[0])+'" y="'+f1(q[1]+4)+'">'+esc(l.t)+'</text>'; return}
@@ -874,6 +875,10 @@ function contourNames(L){ var X=trnOf(); if(!X||!X.cur) return ''; var z=mv.size
    showing more: blocks, public buildings, street names. `files` lists the picture at several sizes ([zoom, file], smallest first), each
    fetched only when the reader comes that close. Traced features marked `under` (the same lines, drawn more coarsely) give way to it. */
 var INKS={};
+/* is this place under an ink picture that is showing its own lettering (from its second size up)? */
+function inkNames(p){ var R=base.rc,K=R&&INKS[R.id]; if(!K||!K.length) return false; var zm=mv.map.getZoom(),q=B.toLL(p);
+  return K.some(function(k){ if(!k.lv[1]||zm<k.lv[1].z+0.3) return false; var c=k.corners,s=0;
+    for(var i=0;i<4;i++){var a=c[i],b=c[(i+1)%4];s+=((b[0]-a[0])*(q[1]-a[1])-(b[1]-a[1])*(q[0]-a[0]))<0?1:-1} return Math.abs(s)===4 }) }
 function inkTick(){ var R=base.rc; if(!R||!INKS[R.id]) return; var zm=mv.map.getZoom(),src='rc-'+R.id;
   INKS[R.id].forEach(function(K){ K.lv.forEach(function(v,i){ if(v.asked||zm<v.z-0.5) return; v.asked=true; var im=new Image(),id=src+'-ink-'+K.n+'-'+i,nx=K.lv[i+1];
     im.onload=function(){ var cv=document.createElement('canvas');cv.width=im.naturalWidth;cv.height=im.naturalHeight;var c2=cv.getContext('2d');c2.drawImage(im,0,0);
