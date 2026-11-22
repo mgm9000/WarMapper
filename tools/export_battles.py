@@ -93,6 +93,33 @@ def settings(rows):
     return root
 
 
+def reconstructions(name, W):
+    """Reconstructed base maps of a playback (Reconstructions and Recon layers sheets, and the GeoJSON each names): maps WarMapper draws
+    itself from traced lines. Every feature keeps its own source, method, confidence and dates; a layer row gives the layer its title and
+    the link to the original map."""
+    out = []
+    for r in [r for r in W.get('Reconstructions', []) if r.get('playback_id') == name]:
+        rid = r['recon_id']; G = json.load(open(os.path.join(ROOT, r['file']), encoding='utf-8'))
+        rows = sorted([l for l in W.get('Recon layers', []) if l['recon_id'] == rid], key=lambda l: l.get('order') or 0)
+        layers = [{'id': l['layer_id'], 'title': l['title'], 'kind': l['kind'], 'source': text(l.get('source_id')), 'link': text(l.get('link')), 'link_label': text(l.get('link_label')),
+                   'method': text(l.get('method')), 'confidence': text(l.get('confidence')), 'from': when(l.get('from')), 'to': when(l.get('to')), 'how': text(l.get('how_read')),
+                   'review': text(l.get('review_status')), 'notes': text(l.get('notes'))} for l in rows]
+        known = {l['id']: l for l in layers}; feats = []
+        for f in G['features']:
+            p = f['properties']; g = f['geometry']; lay = p.get('layer')
+            assert lay in known, 'Recon layers: %s has no row for layer %r (feature %s of %s)' % (rid, lay, p.get('id'), r['file'])
+            c = g['coordinates']
+            shape, at = {'Point': ('point', [c]), 'LineString': ('line', [c]), 'Polygon': ('area', c)}[g['type']]
+            feats.append({'id': p['id'], 'layer': lay, 'kind': p['kind'], 'shape': shape, 'at': [bf.pack(ring) for ring in at] if shape != 'point' else bf.ll(c[1], c[0]),
+                          'name': p.get('name'), 'desc': p.get('desc'), 'class': p.get('class'), 'width_m': p.get('width_m'), 'number': p.get('number'),
+                          'from': bf.iso(p.get('from')), 'to': bf.iso(p.get('to')), 'source': p.get('source_id'), 'method': p.get('method'), 'confidence': p.get('confidence'),
+                          'precision_m': p.get('precision_m'), 'basis': p.get('basis'), 'review': p.get('review')})
+        for l in layers: l['features'] = sum(1 for f in feats if f['layer'] == l['id'])
+        out.append({'id': rid, 'title': r['title'], 'label': text(r.get('label')), 'about': text(r.get('about')), 'note': text(r.get('notes')), 'credit': text(r.get('credit')), 'style': text(r.get('style')),
+                    'made': when(r.get('made')), 'review': text(r.get('review_status')), 'file': r['file'], 'sheet': G.get('sheet'), 'layers': layers, 'features': feats})
+    return out
+
+
 def export(pb, W):
     """One battle file, from the workbook's rows for the playback `pb` (a row of the Playbacks sheet)."""
     name, camp = pb['playback_id'], pb['campaign_id']
@@ -256,6 +283,8 @@ def export(pb, W):
               'sides': sides, 'nations': [{k: n[k] for k in ('name', 'short', 'code', 'colour', 'dark', 'paper')} for n in mine(W.get('Nations', []))],
               'units': ulist, 'tracks': tracks, 'events': events, 'labels': labels, 'maps': list(maps.values()), 'base': base}
     if summaries: battle['summaries'] = summaries
+    rc = reconstructions(name, W)
+    if rc: battle['reconstructions'] = rc
     catalogue = {s['source_id']: {'title': s['title'], 'author': text(s.get('author')), 'date': str(s['date']) if not blank(s.get('date')) else None, 'citation': text(s['citation']),
                                   'type': text(s['type']), 'url': text(s['url']), 'rights': text(s.get('rights'))} for s in W['Sources']}
     battle['sources'] = bf.used_sources(bf.clean(battle), catalogue, [base['source']] if base.get('source') in catalogue else [])

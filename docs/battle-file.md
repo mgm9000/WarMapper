@@ -38,6 +38,7 @@ give is `null`.
 | `sources` | Every source the file cites |
 | `labels` | Names written on the map |
 | `maps` | Period maps |
+| `reconstructions` | Optional. Reconstructed base maps: maps WarMapper draws itself, from lines read off period maps |
 | `base` | The current map's roads, water, railways and woods |
 
 ### time
@@ -193,6 +194,39 @@ top-right, bottom-right, bottom-left:
 
 Picture files sit beside the battle file.
 
+### reconstructions
+
+Optional. A reconstructed base map is not a picture. It is a set of lines read off period maps, which the page draws live in the manner
+of a map of the time (toned paper, water in a wash with lines along the shore, double-line roads, a railway with its ties, period
+lettering, relief shaded from elevation tiles). It stays sharp at any zoom and lies on the same ground as the units. It is always
+labelled a reconstruction: a label on the map for as long as it is shown, and a map-details panel that says so and lists every layer
+with its source. Tapping a line shows that line's own record.
+
+```json
+"reconstructions": [{"id": "manila-1899", "title": "Manila and vicinity, February 1899: a WarMapper reconstruction",
+  "label": "1899 (reconstructed)", "about": "This is a WarMapper reconstruction, not a period map. ...", "credit": "...",
+  "made": "2026-11-21", "review": "Needs review", "file": "data/recon/manila-1899.geojson", "sheet": [120.93, 14.52, 121.057, 14.681],
+  "layers": [{"id": "shore", "title": "The 1899 shore, Vitas canal to Malate", "kind": "shore", "source": "S78", "link": "https://...",
+              "link_label": "The engineer map (scan)", "method": "traced", "confidence": "medium", "from": "1899-02-04", "to": "1899-02-28",
+              "how": "Read point by point from gridded crops of the scan.", "features": 2}],
+  "features": [{"id": "MNL99-SHORE-1", "layer": "shore", "kind": "shore", "shape": "line", "at": ["12096364,1462496;13,-1;..."],
+                "from": "1899-02-04", "to": "1899-02-28", "source": "S78", "method": "traced", "confidence": "medium", "precision_m": 30,
+                "basis": "Read from gridded crops of the engineer map ...", "review": "Needs review"}]}]
+```
+
+- Every feature carries what a unit position carries (MS-2): its shape, the dates it holds for (`from`, `to`), its `source`, how it was
+  read (`method`) and how sure it is (`confidence`, with `precision_m` and `basis` in words).
+- `method` is `traced` (read point by point from the map), `AI-extracted` (separated from the scan by a program, then checked by eye)
+  or `interpolated` (not on any map: a closing edge, a join).
+- `confidence` is `high`, `medium` or `low`. A feature is `high` only when a cited source supports it and a person has checked it;
+  if unsure it is `low`. Low-confidence shore lines are drawn dashed.
+- `kind` is `sea`, `shore`, `river`, `stream`, `water`, `wall`, `road`, `rail`, `breakwater` or `blockhouse`. `shape` is `point`
+  (`at` is one `[longitude, latitude]`), `line` or `area` (`at` is a list of packed lines, as in `base`: an area's first is its outline
+  and the rest are holes). A `stream` may give `width_m`, its width on the ground; a `road` a `class` (`main` or `minor`).
+- A layer groups features of one kind from one source. Its `link` opens the original map the layer was read from.
+- `sheet` is the edge of the reconstruction, `[west, south, east, north]`: nothing is drawn beyond it, and a border is drawn on it.
+- A base shows it with `"recon": id` (see `bases`). Names for it are labels with `show: "recon"`.
+
 ### base
 
 The current map, cut down to what the battle needs, from OpenStreetMap.
@@ -243,7 +277,7 @@ defaults.
 | `skip` | Optional list of `{from, to, after_seconds, note}`. While playing, after `after_seconds` (2) inside the stretch the clock jumps to `to`, showing `note` (Trenton: the night of the crossing). Moving the clock by hand is not affected. |
 | `follow.side_from` | Optional. By side code, a time before which Follow leaves that side out of what it frames (Trenton: the garrison sleeps while the army crosses). |
 | `views` | Named views as buttons, each a `preset` from `view.presets` with a `label` and `short` label. The first is the opening view. |
-| `bases` | The maps the reader can put under the units, in button order (which one a battle opens on: see `start_base`). Each is the current map (`"current": true`), one period map (`"map": id`), the period map for the date on the timeline (`"series": true`: the maps that have `from` and `to`) or aerial or satellite imagery (`"imagery": {...}`, below). `backdrop` says what a period map lies on: `paper` or `current` (the current map shows around it). `clip` cuts the current map, or the imagery, to a period map's edge. `fade` adds the Fade map button. |
+| `bases` | The maps the reader can put under the units, in button order (which one a battle opens on: see `start_base`). Each is the current map (`"current": true`), one period map (`"map": id`), the period map for the date on the timeline (`"series": true`: the maps that have `from` and `to`), aerial or satellite imagery (`"imagery": {...}`, below) or a reconstructed base map (`"recon": id`, one of the file's `reconstructions`: drawn by the page, never with the modern map under or around it, and with no fade slider). `backdrop` says what a period map lies on: `paper` or `current` (the current map shows around it). `clip` cuts the current map, or the imagery, to a period map's edge. `fade` adds the Fade map button. |
 | `bases[].of` | Optional. Names another base. This base is not on the base bar: the 1:1 button on that base opens it where the reader is looking, and that base's button brings the reader back (Trenton: Faden's engraving as printed, behind the fitted 1777 map). Such a map carries a `lookup` table (place to picture pixel) for the hop. |
 | `bases[].imagery` | Imagery streamed from a tile service while that base is shown: `tiles`, the https address of one tile with `{z}`, `{x}` and `{y}` in it (standard web-map tiles); `credit`, the provider's required attribution; `max_zoom`, the deepest level the service has (the map enlarges past it); and, for the map-details panel, `name`, `about`, `rights`, `date` and `link`. Names from the current map are drawn over it. The page needs no key for it, so only services free to use without one belong here. |
 | `bounds` | A map id: the edge of the battle's own maps. The Fit button frames it, and without a `surround` the reader cannot zoom out past it. |
@@ -256,7 +290,7 @@ defaults.
 | `trails` | Optional. `on` (true by default when the block is there) draws the routes taken: the road each unit has marched so far (its `via` routes), under the units and growing with the clock; `opacity` how strongly; `fade_after` (time units): once a unit has stood still this long, the routes it took to get there fade out, over `fade_over` (Trenton: 10 and 10 minutes). Layers menu: Routes taken. |
 | `arrows` | Optional. Before a unit sets off on a long move, and while it is on it, an arrow runs from the unit to where the record next puts it, along the step's `via` (straight where there is none). On in every battle unless `on` is false. `min_km`: how long a move earns an arrow (20 unless set). `lead`: how long before the unit sets off the arrow appears, in the battle's time unit (3 days or 45 minutes unless set). The reader can switch the arrows off; the switch is offered only where some move is long enough. |
 | `day_pause` | Optional. A battle longer than two days can stop at the end of each day (or week) while it plays: the map stays where it is, the text pane shows the summary (`summaries`) and a Continue button goes on. Up to seven days the pauses are on each day; longer, the reader is asked the first time they press play. `false` never pauses; `"day"`, `"week"`, `"off"` or `"ask"` sets the starting choice. Days end at midnight (`time.zero` is a midnight); a battle followed by the day ends each day at nightfall. Battle options: Pause and summary. Battle options also offers *Where units began and ended each day* on any battle longer than a day and a half. |
-| `hillshade` | Optional. Terrain shading drawn over today's map from elevation tiles, outside the muting, so ridges and valleys stay plain. On for every battle by default, from the Mapzen Terrain Tiles on AWS Open Data (Terrarium encoding). `false` turns it off; an object overrides `tiles`, `encoding`, `max_zoom`, `exaggeration` (0 to 1, default 0.8), `credit`, `link`. Layers menu: Terrain shading on today's map. |
+| `hillshade` | Optional. On a reconstructed base map the same elevation tiles are shaded in the map's own brown ink. Terrain shading drawn over today's map from elevation tiles, outside the muting, so ridges and valleys stay plain. On for every battle by default, from the Mapzen Terrain Tiles on AWS Open Data (Terrarium encoding). `false` turns it off; an object overrides `tiles`, `encoding`, `max_zoom`, `exaggeration` (0 to 1, default 0.8), `credit`, `link`. Layers menu: Terrain shading on today's map. |
 | `arrival` | Optional, for the exporter (not read by the player). A unit first placed after the battle opens gets a stand-in first step `lead` days earlier (1 by default), marked as an approach not recorded: at the middle of its parent formation's line if that formation is already on the map, otherwise `km` (10) behind its own first position, towards the point `<side code>.lat, lon` or along `<side code>.bearing` (degrees from north). Tracks with `starts_from_row`, `part_of_track` or `off_map` are left alone. |
 | `groups` | Zoomed out below `below`, the units of a `side` (but for `except`) are drawn as one symbol with this `label`. |
 | `rear` | A unit's symbol sits behind its own line: on the side away from the nearest enemy within about 2.5 km (8 km for an operational battle). Where no enemy is that near, `rear` decides: a point (`at`) behind one `side`'s line, so that side's symbols sit on that side of their lines and the other side's on the far side. Failing both, symbols sit to the east. |
@@ -269,7 +303,7 @@ Elsewhere in the file the player also reads:
 - `nations`: `{"name", "short"}` gives a nation its own name in the panel ("Hessian"); with `code`, `colour` (and
   `dark`, `paper` for the dark theme and for period maps) its units get their own colour and the panel lists
   units by nation.
-- On a label, `show`: `current` (the default: drawn where today's map shows), `period` or `both`.
+- On a label, `show`: `current` (the default: drawn where today's map shows), `period`, `both`, or `recon` (drawn only on a reconstructed base map, in period lettering: the names read from its source maps; a reconstructed base draws no other labels).
 - On a step, `along: true`: the step's line is the path the unit moves along during the step.
 - On a step, `march: true`: with nothing on record between the previous step and this one, the unit leaves when the previous step ends
   and moves here at the battle's `rules.pace`, then waits ("Arrived: time inferred"), instead of drifting slowly across the whole gap.
@@ -301,4 +335,5 @@ battle file into the page.
 | `sources` | `Sources`: only those the battle cites |
 | `labels` | `Labels` |
 | `maps` | `Maps`: one row per picture; the `iiif_...` columns on a map's first picture |
+| `reconstructions` | `Reconstructions`: one row per reconstructed base map (title, label, about, credit, file). `Recon layers`: one row per layer (title, kind, source_id, link, method, confidence, from, to, how_read). The lines are in the GeoJSON the row names (`data/recon/<id>.geojson`), where every feature repeats its own source, method, confidence and dates; the script that wrote it is in `pipeline/recon/` |
 | `base` | Not in the workbook: `data/base/<playback>.json`, cut from OpenStreetMap by `pipeline/basemaps.py` |

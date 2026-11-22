@@ -42,7 +42,11 @@ var kinds={},found={},k0; for(k0 in KIND)kinds[k0]=[KIND[k0][0],(P.texts&&P.text
    A period map lies on plain paper (backdrop "paper") or over the current map (backdrop "current"). A map that is not to scale has a frame of its own. */
 var bases=(P.bases&&P.bases.length)?P.bases:[{id:'now',label:'Current map',short:'Today',current:true}];
 var series=B.mapList.filter(function(m){return m.t0!=null});
-bases.forEach(function(b){b.m=b.map?B.maps[b.map]:null;b.own=!!(b.m&&b.m.own);b.sat=!!(b.imagery&&b.imagery.tiles)});
+/* A reconstructed base ({recon:id}) is not a picture: the page draws it from the traced lines of one of the battle file's `reconstructions`,
+   in the manner of a map of the time. It is always labelled a reconstruction, on the map and in the map details, and every line can be
+   tapped for its source, how it was read and how sure it is. */
+var RECON={};(raw.reconstructions||[]).forEach(function(r){RECON[r.id]=r});
+bases.forEach(function(b){b.m=b.map?B.maps[b.map]:null;b.own=!!(b.m&&b.m.own);b.sat=!!(b.imagery&&b.imagery.tiles);b.rc=(b.recon&&RECON[b.recon])||null});
 var SKK=1e-5; function ownLL(p){return [p[0]*SKK,-p[1]*SKK]}   // a not-to-scale map: its pixels laid out as a small patch of pretend ground
 var bm=P.bounds&&B.maps[P.bounds],EXT=bm?bm.box:B.ext;
 var WORLDS={ground:{toLL:B.toLL,ext:EXT,mPerUnit:1,maxScale:Z.max||2,minFactor:Z.min_factor||0.9}};
@@ -55,8 +59,9 @@ function topo(){return !!MOD&&!modOff}
 /* Terrain shading: shadows drawn from elevation tiles, laid over today's map and under the period maps, kept out of the muting so the
    lie of the land stays plain. Every battle gets it unless its file says hillshade:false; hillshade:{exaggeration, tiles, ...} tunes it. */
 var HS=(function(){if(P.hillshade===false)return null;var h={tiles:'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',encoding:'terrarium',max_zoom:15,exaggeration:0.8,
-  credit:'Terrain Tiles (Mapzen, AWS Open Data)',link:'https://github.com/tilezen/joerd/blob/master/docs/attribution.md'},o=P.hillshade||{};for(var k in o)h[k]=o[k];return h})(),hsOn=true,hsVis=null,hsFail=0;
-function paintHill(){ if(!HS) return; var on=hsOn&&hsFail<4&&!base.sat&&!!(modOn||base.current); if(on!==hsVis){hsVis=on;mv.show('hill',on);lastCredit=''} }
+  credit:'Terrain Tiles (Mapzen, AWS Open Data)',link:'https://github.com/tilezen/joerd/blob/master/docs/attribution.md'},o=P.hillshade||{};for(var k in o)h[k]=o[k];return h})(),hsOn=true,hsVis=null,hsRc=null,hsFail=0;
+function paintHill(){ if(!HS) return; var ok=hsOn&&hsFail<4,on=ok&&!base.rc&&!base.sat&&!!(modOn||base.current),onr=ok&&!!base.rc;   // on a reconstructed map the relief is drawn in the map's own ink
+  if(on!==hsVis||onr!==hsRc){hsVis=on;hsRc=onr;mv.show('hill',on);if(mv.map.getLayer('rc-hill'))mv.show('rc-hill',onr);lastCredit=''} }
 if(MOD){(function(){var f=(+MOD.reach||(bm?4:2))/2,cx=(EXT[0]+EXT[2])/2,cy=(EXT[1]+EXT[3])/2,hw=Math.abs(EXT[2]-EXT[0])*f,hh=Math.abs(EXT[3]-EXT[1])*f;var r=[cx-hw,cy-hh,cx+hw,cy+hh];
   B.mapList.forEach(function(m){if(m.own)return;m.images.forEach(function(im){var b=im.box;if(!b)return;b=[Math.min(b[0],b[2]),Math.min(b[1],b[3]),Math.max(b[0],b[2]),Math.max(b[1],b[3])];var mx=(b[2]-b[0])*0.3,my=(b[3]-b[1])*0.3;   // room to zoom out past every period map, so the modern map is seen around it
     r=[Math.min(r[0],b[0]-mx),Math.min(r[1],b[1]-my),Math.max(r[2],b[2]+mx),Math.max(r[3],b[3]+my)]})});
@@ -64,7 +69,7 @@ if(MOD){(function(){var f=(+MOD.reach||(bm?4:2))/2,cx=(EXT[0]+EXT[2])/2,cy=(EXT[
 function inQuad(p,Q){var s=0,i,a,b,c;for(i=0;i<4;i++){a=Q[i];b=Q[(i+1)%4];c=(b[0]-a[0])*(p[1]-a[1])-(b[1]-a[1])*(p[0]-a[0]);if(c){if(s&&(c>0)!==(s>0))return false;s=c}}return true}
 /* Under a period map at full strength the modern map is asked for only while some of the screen lies beyond the picture, so nothing is fetched until the reader zooms or pans out past it. */
 function paintModern(H){ if(!MOD) return; var on=false;
-  if(!modOff&&!base.own&&!base.sat){var m=base.series?H:base.m,Q=m&&!m.own?m.ll:null,z=mv.size();
+  if(!modOff&&!base.own&&!base.sat&&!base.rc){var m=base.series?H:base.m,Q=m&&!m.own?m.ll:null,z=mv.size();
     on=!!(base.current||base.backdrop==='current'||through()||!Q||[[0,0],[z.w,0],[z.w,z.h],[0,z.h]].some(function(q){var l=mv.map.unproject(q);return !inQuad([l.lng,l.lat],Q)}))}
   if(on!==modOn){modOn=on;mv.show('sur',on);panelKey=''} }
 /* The map a battle opens on: a period map if it covers all of the opening view, otherwise the current map. `start_base` overrides. */
@@ -501,8 +506,11 @@ function unitSvg(u,part){   // the last position on record stays plain to see: d
 function mapNames(L,cover){
   var z=mv.size(),lvl=sNow>=(Z.labels||0)?1:0,h='',cur=!!(base.current||base.sat||base.backdrop==='current'||through()),tp=cur&&!base.sat&&topo();
   var TER={ridge:1,hill:1},LB=B.labels.filter(function(l){return TER[l.k]}).concat(B.labels.filter(function(l){return !TER[l.k]}));   // the lie of the land is named first, so roads and woods give way to it
+  if(base.rc&&base.rc.sheet&&placeNames){var sh=base.rc.sheet,tq=S(B.fromLL([sh[0]+(sh[2]-sh[0])*0.03,sh[1]+(sh[3]-sh[1])*0.1])),tt=String(base.rc.title).split(': ');   // the sheet's title, where a map of the time carried it; it says what the sheet is
+    if(sNow>0.04&&sNow<0.3&&tq[0]>-200&&tq[1]>20&&tq[0]<z.w&&tq[1]<z.h+40){var tr=[tq[0]-6,tq[1]-44,tq[0]+215,tq[1]+24];L.keep(tr);
+      h+='<g class="rct" transform="translate('+f1(tq[0])+' '+f1(tq[1])+')"><text class="t1" y="-24">'+esc(tt[0].split(', ')[0])+'</text><text class="t2" y="-4">'+esc(tt[0].split(', ').slice(1).join(', '))+'</text><text class="t3" y="16">'+esc(cap(tt[1]||'A reconstruction'))+'</text></g>'}}
   LB.forEach(function(l){
-    var show=l.show||'current'; if(cur?show==='period':show==='current') return;
+    var show=l.show||'current'; if(base.rc?show!=='recon':(show==='recon'||(cur?show==='period':show==='current'))) return;   // a reconstructed map carries the names read for it, and only those
     if(tp&&(l.k==='road'||l.k==='water'||l.k==='town')) return;   // the modern map names its own roads, streams and towns; the battle's landmarks and high ground are still named
     if((l.k==='road'||l.k==='water')?!lineNames:!placeNames) return;
     if(TER[l.k]){ if(l.l>lvl) return; var q0=S(l.p); if(q0[0]<-200||q0[1]<-200||q0[0]>z.w+200||q0[1]>z.h+200) return;
@@ -525,7 +533,7 @@ function mapNames(L,cover){
       h+='<text class="sl'+(l.k==='water'?' w':'')+'" text-anchor="middle" transform="translate('+f1(q[0])+' '+f1(q[1])+') rotate('+l.a+')" y="3.5">'+esc(l.t)+(l.s?' <tspan class="old">('+esc(l.s)+')</tspan>':'')+'</text>'; return}
     if(l.k==='area'||l.k==='town'||l.k==='wood'){
       if(l.k==='town'&&Z.towns_until&&sNow>Z.towns_until) return; if(l.k==='wood'&&sNow<(Z.woods_from||0)) return;
-      var aw=l.t.length*(l.k==='town'?8.6:l.k==='wood'?5.9:8.2)/2,ar=[q[0]-aw,q[1]-9,q[0]+aw,q[1]+7]; if(L.hit(ar)) return; L.keep(ar);
+      var aw=l.t.length*(l.k==='town'?8.6:l.k==='wood'?5.9:base.rc?12.8:8.2)/2,ar=[q[0]-aw,q[1]-9,q[0]+aw,q[1]+7]; if(L.hit(ar)) return; L.keep(ar);
       h+='<text class="'+(l.k==='wood'?'wl':'al'+(l.k==='town'?' town':''))+'" text-anchor="middle" x="'+f1(q[0])+'" y="'+f1(q[1]+4)+'">'+esc(l.t)+'</text>'; return}
     // a place or a landmark: a dot, and its name if there is room
     if(l.k==='landmark'&&sNow<(Z.landmarks_from||0)) return;
@@ -539,8 +547,9 @@ function showSeries(H){ if(H===seriesShown) return; if(H){mv.moveImage('pic-seri
 function paintCredit(H){var c,mc=MOD?(MOD.link?'<a href="'+esc(MOD.link)+'" target="_blank" rel="noopener">'+esc(MOD.credit)+'</a>':esc(MOD.credit)):'',now=topo()?mc:(raw.base&&raw.base.credit&&!/OpenStreetMap/.test(raw.base.credit)?'Map data: '+esc(raw.base.credit):WM.OSM_CREDIT);
   if(base.current) c=now;
   else if(base.sat){var im=base.imagery;c=(im.link?'<a href="'+esc(im.link)+'" target="_blank" rel="noopener">'+esc(im.credit)+'</a>':esc(im.credit))+' &middot; Names: '+WM.OSM_CREDIT}
+  else if(base.rc) c=esc(base.rc.credit||'A WarMapper reconstruction');
   else{var m=H||base.m,und=base.backdrop==='current'||through(); c=(H?esc(m.short)+', '+esc(m.label)+(stamp(t)>m.t1?' (the last one)':'')+' &middot; ':'')+esc(m.credit)+(und?' &middot; '+now:(modOn?' &middot; Around it: '+mc:''))}
-  if(hsVis) c+=' &middot; Terrain shading: <a href="'+esc(HS.link)+'" target="_blank" rel="noopener">'+esc(HS.credit)+'</a>';
+  if(hsVis||hsRc) c+=' &middot; '+(hsRc?'Relief':'Terrain shading')+': <a href="'+esc(HS.link)+'" target="_blank" rel="noopener">'+esc(HS.credit)+'</a>';
   if(c!==lastCredit){lastCredit=c;$('credit').innerHTML=c;if(info)panelKey=''}}   // the i panel lists the credits: redraw it if it is open
 /* The credits are under the i button. They also show on the map for five seconds when the page opens and when the reader changes the
    map, then fade (OpenStreetMap's attribution guideline: show the credit first; after five seconds it may collapse behind an "i"). */
@@ -611,14 +620,96 @@ function buildBase(){
     b.m.images.forEach(function(im,i){var id='pic-'+b.id+'-'+i;PICS[b.id].push({id:id,detail:im.detail});
       mv.image(id,WM.asset(im.file),b.own?[0,0,b.m.size[0],b.m.size[1]]:im.ll,b.own?WORLDS[worldOf(b)]:undefined);mv.show(id,false)})});
   mv.map.addLayer({id:'iiif-slot',type:'background',layout:{visibility:'none'}});   // full-detail tiles go in here, over the pictures
+  for(var rk in RECON) buildRecon(RECON[rk],px);
 }
+/* ---------- a reconstructed base map: drawn from data, in period dress ---------- */
+/* The look is that of an Army engineer's map of about 1900: toned paper, water in a pale wash with lines drawn along the shore, roads as
+   double lines, the railway with its ties, walls in a heavy line, relief shaded in the ink's own brown. All of it is drawn by the map
+   library from the battle file's lines, so it stays sharp at any zoom and sits on the same ground as the units. The colours are the
+   paper's, the same in the light and dark themes. */
+var RCL={},rcSel=null,RCF={};
+function unpackLL(s){var out=[],x=0,y=0;s.split(';').forEach(function(t,i){var a=t.split(',');x=i?x+(+a[0]):+a[0];y=i?y+(+a[1]):+a[1];out.push([x/1e5,y/1e5])});return out}
+function paperGrain(){ // a small tile of toned paper (soft mottle and a little speckle), made here so the page carries no picture for it
+  var n=256,d=new Uint8Array(n*n*4),s=7,r=function(){s=(s*16807)%2147483647;return s/2147483647},i,j;
+  var field=function(c){var g=[],k;for(k=0;k<c*c;k++)g.push(r());var w=n/c;return function(x,y){var fx=x/w,fy=y/w,x0=Math.floor(fx)%c,y0=Math.floor(fy)%c,x1=(x0+1)%c,y1=(y0+1)%c,u=fx-Math.floor(fx),v=fy-Math.floor(fy);u=u*u*(3-2*u);v=v*v*(3-2*v);
+    return g[y0*c+x0]*(1-u)*(1-v)+g[y0*c+x1]*u*(1-v)+g[y1*c+x0]*(1-u)*v+g[y1*c+x1]*u*v}},A=field(4),Bf=field(16);
+  for(j=0;j<n;j++)for(i=0;i<n;i++){var k=(j*n+i)*4,v=A(i,j)*0.6+Bf(i,j)*0.28+r()*0.12-0.5,dark=v<0;d[k]=dark?104:255;d[k+1]=dark?80:249;d[k+2]=dark?46:228;d[k+3]=Math.round(Math.min(1,Math.abs(v)*2.2)*(dark?58:66))}
+  return {width:n,height:n,data:d}}
+function blockhouseIcon(){var n=28,cv=document.createElement('canvas');cv.width=cv.height=n;var c=cv.getContext('2d');c.fillStyle='#efe4c8';c.strokeStyle='#33291f';c.lineWidth=2.4;c.fillRect(5,5,18,18);c.strokeRect(5,5,18,18);c.lineWidth=1.6;c.strokeRect(10.5,10.5,7,7);
+  return {width:n,height:n,data:new Uint8Array(c.getImageData(0,0,n,n).data.buffer)}}
+function buildRecon(R,px){
+  var src='rc-'+R.id,f=[],ids=[],sh=R.sheet,is=function(k){return ['==',['get','k'],k]},round={'line-cap':'round','line-join':'round'};
+  R.features.forEach(function(x){RCF[x.id]=x;var pr={k:x.kind,id:x.id,cls:x['class']||'',gw:x.width_m||0,lo:x.confidence==='low'?1:0},g;
+    if(x.shape==='point') g={type:'Point',coordinates:x.at}; else{var rings=x.at.map(unpackLL);g=x.shape==='line'?{type:'LineString',coordinates:rings[0]}:{type:'Polygon',coordinates:rings}}
+    f.push({type:'Feature',properties:pr,geometry:g})});
+  if(sh){var o=[[sh[0]-3,sh[1]-3],[sh[2]+3,sh[1]-3],[sh[2]+3,sh[3]+3],[sh[0]-3,sh[3]+3],[sh[0]-3,sh[1]-3]],e=[[sh[0],sh[1]],[sh[0],sh[3]],[sh[2],sh[3]],[sh[2],sh[1]],[sh[0],sh[1]]];
+    f.push({type:'Feature',properties:{k:'off'},geometry:{type:'Polygon',coordinates:[o,e]}});f.push({type:'Feature',properties:{k:'frame'},geometry:{type:'LineString',coordinates:e}})}
+  mv.geo(src,f);
+  if(!mv.map.hasImage('rc-grain')) mv.map.addImage('rc-grain',paperGrain(),{pixelRatio:1});
+  if(!mv.map.hasImage('rc-bh')) mv.map.addImage('rc-bh',blockhouseIcon(),{pixelRatio:2});
+  function add(spec,keep){if(!keep)ids.push(spec.id);spec.source=spec.source||src;spec.layout=spec.layout||{};spec.layout.visibility='none';mv.layer(spec)}
+  var zw=function(w){return ['interpolate',['linear'],['zoom'],10,w*0.45,13,w,16,w*2,19,w*4.5]},   // line widths grow with the zoom, as a map drawn at a larger scale would have them
+      gw=['interpolate',['exponential',2],['zoom'],6,['*',['get','gw'],px(6)],22,['*',['get','gw'],px(22)]];   // a width on the ground, in metres
+  add({id:src+'-paper',type:'background',paint:{'background-pattern':'rc-grain','background-opacity':0.5}});
+  if(HS&&!mv.map.getLayer('rc-hill')) add({id:'rc-hill',type:'hillshade',source:'dem',paint:{'hillshade-exaggeration':1,'hillshade-illumination-direction':315,'hillshade-shadow-color':'var(--rc-shade)','hillshade-highlight-color':'var(--rc-light)','hillshade-accent-color':'var(--rc-shade)'}},true);
+  add({id:src+'-sea',type:'fill',filter:is('sea'),paint:{'fill-color':'var(--rc-water)','fill-antialias':false}});
+  [[2.6,0.9,0.5],[6,0.75,0.36],[10.5,0.6,0.24],[16,0.5,0.14]].forEach(function(q,i){   // lines drawn along the shore, fainter as they go out
+    add({id:src+'-lining'+i,type:'line',filter:is('shore'),layout:{'line-join':'round'},paint:{'line-color':'var(--rc-water-ink)','line-width':zw(q[1]),'line-offset':zw(q[0]),'line-opacity':q[2]}})});
+  add({id:src+'-water',type:'fill',filter:['any',is('river'),is('water')],paint:{'fill-color':'var(--rc-water)'}});
+  add({id:src+'-stream',type:'line',filter:is('stream'),layout:round,paint:{'line-color':'var(--rc-water)','line-width':gw}});
+  add({id:src+'-streambank',type:'line',filter:is('stream'),layout:{'line-join':'round'},paint:{'line-color':'var(--rc-water-ink)','line-width':zw(0.9),'line-gap-width':gw}});
+  add({id:src+'-bank',type:'line',filter:['any',is('river'),is('water')],layout:{'line-join':'round'},paint:{'line-color':'var(--rc-water-ink)','line-width':zw(1)}});
+  add({id:src+'-shore',type:'line',filter:is('shore'),layout:round,paint:{'line-color':'var(--rc-ink)','line-width':zw(1.5),'line-dasharray':['case',['==',['get','lo'],1],['literal',[6,2.2]],['literal',[1,0]]]}});
+  add({id:src+'-break',type:'line',filter:is('breakwater'),paint:{'line-color':'var(--rc-ink)','line-width':zw(0.9),'line-gap-width':zw(1.3)}});
+  var rw=function(m,o){var by=function(i){return ['match',['get','cls'],'main',m[i],o[i]]};return ['interpolate',['linear'],['zoom'],10,by(0),12,by(1),14,by(2),17,by(3)]};   // zoomed out a road is one ink line; closer in it opens into the double line of the engineer's map
+  add({id:src+'-roadedge',type:'line',filter:is('road'),layout:round,paint:{'line-color':'var(--rc-ink)','line-width':rw([1,1.5,3.6,8],[0.6,1,2.6,6])}});
+  add({id:src+'-road',type:'line',filter:is('road'),layout:round,paint:{'line-color':'var(--rc-road)','line-width':rw([0,0,1.9,5.2],[0,0,1.1,3.6])}});
+  add({id:src+'-rail',type:'line',filter:is('rail'),paint:{'line-color':'var(--rc-ink)','line-width':zw(1.3)}});
+  add({id:src+'-ties',type:'line',filter:is('rail'),paint:{'line-color':'var(--rc-ink)','line-width':zw(5.5),'line-dasharray':[0.22,1.9]}});
+  add({id:src+'-wallfill',type:'fill',filter:is('wall'),paint:{'fill-color':'var(--rc-town)'}});
+  add({id:src+'-wall',type:'line',filter:is('wall'),layout:{'line-join':'miter'},paint:{'line-color':'var(--rc-wall)','line-width':zw(3.4)}});
+  add({id:src+'-wallin',type:'line',filter:is('wall'),layout:{'line-join':'miter'},paint:{'line-color':'var(--rc-paper)','line-width':zw(0.9)}});
+  add({id:src+'-bh',type:'symbol',filter:is('blockhouse'),layout:{'icon-image':'rc-bh','icon-allow-overlap':true,'icon-size':['interpolate',['linear'],['zoom'],10,0.6,13,0.9,16,1.4]}});
+  add({id:src+'-off',type:'fill',filter:is('off'),paint:{'fill-color':'var(--bg)'}});
+  add({id:src+'-frame',type:'line',filter:is('frame'),paint:{'line-color':'var(--rc-ink)','line-width':2.4,'line-offset':-5}});
+  add({id:src+'-frame2',type:'line',filter:is('frame'),paint:{'line-color':'var(--rc-ink)','line-width':0.9}});
+  RCL[R.id]=ids;
+}
+/* tapping a line of a reconstructed map: its details go in the text pane */
+var RC_PICK=['-bh','-wall','-wallfill','-roadedge','-rail','-ties','-shore','-break','-stream','-water','-sea'];
+function pickRecon(pt){ if(!base.rc) return null; var src='rc-'+base.rc.id,ls=RC_PICK.map(function(x){return src+x}).filter(function(id){return mv.map.getLayer(id)}),r=coarse?9:5;
+  var hit=mv.map.queryRenderedFeatures([[pt.x-r,pt.y-r],[pt.x+r,pt.y+r]],{layers:ls}),best=null,rank=function(f){var i=RC_PICK.indexOf(f.layer.id.slice(src.length));return i<0?99:i};
+  hit.forEach(function(f){if(RCF[f.properties.id]&&(!best||rank(f)<rank(best)))best=f});return best?best.properties.id:null}
+var coarse=window.matchMedia&&matchMedia('(pointer:coarse)').matches;
+function featureHtml(){var x=RCF[rcSel],R=base.rc,L=R.layers.filter(function(l){return l.id===x.layer})[0]||{},s=B.sources[x.source]||{},row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+v+'</dd>':''};
+  var M={traced:'Traced: read point by point from the map',  'AI-extracted':'AI-extracted: separated from the scan by a program, then checked by eye',interpolated:'Interpolated: not on any map'};
+  var h='<button class="back" id="back">&larr; All units</button><div class="eyebrow">On the reconstructed map</div><h2>'+esc(x.name||x.desc||L.title||x.kind)+'</h2>';
+  if(x.name&&x.desc) h+='<p>'+esc(x.desc)+'</p>';
+  h+='<div class="state inferred"><b>A reconstruction</b>Drawn by WarMapper from the source below. It is not a line on a period map.</div>';
+  h+='<h3>How sure</h3><dl>'+row('Layer',esc(L.title||x.layer))+row('How read',esc(M[x.method]||x.method))+row('Confidence',chip(x.confidence)+(x.precision_m?' good to about '+x.precision_m+' m':''))+row('As of',esc(spanText(x.from,x.to)))+row('Review',esc(x.review||''))+'</dl>';
+  if(x.basis) h+='<h3>How it was read</h3><p>'+esc(x.basis)+'</p>';
+  var sl=WM.srcList(B.sources,[x.source]); if(sl) h+='<h3>Source</h3><ul class="srcs">'+sl+'</ul>';
+  if(L.link) h+='<p style="margin-top:10px"><a href="'+esc(L.link)+'" target="_blank" rel="noopener">Open the original map: '+esc(L.link_label||s.title||'the scan')+'</a></p>';
+  return h+'<p class="meta" style="margin-top:12px">Record '+esc(x.id)+' of '+esc(R.file||R.id)+'.</p>'}
+function spanText(a,b){var d=function(s){return s?(+s.slice(8,10))+' '+['January','February','March','April','May','June','July','August','September','October','November','December'][+s.slice(5,7)-1]+' '+s.slice(0,4):''};return a&&b&&a!==b?d(a).replace(/ [A-Z][a-z]+ \d{4}$/,a.slice(0,7)===b.slice(0,7)?'':'$&')+' to '+d(b):d(a||b)}
+function reconDetails(){var R=base.rc,row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+v+'</dd>':''},used=[],h='<h2>'+esc(R.title)+'</h2>';
+  h+='<div class="state inferred"><b>A reconstruction, not a period map</b>'+esc(R.about||'Drawn by WarMapper from traced lines.')+'</div>';
+  if(R.note) h+='<p>'+esc(R.note)+'</p>';
+  h+='<dl>'+row('Battle',esc(B.title))+row('Made',esc(spanText(R.made,R.made)))+row('Review',esc(R.review||''))+row('Relief',hsRc?'Shaded from today\'s elevation data ('+esc(HS.credit)+'), which also picks up today\'s buildings. The ground itself has changed little.':(HS?'Off, or the elevation service could not be reached.':'None.'))+'</dl>';
+  h+='<h3>What is drawn, and where each layer came from</h3><ul class="rcl">';
+  R.layers.forEach(function(l){var s=B.sources[l.source]||{};if(used.indexOf(l.source)<0)used.push(l.source);
+    h+='<li><b>'+esc(l.title)+'</b><span class="meta">'+esc(l.method)+' &middot; '+chip(l.confidence)+(l.features?' &middot; '+l.features+(l.features===1?' feature':' features'):'')+'</span><span>'+esc(l.how||'')+'</span>'
+      +(l.link?'<a href="'+esc(l.link)+'" target="_blank" rel="noopener">'+esc(l.link_label||'Open the original map')+'</a>':'')+'</li>'});
+  h+='</ul><h3>Sources</h3><ul class="srcs">'+WM.srcList(B.sources,used)+'</ul>';
+  return h+'<p class="meta" style="margin-top:12px">Tap any line on the map for its own source, how it was read and how sure it is. Dashed shore lines are low confidence. The lines are in '+esc(R.file||'the battle file')+'.</p>'}
 /* The period map can be turned down to let today's map show through it. Turned down, only a map's whole-sheet picture shows, so two pictures of one map do not add up. */
-function through(){return opac<1&&!base.current&&!base.own&&!base.sat}
+function through(){return opac<1&&!base.current&&!base.own&&!base.sat&&!base.rc}
 function paintFade(){(PICS[base.id]||[]).forEach(function(p){mv.opacity(p.id,opac>=1?1:p.detail?0:opac)});if(series.length)mv.opacity('pic-series',opac);
   bases.forEach(function(b){if(b.sat)mv.map.setLayoutProperty('sat-'+b.id,'visibility',b===base?'visible':'none')});
   var cur=!!(base.current||base.backdrop==='current'||through()),own=cur&&!topo();   // the battle's own drawing of today's ground shows only when the modern map cannot
+  for(var rk in RCL) RCL[rk].forEach(function(id){mv.show(id,!!base.rc&&base.rc.id===rk)});
   CUR.forEach(function(id){mv.show(id,own)});mv.show('b-mask',!topo()&&(cur||base.sat)&&!!(base.clip||(base.m&&P.bounds===base.map)));
-  mv.bg((base.own||(base.m&&base.backdrop!=='current'&&!through()))?'--m-paper':'--land')}
+  mv.bg(base.rc?'--rc-paper':(base.own||(base.m&&base.backdrop!=='current'&&!through()))?'--m-paper':'--land')}
 function setOpacity(v){opac=Math.max(0,Math.min(1,v));var e=$('opac');if(e)e.value=Math.round(opac*100);var o=$('opv');if(o)o.textContent=Math.round(opac*100)+'%';paintFade();updateTiles();mv.retheme();mv.kick()}
 /* ---------- full detail: the scan itself, streamed from the library that holds it ---------- */
 /* The pictures that come with a playback are reduced copies. Where the holding library serves the full scan as tiles (the IIIF image
@@ -658,7 +749,7 @@ function updateTiles(){
 }
 function queueTiles(){clearTimeout(tileTimer);tileTimer=setTimeout(updateTiles,160)}
 function tileError(e){ // three failures and the library is left alone for the rest of the visit
-  if(e&&e.sourceId==='dem'){ if(++hsFail>=4){hsVis=null;mv.show('hill',false);lastCredit='';mv.kick()} return }
+  if(e&&e.sourceId==='dem'){ if(++hsFail>=4){hsVis=null;hsRc=null;mv.show('hill',false);if(mv.map.getLayer('rc-hill'))mv.show('rc-hill',false);lastCredit='';panelKey='';mv.kick()} return }
   if(e&&e.sourceId==='sur'){ if(++modFail>=4&&!modOff){modOff=true;modOn=null;mv.show('sur',false);paintFade();lastCredit='';panelKey='';flashCredit();mv.kick()} return }   // the modern map cannot be reached: fall back to the drawing
   var er=e&&e.error,txt=String((er&&(er.url||er.message))||''),mine=(e&&/^iiif-/.test(String(e.sourceId||'')))||/iiif/i.test(txt)||(Object.keys(TILES).length&&/fetch|network|load/i.test(txt));
   if(mine&&++tileFail>=3&&!tilesOff){tilesOff=true;updateTiles();panelKey='';mv.kick()}}
@@ -670,7 +761,8 @@ function setBase(b,first){
   if(moved) mv.setWorld(worldOf(b));
   if(!b.series&&series.length){mv.show('pic-series',false);seriesShown=null}
   if(b.series) series.forEach(function(m){if(!m.pre){m.pre=new Image();m.pre.src=WM.asset(m.images[0].file)}});
-  wrap.classList.toggle('paper',!b.current&&!b.sat); wrap.classList.toggle('sat',b.sat); var go=$('gOpac'); if(go) go.hidden=!!(b.current||b.own||b.sat); paintFade();
+  wrap.classList.toggle('paper',!b.current&&!b.sat); wrap.classList.toggle('sat',b.sat); wrap.classList.toggle('recon',!!b.rc); var go=$('gOpac'); if(go) go.hidden=!!(b.current||b.own||b.sat||b.rc); paintFade();
+  rcSel=null; var rn=$('rcnote'); if(rn){rn.hidden=!b.rc; if(b.rc) rn.innerHTML='<b>Reconstruction</b><span> &middot; drawn by WarMapper from maps of 1899, not a period map</span>'}
   if(moved) mv.jump(home());
   updateTiles(); panelKey=''; mv.retheme(); mv.kick()}
 
@@ -707,7 +799,8 @@ var panelKey='';
 function renderPanel(sc){
   var me=sel?sc.filter(function(o){return o.tr.id===sel})[0]:null,ev=curEvent();
   if(sumAt!=null){var sk='sum|'+sumAt+'|'+sumMode;if(sk!==panelKey){panelKey=sk;panel.innerHTML=summaryHtml();panel.scrollTop=0}return}
-  if(info&&!sel){var ik='info|'+base.id+'|'+(seriesShown?seriesShown.id:'');if(ik!==panelKey){panelKey=ik;panel.innerHTML=mapDetails()+aroundNote();panel.scrollTop=0}return}
+  if(rcSel&&!sel&&base.rc&&RCF[rcSel]){var rk2='rc|'+rcSel;if(rk2!==panelKey){panelKey=rk2;panel.innerHTML=featureHtml();panel.scrollTop=0}return}
+  if(info&&!sel){var ik='info|'+base.id+'|'+(seriesShown?seriesShown.id:'')+(hsRc?'r':'');if(ik!==panelKey){panelKey=ik;panel.innerHTML=mapDetails()+aroundNote();panel.scrollTop=0}return}
   var key=base.id+'|'+(sel?sel+'|'+(me?me.s.k.id+me.s.kind+(byDay?stamp(t):''):'x'):'now|'+(landing?'L':'')+(ev?ev.id:0)+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(','));
   if(key===panelKey) return; panelKey=key; var h='';
   if(sel){
@@ -747,7 +840,7 @@ function select(id){
   if(id&&String(id).indexOf('F:')===0){ // a formation drawn zoomed out: zoom in on it until it breaks out into its units
     var hit=null;mv.hits.forEach(function(h){if(h.id===id&&h.r)hit=h}); if(hit){setFollow(false);setPreset(null);var W=WORLDS[worldOf(base)],c=mv.map.unproject([(hit.r[0]+hit.r[2])/2,(hit.r[1]+hit.r[3])/2]);
       mv.map.easeTo({center:c,zoom:mv.zoomFor(FM.below*1.15),duration:700})} return }
-  if(id)closeSummary();sel=id||null;info=false;panelKey='';if(sel&&sheet)sheet.open();if(sel&&pane)pane.show();mv.kick()}
+  if(id)closeSummary();sel=id||null;info=false;rcSel=null;panelKey='';if(sel&&sheet)sheet.open();if(sel&&pane)pane.show();mv.kick()}
 var evOpen=false,sumsOpen=false,nowOpen=true,grpOpen={},umdOpen=false;
 /* what lies around the map on screen, where the battle has a surround */
 function aroundNote(){ if(!topo()||base.own||base.sat||base.current) return '';
@@ -755,6 +848,7 @@ function aroundNote(){ if(!topo()||base.own||base.sat||base.current) return '';
 /* the map on screen: what it is, who made it, where it is held, how it was placed */
 function mapDetails(){var h='<button class="back" id="back">&larr; All units</button><div class="eyebrow">The map on screen</div>',row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>':''};
   h+='<p class="meta credits">Credits for what is on screen: '+lastCredit+'</p>';
+  if(base.rc) return h+reconDetails();
   if(base.sat){var im=base.imagery;h+='<h2>'+esc(im.name||base.label)+'</h2><p>'+esc(im.about||'Aerial or satellite imagery of the ground today, streamed from the provider\'s tile service. The names on it come from OpenStreetMap.')+'</p><dl>'+row('Source',im.credit)+row('Rights',im.rights||'')+row('Taken',im.date||'')+'</dl>'+(im.link?'<p style="margin-top:10px"><a href="'+esc(im.link)+'" target="_blank" rel="noopener">About this imagery</a></p>':'')+'<p class="meta" style="margin-top:12px">If the tile service cannot be reached, the map shows plain ground under the units.</p>';return h}
   if(base.current&&topo()){h+='<h2>'+esc(MOD.name||'Current map')+'</h2><p>'+esc(MOD.about||'Today\'s topographic map, streamed from the provider\'s tile service.')+'</p><dl>'+row('Source',MOD.credit)+row('Rights',MOD.rights||'')+'</dl>'+(MOD.link?'<p style="margin-top:10px"><a href="'+esc(MOD.link)+'" target="_blank" rel="noopener">About this map</a></p>':'')+'<p class="meta" style="margin-top:12px">If the map service cannot be reached, a plain drawing of today\'s roads and water, made from OpenStreetMap, is shown in its place.</p>'+hillAbout();return h}
   if(base.current){h+='<h2>Current map</h2>'+(MOD?'<p class="meta">The topographic map service could not be reached from here, so this plain drawing is shown in its place.</p>':'')+(function(){var bc=raw.base&&raw.base.credit,bs=raw.base&&raw.base.source&&B.sources[raw.base.source];
@@ -815,6 +909,9 @@ try{ mv=WM.mapView({container:'map',wrap:wrap,world:worldOf(base),worlds:WORLDS,
 }catch(err){WM.noMap(wrap,err);return null}
 S=mv.S;
 mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
+/* on a reconstructed map a tap that finds no unit may find one of its lines: show where that line came from */
+mv.map.on('click',function(e){ if(sel||!base.rc) return; var id=pickRecon(e.point); if(!id) return; closeSummary(); rcSel=id; info=false; panelKey=''; sheet.open(); pane.show(); mv.kick() });
+mv.map.on('mousemove',function(e){ if(base.rc&&!mv.map.getCanvas().style.cursor&&pickRecon(e.point)) mv.map.getCanvas().style.cursor='help' });
 /* the stretch before the part the data covers best (a night march before a fight) can be squeezed into a share of the bar and played faster */
 var LD=(P.lead&&B.focus&&B.focus[0]>T0)?P.lead:null,TM=LD?B.focus[0]:T0,UM=LD?LD.share:0,RNG=4000;
 function u2t(u){return (LD&&u<=UM)?T0+(TM-T0)*u/UM:TM+(T1-TM)*(u-UM)/(1-UM)}
@@ -922,7 +1019,8 @@ on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.
 (function(){var app=document.querySelector('.app'),b=$('zfull'); if(!b) return;   // full screen is not offered where the browser does not allow it (inside some embedded views)
   if(!document.fullscreenEnabled||!app.requestFullscreen){b.hidden=true;return}
   b.addEventListener('click',function(){if(document.fullscreenElement)document.exitFullscreen();else app.requestFullscreen()})})();
-on('binfo',function(){closeSummary();sel=null;info=!info;panelKey='';if(info){sheet.open();pane.show()}mv.kick()});
+on('rcnote',function(){closeSummary();sel=null;rcSel=null;info=true;panelKey='';sheet.open();pane.show();mv.kick()});   // the label on a reconstructed map opens its details
+on('binfo',function(){closeSummary();sel=null;rcSel=null;info=!info;panelKey='';if(info){sheet.open();pane.show()}mv.kick()});
 /* phones: the text sheet under the map. It starts as a strip; a tap on the handle opens it to about half the screen and closes it
    again, and dragging the handle sets any height in between. Tapping a unit opens it so the unit's details can be read. */
 var sheet=(function(){var st=document.querySelector('.stage'),bar=$('sheetbar'),MIN=72,DEF=96,h=DEF,drag=null;

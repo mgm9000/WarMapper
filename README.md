@@ -19,8 +19,8 @@ The playbacks are served with GitHub Pages at https://mgm9000.github.io/WarMappe
 | `app/` | The playback, the same for every battle: `page.html` (the page), `player.js` (the rules of a playback), `core.js` (reading a battle file, the map, the clock), `core.css`, and the map library in `app/vendor/`. |
 | `tools/` | `export_battles.py`, which writes every battle file from the workbook and checks it, and `build.py`, which builds the pages. |
 | `docs/` | `battle-file.md`: the layout of a battle file. |
-| `data/` | **`WarMapper battle data.xlsx`, the master copy of the battle data**; `base/`, the current map under each battle; `osm/`, the OpenStreetMap extracts those were cut from (Natural Earth for Luzon 1899); `legacy/`, the two older workbooks. |
-| `pipeline/` | `battlefile.py` (checks a battle file against the format), `basemaps.py` (cuts the current maps from the extracts), `pictures.py` (cuts the period-map pictures from the full scans), `georef/` (how the period maps were fitted to the ground), and `legacy/` (retired scripts). |
+| `data/` | **`WarMapper battle data.xlsx`, the master copy of the battle data**; `base/`, the current map under each battle; `recon/`, the lines of each reconstructed base map as GeoJSON (Manila 1899); `osm/`, the OpenStreetMap extracts those were cut from (Natural Earth for Luzon 1899); `legacy/`, the two older workbooks. |
+| `pipeline/` | `battlefile.py` (checks a battle file against the format), `basemaps.py` (cuts the current maps from the extracts), `pictures.py` (cuts the period-map pictures from the full scans), `georef/` (how the period maps were fitted to the ground), `recon/` (how a reconstructed base map's lines were read from period maps), and `legacy/` (retired scripts). |
 
 The five pilots:
 
@@ -31,6 +31,10 @@ The five pilots:
 | First Ypres | 18 October to 22 November 1914 | Corps and divisions, by the day | 215 |
 | Manila (Philippine War), data pilot | 4 to 5 February 1899 | Brigades and regiments, by the hour; Filipino commands inferred | 38 |
 | Luzon 1899 (Philippine War), data pilot | 4 February to 15 December 1899 | Columns and headquarters at the towns the reports name, by the day; the Filipino side from American reports | 82 |
+
+## A reconstructed base map (proof of concept, Manila)
+
+The Manila playback has a third base, **1899 (reconstructed)**: the shore of 1899 (most of today's bay front was reclaimed later), the Pasig, the walls of Intramuros, the main roads, the railway and the blockhouses, read from two Army maps of February 1899 and drawn by the page in the manner of a map of the time. It is a reconstruction and says so on the map; every line records its source, how it was read and how sure it is, and can be tapped. The lines are in `data/recon/manila-1899.geojson`, the layers on the workbook's `Reconstructions` and `Recon layers` sheets, and `pipeline/recon/manila_1899.py` says how they were read. To rebuild the GeoJSON: `python3 pipeline/recon/manila_1899.py` (needs `numpy` and `scipy`).
 
 ## What is not here yet
 
@@ -101,6 +105,7 @@ The period maps shown in the playbacks:
 | Trenton | Lt. Andreas Wiederhold, *Sketch of the engagement at Trenton, given on the 26th of December 1776* | Library of Congress, Geography and Map Division |
 | First Ypres | Sketch maps in J. E. Edmonds, *Military Operations, France and Belgium, 1914*, volume II (Macmillan, 1925) | Internet Archive |
 | Manila | Sgt. J. H. Warking, Signal Corps, *Map of Manila and vicinity showing positions of troops prior to the battle of February 5th ...*, 1899 | Library of Congress, Geography and Map Division |
+| Manila, "1899 (reconstructed)" | Not a period map: drawn by the playback from lines read off 1st Lieut. W. G. Haan, *Map of the City of Manila and vicinity showing operations of Second Division, 8th Army Corps, from February 4th to February 28th 1899* (no picture of it is in the repository), and off the Warking map | National Archives (identifier 109182890), from the copy on Wikimedia Commons |
 | Luzon 1899 | Capt. W. L. Siebert, Corps of Engineers, *Map of central Luzon, showing a portion of the field of operations of the 8th Army Corps*, 1899; Lt. H. P. Howard, *Map of northern Luzon* prepared under Brig. Gen. S. B. M. Young, 1900; War Department, *Theatre of military operations in Luzon, 1899*, both sheets | Boston Public Library, Norman B. Leventhal Map Center (the first two); University of Minnesota Libraries, John R. Borchert Map Library (the third) |
 
 The pictures in this repository are reduced copies. When a reader zooms in on the Gettysburg or Trenton map, the playback fetches the full scan in tiles straight from the holding library's own image service (IIIF): the Boston Public Library's for the Bachelder map, the Library of Congress's for the Wiederhold sketch. Faden's 1777 map of Trenton is warped to fit the ground, so it is shown only as the copy in this repository. If the library cannot be reached, the reduced copy stays on screen. The Luzon maps are fetched the same way, two from the Boston Public Library and one from the University of Minnesota's collection in the Minnesota Digital Library. The First Ypres sketches are pages of a scanned book and have no such service set up here.
