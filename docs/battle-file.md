@@ -220,9 +220,16 @@ with its source. Tapping a line shows that line's own record.
   or `interpolated` (not on any map: a closing edge, a join).
 - `confidence` is `high`, `medium` or `low`. A feature is `high` only when a cited source supports it and a person has checked it;
   if unsure it is `low`. Low-confidence shore lines are drawn dashed.
-- `kind` is `sea`, `shore`, `river`, `stream`, `water`, `wall`, `road`, `rail`, `breakwater` or `blockhouse`. `shape` is `point`
-  (`at` is one `[longitude, latitude]`), `line` or `area` (`at` is a list of packed lines, as in `base`: an area's first is its outline
-  and the rest are holes). A `stream` may give `width_m`, its width on the ground; a `road` a `class` (`main` or `minor`).
+- `kind` is `sea`, `shore`, `river`, `stream`, `water`, `wall`, `road`, `rail`, `breakwater`, `blockhouse`, `detail` (the period map's
+  own fine lines: street and block edges, dykes, field lines, hachures; drawn thin, from the zoom at which they can be read) or
+  `entrenchment` (field works; `side` is the code of the side that dug them, and they are drawn in a dashed red-brown line).
+  `shape` is `point` (`at` is one `[longitude, latitude]`), `line` or `area` (`at` is a list of packed lines, as in `base`: an area's
+  first is its outline and the rest are holes), `lines` (several lines under one record: `at` is the list of them) or `areas` (several
+  areas under one record: `at` is a list of areas, each a list of packed rings). `lines` and `areas` are for what a program takes
+  from a scan by the thousand: one record, with its source, method and confidence, covers a district's worth, and `part` names the
+  district. A `stream` may give `width_m`, its width on the ground; a `road` a `class` (`main` or `minor`).
+- Relief on a reconstructed map is shaded from elevation tiles of zoom 11 at most (`relief_zoom` on the reconstruction changes that),
+  enlarged smoothly: finer tiles show today's buildings as bumps on flat ground.
 - A layer groups features of one kind from one source. Its `link` opens the original map the layer was read from.
 - `sheet` is the edge of the reconstruction, `[west, south, east, north]`: nothing is drawn beyond it, and a border is drawn on it.
 - A base shows it with `"recon": id` (see `bases`). Names for it are labels with `show: "recon"`.

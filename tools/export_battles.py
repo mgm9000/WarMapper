@@ -109,9 +109,13 @@ def reconstructions(name, W):
             p = f['properties']; g = f['geometry']; lay = p.get('layer')
             assert lay in known, 'Recon layers: %s has no row for layer %r (feature %s of %s)' % (rid, lay, p.get('id'), r['file'])
             c = g['coordinates']
-            shape, at = {'Point': ('point', [c]), 'LineString': ('line', [c]), 'Polygon': ('area', c)}[g['type']]
-            feats.append({'id': p['id'], 'layer': lay, 'kind': p['kind'], 'shape': shape, 'at': [bf.pack(ring) for ring in at] if shape != 'point' else bf.ll(c[1], c[0]),
-                          'name': p.get('name'), 'desc': p.get('desc'), 'class': p.get('class'), 'width_m': p.get('width_m'), 'number': p.get('number'),
+            shape, at = {'Point': ('point', [c]), 'LineString': ('line', [c]), 'Polygon': ('area', c), 'MultiLineString': ('lines', c), 'MultiPolygon': ('areas', c)}[g['type']]
+            whole = lambda q, n: q.count(';') >= n          # packing drops repeated points: a line needs two left, a ring three
+            packed = (bf.ll(c[1], c[0]) if shape == 'point' else
+                      [k for k in ([q for q in (bf.pack(ring) for ring in poly) if whole(q, 3)] for poly in at) if k] if shape == 'areas' else
+                      [q for q in (bf.pack(ring) for ring in at) if whole(q, 1)])
+            feats.append({'id': p['id'], 'layer': lay, 'kind': p['kind'], 'shape': shape, 'at': packed,
+                          'name': p.get('name'), 'desc': p.get('desc'), 'class': p.get('class'), 'width_m': p.get('width_m'), 'number': p.get('number'), 'side': p.get('side'), 'part': p.get('part'),
                           'from': bf.iso(p.get('from')), 'to': bf.iso(p.get('to')), 'source': p.get('source_id'), 'method': p.get('method'), 'confidence': p.get('confidence'),
                           'precision_m': p.get('precision_m'), 'basis': p.get('basis'), 'review': p.get('review')})
         for l in layers: l['features'] = sum(1 for f in feats if f['layer'] == l['id'])
