@@ -199,8 +199,9 @@ Picture files sit beside the battle file.
 Optional. A reconstructed base map is not a picture. It is a set of lines read off period maps, which the page draws live in the manner
 of a map of the time (toned paper, water in a wash with lines along the shore, double-line roads, a railway with its ties, period
 lettering, relief shaded from elevation tiles). It stays sharp at any zoom and lies on the same ground as the units. It is always
-labelled a reconstruction: a label on the map for as long as it is shown, and a map-details panel that says so and lists every layer
-with its source. Tapping a line shows that line's own record.
+labelled a reconstruction: the map-details panel (the i button) opens by saying so, and lists every layer with its source. Since
+22 Nov 2026 no banner sits on the map itself (Morgan's choice); the sheet's own title, drawn on it when zoomed out, also calls it a
+reconstruction. Tapping a line shows that line's own record.
 
 ```json
 "reconstructions": [{"id": "manila-1899", "title": "Manila and vicinity, February 1899: a WarMapper reconstruction",

@@ -43,8 +43,8 @@ var kinds={},found={},k0; for(k0 in KIND)kinds[k0]=[KIND[k0][0],(P.texts&&P.text
 var bases=(P.bases&&P.bases.length)?P.bases:[{id:'now',label:'Current map',short:'Today',current:true}];
 var series=B.mapList.filter(function(m){return m.t0!=null});
 /* A reconstructed base ({recon:id}) is not a picture: the page draws it from the traced lines of one of the battle file's `reconstructions`,
-   in the manner of a map of the time. It is always labelled a reconstruction, on the map and in the map details, and every line can be
-   tapped for its source, how it was read and how sure it is. */
+   in the manner of a map of the time. It is always labelled a reconstruction: the map details (the i button) open by saying so, and every line can be
+   tapped for its source, how it was read and how sure it is. It carries no banner on the map (Morgan, 22 Nov 2026). */
 var RECON={};(raw.reconstructions||[]).forEach(function(r){RECON[r.id]=r});
 bases.forEach(function(b){b.m=b.map?B.maps[b.map]:null;b.own=!!(b.m&&b.m.own);b.sat=!!(b.imagery&&b.imagery.tiles);b.rc=(b.recon&&RECON[b.recon])||null});
 var SKK=1e-5; function ownLL(p){return [p[0]*SKK,-p[1]*SKK]}   // a not-to-scale map: its pixels laid out as a small patch of pretend ground
@@ -988,7 +988,7 @@ function setBase(b,first){
   if(!b.series&&series.length){mv.show('pic-series',false);seriesShown=null}
   if(b.series) series.forEach(function(m){if(!m.pre){m.pre=new Image();m.pre.src=WM.asset(m.images[0].file)}});
   wrap.classList.toggle('paper',!b.current&&!b.sat); wrap.classList.toggle('sat',b.sat); wrap.classList.toggle('recon',!!b.rc); var go=$('gOpac'); if(go) go.hidden=!!(b.current||b.own||b.sat||b.rc); paintFade();
-  rcSel=null; var rn=$('rcnote'); if(rn){rn.hidden=!b.rc; if(b.rc) rn.innerHTML='<b>Reconstruction</b><span> &middot; drawn by WarMapper from maps of 1899, not a period map</span>'}
+  rcSel=null;
   if(moved) mv.jump(home());
   updateTiles(); panelKey=''; mv.retheme(); mv.kick()}
 
@@ -1073,8 +1073,9 @@ function aroundNote(){ if(!topo()||base.own||base.sat||base.current) return '';
   return '<div class="eyebrow" style="margin-top:18px">Around this map</div><p>Zoom out past the edge of this map and today\'s topographic map is drawn around it.</p><dl><dt>Source</dt><dd>'+esc(MOD.name?MOD.name+' ('+MOD.credit+')':MOD.credit)+'</dd>'+(MOD.rights?'<dt>Rights</dt><dd>'+esc(MOD.rights)+'</dd>':'')+'</dl>'}
 /* the map on screen: what it is, who made it, where it is held, how it was placed */
 function mapDetails(){var h='<button class="back" id="back">&larr; All units</button><div class="eyebrow">The map on screen</div>',row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+esc(v)+'</dd>':''};
-  h+='<p class="meta credits">Credits for what is on screen: '+lastCredit+'</p>';
-  if(base.rc) return h+reconDetails();
+  var cr='<p class="meta credits">Credits for what is on screen: '+lastCredit+'</p>';
+  if(base.rc) return h+reconDetails()+cr;   // a reconstruction says first that it is one (it carries no banner on the map: Morgan, 22 Nov 2026)
+  h+=cr;
   if(base.sat){var im=base.imagery;h+='<h2>'+esc(im.name||base.label)+'</h2><p>'+esc(im.about||'Aerial or satellite imagery of the ground today, streamed from the provider\'s tile service. The names on it come from OpenStreetMap.')+'</p><dl>'+row('Source',im.credit)+row('Rights',im.rights||'')+row('Taken',im.date||'')+'</dl>'+(im.link?'<p style="margin-top:10px"><a href="'+esc(im.link)+'" target="_blank" rel="noopener">About this imagery</a></p>':'')+'<p class="meta" style="margin-top:12px">If the tile service cannot be reached, the map shows plain ground under the units.</p>';return h}
   if(base.current&&topo()){h+='<h2>'+esc(MOD.name||'Current map')+'</h2><p>'+esc(MOD.about||'Today\'s topographic map, streamed from the provider\'s tile service.')+'</p><dl>'+row('Source',MOD.credit)+row('Rights',MOD.rights||'')+'</dl>'+(MOD.link?'<p style="margin-top:10px"><a href="'+esc(MOD.link)+'" target="_blank" rel="noopener">About this map</a></p>':'')+'<p class="meta" style="margin-top:12px">If the map service cannot be reached, a plain drawing of today\'s roads and water, made from OpenStreetMap, is shown in its place.</p>'+hillAbout();return h}
   if(base.current){h+='<h2>Current map</h2>'+(MOD?'<p class="meta">The topographic map service could not be reached from here, so this plain drawing is shown in its place.</p>':'')+(function(){var bc=raw.base&&raw.base.credit,bs=raw.base&&raw.base.source&&B.sources[raw.base.source];
@@ -1245,7 +1246,6 @@ on('zfit',function(){setFollow(false);setPreset(null);mv.jump(mv.cameraFor(base.
 (function(){var app=document.querySelector('.app'),b=$('zfull'); if(!b) return;   // full screen is not offered where the browser does not allow it (inside some embedded views)
   if(!document.fullscreenEnabled||!app.requestFullscreen){b.hidden=true;return}
   b.addEventListener('click',function(){if(document.fullscreenElement)document.exitFullscreen();else app.requestFullscreen()})})();
-on('rcnote',function(){closeSummary();sel=null;rcSel=null;info=true;panelKey='';sheet.open();pane.show();mv.kick()});   // the label on a reconstructed map opens its details
 on('binfo',function(){closeSummary();sel=null;rcSel=null;info=!info;panelKey='';if(info){sheet.open();pane.show()}mv.kick()});
 /* phones: the text sheet under the map. It starts as a strip; a tap on the handle opens it to about half the screen and closes it
    again, and dragging the handle sets any height in between. Dragged right down, or with the map's hide-text button, it goes away
