@@ -3,3 +3,7 @@ PH-T1,TREN,Crossing the Delaware,1776-12-25 17:00,1776-12-26 03:00,S20; S21,Befo
 PH-T2,TREN,March to Trenton,1776-12-26 04:00,1776-12-26 07:45,S20; S21,
 PH-T3,TREN,Outposts driven in,1776-12-26 07:30,1776-12-26 08:10,S20; S21,See TC01.
 PH-T4,TREN,Fight in the town (CDB90 active period),1776-12-26 08:00,1776-12-26 09:30,S34,See TC04.
+PH-C1,COWP,Forming for battle,1781-01-17 06:00,1781-01-17 06:58,S95; S96; S100,"From the warning ""an hour before daylight"" to the two lines in sight of each other."
+PH-C2,COWP,Skirmishers and militia,1781-01-17 07:00,1781-01-17 07:35,S95; S96,Staff ride maps 8 to 11: 0700 to 0730.
+PH-C3,COWP,"The main line: retreat, volley and bayonet",1781-01-17 07:35,1781-01-17 07:50,S95; S98,Staff ride maps 12 and 13: 0740 and 0745.
+PH-C4,COWP,Envelopment and pursuit,1781-01-17 07:50,1781-01-17 08:30,S95; S96,Staff ride map 14: 0750. The pursuit ran 22 to 24 miles and is off the map.

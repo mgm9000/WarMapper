@@ -397,6 +397,8 @@ def export(pb, W):
         if blank(m.get('xy_from')) or maps[m['map_id']].get('lookup'): continue
         sheet_positions(maps[m['map_id']], json.load(open(os.path.join(ROOT, m['xy_from']))), tracks)
     S = settings(mine(W['Playback settings'])); presets = S.pop('preset', None)
+    own = S.pop('sides', None) or {}                  # a playback's own names for the sides (sides.<code>.short, sides.<code>.name): a war's sides are shared by its playbacks
+    for sd in sides: sd.update({k: v for k, v in (own.get(sd['code']) or {}).items() if k in ('short', 'name')})
     if 'rear' in S: S['rear']['at'] = bf.ll(S['rear'].pop('lat'), S['rear'].pop('lon'))
     base = json.load(open(os.path.join(ROOT, 'data', 'base', name + '.json'), encoding='utf-8'))
     battle = {'id': pb['battle_file_id'], 'title': pb['title'], 'subtitle': text(pb.get('subtitle')),

@@ -2,7 +2,7 @@
 
 WarMapper is a battlefield study guide on a map: pick a battle, then watch it unfold over maps drawn at the time and over today's ground.
 
-This repository holds the proof-of-concept work: battle data for five pilot playbacks (four battles and one campaign) and a prototype of each.
+This repository holds the proof-of-concept work: battle data for six pilot playbacks (five battles and one campaign) and a prototype of each.
 
 **Status: prototype. None of the history here has been checked by a historian.** Every position cites a source and states how sure it is, but treat all of it as unreviewed.
 
@@ -23,7 +23,7 @@ The playbacks are served with GitHub Pages at https://mgm9000.github.io/WarMappe
 | `data/` | **`WarMapper battle data/`, the master copy of the battle data**: one workbook per war and `Sources and notes.xlsx` (see Changing the data), with a CSV copy of every sheet under `csv/`; `base/`, the current map under each battle; `recon/`, the lines of each reconstructed base map as GeoJSON (Manila 1899); `osm/`, the OpenStreetMap extracts those were cut from (Natural Earth for Luzon 1899); `legacy/`, the two older workbooks. |
 | `pipeline/` | `battlefile.py` (checks a battle file against the format), `basemaps.py` (cuts the current maps from the extracts), `pictures.py` (cuts the period-map pictures from the full scans), `georef/` (how the period maps were fitted to the ground), `recon/` (how a reconstructed base map's lines were read from period maps), and `legacy/` (retired scripts). |
 
-The five pilots:
+The six pilots:
 
 | Battle | Dates | Scale | Position rows |
 | --- | --- | --- | --- |
@@ -32,12 +32,19 @@ The five pilots:
 | First Ypres | 18 October to 22 November 1914 | Corps and divisions, by the day | 215 |
 | Manila (Philippine War), data pilot | 4 to 5 February 1899 | Brigades and regiments, by the hour; Filipino commands inferred | 38 |
 | Luzon 1899 (Philippine War), data pilot | 4 February to 15 December 1899 | Columns and headquarters at the towns the reports name, by the day; the Filipino side from American reports | 82 |
+| Battle of Cowpens | 17 January 1781 | Battalions, regiments and troops by the minute, 06:00 to 08:30; every unit placed by a distance the sources give along the Green River Road (no map of the time exists); clock times are the Army staff ride's reconstruction | 90 |
 
 ## A reconstructed base map (proof of concept, Manila)
 
 The Manila playback has a third base, **1899 (reconstructed)**: the shore of 1899 (most of today's bay front was reclaimed later), the Pasig, the walls of Intramuros, the main roads, the railway and the blockhouses, read from two Army maps of February 1899 and drawn by the page in the manner of a map of the time. It is a reconstruction and says so first in the map details (the i button; since 22 Nov 2026 there is no banner on the map); every line records its source, how it was read and how sure it is, and can be tapped. Since the second pass of 21 November 2026 it also carries the engineer map's own street, block, dyke and field lines and its esteros, taken from the scan by program (`pipeline/recon/manila_1899_linework.py`, which needs `opencv-python` and `scikit-image` and the scan itself); those are marked AI-extracted and low confidence, and nobody has checked them line by line. `pipeline/recon/manila_1899_check_1898.md` records a check of the traced lines against a second map. From Malate south to Pasay, where the engineer map stops, the shore, Calle Real, blockhouses 13 and 14 and the ground's own lines come from the War Department's 1898 *Manila y sus arrabales* (Yale): `pipeline/georef/manila_arrabales_fit.py` fits that sheet and says how its hand-drawn southern strip is slid to today's streets, and `pipeline/recon/manila_1898_linework.py` takes its lines. The lines are in `data/recon/manila-1899.geojson`, the layers on the workbook's `Reconstructions` and `Recon layers` sheets, and `pipeline/recon/manila_1899.py` says how they were read. To rebuild the GeoJSON: `python3 pipeline/recon/manila_1899.py` (needs `numpy` and `scipy`).
 
 Since 22 Nov 2026 Manila opens on its fourth base, **1899 with terrain**, and the Type of map menu offers only it and today's map: the Signal Corps map and the plain reconstruction are marked `hidden` and are offered, with a link to each original, in the map details (the i button). The terrain base is the same reconstruction made to show more the closer one looks, and to fill the window on a desktop, a tablet or a phone. The ground: the page reads elevation tiles once (zoom 12, over 40 km by 31 km, wider than the reconstruction's sheet), a worker cleans them (the tiles are a radar survey of 2000 that measured buildings as well as the ground: every bump narrower than about 230 m is taken off, the rest smoothed) and from that surface draws relief, contour lines for what is on screen (every 20 m zoomed right out, closing in to 10, 5, 2, 1 and half a metre, always sampled a few screen pixels apart so the lines stay smooth) and spot heights. Beyond the sheet's edge, marked by a dotted line, only that terrain and today's shore are drawn. It is today's ground and the map details say so. The city: from zoom 13.6 the ink of the War Department's 1898 plan of the city (Yale; 1.36 m a pixel, fitted to the engineer map to about 6 m) is laid over the reconstruction, with its blocks, public buildings, bridges and, closest in, street names; `pipeline/recon/manila_1898_ink.py` lifts the ink off the scan and writes the three pictures `playbacks/manila/manila-1898-ink*.webp`, and the engineer-map lines the plan also draws give way to it. The settings are `terrain` on the base and the `ink` feature of the reconstruction (see `docs/battle-file.md`); the code is in `app/player.js`, under "the terrain version of a reconstructed map" and "a period map's own ink".
+
+## Cowpens (17 January 1781): how it was placed
+
+Cowpens is the first battle built for the HIST 340 course page (`courses/hist-340/`, the 16 January class). No map made at the time shows the ground, and the accounts give distances, not places: the lines so many yards apart, the main line falling back "about 100 yards". The one line every account is tied to is the Green River Road, which still crosses the battlefield as a gravel trace. So every unit is placed by distance along that road as OpenStreetMap draws it, counted from the south-east end of the park's Battlefield Trail, where the Army's staff ride handbook and a National Park Service wayside put the head of Tarleton's column as it came onto the field (`pipeline/cowpens_geo.py`). The main line is fixed by the Washington Light Infantry monument of 1856, by which an Army War College study of 1928 says Howard's line ran. No position is rated above medium, and most are low. The clock (first shots about 07:00, the end about 07:50) is the staff ride's; eyewitnesses say only "about sunrise".
+
+The rows were written by `pipeline/cowpens_2026_11_23.py`, which holds every row with its sources and can be read as the record of how the battle was built. The fifteen points where the sources disagree are on the `Hypotheses` sheet (CH01 to CH15) and the eight known gaps on `Gaps` (CG01 to CG08): the first is that Bearss's troop movement maps (National Park Service, 1967) have not yet been read. The playback opens on today's topographic map; it has no period map.
 
 ## What is not here yet
 
@@ -51,7 +58,7 @@ The battle data is kept in workbooks, in the folder `data/WarMapper battle data/
 
 | Workbook | What it holds |
 | --- | --- |
-| `Revolutionary War.xlsx` | Trenton |
+| `Revolutionary War.xlsx` | Trenton; Cowpens |
 | `U.S. Civil War.xlsx` | Gettysburg |
 | `Philippine War.xlsx` | Manila and Luzon 1899 |
 | `World War I.xlsx` | First Ypres |

@@ -92,6 +92,21 @@ def trenton():
     return {'credit': CREDIT, 'source': 'S39', 'lines': lines, 'areas': [], 'widths': {'Delaware River': 270}}   # the Delaware is drawn 270 m wide
 
 
+def cowpens():
+    """The Cowpens from data/osm/cowpens.txt: an Overpass extract of 24 Nov 2026 (UTC), roads, the park's trace of the Green River Road
+    and its trail, and named streams in 35.105-35.165 N, 81.775-81.86 W, thinned to 3 m in the park and 10 m outside, typed in from the
+    browser on Morgan's Mac (the workspace cannot reach OpenStreetMap). The base is the fall-back map: the page shows the USGS map first.
+    One line per way: code|name|lat,lon;dlat,dlon;...  in units of 0.00001 degree."""
+    ROAD = {'Hm': 'm', 'Hp': 'p', 'Hs': 's', 'Ht': 't', 'Hv': 'r', 'Tk': 'u', 'Pa': 'v'}
+    lines = []
+    for ln in open(ROOT + '/data/osm/cowpens.txt', encoding='utf-8'):
+        code, name, body = ln.rstrip('\n').split('|', 2); la = lo = 0; pts = []
+        for i, pr in enumerate(body.split(';')):
+            a, b = pr.split(','); la, lo = (int(a), int(b)) if i == 0 else (la + int(a), lo + int(b)); pts.append(bf.ll(la / 1e5, lo / 1e5))
+        lines.append(['water', 'stream', name, bf.pack(pts)] if code == 'Ws' else ['road', ROAD[code], name, bf.pack(pts)])
+    return {'credit': CREDIT, 'source': 'S39', 'lines': lines, 'areas': []}
+
+
 def ypres():
     LAT0, LON0 = 50.8522, 2.8846; KX = 111320 * math.cos(math.radians(LAT0)); KY = 111040
     def LL(x, y): return bf.ll(LAT0 - y / KY, LON0 + x / KX)   # metres east and south of the centre of Ypres -> [longitude, latitude]
@@ -225,7 +240,7 @@ def bay(shore, islands, om):
     return [(a / 1e5, b / 1e5) for a, b in ring]
 
 
-MAKE = {'gettysburg': gettysburg, 'trenton': trenton, 'ypres': ypres, 'manila': manila, 'luzon1899': luzon1899}
+MAKE = {'gettysburg': gettysburg, 'trenton': trenton, 'ypres': ypres, 'manila': manila, 'luzon1899': luzon1899, 'cowpens': cowpens}
 if __name__ == '__main__':
     for b in (sys.argv[1:] or list(MAKE)):
         base = MAKE[b](); path = '%s/data/base/%s.json' % (ROOT, b)

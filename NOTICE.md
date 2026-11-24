@@ -22,7 +22,7 @@ WarMapper's own code, data and documentation are covered by [LICENSE](LICENSE) (
 | Material | Terms | How it is used |
 |---|---|---|
 | OpenStreetMap data | © OpenStreetMap contributors, [Open Database License](https://www.openstreetmap.org/copyright) | Today's roads, water and names, cut down into `data/base/` and the battle files (the fall-back current map and the place names) |
-| USGS Topo base map and aerial photography, The National Map | Public domain (US government work) | Streamed from `basemap.nationalmap.gov` for Gettysburg and Trenton |
+| USGS Topo base map and aerial photography, The National Map | Public domain (US government work) | Streamed from `basemap.nationalmap.gov` for Gettysburg, Trenton and Cowpens |
 | Natural Earth (1:10m land, roads, railroads, rivers, lakes) | Public domain, [naturalearthdata.com](https://www.naturalearthdata.com/about/terms-of-use/) | The fall-back current map under Luzon 1899 (`data/base/luzon1899.json`) |
 | OpenTopoMap | Map style CC-BY-SA, opentopomap.org; data © OpenStreetMap contributors, SRTM | Streamed from `tile.opentopomap.org` for First Ypres, Manila and Luzon 1899 |
 
