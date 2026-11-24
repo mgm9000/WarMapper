@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>__PAGETITLE__</title>
+<meta name="description" content="__DESCRIPTION__">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;600;700&family=Inter:wght@400;600&display=swap">
+<style>
+:root {
+  color-scheme: light;
+  --paper: #F6F1E6;
+  --panel: #EBE3D1;
+  --card: #FBF8F0;
+  --ink: #1C2430;
+  --soft: #4A4436;
+  --brass: #8A5A0A;
+  --line: #D8CDB4;
+  --blue: #1F5FA8;
+  --green: #2F6B3A;
+}
+* { box-sizing: border-box; }
+html { scroll-padding-top: 12px; }
+body { margin: 0; background: var(--paper); color: var(--ink); font: 16px/1.55 Inter, Arial, sans-serif; }
+a { color: var(--blue); overflow-wrap: anywhere; }
+.skip { position: absolute; left: -999px; top: 0; background: var(--ink); color: #fff; padding: 8px 12px; z-index: 10; }
+.skip:focus { left: 8px; top: 8px; }
+.wrap { max-width: 860px; margin: 0 auto; padding: 0 16px; }
+.home { display: inline-block; margin: 16px 0 0; font-size: 14px; font-weight: 600; }
+header { padding: 20px 0 8px; }
+.eyebrow { margin: 0 0 8px; font-size: 12.5px; font-weight: 600; letter-spacing: .16em; text-transform: uppercase; color: var(--brass); }
+h1 { margin: 0; font: 700 clamp(32px, 7.5vw, 56px)/1.05 "Zilla Slab", Georgia, serif; }
+.lead { margin: 14px 0 0; font-size: clamp(17px, 2.4vw, 20px); line-height: 1.45; max-width: 38em; }
+.note { margin: 18px 0 0; padding: 12px 16px; background: var(--panel); border-left: 4px solid var(--brass); border-radius: 4px; color: var(--soft); font-size: 15px; }
+.note p { margin: 0 0 6px; } .note p:last-child { margin: 0; }
+.note b { color: var(--ink); }
+nav.jump { margin: 22px 0 0; }
+nav.jump ul { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+nav.jump a { display: block; padding: 8px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 999px; font-size: 14px; font-weight: 600; text-decoration: none; min-height: 40px; line-height: 1.6; }
+nav.jump a:focus-visible, .day a:focus-visible, .home:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+h2 { margin: 40px 0 14px; font: 600 clamp(22px, 4.6vw, 28px)/1.2 "Zilla Slab", Georgia, serif; }
+.day, .due { background: var(--card); border: 1px solid var(--line); border-radius: 10px; margin: 0 0 16px; padding: 14px 16px 16px; }
+.due { background: var(--panel); border-left: 4px solid var(--brass); padding: 10px 16px; }
+.day.exam { border-left: 4px solid var(--brass); }
+.when { margin: 0 0 4px; font-size: 13.5px; font-weight: 600; color: var(--brass); display: flex; flex-wrap: wrap; gap: 2px 10px; align-items: baseline; }
+.when .num { color: var(--ink); }
+.placeholder { font-weight: 600; font-size: 12px; padding: 1px 7px; border: 1px dashed var(--brass); border-radius: 999px; color: var(--brass); white-space: nowrap; }
+.day h3, .due h3 { margin: 0; font: 600 clamp(19px, 4.4vw, 23px)/1.25 "Zilla Slab", Georgia, serif; overflow-wrap: anywhere; }
+.due h3 { font-size: 18px; }
+h4 { margin: 16px 0 6px; font-size: 12.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--soft); }
+.readings { list-style: none; margin: 0; padding: 0; }
+.readings > li { padding: 10px 0; border-top: 1px solid var(--line); }
+.readings > li:first-child { border-top: 0; padding-top: 2px; }
+.rt { margin: 0; overflow-wrap: anywhere; }
+.meta { margin: 4px 0 0; display: flex; flex-wrap: wrap; gap: 4px 10px; font-size: 13.5px; color: var(--soft); align-items: center; }
+.badge { display: inline-block; padding: 0 8px; border-radius: 4px; font-size: 12px; font-weight: 600; border: 1px solid currentColor; line-height: 1.7; white-space: nowrap; }
+.badge.pd { color: var(--green); }
+.badge.cr { color: #8C2F1E; }
+.badge.nc { color: var(--soft); border-style: dashed; }
+.where { font-weight: 600; }
+.links { margin: 4px 0 0; padding: 0; list-style: none; font-size: 14px; }
+.links li { margin: 2px 0; }
+.enote { margin: 4px 0 0; font-size: 13.5px; color: var(--soft); font-style: italic; }
+.snote { margin: 10px 0 0; font-size: 14.5px; color: var(--soft); }
+.slots { display: grid; gap: 10px; }
+.slot { border: 2px dashed var(--line); border-radius: 8px; padding: 10px 12px; background: var(--paper); }
+.slot.built { border: 2px solid var(--blue); background: #fff; }
+.slot .kind { margin: 0; font-size: 12px; font-weight: 600; letter-spacing: .1em; text-transform: uppercase; color: var(--brass); }
+.slot .st { margin: 0; font: 600 18px/1.25 "Zilla Slab", Georgia, serif; }
+.slot .sd { margin: 2px 0 0; font-size: 14px; color: var(--soft); }
+.slot .state { margin: 6px 0 0; font-size: 14px; font-weight: 600; color: var(--soft); }
+.slot .sub { margin: 4px 0 0; font-size: 14px; color: var(--soft); }
+details { margin: 30px 0 0; padding: 12px 16px; background: var(--panel); border-radius: 8px; font-size: 15px; color: var(--soft); }
+details summary { cursor: pointer; font-weight: 600; color: var(--ink); min-height: 32px; }
+details ul { margin: 8px 0 0; padding-left: 20px; }
+footer { margin: 40px 0 0; padding: 20px 0 36px; border-top: 1px solid var(--line); font-size: 14px; color: var(--soft); }
+footer p { margin: 0 0 8px; }
+@media (min-width: 720px) {
+  .wrap { padding: 0 24px; }
+  .day, .due { padding: 18px 22px 20px; }
+  .slots { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+}
+@media print {
+  body { background: #fff; font-size: 11pt; } nav.jump, .skip, .home { display: none; }
+  .day, .due { break-inside: avoid; }
+}
+</style>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the class days</a>
+<div class="wrap">
+  <a class="home" href="__HOME__">&larr; WarMapper</a>
+  <header>
+__HEADER__
+  </header>
+
+  <main id="main">
+__BODY__
+  </main>
+
+  <footer>
+__FOOTER__
+  </footer>
+</div>
+</body>
+</html>
