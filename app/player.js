@@ -954,10 +954,11 @@ function terrainText(){var X=base.rc&&TRN[base.rc.id],T=base.terrain,st=(X&&X.st
   if(!X||X.state==='failed') return 'The elevation service could not be reached, so this version shows no relief or contours.';
   if(X.state!=='ready') return 'Loading the heights.';
   var iv=[],half=false; st.forEach(function(q){if(q[1]<1)half=true;else if(iv.indexOf(q[1])<0)iv.push(q[1])});
-  return 'Relief, contour lines and spot heights worked out by this page from today\'s elevation data ('+esc(HS.credit)+'), a radar survey of 2000 that measured the tops of buildings as well as the ground. Bumps narrower than about '+(T.open_m||230)+' m (blocks, towers, the Tondo dump) are taken off and the rest smoothed over about '+(T.smooth_m||60)+' m, which leaves the broad lie of the land: today\'s ground, little changed since 1899 away from the shore. '
-    +'Heights are in metres, good to a few metres at best. Where buildings stand thick the ground may read some metres too high. Dotted contours mark low ground where the radar most likely saw a mass of buildings, not a rise: old Manila stands on low, nearly flat ground, so do not read those as hills. No height is written there. '
+  return 'Relief, contour lines and spot heights worked out by this page from today\'s elevation data ('+esc(HS.credit)+')'+(T.about?'. '+esc(T.about)+' ':   // a battle's own words on what its heights are (Cowpens); else Manila's
+     ', a radar survey of 2000 that measured the tops of buildings as well as the ground. Bumps narrower than about '+(T.open_m||230)+' m (blocks, towers, the Tondo dump) are taken off and the rest smoothed over about '+(T.smooth_m||60)+' m, which leaves the broad lie of the land: today\'s ground, little changed since 1899 away from the shore. '
+    +'Heights are in metres, good to a few metres at best. Where buildings stand thick the ground may read some metres too high. Dotted contours mark low ground where the radar most likely saw a mass of buildings, not a rise: old Manila stands on low, nearly flat ground, so do not read those as hills. No height is written there. ')
     +'The closer you look, the more is drawn: contours every '+iv.join(', then ')+' m'+(half?', and closest in dashed form lines every half metre':'')+'; every fifth line is heavier and carries its height; summits are marked with theirs. Read the ridges where the contours bend downhill, the valleys where they bend uphill.'
-    +(trnWide()?' Beyond the dotted line the traced maps of 1899 stop. Only relief, contours and today\'s shore are drawn there, so the map fills the window; the reclaimed land south and north of the sheet is today\'s, not 1899\'s.':'')}
+    +(trnWide()?' '+(T.beyond?esc(T.beyond):'Beyond the dotted line the traced maps of 1899 stop. Only relief, contours and today\'s shore are drawn there, so the map fills the window; the reclaimed land south and north of the sheet is today\'s, not 1899\'s.'):'')}
 function reconDetails(){var R=base.rc,row=function(k,v){return v?'<dt>'+k+'</dt><dd>'+v+'</dd>':''},used=[],h='<h2>'+esc(R.title)+'</h2>';
   h+='<div class="state inferred"><b>A reconstruction, not a period map</b>'+esc(R.about||'Drawn by WarMapper from traced lines.')+'</div>';
   if(R.note) h+='<p>'+esc(R.note)+'</p>';
@@ -967,7 +968,7 @@ function reconDetails(){var R=base.rc,row=function(k,v){return v?'<dt>'+k+'</dt>
     h+='<li><b>'+esc(l.title)+'</b><span class="meta">'+esc(l.method)+' &middot; '+chip(l.confidence)+(l.features?' &middot; '+l.features+(l.features===1?' feature':' features'):'')+'</span><span>'+esc(l.how||'')+'</span>'
       +(l.link?'<a href="'+esc(l.link)+'" target="_blank" rel="noopener">'+esc(l.link_label||'Open the original map')+'</a>':'')+'</li>'});
   h+='</ul><h3>Sources</h3><ul class="srcs">'+WM.srcList(B.sources,used)+'</ul>';
-  return h+'<p class="meta" style="margin-top:12px">Tap any line on the map for its own source, how it was read and how sure it is. Dashed shore lines are low confidence. The lines are in '+esc(R.file||'the battle file')+'.</p>'}
+  return h+'<p class="meta" style="margin-top:12px">Tap any line on the map for its own source, how it was read and how sure it is.'+(R.features.some(function(x){return x.kind==='shore'})?' Dashed shore lines are low confidence.':'')+' The lines are in '+esc(R.file||'the battle file')+'.</p>'}
 /* The period map can be turned down to let today's map show through it. Turned down, only a map's whole-sheet picture shows, so two pictures of one map do not add up. */
 function through(){return opac<1&&!base.current&&!base.own&&!base.sat&&!base.rc}
 function paintFade(){(PICS[base.id]||[]).forEach(function(p){mv.opacity(p.id,opac>=1?1:p.detail?0:opac)});if(series.length)mv.opacity('pic-series',opac);

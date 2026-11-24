@@ -1,0 +1,1524 @@
+{
+"type": "FeatureCollection",
+"name": "cowpens-1781",
+"title": "The Cowpens, January 1781: reconstructed base map (WarMapper)",
+"note": "A WarMapper reconstruction, not a period map: the roads Bearss drew in 1967 as the roads of the battle, fitted to the ground, and beyond his sheet roads of the USGS 1959 sheet on the lines Mills (1825) gives. See pipeline/recon/cowpens_1781.py. [longitude, latitude], WGS 84.",
+"sheet": [
+-81.832,
+35.112,
+-81.778,
+35.148
+],
+"features": [
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-ROAD-FIELD",
+"layer": "road-field",
+"kind": "road",
+"desc": "The Mill Gap road (today the Historic Green River Road) through the field",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S107",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 25,
+"basis": "The park's trace of the road, as OpenStreetMap draws it (S39). Bearss draws the road of the battle here (S107, Plate I): fitted to the ground, his road lies 4 m from the trace at the median, 15 m at the 90th percentile. The 1975 photo map (S109) shows the old road bed on the same line, and SC 11 ran on it in 1959 (S108).",
+"review": "Needs review",
+"class": "main",
+"name": "Mill Gap road"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.80223,
+35.13162
+],
+[
+-81.80482,
+35.1315
+],
+[
+-81.80547,
+35.13159
+],
+[
+-81.80699,
+35.13197
+],
+[
+-81.80891,
+35.13252
+],
+[
+-81.81012,
+35.13294
+],
+[
+-81.81274,
+35.13407
+],
+[
+-81.81357,
+35.13449
+],
+[
+-81.81438,
+35.13513
+],
+[
+-81.81513,
+35.13584
+],
+[
+-81.81881,
+35.141
+],
+[
+-81.81967,
+35.14175
+],
+[
+-81.82024,
+35.14218
+],
+[
+-81.82041,
+35.14231
+],
+[
+-81.82069,
+35.14241
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-ROAD-EAST",
+"layer": "roads-bearss",
+"kind": "road",
+"desc": "The Mill Gap road east of the field, towards Cherokee Ford on the Broad",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S107",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 40,
+"basis": "Bearss's road (S107, Plate I) from where the park's trace ends to the edge of his sheet. Bearss: the Mill Gap road \"crossed the Broad at Cherokee Ford\" (p. 8). A road of the 1959 sheet (S108) and a track on the 1975 photo map (S109) lie on the same line. Landers (1928) draws his \"Old Mill Gap Road\" some 20 degrees further south.",
+"review": "Needs review",
+"class": "main",
+"name": "Mill Gap road"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.80223,
+35.13162
+],
+[
+-81.801907,
+35.131518
+],
+[
+-81.801667,
+35.131539
+],
+[
+-81.80143,
+35.131559
+],
+[
+-81.801195,
+35.13158
+],
+[
+-81.800959,
+35.131596
+],
+[
+-81.800719,
+35.131613
+],
+[
+-81.800475,
+35.131626
+],
+[
+-81.800228,
+35.131642
+],
+[
+-81.799982,
+35.131662
+],
+[
+-81.799741,
+35.131682
+],
+[
+-81.799504,
+35.131704
+],
+[
+-81.799268,
+35.131726
+],
+[
+-81.799029,
+35.131747
+],
+[
+-81.798789,
+35.131768
+],
+[
+-81.798547,
+35.131791
+],
+[
+-81.798415,
+35.131794
+],
+[
+-81.798193,
+35.131792
+],
+[
+-81.798056,
+35.131805
+],
+[
+-81.797917,
+35.131819
+],
+[
+-81.79778,
+35.131837
+],
+[
+-81.797538,
+35.131824
+],
+[
+-81.797192,
+35.131894
+],
+[
+-81.796835,
+35.131944
+],
+[
+-81.79651,
+35.131992
+],
+[
+-81.796189,
+35.132029
+],
+[
+-81.79588,
+35.132076
+],
+[
+-81.795568,
+35.132149
+],
+[
+-81.795248,
+35.132233
+],
+[
+-81.795051,
+35.132269
+],
+[
+-81.794878,
+35.132319
+],
+[
+-81.794682,
+35.13231
+],
+[
+-81.794483,
+35.132298
+],
+[
+-81.794282,
+35.132299
+],
+[
+-81.794059,
+35.132338
+],
+[
+-81.793839,
+35.1324
+],
+[
+-81.793612,
+35.13245
+],
+[
+-81.793377,
+35.132482
+],
+[
+-81.793141,
+35.132517
+],
+[
+-81.7929,
+35.132549
+],
+[
+-81.79266,
+35.132588
+],
+[
+-81.792421,
+35.132628
+],
+[
+-81.792181,
+35.132667
+],
+[
+-81.791941,
+35.132705
+],
+[
+-81.791698,
+35.132737
+],
+[
+-81.791458,
+35.132764
+],
+[
+-81.791221,
+35.132786
+],
+[
+-81.790987,
+35.132805
+],
+[
+-81.790754,
+35.132824
+],
+[
+-81.790521,
+35.132842
+],
+[
+-81.790286,
+35.132867
+],
+[
+-81.790103,
+35.132902
+],
+[
+-81.789916,
+35.132951
+],
+[
+-81.789722,
+35.132993
+],
+[
+-81.789521,
+35.133007
+],
+[
+-81.78933,
+35.133061
+],
+[
+-81.789046,
+35.133109
+],
+[
+-81.788758,
+35.133159
+],
+[
+-81.788429,
+35.133181
+],
+[
+-81.788102,
+35.133238
+],
+[
+-81.787938,
+35.133248
+],
+[
+-81.787759,
+35.133275
+],
+[
+-81.787593,
+35.133278
+],
+[
+-81.787411,
+35.133294
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-ROAD-PACOLET",
+"layer": "roads-bearss",
+"kind": "road",
+"desc": "The road to the Pacolet and Spartanburg",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S107",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 40,
+"basis": "Bearss's road \"To Pacolet River\" (S107, Plate I), the road from present day Spartanburg to Island Ford (p. 8). It lies within about 20 m of old SC 110 on the 1959 sheet (S108) and about 50 m of the road Landers draws south from the field in 1928 (S103).",
+"review": "Needs review",
+"name": "road to the Pacolet"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.815683,
+35.136615
+],
+[
+-81.815719,
+35.136321
+],
+[
+-81.815661,
+35.136177
+],
+[
+-81.81558,
+35.135984
+],
+[
+-81.815503,
+35.135789
+],
+[
+-81.815451,
+35.135662
+],
+[
+-81.815396,
+35.135444
+],
+[
+-81.815363,
+35.135281
+],
+[
+-81.815335,
+35.135159
+],
+[
+-81.815276,
+35.13506
+],
+[
+-81.815211,
+35.134929
+],
+[
+-81.815138,
+35.13475
+],
+[
+-81.81509,
+35.134558
+],
+[
+-81.815048,
+35.134364
+],
+[
+-81.815048,
+35.134202
+],
+[
+-81.815055,
+35.134084
+],
+[
+-81.815052,
+35.133973
+],
+[
+-81.815038,
+35.133858
+],
+[
+-81.815043,
+35.133711
+],
+[
+-81.815027,
+35.13355
+],
+[
+-81.814992,
+35.133391
+],
+[
+-81.814923,
+35.133218
+],
+[
+-81.814909,
+35.133027
+],
+[
+-81.81493,
+35.132831
+],
+[
+-81.814954,
+35.132635
+],
+[
+-81.814978,
+35.132439
+],
+[
+-81.814984,
+35.13224
+],
+[
+-81.814998,
+35.132043
+],
+[
+-81.815018,
+35.131846
+],
+[
+-81.81505,
+35.131648
+],
+[
+-81.815092,
+35.131449
+],
+[
+-81.815143,
+35.131252
+],
+[
+-81.815204,
+35.131059
+],
+[
+-81.815278,
+35.13089
+],
+[
+-81.815318,
+35.130737
+],
+[
+-81.815243,
+35.130624
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-ROAD-ISLAND",
+"layer": "roads-bearss",
+"kind": "road",
+"desc": "The road to Island Ford on the Broad",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S107",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 40,
+"basis": "Bearss's road \"To Island Ford\" (S107, Plate I). It lies within about 25 m of Landers's road \"To Island Ford\" (1928, S103) and of the road north on the 1959 sheet (S108).",
+"review": "Needs review",
+"name": "road to Island Ford"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.819358,
+35.141478
+],
+[
+-81.819498,
+35.14163
+],
+[
+-81.81958,
+35.141776
+],
+[
+-81.819686,
+35.142022
+],
+[
+-81.819817,
+35.142319
+],
+[
+-81.819932,
+35.14262
+],
+[
+-81.820029,
+35.142923
+],
+[
+-81.82011,
+35.143229
+],
+[
+-81.820174,
+35.14346
+],
+[
+-81.82024,
+35.143664
+],
+[
+-81.820221,
+35.143912
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-ROAD-MILLGAP-W",
+"layer": "roads-bearss",
+"kind": "road",
+"desc": "The Mill Gap road west, towards Mill Gap in the mountains",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S107",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 40,
+"basis": "Bearss's road \"To Mill Gap\" (S107, Plate I): the Mill Gap road \"ran northwestwardly into the mountains\" (p. 8). The park's trace follows it to SC 11, and SC 11 of 1959 (S108) runs on it.",
+"review": "Needs review",
+"class": "main",
+"name": "Mill Gap road"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.819389,
+35.141505
+],
+[
+-81.820562,
+35.14189
+],
+[
+-81.82076,
+35.141947
+],
+[
+-81.821011,
+35.142062
+],
+[
+-81.821192,
+35.142136
+],
+[
+-81.821431,
+35.142222
+],
+[
+-81.821592,
+35.142278
+],
+[
+-81.821814,
+35.14231
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-ROAD-GREENRIVER-N",
+"layer": "roads-beyond",
+"kind": "road",
+"desc": "Tarleton's approach: the Green River road north to the Mill Gap road",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S108",
+"method": "traced",
+"confidence": "low",
+"precision_m": 60,
+"basis": "The road of the 1959 sheet (S108) from the end of today's Green River Road north to where Bearss's Mill Gap road leaves his sheet. Landers (1928, S103) names it \"Green River Road\". It is the way between the two that Bearss and Landers both imply; it is not on Bearss's sheet. Gap CG06.",
+"review": "Needs review",
+"class": "main",
+"name": "Green River road"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.787411,
+35.133294
+],
+[
+-81.78704,
+35.132
+],
+[
+-81.7872,
+35.1304
+],
+[
+-81.78744,
+35.129
+],
+[
+-81.78756,
+35.1284
+],
+[
+-81.7877,
+35.127
+],
+[
+-81.788,
+35.126
+],
+[
+-81.7885,
+35.1251
+],
+[
+-81.7892,
+35.1242
+],
+[
+-81.79,
+35.1234
+],
+[
+-81.7905,
+35.12294
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-ROAD-SOUTH",
+"layer": "roads-beyond",
+"kind": "road",
+"desc": "The road to the Pacolet and Spartanburg, south of Bearss's sheet",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S108",
+"method": "traced",
+"confidence": "low",
+"precision_m": 60,
+"basis": "Beyond the edge of Bearss's sheet: the road of the 1959 sheet (S108) on the line Mills's map of 1825 (S110) gives a road leaving the Cowpens crossroads. Picked from the 1959 sheet, which is drawn at 1:62,500 (about 30 m of line). A road of 1959, not a survey of 1781.",
+"review": "Needs review",
+"name": "road to the Pacolet"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.815243,
+35.130624
+],
+[
+-81.8163,
+35.13
+],
+[
+-81.817,
+35.1292
+],
+[
+-81.8176,
+35.1276
+],
+[
+-81.8183,
+35.126
+],
+[
+-81.8188,
+35.1244
+],
+[
+-81.8195,
+35.1228
+],
+[
+-81.8204,
+35.1214
+],
+[
+-81.821,
+35.12
+],
+[
+-81.8213,
+35.118
+],
+[
+-81.821,
+35.116
+],
+[
+-81.8203,
+35.114
+],
+[
+-81.82,
+35.112
+],
+[
+-81.8201,
+35.111
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-ROAD-NORTH",
+"layer": "roads-beyond",
+"kind": "road",
+"desc": "The road to Island Ford, north of Bearss's sheet",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S108",
+"method": "traced",
+"confidence": "low",
+"precision_m": 60,
+"basis": "Beyond the edge of Bearss's sheet: the road of the 1959 sheet (S108) on the line Mills's map of 1825 (S110) gives a road leaving the Cowpens crossroads. Picked from the 1959 sheet, which is drawn at 1:62,500 (about 30 m of line). A road of 1959, not a survey of 1781.",
+"review": "Needs review",
+"name": "road to Island Ford"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.820221,
+35.143912
+],
+[
+-81.8197,
+35.1446
+],
+[
+-81.8194,
+35.1454
+],
+[
+-81.819,
+35.1466
+],
+[
+-81.81864,
+35.1476
+],
+[
+-81.818514,
+35.148
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-ROAD-WEST",
+"layer": "roads-beyond",
+"kind": "road",
+"desc": "The Mill Gap road west of Bearss's sheet",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S108",
+"method": "traced",
+"confidence": "low",
+"precision_m": 60,
+"basis": "Beyond the edge of Bearss's sheet: the road of the 1959 sheet (S108) on the line Mills's map of 1825 (S110) gives a road leaving the Cowpens crossroads. Picked from the 1959 sheet, which is drawn at 1:62,500 (about 30 m of line). A road of 1959, not a survey of 1781.",
+"review": "Needs review",
+"class": "main",
+"name": "Mill Gap road"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.821814,
+35.14231
+],
+[
+-81.822,
+35.14276
+],
+[
+-81.8228,
+35.1432
+],
+[
+-81.824,
+35.1438
+],
+[
+-81.825,
+35.1442
+],
+[
+-81.828,
+35.14556
+],
+[
+-81.831,
+35.1468
+],
+[
+-81.832,
+35.146967
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-ROAD-GREENRIVER-S",
+"layer": "road-approach",
+"kind": "road",
+"desc": "Tarleton's approach: today's Green River Road",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "low",
+"precision_m": 80,
+"basis": "Today's Green River Road (OpenStreetMap, S39), the road the playback brings Tarleton up from Thicketty Creek. It runs on, as a road of 1959 (S108), to the Mill Gap road east of the field. That it is the road of 1781 is the playback's reading (CG06), not a source's.",
+"review": "Needs review",
+"class": "main",
+"name": "Green River road"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.7905,
+35.12294
+],
+[
+-81.78966,
+35.12153
+],
+[
+-81.7892,
+35.12083
+],
+[
+-81.78881,
+35.12036
+],
+[
+-81.78809,
+35.11965
+],
+[
+-81.78522,
+35.11735
+],
+[
+-81.78496,
+35.11705
+],
+[
+-81.78463,
+35.1165
+],
+[
+-81.78412,
+35.11533
+],
+[
+-81.78398,
+35.11489
+],
+[
+-81.78395,
+35.11457
+],
+[
+-81.78402,
+35.11391
+],
+[
+-81.784402,
+35.112
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-STREAM-01",
+"layer": "streams",
+"kind": "stream",
+"desc": "Island Creek",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 30,
+"basis": "Today's stream (OpenStreetMap, S39). Streams keep their beds: these follow the wooded draws of the 1975 photo map (S109) and the blue lines of the 1959 sheet (S108). Bearss puts Morgan's camp in the ravine at the head of the branch east of the park road (S107, p. 8 and Plate I).",
+"review": "Needs review",
+"name": "Island Creek"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.81891,
+35.13384
+],
+[
+-81.82031,
+35.13297
+],
+[
+-81.82142,
+35.13192
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-STREAM-02",
+"layer": "streams",
+"kind": "stream",
+"desc": "Island Creek",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 30,
+"basis": "Today's stream (OpenStreetMap, S39). Streams keep their beds: these follow the wooded draws of the 1975 photo map (S109) and the blue lines of the 1959 sheet (S108). Bearss puts Morgan's camp in the ravine at the head of the branch east of the park road (S107, p. 8 and Plate I).",
+"review": "Needs review",
+"name": "Island Creek"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.82353,
+35.13093
+],
+[
+-81.82457,
+35.1302
+],
+[
+-81.82521,
+35.13017
+],
+[
+-81.82589,
+35.12961
+],
+[
+-81.82716,
+35.12972
+],
+[
+-81.82834,
+35.12869
+],
+[
+-81.83027,
+35.12825
+],
+[
+-81.83076,
+35.12698
+],
+[
+-81.83167,
+35.12612
+],
+[
+-81.832,
+35.125511
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-STREAM-03",
+"layer": "streams",
+"kind": "stream",
+"desc": "Long Branch of Island Creek",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 30,
+"basis": "Today's stream (OpenStreetMap, S39). Streams keep their beds: these follow the wooded draws of the 1975 photo map (S109) and the blue lines of the 1959 sheet (S108). Bearss puts Morgan's camp in the ravine at the head of the branch east of the park road (S107, p. 8 and Plate I).",
+"review": "Needs review",
+"name": "Long Branch of Island Creek"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.81269,
+35.12829
+],
+[
+-81.8095,
+35.12734
+],
+[
+-81.8076,
+35.12539
+],
+[
+-81.80515,
+35.12409
+],
+[
+-81.80515,
+35.12322
+],
+[
+-81.80465,
+35.12161
+],
+[
+-81.80477,
+35.12026
+],
+[
+-81.80446,
+35.11953
+],
+[
+-81.80442,
+35.11873
+],
+[
+-81.80499,
+35.11574
+],
+[
+-81.8052,
+35.11524
+],
+[
+-81.80579,
+35.11489
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-STREAM-05",
+"layer": "streams",
+"kind": "stream",
+"desc": "Big Horse Creek",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 30,
+"basis": "Today's stream (OpenStreetMap, S39). Streams keep their beds: these follow the wooded draws of the 1975 photo map (S109) and the blue lines of the 1959 sheet (S108). Bearss puts Morgan's camp in the ravine at the head of the branch east of the park road (S107, p. 8 and Plate I).",
+"review": "Needs review",
+"name": "Big Horse Creek"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.82369,
+35.14589
+],
+[
+-81.825374,
+35.148
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-STREAM-06",
+"layer": "streams",
+"kind": "stream",
+"desc": "Zekial Creek",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 30,
+"basis": "Today's stream (OpenStreetMap, S39). Streams keep their beds: these follow the wooded draws of the 1975 photo map (S109) and the blue lines of the 1959 sheet (S108). Bearss puts Morgan's camp in the ravine at the head of the branch east of the park road (S107, p. 8 and Plate I).",
+"review": "Needs review",
+"name": "Zekial Creek"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.778,
+35.121898
+],
+[
+-81.77929,
+35.12335
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-STREAM-07",
+"layer": "streams",
+"kind": "stream",
+"desc": "Zekial Creek",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 30,
+"basis": "Today's stream (OpenStreetMap, S39). Streams keep their beds: these follow the wooded draws of the 1975 photo map (S109) and the blue lines of the 1959 sheet (S108). Bearss puts Morgan's camp in the ravine at the head of the branch east of the park road (S107, p. 8 and Plate I).",
+"review": "Needs review",
+"name": "Zekial Creek"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.78034,
+35.12364
+],
+[
+-81.78117,
+35.12412
+],
+[
+-81.78312,
+35.12422
+],
+[
+-81.78429,
+35.12408
+],
+[
+-81.785,
+35.12372
+],
+[
+-81.7858,
+35.12278
+],
+[
+-81.78728,
+35.12225
+],
+[
+-81.78853,
+35.12129
+],
+[
+-81.79215,
+35.12016
+],
+[
+-81.79299,
+35.1191
+],
+[
+-81.79302,
+35.11656
+],
+[
+-81.79331,
+35.11603
+],
+[
+-81.79382,
+35.1157
+],
+[
+-81.79537,
+35.11549
+],
+[
+-81.79726,
+35.11485
+],
+[
+-81.79797,
+35.11485
+],
+[
+-81.79901,
+35.11513
+],
+[
+-81.80031,
+35.115
+],
+[
+-81.80193,
+35.11457
+],
+[
+-81.8045,
+35.1145
+],
+[
+-81.80616,
+35.1149
+],
+[
+-81.80777,
+35.11441
+],
+[
+-81.80829,
+35.11368
+],
+[
+-81.80806,
+35.11271
+],
+[
+-81.80835,
+35.112
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-STREAM-08",
+"layer": "streams",
+"kind": "stream",
+"desc": "A branch",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 30,
+"basis": "Today's stream (OpenStreetMap, S39). Streams keep their beds: these follow the wooded draws of the 1975 photo map (S109) and the blue lines of the 1959 sheet (S108). Bearss puts Morgan's camp in the ravine at the head of the branch east of the park road (S107, p. 8 and Plate I).",
+"review": "Needs review"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.81299,
+35.13577
+],
+[
+-81.81278,
+35.13703
+],
+[
+-81.81218,
+35.13801
+],
+[
+-81.80973,
+35.14071
+],
+[
+-81.8088,
+35.14141
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-STREAM-09",
+"layer": "streams",
+"kind": "stream",
+"desc": "A branch",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 30,
+"basis": "Today's stream (OpenStreetMap, S39). Streams keep their beds: these follow the wooded draws of the 1975 photo map (S109) and the blue lines of the 1959 sheet (S108). Bearss puts Morgan's camp in the ravine at the head of the branch east of the park road (S107, p. 8 and Plate I).",
+"review": "Needs review"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.80195,
+35.13875
+],
+[
+-81.80406,
+35.14008
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-STREAM-10",
+"layer": "streams",
+"kind": "stream",
+"desc": "A branch",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 30,
+"basis": "Today's stream (OpenStreetMap, S39). Streams keep their beds: these follow the wooded draws of the 1975 photo map (S109) and the blue lines of the 1959 sheet (S108). Bearss puts Morgan's camp in the ravine at the head of the branch east of the park road (S107, p. 8 and Plate I).",
+"review": "Needs review"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.82381,
+35.12735
+],
+[
+-81.8274,
+35.12888
+],
+[
+-81.82834,
+35.12869
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "COW81-STREAM-11",
+"layer": "streams",
+"kind": "stream",
+"desc": "A branch",
+"from": "1781-01-17",
+"to": "1781-01-17",
+"source_id": "S39",
+"method": "traced",
+"confidence": "medium",
+"precision_m": 30,
+"basis": "Today's stream (OpenStreetMap, S39). Streams keep their beds: these follow the wooded draws of the 1975 photo map (S109) and the blue lines of the 1959 sheet (S108). Bearss puts Morgan's camp in the ravine at the head of the branch east of the park road (S107, p. 8 and Plate I).",
+"review": "Needs review"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.81471,
+35.14096
+],
+[
+-81.81396,
+35.14149
+],
+[
+-81.81336,
+35.14159
+],
+[
+-81.81055,
+35.14173
+],
+[
+-81.8088,
+35.14141
+],
+[
+-81.80684,
+35.14206
+],
+[
+-81.80578,
+35.14206
+],
+[
+-81.80468,
+35.14246
+],
+[
+-81.80461,
+35.14159
+],
+[
+-81.80406,
+35.14008
+],
+[
+-81.805,
+35.13513
+],
+[
+-81.80462,
+35.13412
+]
+]
+}
+}
+]
+}
