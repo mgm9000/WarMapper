@@ -350,7 +350,7 @@ Elsewhere in the file the player also reads:
 - `nations`: `{"name", "short"}` gives a nation its own name in the panel ("Hessian"); with `code`, `colour` (and
   `dark`, `paper` for the dark theme and for period maps) its units get their own colour and the panel lists
   units by nation.
-- On a label, `show`: `current` (the default: drawn where today's map shows), `period`, `both`, or `recon` (drawn only on a reconstructed base map, in period lettering: the names read from its source maps; a reconstructed base draws no other labels).
+- On a label, `show`: `current` (the default: drawn where today's map shows), `period`, `both`, or `recon` (drawn only on a reconstructed base map, in period lettering: the names read from its source maps; a reconstructed base draws no other labels), or `far`: a place too far off to zoom out to (the nearest towns of the time, for orientation). While it is off screen it is named at the edge of the map, on the line from the middle of the screen towards it, with an arrow and its straight-line distance in miles from the middle of the screen; on screen it is drawn as a town. It is named on every base, a reconstruction too, kept clear of the buttons over the map, and turned off with place names. Its point is not checked against the battle's extent.
 - On a step, `along: true`: the step's line is the path the unit moves along during the step.
 - On a step, `march: true`: with nothing on record between the previous step and this one, the unit leaves when the previous step ends
   and moves here at the battle's `rules.pace`, then waits ("Arrived: time inferred"), instead of drifting slowly across the whole gap.

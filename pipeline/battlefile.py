@@ -13,7 +13,7 @@ LEVELS = ['high', 'medium', 'low']
 LABEL_KINDS = ['road', 'water', 'area', 'town', 'place', 'wood', 'landmark', 'ridge', 'hill']
 LINE_KINDS = ['road', 'rail', 'water', 'former-water']
 AREA_KINDS = ['wood', 'water']
-LABEL_SHOWS = ['current', 'period', 'both', 'recon']
+LABEL_SHOWS = ['current', 'period', 'both', 'recon', 'far']   # far: a place too far off to zoom out to, named at the edge of the map
 # reconstructed base maps (21 Nov 2026): what a traced feature is, how it was read, and the shapes it can take
 RECON_KINDS = ['sea', 'shore', 'river', 'stream', 'water', 'wall', 'road', 'rail', 'breakwater', 'blockhouse', 'detail', 'entrenchment', 'ink']
 RECON_METHODS = ['traced', 'AI-extracted', 'interpolated']
@@ -257,7 +257,8 @@ def validate(b, folder=None):
     for l in b['labels']:
         need(l, ['text', 'at', 'kind'], 'label %r' % l.get('text'))
         if l.get('kind') not in LABEL_KINDS: bad.append('label %r: unknown kind %r' % (l.get('text'), l.get('kind')))
-        if 'at' in l: point_ok(l['at'], 'label %r' % l.get('text'))
+        if 'at' in l and l.get('show') != 'far': point_ok(l['at'], 'label %r' % l.get('text'))
+        elif 'at' in l and not (isinstance(l['at'], list) and len(l['at']) == 2 and -180 <= l['at'][0] <= 180 and -90 <= l['at'][1] <= 90): bad.append('label %r: not a [longitude, latitude] point' % l.get('text'))
         if l.get('show') and l['show'] not in LABEL_SHOWS: bad.append('label %r: show must be one of %s' % (l.get('text'), ', '.join(LABEL_SHOWS)))
     # reconstructed base maps: every feature says what it is, where it came from, how it was read and how sure it is
     packed = re.compile(r'^-?\d+,-?\d+(;-?\d+,-?\d+)+$')

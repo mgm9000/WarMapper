@@ -79,6 +79,8 @@ button{font:inherit;color:inherit}
 .hm{fill:var(--relief);stroke:var(--map-halo);stroke-width:1.5px;paint-order:stroke}
 .pl{font-size:11px;fill:var(--map-text);stroke:var(--map-halo);stroke-width:3px}
 .pl.big{font-size:12.5px;font-weight:600}
+.pl.far.d{font-size:11px;font-weight:400;opacity:.8}
+.farr{fill:var(--map-text);stroke:var(--map-halo);stroke-width:2;paint-order:stroke}
 .wl{font-size:10.5px;font-style:italic;fill:var(--map-text);stroke:var(--map-halo);stroke-width:3px;opacity:.85}
 .lm{font-size:11.5px;font-weight:600;fill:var(--map-text);stroke:var(--map-halo);stroke-width:3.5px}
 .mapwrap.paper .lm{font-size:11px;font-weight:400;font-style:italic;fill:var(--m-ink);stroke:var(--m-halo);stroke-width:3px;opacity:.85}
@@ -355,6 +357,7 @@ details.umd>summary{font-size:13.5px;font-weight:600;color:var(--fg)}
 .mapwrap.recon #ov .sl.w{fill:#3d5a63;font-size:13.5px;letter-spacing:.08em}
 .mapwrap.recon #ov .lm,.mapwrap.recon #ov .pl{font-size:12px;font-style:italic;font-weight:400;stroke-width:2.6px;opacity:.92}
 .mapwrap.recon #ov .pl.big{font-size:13px}
+.mapwrap.recon #ov .farr{fill:#33291f;stroke:#efe4c8}
 .mapwrap.recon #ov .wl{font-size:11.5px;font-style:italic;font-weight:400;fill:#5a4a30;stroke-width:2.4px;opacity:.85}   /* the engineer's words for the ground: rice field, woods, open high ground */
 .mapwrap.recon #ov circle{fill:#33291f}
 /* the list of layers in the map details */
