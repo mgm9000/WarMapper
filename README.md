@@ -17,7 +17,8 @@ The playbacks are served with GitHub Pages at https://mgm9000.github.io/WarMappe
 | `index.html`, `assets/` | The landing page for the website and its preview images. |
 | `playbacks/` | One folder per battle: its battle file (`battle.json`), the script that writes it (`prep.py`), its period-map images, and the built page (`index.html`). |
 | `app/` | The playback, the same for every battle: `page.html` (the page), `player.js` (the rules of a playback), `core.js` (reading a battle file, the map, the clock), `core.css`, and the map library in `app/vendor/`. |
-| `tools/` | `export_battles.py`, which writes every battle file from the workbook and checks it, and `build.py`, which builds the pages. |
+| `courses/` | Course pages: `page.html` (the template), and one folder per course with `course.json` (its class days, readings and playback slots) and the built `index.html`. See `courses/README.md`. |
+| `tools/` | `export_battles.py`, which writes every battle file from the workbook and checks it, and `build.py`, which builds the battle pages and the course pages. |
 | `docs/` | `battle-file.md`: the layout of a battle file. |
 | `data/` | **`WarMapper battle data.xlsx`, the master copy of the battle data**; `base/`, the current map under each battle; `recon/`, the lines of each reconstructed base map as GeoJSON (Manila 1899); `osm/`, the OpenStreetMap extracts those were cut from (Natural Earth for Luzon 1899); `legacy/`, the two older workbooks. |
 | `pipeline/` | `battlefile.py` (checks a battle file against the format), `basemaps.py` (cuts the current maps from the extracts), `pictures.py` (cuts the period-map pictures from the full scans), `georef/` (how the period maps were fitted to the ground), `recon/` (how a reconstructed base map's lines were read from period maps), and `legacy/` (retired scripts). |

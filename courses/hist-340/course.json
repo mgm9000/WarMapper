@@ -1,0 +1,1018 @@
+{
+  "format": "warmapper-course/1",
+  "id": "hist-340",
+  "code": "HIST 340",
+  "title": "U.S. Military History",
+  "audience": "service members and students",
+  "syllabus": {
+    "file": "HIST_340_US_Mil_Hist_syllabus_winter_2025.docx",
+    "header_says": "Winter 2024",
+    "dates_match": 2025,
+    "hosted": false,
+    "note": "The syllabus is not hosted here. Its header says Winter 2024, but its dates fall on Tuesdays and Thursdays in 2025."
+  },
+  "meets": {
+    "weekdays": [
+      "Tuesday",
+      "Thursday"
+    ],
+    "time": "08:30–09:50"
+  },
+  "term": {
+    "status": "Term dates are not yet known.",
+    "date_policy": "Class days are keyed by number and weekday. Every date is a placeholder (taken from the syllabus, which falls on Tuesdays and Thursdays) and is marked \"update\". Change the date in this file and rebuild.",
+    "quizzes": "Weekly quizzes are due on most Mondays at 23:59 (Canvas); they are not class days."
+  },
+  "texts": [
+    {
+      "title": "U.S. Army Center of Military History, American Military History, volumes 1 and 2. Washington, D.C., 2009 (revised edition).",
+      "rights": "public domain"
+    },
+    {
+      "title": "Charles B. MacDonald, Company Commander: The Classic Infantry Memoir of WWII",
+      "rights": "in copyright"
+    }
+  ],
+  "reading_rules": "Readings are text and links only. American Military History chapters link to the Center of Military History. Everything else that is on Canvas, or is a book, is named with no link. Nothing copyrighted is hosted.",
+  "syllabus_flags": [
+    "The syllabus header says Winter 2024; its dates match 2025.",
+    "Jan. 9 reads \"chapter 1 (19-43)\". In the 2009 volume 1 those pages are chapter 2, \"The Beginnings\"; chapter 1 is the introduction.",
+    "Jan. 14 gives the Washington letter to Hancock as \"393-40\" (the end page looks cut off).",
+    "The second paper (March 6) is noted under Feb. 27; March 6 is also a class day.",
+    "Jan. 22 (first paper) is not a class day."
+  ],
+  "entries": [
+    {
+      "id": "c01",
+      "kind": "class",
+      "number": 1,
+      "part": "Part I: From the Beginnings through the American Revolutionary War",
+      "weekday": "Tuesday",
+      "date": "2025-01-07",
+      "date_status": "placeholder: update",
+      "title": "Introduction to US military history: What does military history encompass? What are the central themes of U.S. military history?",
+      "syllabus_heading": "Jan. 7: Introduction to US military history: What does military history encompass? What are the central themes of U.S. military history?",
+      "syllabus_reading_line": "Read: American Military History, vol. 1, preface and introduction (xv-17)",
+      "readings": [
+        {
+          "id": "r-0107-1",
+          "text": "American Military History, vol. 1, preface and introduction (xv-17)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 1 (PDF, 2009 edition, opens at the start of this reading)",
+              "url": "https://history.army.mil/Portals/143/Images/Publications/Publication%20By%20Title%20Images/A%20Titles%20PDF/CMH_Pub_30-21.pdf#page=16"
+            },
+            {
+              "label": "Center of Military History catalog page",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-I/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c02",
+      "kind": "class",
+      "number": 2,
+      "part": "Part I: From the Beginnings through the American Revolutionary War",
+      "weekday": "Thursday",
+      "date": "2025-01-09",
+      "date_status": "placeholder: update",
+      "title": "The Beginnings: the military in colonial America",
+      "syllabus_heading": "Jan. 9: The Beginnings: the military in colonial America",
+      "syllabus_reading_line": "Read: American Military History, vol. 1, chapter 1 (19-43); George Washington to Robert Dinwiddie, October 11-14, 1755, from The Papers of George Washington, Colonial Series, II (1983), 101-108.",
+      "readings": [
+        {
+          "id": "r-0109-1",
+          "text": "American Military History, vol. 1, chapter 1 (19-43)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 1 (PDF, 2009 edition, opens at the start of this reading)",
+              "url": "https://history.army.mil/Portals/143/Images/Publications/Publication%20By%20Title%20Images/A%20Titles%20PDF/CMH_Pub_30-21.pdf#page=38"
+            },
+            {
+              "label": "Center of Military History catalog page",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-I/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          },
+          "editor_note": "The syllabus calls this chapter 1; in the 2009 volume 1, pages 19 to 43 are chapter 2, \"The Beginnings\" (chapter 1 is the introduction, pages 1 to 18)."
+        },
+        {
+          "id": "r-0109-2",
+          "text": "George Washington to Robert Dinwiddie, October 11-14, 1755, from The Papers of George Washington, Colonial Series, II (1983), 101-108.",
+          "kind": "primary source",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "not confirmed",
+            "basis": "A modern edited volume of Washington's papers. The letter itself is old, but the edition's editing may not be; not checked. Canvas only.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [
+        "For class make sure to have a copy of Washington's letter to Dinwiddie that you can consult (whether printed out or on a device)."
+      ],
+      "playbacks": []
+    },
+    {
+      "id": "c03",
+      "kind": "class",
+      "number": 3,
+      "part": "Part I: From the Beginnings through the American Revolutionary War",
+      "weekday": "Tuesday",
+      "date": "2025-01-14",
+      "date_status": "placeholder: update",
+      "title": "American Revolutionary War (day 1)",
+      "syllabus_heading": "Jan. 14: American Revolutionary War (day 1)",
+      "syllabus_reading_line": "Read: American Military History, vol. 1, chapter 3 (45-74); George Washington, General Orders of July 4, 1775, Papers of George Washington, Revolutionary War Series, I, 54; and George Washington, Letter \"To John Hancock [President of Congress],\" September 25, 1776, Papers of George Washington, Revolutionary War Series, VI, 393-40. Also, an example of a \"return\" from the Seven Years War: The Papers of George Washington, Colonial Series, III (1984), 428-29.",
+      "readings": [
+        {
+          "id": "r-0114-1",
+          "text": "American Military History, vol. 1, chapter 3 (45-74)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 1 (PDF, 2009 edition, opens at the start of this reading)",
+              "url": "https://history.army.mil/Portals/143/Images/Publications/Publication%20By%20Title%20Images/A%20Titles%20PDF/CMH_Pub_30-21.pdf#page=64"
+            },
+            {
+              "label": "Center of Military History catalog page",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-I/"
+            },
+            {
+              "label": "Chapter 3 as a web page (the older 1989 edition: its page numbers differ from the syllabus)",
+              "url": "https://www.army.mil/cmh-pg/books/amh/amh-03.htm"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          },
+          "source_ids": [
+            "S86"
+          ]
+        },
+        {
+          "id": "r-0114-2",
+          "text": "George Washington, General Orders of July 4, 1775, Papers of George Washington, Revolutionary War Series, I, 54",
+          "kind": "primary source",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "not confirmed",
+            "basis": "A modern edited volume of Washington's papers. The letter itself is old, but the edition's editing may not be; not checked. Canvas only.",
+            "hosted": false
+          }
+        },
+        {
+          "id": "r-0114-3",
+          "text": "George Washington, Letter \"To John Hancock [President of Congress],\" September 25, 1776, Papers of George Washington, Revolutionary War Series, VI, 393-40.",
+          "kind": "primary source",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "not confirmed",
+            "basis": "A modern edited volume of Washington's papers. The letter itself is old, but the edition's editing may not be; not checked. Canvas only.",
+            "hosted": false
+          },
+          "editor_note": "The syllabus prints the pages as \"393-40\"; the end page is probably cut off (not checked)."
+        },
+        {
+          "id": "r-0114-4",
+          "text": "an example of a \"return\" from the Seven Years War: The Papers of George Washington, Colonial Series, III (1984), 428-29.",
+          "kind": "primary source",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "not confirmed",
+            "basis": "A modern edited volume of Washington's papers. The letter itself is old, but the edition's editing may not be; not checked. Canvas only.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c04",
+      "kind": "class",
+      "number": 4,
+      "part": "Part I: From the Beginnings through the American Revolutionary War",
+      "weekday": "Thursday",
+      "date": "2025-01-16",
+      "date_status": "placeholder: update",
+      "title": "American Revolutionary War (day 2)",
+      "syllabus_heading": "Jan 16: American Revolutionary War (day 2)",
+      "syllabus_reading_line": "Read: American Military History, vol. 1, chapter 4 (75-106); and Christopher Ward, \"Before Cowpens\" and \"Cowpens,\" chs. 68-69, The War of the Revolution II (1952), 748-762 (in a single file: war_cowpens.pdf).",
+      "readings": [
+        {
+          "id": "r-0116-1",
+          "text": "American Military History, vol. 1, chapter 4 (75-106)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 1 (PDF, 2009 edition, opens at the start of this reading)",
+              "url": "https://history.army.mil/Portals/143/Images/Publications/Publication%20By%20Title%20Images/A%20Titles%20PDF/CMH_Pub_30-21.pdf#page=94"
+            },
+            {
+              "label": "Center of Military History catalog page",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-I/"
+            },
+            {
+              "label": "Chapter 4 as a web page (the older 1989 edition: its page numbers differ from the syllabus)",
+              "url": "https://www.army.mil/cmh-pg/books/amh/amh-04.htm"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          },
+          "source_ids": [
+            "S87"
+          ]
+        },
+        {
+          "id": "r-0116-2",
+          "text": "Christopher Ward, \"Before Cowpens\" and \"Cowpens,\" chs. 68-69, The War of the Revolution II (1952), 748-762 (in a single file: war_cowpens.pdf).",
+          "kind": "secondary history",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "in copyright",
+            "basis": "Macmillan, 1952. In copyright: read for cross-checking and cited by page, never hosted. Canvas only.",
+            "hosted": false
+          },
+          "source_ids": [
+            "S92"
+          ]
+        }
+      ],
+      "syllabus_notes": [
+        ">>>> First paper due Jan. 22, 11:59 pm"
+      ],
+      "playbacks": [
+        {
+          "id": "cowpens",
+          "kind": "battle",
+          "title": "Battle of Cowpens",
+          "dates": "17 January 1781",
+          "amh": "American Military History, vol. 1, pp. 96-98 (map 11 on p. 97)",
+          "playback": null,
+          "parent": null
+        },
+        {
+          "id": "greene-carolina-campaign",
+          "kind": "campaign",
+          "title": "Greene’s campaign in the Carolinas (the Guilford Courthouse campaign)",
+          "dates": "18 January to 15 March 1781",
+          "amh": "American Military History, vol. 1, pp. 95-98",
+          "playback": null,
+          "parent": null,
+          "children": [
+            "guilford-courthouse"
+          ]
+        },
+        {
+          "id": "guilford-courthouse",
+          "kind": "battle",
+          "title": "Battle of Guilford Courthouse",
+          "dates": "15 March 1781",
+          "amh": "American Military History, vol. 1, p. 98",
+          "playback": null,
+          "parent": "greene-carolina-campaign"
+        }
+      ]
+    },
+    {
+      "id": "c05",
+      "kind": "class",
+      "number": 5,
+      "part": "Part II: From the early Republic through the Spanish American War",
+      "weekday": "Tuesday",
+      "date": "2025-01-21",
+      "date_status": "placeholder: update",
+      "title": "From the early years of the Republic and up to the Mexican War",
+      "syllabus_heading": "Jan. 21: From the early years of the Republic and up to the Mexican War",
+      "syllabus_reading_line": "Read: American Military History, vol. 1, skim chapters 5 to 7 (107-76); George Washington \"Calls for a Standing Army, 1783,\" and excerpts from the Constitution and Bill of Rights, as reproduced in John Whiteclay Chambers II and G. Kurt Piehler, eds., Major Problems in American Military History (1999), 101-102; and excerpts from the Militia Act of 1792, from Walter Millis, ed., American Military Thought, 60-7 (read especially Chap. XXXVIII and Chap. XXXIX, section 1).",
+      "readings": [
+        {
+          "id": "r-0121-1",
+          "text": "American Military History, vol. 1, skim chapters 5 to 7 (107-76)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 1 (PDF, 2009 edition, opens at the start of this reading)",
+              "url": "https://history.army.mil/Portals/143/Images/Publications/Publication%20By%20Title%20Images/A%20Titles%20PDF/CMH_Pub_30-21.pdf#page=126"
+            },
+            {
+              "label": "Center of Military History catalog page",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-I/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        },
+        {
+          "id": "r-0121-2",
+          "text": "George Washington \"Calls for a Standing Army, 1783,\" and excerpts from the Constitution and Bill of Rights, as reproduced in John Whiteclay Chambers II and G. Kurt Piehler, eds., Major Problems in American Military History (1999), 101-102",
+          "kind": "primary sources in an anthology",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "in copyright",
+            "basis": "Anthology (1999). Its selection and notes are in copyright, even where a document inside it is old. Canvas only.",
+            "hosted": false
+          }
+        },
+        {
+          "id": "r-0121-3",
+          "text": "excerpts from the Militia Act of 1792, from Walter Millis, ed., American Military Thought, 60-7 (read especially Chap. XXXVIII and Chap. XXXIX, section 1)",
+          "kind": "primary source in an anthology",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "not confirmed",
+            "basis": "Edited volume (the syllabus gives no year for this citation; 1966 on Jan 30). Presumed in copyright; not checked. Canvas only.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "due-paper-1",
+      "kind": "due",
+      "title": "First paper due (a topic related to the American Revolutionary War)",
+      "weekday": "Wednesday",
+      "date": "2025-01-22",
+      "date_status": "placeholder: update",
+      "time": "23:59",
+      "syllabus_line": "January 22: First paper",
+      "after": "c05",
+      "note": "Not a class day. The syllabus gives a 48-hour grace period for both papers."
+    },
+    {
+      "id": "c06",
+      "kind": "class",
+      "number": 6,
+      "part": "Part II: From the early Republic through the Spanish American War",
+      "weekday": "Thursday",
+      "date": "2025-01-23",
+      "date_status": "placeholder: update",
+      "title": "The Mexican War",
+      "syllabus_heading": "Jan. 23: The Mexican War",
+      "syllabus_reading_line": "Read: American Military History, vol. 1, ch. 8 (177-198)",
+      "readings": [
+        {
+          "id": "r-0123-1",
+          "text": "American Military History, vol. 1, ch. 8 (177-198)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 1 (PDF, 2009 edition, opens at the start of this reading)",
+              "url": "https://history.army.mil/Portals/143/Images/Publications/Publication%20By%20Title%20Images/A%20Titles%20PDF/CMH_Pub_30-21.pdf#page=196"
+            },
+            {
+              "label": "Center of Military History catalog page",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-I/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c07",
+      "kind": "class",
+      "number": 7,
+      "part": "Part II: From the early Republic through the Spanish American War",
+      "weekday": "Tuesday",
+      "date": "2025-01-28",
+      "date_status": "placeholder: update",
+      "title": "The Civil War",
+      "syllabus_heading": "Jan 28: The Civil War",
+      "syllabus_reading_line": "Read: American Military History, vol. 1, chapters 9 and 10 (199-251); and miscellaneous documents regarding Confederate strategy by General Lee and President Jefferson Davis, from John Whiteclay Chambers II and G. Kurt Piehler, eds., Major Problems in American Military History (1999), 154-160.",
+      "readings": [
+        {
+          "id": "r-0128-1",
+          "text": "American Military History, vol. 1, chapters 9 and 10 (199-251)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 1 (PDF, 2009 edition, opens at the start of this reading)",
+              "url": "https://history.army.mil/Portals/143/Images/Publications/Publication%20By%20Title%20Images/A%20Titles%20PDF/CMH_Pub_30-21.pdf#page=218"
+            },
+            {
+              "label": "Center of Military History catalog page",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-I/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          },
+          "source_ids": [
+            "S88",
+            "S89"
+          ]
+        },
+        {
+          "id": "r-0128-2",
+          "text": "miscellaneous documents regarding Confederate strategy by General Lee and President Jefferson Davis, from John Whiteclay Chambers II and G. Kurt Piehler, eds., Major Problems in American Military History (1999), 154-160.",
+          "kind": "primary sources in an anthology",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "in copyright",
+            "basis": "Anthology (1999). Its selection and notes are in copyright, even where a document inside it is old. Canvas only.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c08",
+      "kind": "class",
+      "number": 8,
+      "part": "Part II: From the early Republic through the Spanish American War",
+      "weekday": "Thursday",
+      "date": "2025-01-30",
+      "date_status": "placeholder: update",
+      "title": "The Civil War (cont.)",
+      "syllabus_heading": "Jan. 30: The Civil War (cont.)",
+      "syllabus_reading_line": "Read: American Military History, vol. 1, chapters 11 and 12 (253-305); and miscellaneous documents regarding Union strategy and the conduct of the war by General Grant and General Sherman, from John Whiteclay Chambers II and G. Kurt Piehler, eds., Major Problems in American Military History (1999), 166-168; and letters between the same from Walter Millis, ed., American Military Thought (1966), 143-160.",
+      "readings": [
+        {
+          "id": "r-0130-1",
+          "text": "American Military History, vol. 1, chapters 11 and 12 (253-305)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 1 (PDF, 2009 edition, opens at the start of this reading)",
+              "url": "https://history.army.mil/Portals/143/Images/Publications/Publication%20By%20Title%20Images/A%20Titles%20PDF/CMH_Pub_30-21.pdf#page=272"
+            },
+            {
+              "label": "Center of Military History catalog page",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-I/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          },
+          "source_ids": [
+            "S90",
+            "S91"
+          ]
+        },
+        {
+          "id": "r-0130-2",
+          "text": "miscellaneous documents regarding Union strategy and the conduct of the war by General Grant and General Sherman, from John Whiteclay Chambers II and G. Kurt Piehler, eds., Major Problems in American Military History (1999), 166-168",
+          "kind": "primary sources in an anthology",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "in copyright",
+            "basis": "Anthology (1999). Its selection and notes are in copyright, even where a document inside it is old. Canvas only.",
+            "hosted": false
+          },
+          "source_ids": [
+            "S93"
+          ]
+        },
+        {
+          "id": "r-0130-3",
+          "text": "letters between the same from Walter Millis, ed., American Military Thought (1966), 143-160.",
+          "kind": "primary sources in an anthology",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "not confirmed",
+            "basis": "Edited volume (1966). Presumed in copyright; not checked. Canvas only.",
+            "hosted": false
+          },
+          "source_ids": [
+            "S94"
+          ]
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": [
+        {
+          "id": "atlanta-campaign",
+          "kind": "campaign",
+          "title": "The Atlanta campaign",
+          "dates": "4 May to 2 September 1864 (the fall of Atlanta)",
+          "amh": "American Military History, vol. 1, pp. 292-295 (map 36 on p. 294)",
+          "playback": null,
+          "parent": null,
+          "children": []
+        }
+      ]
+    },
+    {
+      "id": "c09",
+      "kind": "class",
+      "number": 9,
+      "part": "Part II: From the early Republic through the Spanish American War",
+      "weekday": "Tuesday",
+      "date": "2025-02-04",
+      "date_status": "placeholder: update",
+      "title": "The Indian Wars, frontier policing and constabulary responsibilities",
+      "syllabus_heading": "Feb. 4: The Indian Wars, frontier policing and constabulary responsibilities",
+      "syllabus_reading_line": "Read: American Military History, vol. 1, chapters 13 and 14 (307-346); and the short excerpt from A Webfoot Volunteer Soldier’s Diary. This is the diary of William W. Hilleary, who served at Fort Hoskins (now a state park northwest of Corvallis) in 1865 – this idea is to get a small sense of what service in such an outpost was like.",
+      "readings": [
+        {
+          "id": "r-0204-1",
+          "text": "American Military History, vol. 1, chapters 13 and 14 (307-346)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 1 (PDF, 2009 edition, opens at the start of this reading)",
+              "url": "https://history.army.mil/Portals/143/Images/Publications/Publication%20By%20Title%20Images/A%20Titles%20PDF/CMH_Pub_30-21.pdf#page=326"
+            },
+            {
+              "label": "Center of Military History catalog page",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-I/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        },
+        {
+          "id": "r-0204-2",
+          "text": "the short excerpt from A Webfoot Volunteer Soldier’s Diary",
+          "kind": "primary source (diary)",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "not confirmed",
+            "basis": "Where and when the diary was published is not in the syllabus; rights not checked. Canvas only.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": [],
+      "syllabus_reading_context": "This is the diary of William W. Hilleary, who served at Fort Hoskins (now a state park northwest of Corvallis) in 1865 – this idea is to get a small sense of what service in such an outpost was like"
+    },
+    {
+      "id": "c10",
+      "kind": "class",
+      "number": 10,
+      "part": "Part II: From the early Republic through the Spanish American War",
+      "weekday": "Thursday",
+      "date": "2025-02-06",
+      "date_status": "placeholder: update",
+      "title": "Spanish-American War and U.S. emergence as a world power",
+      "syllabus_heading": "Feb. 6: Spanish-American War and U.S. emergence as a world power",
+      "syllabus_reading_line": "Read: American Military History, vol. 1, chapters 15 to end (347-396).",
+      "readings": [
+        {
+          "id": "r-0206-1",
+          "text": "American Military History, vol. 1, chapters 15 to end (347-396)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 1 (PDF, 2009 edition, opens at the start of this reading)",
+              "url": "https://history.army.mil/Portals/143/Images/Publications/Publication%20By%20Title%20Images/A%20Titles%20PDF/CMH_Pub_30-21.pdf#page=366"
+            },
+            {
+              "label": "Center of Military History catalog page",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-I/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c11",
+      "kind": "class",
+      "number": 11,
+      "part": "Part II: From the early Republic through the Spanish American War",
+      "weekday": "Tuesday",
+      "date": "2025-02-11",
+      "date_status": "placeholder: update",
+      "title": "In-class midterm (bring a blue-green book to write in. Can be purchased in DuckStores)",
+      "syllabus_heading": "Feb. 11: In-class midterm (bring a blue-green book to write in. Can be purchased in DuckStores)",
+      "syllabus_reading_line": "",
+      "readings": [],
+      "syllabus_notes": [],
+      "playbacks": [],
+      "exam": true
+    },
+    {
+      "id": "c12",
+      "kind": "class",
+      "number": 12,
+      "part": "Part III: The US Army in the era of the two world wars",
+      "weekday": "Thursday",
+      "date": "2025-02-13",
+      "date_status": "placeholder: update",
+      "title": "World War I",
+      "syllabus_heading": "Feb. 13: World War I",
+      "syllabus_reading_line": "Read: American Military History, vol. 2, prologue and chapters 1 and 2 (1-78); and John Pershing, \"Against Amalgamation,\" and AEF Combat Instructions, 1918,\" in John Whiteclay Chambers II and G. Kurt Piehler, eds., Major Problems in American Military History (1999), 255-7.",
+      "readings": [
+        {
+          "id": "r-0213-1",
+          "text": "American Military History, vol. 2, prologue and chapters 1 and 2 (1-78)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 2 (Center of Military History catalog page, with the PDF)",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-II/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        },
+        {
+          "id": "r-0213-2",
+          "text": "John Pershing, \"Against Amalgamation,\" and AEF Combat Instructions, 1918,\" in John Whiteclay Chambers II and G. Kurt Piehler, eds., Major Problems in American Military History (1999), 255-7.",
+          "kind": "primary sources in an anthology",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "in copyright",
+            "basis": "Anthology (1999). Its selection and notes are in copyright, even where a document inside it is old. Canvas only.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c13",
+      "kind": "class",
+      "number": 13,
+      "part": "Part III: The US Army in the era of the two world wars",
+      "weekday": "Tuesday",
+      "date": "2025-02-18",
+      "date_status": "placeholder: update",
+      "title": "The interwar years and the beginning of WWII",
+      "syllabus_heading": "Feb. 18: The interwar years and the beginning of WWII",
+      "syllabus_reading_line": "Read: American Military History, vol. 2, chapters 2 and 3 (55-105)",
+      "readings": [
+        {
+          "id": "r-0218-1",
+          "text": "American Military History, vol. 2, chapters 2 and 3 (55-105)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 2 (Center of Military History catalog page, with the PDF)",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-II/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c14",
+      "kind": "class",
+      "number": 14,
+      "part": "Part III: The US Army in the era of the two world wars",
+      "weekday": "Thursday",
+      "date": "2025-02-20",
+      "date_status": "placeholder: update",
+      "title": "WWII: Grand Strategy and the European theatre",
+      "syllabus_heading": "Feb. 20: WWII: Grand Strategy and the European theatre",
+      "syllabus_reading_line": "Read: American Military History, vol. 2, chapters 4 and 5 (107-68)",
+      "readings": [
+        {
+          "id": "r-0220-1",
+          "text": "American Military History, vol. 2, chapters 4 and 5 (107-68)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 2 (Center of Military History catalog page, with the PDF)",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-II/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c15",
+      "kind": "class",
+      "number": 15,
+      "part": "Part III: The US Army in the era of the two world wars",
+      "weekday": "Tuesday",
+      "date": "2025-02-25",
+      "date_status": "placeholder: update",
+      "title": "WWII: The Pacific War",
+      "syllabus_heading": "Feb. 25: WWII: The Pacific War",
+      "syllabus_reading_line": "Read: American Military History, vol. 2, chapter 6 (169-202)",
+      "readings": [
+        {
+          "id": "r-0225-1",
+          "text": "American Military History, vol. 2, chapter 6 (169-202)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 2 (Center of Military History catalog page, with the PDF)",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-II/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c16",
+      "kind": "class",
+      "number": 16,
+      "part": "Part III: The US Army in the era of the two world wars",
+      "weekday": "Thursday",
+      "date": "2025-02-27",
+      "date_status": "placeholder: update",
+      "title": "U.S. Army Operational Methods and Combat in the European and Pacific Theatres",
+      "syllabus_heading": "Feb. 27: U.S. Army Operational Methods and Combat in the European and Pacific Theatres",
+      "syllabus_reading_line": "Read: Keep reading WWII chapters of American Military History, vol. 2; and finish MacDonald, Company Commander.",
+      "readings": [
+        {
+          "id": "r-0227-1",
+          "text": "Keep reading WWII chapters of American Military History, vol. 2",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 2 (Center of Military History catalog page, with the PDF)",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-II/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        },
+        {
+          "id": "r-0227-2",
+          "text": "finish MacDonald, Company Commander",
+          "kind": "memoir (book to buy)",
+          "access": "book",
+          "links": [],
+          "rights": {
+            "status": "in copyright",
+            "basis": "Charles B. MacDonald, Company Commander: the syllabus says it is under closely held copyright. A book to buy; named only, no link.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [
+        "For our class session, we’ll take a look at how the U.S. engaged in combat operations in Europe and the Pacific, the similarities and differences. You should also think about the ways in which MacDonald’s account of his experience as a company commander illustrates U.S. Army operational methods in Europe. We’ll be talking about MacDonald and the papers on his book in class.",
+        ">>>>> Second paper due, March 6 11:59 pm"
+      ],
+      "playbacks": []
+    },
+    {
+      "id": "c17",
+      "kind": "class",
+      "number": 17,
+      "part": "Part IV: Since the of World War II: the US as a global military power",
+      "weekday": "Tuesday",
+      "date": "2025-03-04",
+      "date_status": "placeholder: update",
+      "title": "The Korean War and the Cold War Army",
+      "syllabus_heading": "March 4: The Korean War and the Cold War Army",
+      "syllabus_reading_line": "Read: American Military History, vol. 2, chapters 7 to 9 (203-88).",
+      "readings": [
+        {
+          "id": "r-0304-1",
+          "text": "American Military History, vol. 2, chapters 7 to 9 (203-88)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 2 (Center of Military History catalog page, with the PDF)",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-II/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c18",
+      "kind": "class",
+      "number": 18,
+      "part": "Part IV: Since the of World War II: the US as a global military power",
+      "weekday": "Thursday",
+      "date": "2025-03-06",
+      "date_status": "placeholder: update",
+      "title": "The U.S. Army and Vietnam",
+      "syllabus_heading": "March 6: The U.S. Army and Vietnam",
+      "syllabus_reading_line": "Read: American Military History, vol. 2, chapters 10 and 11 (289-372)",
+      "readings": [
+        {
+          "id": "r-0306-1",
+          "text": "American Military History, vol. 2, chapters 10 and 11 (289-372)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 2 (Center of Military History catalog page, with the PDF)",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-II/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [
+        "One of the topics on the final concerns the war in Vietnam. In class we’ll talk about that question. It will be more useful to you if you have read the sections on \"The Highlands, 1965,\" \"Defending Saigon, 1965-1967,\" and \"II Corps Battles, 1966-1967\" (pages 311-329) - those sections will serve as the basis for that essay and we will talk about what you can do with them."
+      ],
+      "playbacks": []
+    },
+    {
+      "id": "due-paper-2",
+      "kind": "due",
+      "title": "MacDonald paper due (Company Commander)",
+      "weekday": "Thursday",
+      "date": "2025-03-06",
+      "date_status": "placeholder: update",
+      "time": "23:59",
+      "syllabus_line": "March 6: MacDonald paper",
+      "after": "c18",
+      "note": "Falls on a class day. The syllabus also notes it on February 27."
+    },
+    {
+      "id": "c19",
+      "kind": "class",
+      "number": 19,
+      "part": "Part IV: Since the of World War II: the US as a global military power",
+      "weekday": "Tuesday",
+      "date": "2025-03-11",
+      "date_status": "placeholder: update",
+      "title": "From Vietnam to Desert Storm: the creation of an All-Volunteer Force",
+      "syllabus_heading": "March 11: From Vietnam to Desert Storm: the creation of an All-Volunteer Force",
+      "syllabus_reading_line": "Read: American Military History, vol. 2, chapter 12 (373-411).",
+      "readings": [
+        {
+          "id": "r-0311-1",
+          "text": "American Military History, vol. 2, chapter 12 (373-411)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 2 (Center of Military History catalog page, with the PDF)",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-II/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "c20",
+      "kind": "class",
+      "number": 20,
+      "part": "Part IV: Since the of World War II: the US as a global military power",
+      "weekday": "Thursday",
+      "date": "2025-03-13",
+      "date_status": "placeholder: update",
+      "title": "The US Army and the end of the Cold War",
+      "syllabus_heading": "March 13: The US Army and the end of the Cold War",
+      "syllabus_reading_line": "Read: American Military History, vol. 2, chapter 13 (413-461); and Captain H.R. McMaster, \"Eagle Troop,\" in Personal Perspectives on the Gulf War (1994), 33-38.",
+      "readings": [
+        {
+          "id": "r-0313-1",
+          "text": "American Military History, vol. 2, chapter 13 (413-461)",
+          "kind": "textbook",
+          "access": "link",
+          "links": [
+            {
+              "label": "American Military History, vol. 2 (Center of Military History catalog page, with the PDF)",
+              "url": "https://history.army.mil/Publications/Publications-Catalog/American-Military-History-Volume-II/"
+            }
+          ],
+          "rights": {
+            "status": "public domain",
+            "basis": "Publication of the U.S. Army Center of Military History (a U.S. government work). Not hosted here; linked.",
+            "hosted": false
+          }
+        },
+        {
+          "id": "r-0313-2",
+          "text": "Captain H.R. McMaster, \"Eagle Troop,\" in Personal Perspectives on the Gulf War (1994), 33-38.",
+          "kind": "first-hand account",
+          "access": "canvas",
+          "links": [],
+          "rights": {
+            "status": "not confirmed",
+            "basis": "Publisher and rights not in the syllabus; not checked. Canvas only.",
+            "hosted": false
+          }
+        }
+      ],
+      "syllabus_notes": [],
+      "playbacks": []
+    },
+    {
+      "id": "final-exam",
+      "kind": "exam",
+      "title": "Final exam (in the classroom)",
+      "weekday": "Thursday",
+      "date": "2025-03-20",
+      "date_status": "placeholder: update",
+      "time": "08:00",
+      "syllabus_line": "FINAL EXAM: in our classroom, 8 am, Thursday, March 20",
+      "after": "c20",
+      "note": "The syllabus gives 8 am."
+    }
+  ]
+}
