@@ -1,0 +1,184 @@
+{
+ "usgs-1959": {
+  "method": "the GeoTIFF's own georeference (NAD 27), reprojected to WGS 84",
+  "corners": [
+   [
+    -81.84,
+    35.155
+   ],
+   [
+    -81.77,
+    35.155
+   ],
+   [
+    -81.77,
+    35.105
+   ],
+   [
+    -81.84,
+    35.105
+   ]
+  ],
+  "m_per_px": 3.6
+ },
+ "usgs-1975": {
+  "method": "the GeoTIFF's own georeference (NAD 27), reprojected to WGS 84",
+  "corners": [
+   [
+    -81.84,
+    35.155
+   ],
+   [
+    -81.77,
+    35.155
+   ],
+   [
+    -81.77,
+    35.125
+   ],
+   [
+    -81.84,
+    35.125
+   ]
+  ],
+  "m_per_px": 2.4
+ },
+ "mills-1825": {
+  "method": "affine (shift, turn, scale, shear) by least squares on 5 places",
+  "points": [
+   {
+    "name": "Spartanburgh (court house)",
+    "scan_px": [
+     3158,
+     2955
+    ],
+    "lat": 34.94957,
+    "lon": -81.93205,
+    "misfit_m": 592
+   },
+   {
+    "name": "Glenn Springs",
+    "scan_px": [
+     4179,
+     4258
+    ],
+    "lat": 34.81986,
+    "lon": -81.8326,
+    "misfit_m": 398
+   },
+   {
+    "name": "Thicketty Mountain",
+    "scan_px": [
+     4268,
+     1350
+    ],
+    "lat": 35.1135,
+    "lon": -81.76882,
+    "misfit_m": 915
+   },
+   {
+    "name": "Gaffney's Tavern (Gaffney)",
+    "scan_px": [
+     5460,
+     1700
+    ],
+    "lat": 35.0718,
+    "lon": -81.64982,
+    "misfit_m": 414
+   },
+   {
+    "name": "Battle of the Cowpens (the crossing on Bearss's map)",
+    "scan_px": [
+     3982,
+     1225
+    ],
+    "lat": 35.13652,
+    "lon": -81.81574,
+    "misfit_m": 950
+   }
+  ],
+  "rms_m": 696,
+  "crop": [
+   3237,
+   627,
+   4802,
+   1813
+  ],
+  "reduced": 0.75,
+  "corners": [
+   [
+    -81.885747,
+    35.194371
+   ],
+   [
+    -81.706076,
+    35.188007
+   ],
+   [
+    -81.724319,
+    35.065781
+   ],
+   [
+    -81.90399,
+    35.072145
+   ]
+  ]
+ },
+ "nps-park-map": {
+  "method": "turn, scale and shift by least squares on 3 road points",
+  "m_per_px": 1.038,
+  "scale_bar_m_per_px": 1.323,
+  "turn_deg": -5.06,
+  "points": [
+   {
+    "name": "the trace's east end, at the trailhead",
+    "map_px": [
+     2416,
+     2145
+    ],
+    "lat": 35.13162,
+    "lon": -81.80223,
+    "misfit_m": 6
+   },
+   {
+    "name": "SC 11 at US 221A",
+    "map_px": [
+     733,
+     1063
+    ],
+    "lat": 35.14301,
+    "lon": -81.82046,
+    "misfit_m": 26
+   },
+   {
+    "name": "the main entrance on SC 11",
+    "map_px": [
+     1100,
+     1165
+    ],
+    "lat": 35.14193,
+    "lon": -81.8158,
+    "misfit_m": 32
+   }
+  ],
+  "reduced": 0.5,
+  "corners": [
+   [
+    -81.827455,
+    35.153611
+   ],
+   [
+    -81.79001,
+    35.150892
+   ],
+   [
+    -81.7942,
+    35.112044
+   ],
+   [
+    -81.831645,
+    35.114764
+   ]
+  ]
+ }
+}

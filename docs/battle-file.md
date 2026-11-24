@@ -206,7 +206,7 @@ top-right, bottom-right, bottom-left:
 ```
 
 - A second picture marked `"detail": true` is a sharper picture of part of the same map.
-- `from` and `to` give the dates a map belongs to (the official history's sketch for 22 and 23 October).
+- `from` and `to` give the dates a map belongs to (the official history's sketch for 22 and 23 October), or the times (Bearss's four phase maps at Cowpens, 06:00 to 07:11 and so on): a base with `series` shows the one for the moment on the clock.
 - `fit` records how well the map was fitted.
 - A map that is not to scale has `"georeferenced": false` and its picture's `size` in pixels in place of corners.
   It is shown as a picture in its own right, and steps carry their positions on it under `on`.
