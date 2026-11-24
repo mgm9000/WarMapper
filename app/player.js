@@ -288,7 +288,11 @@ function zoomStep(f){ // the + and - buttons: while Follow is on they tighten or
     followK=Math.max(0.35,Math.min(followK*f,Math.pow(2,mv.zoomFor(W.maxScale)-fit.zoom)));if(Math.abs(followK-1)<0.05)followK=1;mv.kick();return}
   setPreset(null);mv.zoomBy(f)}
 function cameraOf(p){return mv.cameraFor(B.presets[p],{t:48,b:22,l:14,r:14})}
-function home(){return preset?cameraOf(preset):((follow&&!landing)?target():mv.cameraFor(base.own?WORLDS[worldOf(base)].ext:EXT,{t:48,b:22,l:14,r:14}))}
+/* The opening view (Morgan, 24 Nov 2026: every battle opens zoomed out, so the reader sees the ground around it): before play, the
+   page stands playback.opening_zoom_out zoom levels wider than the battle's first view (1 by default: twice as wide), then eases in. */
+var OPEN_OUT=P.opening_zoom_out!=null?+P.opening_zoom_out:1,goalK=0.2;
+function wide(c){return (landing&&OPEN_OUT&&!base.own)?{center:c.center,zoom:Math.max(mv.map.getMinZoom(),c.zoom-OPEN_OUT)}:c}   // not on a picture not drawn to scale: there is no ground around it
+function home(){return wide(preset?cameraOf(preset):((follow&&!landing)?target():mv.cameraFor(base.own?WORLDS[worldOf(base)].ext:EXT,{t:48,b:22,l:14,r:14})))}
 function press(id,v){var e=$(id);if(e)e.setAttribute('aria-pressed',v?'true':'false')}
 function setFollow(v){if(v&&!follow)followK=1;fpause=0;follow=v;press('bFollow',v);if(v)mv.kick()}   // switched on again, Follow starts from its widest view
 function setPreset(p,jump){preset=p;(P.views||[]).forEach(function(v){press('v-'+v.preset,p===v.preset)});
@@ -1197,8 +1201,8 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
 try{ mv=WM.mapView({container:'map',wrap:wrap,world:worldOf(base),worlds:WORLDS,
   onDraw:draw,onPick:select,
   onUserMove:function(){if(follow)pauseFollow();if(preset||goal)setPreset(null)},
-  onResize:function(){if(preset){mv.jump(cameraOf(preset));goal=null}else if(follow&&!landing)mv.jump(target());else if(landing)mv.jump(home())},
-  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,0.2))more=true;else goal=null}else if(follow&&!landing){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(glide>Date.now()?mv.chase(target(),FOL.glide_rate):mv.chase(calmTarget(),FOL.rate,FOL.zoom_rate))more=true}}return more}});
+  onResize:function(){if(preset){mv.jump(landing?home():cameraOf(preset));goal=null}else if(follow&&!landing)mv.jump(target());else if(landing)mv.jump(home())},
+  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,goalK))more=true;else{goal=null;goalK=0.2}}else if(follow&&!landing){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(glide>Date.now()?mv.chase(target(),FOL.glide_rate):mv.chase(calmTarget(),FOL.rate,FOL.zoom_rate))more=true}}return more}});
 }catch(err){WM.noMap(wrap,err);return null}
 S=mv.S;
 mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
@@ -1209,7 +1213,7 @@ mv.map.on('mousemove',function(e){ if(base.rc&&!mv.map.getCanvas().style.cursor&
 var LD=(P.lead&&B.focus&&B.focus[0]>T0)?P.lead:null,TM=LD?B.focus[0]:T0,UM=LD?LD.share:0,RNG=4000;
 function u2t(u){return (LD&&u<=UM)?T0+(TM-T0)*u/UM:TM+(T1-TM)*(u-UM)/(1-UM)}
 function t2u(v){return (LD&&v<=TM)?UM*(v-T0)/(TM-T0):UM+(1-UM)*(v-TM)/(T1-TM)}
-function paintTime(v){if(sumAt!=null&&Math.abs(v-sumAt)>1e-6)closeSummary();t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms}   // the battle has been started: the units come on, and Follow takes the camera
+function paintTime(v){if(sumAt!=null&&Math.abs(v-sumAt)>1e-6)closeSummary();t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms;if(!follow&&OPEN_OUT&&!base.own&&mv){goal=home();goalK=0.03}}   // without Follow, the camera eases in from the wide opening to the battle's own first view   // the battle has been started: the units come on, and Follow takes the camera
 
   if(byDay){var n=stamp(t),d=B.dateOf(n),night=Math.abs(t-Math.round(t))<0.02;
     $('clock').textContent=d.day+' '+d.mon+' '+d.year;$('clockdate').textContent=d.wd+' · '+(night?'at nightfall':'during the day');WM.paintDayNumber(B.cal.numbered?n+1:0)}
