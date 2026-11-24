@@ -1,0 +1,80 @@
+hypothesis_id,battle_id,question,reading_a,reading_b,reading_c,evidence_for,evidence_against,adopted_reading,adopted_because,confidence,status,decided_by,decided_on,reviewed_on,rows,source_ids,next_step,history
+YC01,YPRES1,When did the battle end?,22 November (the British date),"17 November, when the German Fourth Army gave up the offensive",13 November (French) or 30 November (German),S44 summary: 22 November.,"S41, pp. 123-124: ""on the 17th November the commander of the Fourth Army decided to give up any idea of continuing the offensive"".
+S47: the French date 13 November, the Germans 30 November.
+S44 text: the Yser floods end the battle on 30 November.",Range: the battle record ends 17 to 22 November; the playback runs to 22 November,Each national history defines the battle differently.,medium,Open,pilot default,,2026-11-23,,S41; S44; S47,A battle record needs room for more than one definition.,"Status in Conflicts: Open
+what the sources say: S47: the French say 13 November, the British 22 November, the Germans 30 November. S41: the Fourth Army gave up the offensive on 17 November. S44: 22 November in the summary box, but the text has the Yser floods ending the battle on 30 November.
+how the pilot handled it: Battle record ends between 17 and 22 November. The playback runs to 22 November.
+comment: National official histories define the battle differently, in time and in ground. A battle record needs room for more than one definition.
+v5 update: New in v5"
+YC02,YP-LANG,"When, and by whom, was the British 2nd Division relieved?","The French 17th Division (IX Corps), 23 to 24 October","The French ""18th Corps (9th Army)"", night of 23-24 October",,"S41, p. 43, British editors' note: the 2nd Division was relieved by a division of the French IX Corps.
+S44: the French IX Corps took over on 23 October.
+S40, Sketches 7 and 8: IX Corps on that front by 25 October.","S42 Hamilton: relieved by the French ""18th Corps (9th Army)"" (wording recorded on 18 Nov; page not checked).",A,Hamilton wrote in 1916 without the French order of battle.,medium,Proposed,pilot default,,2026-11-23,,S40; S41; S42; S44,Close on A.,"Status in Conflicts: Open
+what the sources say: S47: replaced on its front by a French division on 23 October. S42: relieved in the night of 23-24 October by the French ""18th Corps (9th Army)"". S44: the French IX Corps took over the north end of the salient on 23 October.
+how the pilot handled it: Start of the rows for the British 2nd Division at Polygon Wood and the French 17th Division held as a range, 23 to 24 October. Unit taken as the 17th Division of IX Corps.
+comment: Hamilton (S42) wrote in 1916 without the French order of battle; ""18th Corps"" looks like a slip for the 18th or 17th Division of IX Corps.
+v5 update: New in v5
+v7 update: Sketch 7 (23 October) still draws the British 2nd Division between Langemarck and Zonnebeke station, with an arrow for the ""advance of the 17th Division (IX Corps)"" through it; Sketch 8 (25 October) has the IX Corps on that front and the 2nd Division east of Polygon Wood. The start range of 23 to 24 October stands."
+YC03,YPRES1,Which British division took over from the 7th Division on 5-7 November?,The British 3rd Division,The 7th and 15th Brigades,The 5th Division,"S41, p. 94, British editors' note: ""the 3rd Division, which had now taken over the line south of the Menin road"".
+S40, Sketch 13 (9 November): ""3rd Div."" south of the Menin road.","S42 Hamilton: the 7th and 15th Brigades (page not checked).
+S43: ""The trenches were now held by the Fifth Division (Morland's)"".",A,"The 7th Brigade was of the 3rd Division and the 15th of the 5th: the relief was mixed, but the sketch names the 3rd.",medium,Proposed,pilot default,,2026-11-23,,S40; S41; S42; S43,Close on A.,"Status in Conflicts: Open
+what the sources say: S41, British editors' note: the 3rd Division had taken over south of the Menin road by 7 November. S42: the 7th and 15th Brigades. S43: ""The trenches were now held by the Fifth Division (Morland's)"".
+how the pilot handled it: Recorded as the 3rd Division with a note. Start held as a range, 5 to 7 November.
+comment: The 7th Brigade belonged to the 3rd Division and the 15th to the 5th, so both names have something behind them. The relieving force was a mixture.
+v5 update: New in v5
+v7 update: Sketch 13 (9 November) labels the line south of the Menin road ""3rd Div."" with the names Shaw, Gleichen and McCracken. That supports the 3rd Division, not the 5th."
+YC04,MESS14,Who held Messines and Wytschaete on 1 and 2 November?,"German: Messines from 1 November, Wytschaete from 2 November",Both retaken by the French at 11 a.m. on 2 November,,"S41, p. 85: by 4 p.m. on 1 November the attackers reached the eastern edge of Wytschaete; fierce street fighting in Messines all day; p. 87: Wytschaete the centre of the heaviest fighting on the 2nd.
+S45: the Germans had both by the morning of 1 November.
+S40, Sketch 12 (4 November): the French line about 1 km west of Wytschaete.","S42 Hamilton: ""at 11 a.m. on the 2nd, both Messines and Wytschaete were retaken by the French"" (page not checked).
+S41, p. 85, editors' note: by the afternoon of 1 November the French had taken over the defence of Wytschaete; p. 87: the credit for its defence that day belongs to the French.",A,French counter-attacks reached the villages without holding them.,medium,Open,pilot default,,2026-11-23,,S40; S41; S42; S45,,"Status in Conflicts: Open
+what the sources say: S45: the Germans had both by the morning of 1 November. S41: Messines cleared to its western edge on 1 November; Wytschaete entered and lost twice, then taken by 5 p.m. on 2 November. S42: ""at 11 a.m. on the 2nd, both Messines and Wytschaete were retaken by the French"", and again on 6 November.
+how the pilot handled it: German account followed: Messines German from 31 October to 1 November, Wytschaete from 2 November. French line drawn west of both.
+comment: Hamilton may be describing French counter-attacks that got into the villages and did not stay.
+v5 update: New in v5
+v7 update: Sketch 12 (4 November) draws the French line about 1 km west of Wytschaete and has the British cavalry and 4th Division well west of Messines. Both villages are German by the 4th on the official map."
+YC05,YPRES1,Did the Germans take Hill 60 on 11 November?,Lost on 11 November,Held by the Allies until December,,"S41, p. 119: ""the capture of Hill 60 near ZWARTELEEN was of exceptional importance"".
+S40, Sketch 14: the French line on the afternoon of 11 November bent back north of the hill.","No source read. The December date was a recollection of Claude's, recorded as such on 13 Nov.",A,The German account and the British official sketch agree.,medium,Proposed,pilot default,,2026-11-23,,S40; S41,Close on A.,"Status in Conflicts: Open
+what the sources say: S41: the XV Corps captured Hill 60 near Zwarteleen on 11 November. None of the British sources read mentions it. As far as I know the hill is usually said to have been lost by French troops in December 1914.
+how the pilot handled it: Line not moved. Hill 60 left on the Allied side with a note on both rows.
+comment: Needs a French source or the later chapters of the British official history.
+v5 update: New in v5
+v7 update: Sketch 14 draws the French line on the afternoon of 11 November bent back north of Hill 60, with the line of the day before south of it. The official map therefore agrees with the German account that the hill was lost on the 11th. The French row (Vidal) now follows the sketch. The German XV Corps row keeps the places the German account names (Klein Zillebeke and the canal bend) and is not carried forward to the hill."
+YC06,YP-NONNE,Who held Herenthage wood and its chateau after 14 November?,"British in the western part of the wood, Germans in the east and south",The Guard took the whole wood on 14 November,,"S41, p. 122, British editors' note: ""This statement is not true""; the chateau fell and was retaken the same day by the 2nd King's Own Yorkshire Light Infantry.","S41, p. 122: ""HERENTHAGE Wood was completely taken by the Guard on the 14th November"".",A,The British editors deny the German claim.,medium,Proposed,pilot default,,2026-11-23,,S41,Close on A.,"Status in Conflicts: Open
+what the sources say: S41: ""HERENTHAGE Wood was completely taken by the Guard on the 14th November"". S41, British editors' note: the chateau fell and was recovered the same day by the 2nd King's Own Yorkshire Light Infantry.
+how the pilot handled it: British line kept in the west part of the wood, German line in the east and south.
+v5 update: New in v5"
+YC07,YPRES1,"Who broke through at St. Eloi, and when?",The 5th Bavarian Brigade took St. Eloi on 9-10 November (the German account),The 3rd and 26th Divisions broke through at St. Eloi on 11 November and reached Zwarteleen,The French held about 1 km south-east of St. Eloi on 9 and 11 November,"S40, Sketches 13 and 14: the French line about 1 km south-east of St. Eloi on 9 and 11 November.","S41, p. 103: the brigade went on ""from the heights of ST. ELOI it had just stormed"".
+S44, citing Beckett (2006): the 3rd and 26th Divisions broke through at St. Eloi on 11 November.",C for the line; the German claim kept in the wording of its row,St. Eloi and Zwarteleen are 4 km apart across the canal; S44 may run two events together.,low,Open,pilot default,,2026-11-23,,S40; S41; S44,"The British official history's text for 9-11 November (S40, beyond p. 176).","Status in Conflicts: Open
+what the sources say: S44, citing a 2006 history: on 11 November the German 3rd and 26th Divisions broke through at St. Eloi and reached Zwarteleen. S41: the 5th Bavarian Brigade stormed St. Eloi on 9-10 November; the 3rd and 26th Divisions were on the Messines ridge; Zwarteleen was the XV Corps.
+how the pilot handled it: German account followed.
+comment: St. Eloi and Zwarteleen are four kilometres apart on opposite sides of the canal. The S44 sentence may run two events together.
+v5 update: New in v5
+v7 update: Sketches 13 and 14 keep the French line about 1 km south-east of St. Eloi on 9 and 11 November. The inferred row that gave up St. Eloi on the 10th is withdrawn, and the II Bavarian Corps line is drawn clear of the French line, short of the village. The German claim stands in the wording of its row."
+YC08,YP-GHEL,What are the dates of the battle of Gheluvelt?,29 to 31 October,29 October to 1 November,To 5 November,S47 and S44 summary: 29 to 31 October.,"S44 section heading: to 1 November.
+S40 chapter titles: ""Battle of Gheluvelt"" through 5 November.","A, with the wider dates in the notes","A naming question, not a placing one.",medium,Settled,pilot default,,2026-11-23,,S40; S44; S47,,"Status in Conflicts: Open
+what the sources say: S47 and S44 summary: 29 to 31 October. S44 section heading: to 1 November. S40 chapter titles carry ""Battle of Gheluvelt"" through 5 November.
+how the pilot handled it: Battle record: 29 to 31 October, with the wider dates in the notes.
+v5 update: New in v5"
+YC09,YP-LANG,Where was the break-in of 22 October?,At Kortekeer Cabaret,At Pilckem,,"S41, p. 37, British editors' note: the Germans captured the Kortekeer Cabaret, and the Queen's retook it.
+S40, S44, S47: Kortekeer Cabaret.
+S40, Sketch 7: the line of 23 October through Kortekeer.","S42 Hamilton: the 1st Brigade was attacked ""at Pilkem"" (page not checked).",A,"Hamilton names the nearest village, the others the inn on the road a mile north of it.",medium,Proposed,pilot default,,2026-11-23,,S40; S41; S42; S44; S47,Close on A.,"Status in Conflicts: Open
+what the sources say: S42: the 1st Brigade was attacked ""at Pilkem"". S40, S44, S47: the German break-in was at Kortekeer Cabaret, about a mile north of Pilckem.
+how the pilot handled it: Kortekeer Cabaret used.
+comment: Hamilton names the nearest village; the others name the inn on the road.
+v5 update: New in v5
+v7 update: Sketch 7 draws the British line of 23 October through Kortekeer; nothing new on the 22nd."
+YC10,YPRES1,Where was the German 46th Reserve Division on 19 October?,At Staden on 19 October,Close to Staden on the 19th; Staden taken on the 20th,,"S40, summarising the German account: it reached Staden.","S41, p. 33: ""STADEN was finally surrounded and taken by the 46th Reserve Division.""","A, with a note",A day's difference at division level.,low,Open,pilot default,,2026-11-23,,S40; S41,Follow S41 (the German account itself): place the row of the 19th short of Staden.,"Status in Conflicts: Open
+what the sources say: S40 (summarising the German account): it reached Staden. S41 itself: it was close to Staden on the 19th and took it on the 20th.
+how the pilot handled it: The row for the 19th is placed at Staden with a note.
+comment: A day's difference at division level; shows the cost of working from summaries.
+v5 update: New in v5"
+YC11,YPRES1,When did the British 1st Division come back into line after its relief at Langemarck?,Back in line on 25 October,Still in reserve on 25 October,In line by 29 October,"S42 Hamilton: ""came up on the right of the 2nd Division"" on 25 October (page not checked).","S40, Sketch 8 (25 October): still a reserve between Ypres and Zillebeke.
+S40, Sketch 9: in line east of Polygon Wood by 29 October.",Range: the row in line starts 25 to 27 October,,low,Open,pilot default,,2026-11-23,,S40; S42,Read S40's text for 24-27 October.,"Status in Conflicts: Open
+what the sources say: S42: it ""came up on the right of the 2nd Division"" on 25 October. S40, Sketch 8: on 25 October it is still drawn as a reserve, an oval between Ypres and Zillebeke. S40, Sketch 9: in line east of Polygon Wood and across the Menin road by 29 October.
+how the pilot handled it: Reserve row ends between 25 and 26 October; the row in line starts between 25 and 27 October.
+comment: The text of the official history for these days was not read; it would settle the date.
+v5 update: New in v7"
+YC12,YPRES1,How far did the Germans get north of Ypres on 10 November?,The French line about 2.5 km north of Het Sas on 11 November,The Germans close up to Het Sas on 10 November,,"S40, Sketch 14: the French line from the canal near Steenstraat past Kortekeer on 11 November; the line of the 10th a few hundred metres north.","S41, p. 109: ""the 44th Reserve Division pushed forward till close up to HET SAS"".",A for the French line; German rows keep the places their account names,"""Close up to"" may mean the canal bank at Steenstraat.",medium,Open,pilot default,,2026-11-23,,S40; S41,The French official history would settle it.,"Status in Conflicts: Open
+what the sources say: S41: ""by evening the canal had been reached along almost its whole length"", and the 44th Reserve Division ""pushed forward till close up to HET SAS"". S40, Sketch 14: on the afternoon of 11 November the French line still runs from the canal near Steenstraat past Kortekeer to the Langemarck-Poelcappelle road, about 2.5 km north of Het Sas; the line of the 10th is drawn a few hundred metres north of that.
+how the pilot handled it: Official-history sketch followed for the French line. German rows keep the places the German account names, but are drawn clear of the French line.
+comment: Het Sas is on the canal, and ""close up to"" may only mean the canal bank at Steenstraat. The French official history would say.
+v5 update: New in v7"

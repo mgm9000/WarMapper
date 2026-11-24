@@ -1,0 +1,3 @@
+gap_id,battle_id,gap,effect on the data,how to close it,status in v2,v3 update,v4 update,v5 update,v6 update,v7 update,v9 update
+G16,both,No unit has a Wikidata ID,Units cannot yet be joined to outside datasets. Wars and battles can.,Look up each unit; most Civil War regiments and Hessian regiments have an entry.,,New in v3,,,,,
+G17,both,Assignments cover one date range per unit,"The table can hold changes of parent, commander and strength over time, but the pilots only span a day or two each.",Fill in when a second battle for the same unit is added.,,New in v3,,,,,

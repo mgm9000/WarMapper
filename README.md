@@ -18,9 +18,9 @@ The playbacks are served with GitHub Pages at https://mgm9000.github.io/WarMappe
 | `playbacks/` | One folder per battle: its battle file (`battle.json`), the script that writes it (`prep.py`), its period-map images, and the built page (`index.html`). |
 | `app/` | The playback, the same for every battle: `page.html` (the page), `player.js` (the rules of a playback), `core.js` (reading a battle file, the map, the clock), `core.css`, and the map library in `app/vendor/`. |
 | `courses/` | Course pages: `page.html` (the template), and one folder per course with `course.json` (its class days, readings and playback slots) and the built `index.html`. See `courses/README.md`. |
-| `tools/` | `export_battles.py`, which writes every battle file from the workbook and checks it, and `build.py`, which builds the battle pages and the course pages. |
+| `tools/` | `export_battles.py`, which writes every battle file from the workbooks and checks it, and `build.py`, which builds the battle pages and the course pages. |
 | `docs/` | `battle-file.md`: the layout of a battle file. |
-| `data/` | **`WarMapper battle data.xlsx`, the master copy of the battle data**; `base/`, the current map under each battle; `recon/`, the lines of each reconstructed base map as GeoJSON (Manila 1899); `osm/`, the OpenStreetMap extracts those were cut from (Natural Earth for Luzon 1899); `legacy/`, the two older workbooks. |
+| `data/` | **`WarMapper battle data/`, the master copy of the battle data**: one workbook per war and `Sources and notes.xlsx` (see Changing the data), with a CSV copy of every sheet under `csv/`; `base/`, the current map under each battle; `recon/`, the lines of each reconstructed base map as GeoJSON (Manila 1899); `osm/`, the OpenStreetMap extracts those were cut from (Natural Earth for Luzon 1899); `legacy/`, the two older workbooks. |
 | `pipeline/` | `battlefile.py` (checks a battle file against the format), `basemaps.py` (cuts the current maps from the extracts), `pictures.py` (cuts the period-map pictures from the full scans), `georef/` (how the period maps were fitted to the ground), `recon/` (how a reconstructed base map's lines were read from period maps), and `legacy/` (retired scripts). |
 
 The five pilots:
@@ -47,10 +47,21 @@ Since 22 Nov 2026 Manila opens on its fourth base, **1899 with terrain**, and th
 
 ## Changing the data
 
-The workbook, `data/WarMapper battle data.xlsx`, is the master copy. Edit it, then:
+The battle data is kept in workbooks, in the folder `data/WarMapper battle data/`. They are the master copy. Since 23 Nov 2026 there is one per war, and one that every war shares:
+
+| Workbook | What it holds |
+| --- | --- |
+| `Revolutionary War.xlsx` | Trenton |
+| `U.S. Civil War.xlsx` | Gettysburg |
+| `Philippine War.xlsx` | Manila and Luzon 1899 |
+| `World War I.xlsx` | First Ypres |
+| `Sources and notes.xlsx` | The change log (`Read me`), `Sources` and `Source candidates`: one register of sources for every war, so a source id (S01, S02 ...) is never used twice. Also the two gaps that belong to no one war. |
+
+Every war's workbook has the same sheets in the same order (a sheet with nothing for that war keeps its headings), and holds only that war's rows: the export stops if a row names another war's campaign, side or playback, or if an id is used in two workbooks. A new war is a new workbook with the same sheets. Edit a workbook, then:
 
 ```
-# write the battle files from the workbook (playbacks/<battle>/battle.json), checked against the format
+# write the battle files from the workbooks (playbacks/<battle>/battle.json), checked against the format,
+# and a CSV copy of every sheet (data/WarMapper battle data/csv/<workbook>/<sheet>.csv)
 python3 tools/export_battles.py
 
 # build the pages, plus a single-file copy of each that opens from a folder with no web server
@@ -62,18 +73,20 @@ Python 3 with `openpyxl` (and `Pillow` and `numpy` for the two map scripts).
 - A battle file that breaks the format is not written, and the script says which row is at fault: a track naming a row that does not exist, a source that is cited but not listed, a point far off the map.
 - A coordinate that is wrong but still on the map cannot be caught that way. The script lists places where a unit would have to move implausibly fast between two rows; read those.
 - It also lists every place where one side's symbol is drawn within 50 m of the other's, minute by minute ("contact"). Close fights show up there, and so does a unit overrun on the map without the data saying what became of it: that one needs a row that has it fall back, or `show_to` so it leaves the map.
-- A new battle is new rows: a row on `Playbacks`, its units, positions and sources, its symbols on `Tracks`, and a current map in `data/base/`. No code.
+- A new battle is new rows in its war's workbook: a row on `Playbacks`, its units, positions and sources, its symbols on `Tracks`, and a current map in `data/base/`. No code. Its sources go on `Sources` in `Sources and notes.xlsx`, with the next free id.
+- `python3 tools/export_battles.py --check` checks the battle files as they stand, that each workbook holds one war and no id twice, and that the CSV copies match the workbooks.
 
-### Editing the workbook
+### Editing the workbooks
 
-The workbook is a binary file, so GitHub cannot show what changed in it or merge two edited copies. If two people start from different copies, one set of edits overwrites the other. So work from a fresh download, and do not edit the file on GitHub's web page, which has no spreadsheet editor.
+A workbook is a binary file, so GitHub cannot merge two edited copies of it. If two people start from different copies of the same workbook, one set of edits overwrites the other. So work from a fresh download, and do not edit the files on GitHub's web page, which has no spreadsheet editor.
 
-1. **Download the current workbook** from `data/` on the `main` branch before each editing session. Do not start from an older copy on your computer.
-2. **Edit that copy** in Excel and save it.
-3. **Send it back**, either by uploading it to the repository as a replacement for the file in `data/`, or by handing it to whoever is running the export. They run the two scripts above, which regenerate every `battle.json` and page from it, and open a pull request.
-4. **Merge the pull request.** The site updates a minute or two later.
+1. **Download the current workbook** for the war you are working on from `data/WarMapper battle data/` on the `main` branch before each editing session. Do not start from an older copy on your computer.
+2. **Edit that copy** in Excel and save it. A new source goes in `Sources and notes.xlsx`, so download that one too.
+3. **Send it back**, either by uploading it to the repository as a replacement for the file in `data/WarMapper battle data/`, or by handing it to whoever is running the export. They run the two scripts above, which regenerate every `battle.json` and page from it and refresh the CSV copies, and open a pull request.
+4. **Read the change.** On the pull request, the CSV copies show each changed row of each sheet line by line, so you can see exactly what an edit did.
+5. **Merge the pull request.** The site updates a minute or two later.
 
-Tell the other person before you start editing, and have them hold off on workbook changes until your file comes back. Only one person should be changing the workbook at a time.
+Tell the other person which workbook you are editing, and have them hold off on that one until your file comes back. Two people can now work on two different wars at once; `Sources and notes.xlsx` is shared by every war, so only one person at a time should add sources. The CSV copies are written by the export: do not edit them by hand (the check fails if they no longer match their workbook).
 
 The Gettysburg playback covers the first day, 7:15 a.m. to 5:30 p.m. After 10:15 a.m. it rests on Bachelder's 1876 map alone: brigade positions and the times printed beside them. The reports for the afternoon have not been read, and the Union brigades' places on Cemetery Hill at the end of the day are estimates.
 
@@ -92,11 +105,11 @@ A browser will not let a page opened straight from a folder hand its images to t
 
 ## How the data is organised
 
-Positions are rows in linked tables: wars, campaigns, battles, units, assignments, positions, places, routes, events, sources, plus tables of conflicts between sources and gaps in them. Times are ranges (earliest and latest), and every coordinate records how it was obtained and how precise it is. Six more sheets say how each battle is played back: `Playbacks`, `Playback settings`, `Tracks` (which position rows each symbol on the map follows), `Nations`, `Labels` and `Maps`. The `Read me` sheet explains each table and what changed in each version. Its `Checks` sheet dates from when the workbook was generated by script and is no longer updated; the export script now does the checking.
+Positions are rows in linked tables: wars, campaigns, battles, units, assignments, positions, places, routes, events, sources, plus a table of hypotheses (one row per point where the sources disagree: the competing readings, the evidence for and against each with its source and page, the reading the playback follows, how sure it is, and who decided) and one of gaps in the sources. The tables of one war are in that war's workbook; sources are in the shared one. Times are ranges (earliest and latest), and every coordinate records how it was obtained and how precise it is. Six more sheets say how each battle is played back: `Playbacks`, `Playback settings`, `Tracks` (which position rows each symbol on the map follows), `Nations`, `Labels` and `Maps`. The `Read me` sheet of `Sources and notes.xlsx` explains each table and what changed in each version; each war's own `Read me` says what is in it and counts its rows. Its `Checks` sheet dates from when the workbook was generated by script and is no longer updated; the export script now does the checking.
 
 ## Credits and licence
 
-Base-map lines and place names are derived from OpenStreetMap data, © OpenStreetMap contributors, available under the Open Database License. The drawing under the Luzon 1899 playback is made with Natural Earth, which is in the public domain. The historical sources for each battle are listed on the `Sources` sheet of the workbook.
+Base-map lines and place names are derived from OpenStreetMap data, © OpenStreetMap contributors, available under the Open Database License. The drawing under the Luzon 1899 playback is made with Natural Earth, which is in the public domain. The historical sources for each battle are listed on the `Sources` sheet of `data/WarMapper battle data/Sources and notes.xlsx`.
 
 The map library is MapLibre GL JS, © MapLibre contributors, under the BSD 3-Clause licence (`app/vendor/MAPLIBRE-LICENSE.txt`).
 

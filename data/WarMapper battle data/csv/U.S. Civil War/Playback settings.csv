@@ -1,0 +1,70 @@
+playback_id,setting,value,what it does
+gettysburg,page_title,Gettysburg Day 1 Playback,The browser tab title
+gettysburg,style,tactical,tactical (a battlefield) or operational (a front)
+gettysburg,scale_bar,yards,yards or km: the measure the scale bar writes first; the other follows under it
+gettysburg,rate,3,The play speed it opens at: the time step nearest this many time units a second (the step button then sets the speed)
+gettysburg,bounds,bachelder-1876,Map id: the edge of the battle's own maps. Fit frames it; the modern map lies around it
+gettysburg,modern.tiles,https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x},"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+gettysburg,modern.max_zoom,16,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+gettysburg,modern.reach,4,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+gettysburg,modern.credit,USGS The National Map,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+gettysburg,modern.name,USGS Topo base map,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+gettysburg,modern.about,"Today's ground: the US Geological Survey's topographic base map, with roads, towns, streams, contours and hill shading. It is streamed from the USGS while it is on screen, so it needs a connection.","The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+gettysburg,modern.rights,Public domain (US government work),"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+gettysburg,modern.link,https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+gettysburg,follow.min,"[1000, 660]","Smallest box the camera frames, metres [width, height]"
+gettysburg,follow.margin,140,"Space around the units, metres"
+gettysburg,bases.1.id,old,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.1.label,1876 map,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.1.short,1876,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.1.title,Bachelder's 1876 map of the first day (M switches maps),A map the reader can put under the units; the first is the opening one
+gettysburg,bases.1.map,bachelder-1876,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.1.backdrop,paper,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.1.fade,True,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.2.id,mod,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.2.label,Current map,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.2.short,Today,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.2.title,"Today's topographic map, from the USGS (M switches maps)",A map the reader can put under the units; the first is the opening one
+gettysburg,bases.2.current,True,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.2.clip,bachelder-1876,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.id,sat,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.label,Satellite,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.short,Sat,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.title,"Aerial photography of the ground today, from the USGS (M switches maps)",A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.clip,bachelder-1876,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.imagery.tiles,https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x},A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.imagery.max_zoom,16,A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.imagery.credit,"USDA, USGS The National Map: Orthoimagery",A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.imagery.name,Aerial photography (USGS),A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.imagery.about,"Today's ground from the air: photography from the US Department of Agriculture's National Agriculture Imagery Program (about 1 m detail), served free by the USGS National Map. The names on it come from OpenStreetMap.",A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.imagery.rights,Public domain (US government work),A map the reader can put under the units; the first is the opening one
+gettysburg,bases.3.imagery.link,https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer,A map the reader can put under the units; the first is the opening one
+gettysburg,zoom.max,1.95,"Closest zoom, screen pixels per metre"
+gettysburg,zoom.min_factor,0.96,How far out the reader can zoom (1 = the whole battle just fits)
+gettysburg,zoom.follow_max,1.04,Closest the Follow camera goes
+gettysburg,zoom.fold,0.215,Below this zoom units fold into their parent
+gettysburg,zoom.labels,0.273,"From this zoom, level 1 names show"
+gettysburg,zoom.towns_until,0.487,Town names hide above this zoom
+gettysburg,zoom.landmarks_from,0.195,Landmarks show from this zoom
+gettysburg,zoom.minor_roads_from,0.156,Side streets show from this zoom
+gettysburg,zoom.force_names_from,0.195,"From this zoom, main units keep their names even when crowded"
+gettysburg,fold.label,Regiments,Name of the button that switches folding
+gettysburg,rules.blend,4,Minutes over which a unit shifts from one row to the next when they meet
+gettysburg,texts.stated,"A report, tablet or the 1876 map puts the unit here.",The sentence under this state in the unit panel
+gettysburg,texts.inferred,"Worked out from the sequence of events, not stated by a source.",The sentence under this state in the unit panel
+gettysburg,texts.moving,No source records this stretch. The unit is drawn on a straight line between two recorded positions.,The sentence under this state in the unit panel
+gettysburg,found.map_read,read from the 1876 map,Words for how a place was found
+gettysburg,found.estimate,estimated from the description,Words for how a place was found
+gettysburg,about.1,"Unit positions come from the WarMapper battle data workbook (109 rows for this day). The morning is built from the Official Records, War Department tablets and Bachelder's map; from 10:15 on, the brigade positions and most of the times are read from Bachelder's map alone. Nothing here has been checked by a historian.","A paragraph under ""About this prototype"""
+gettysburg,about.2,"Solid symbols are positions a source gives. Dashed symbols are interpolated, inferred or the last position on record. A question mark means the location is a loose estimate.","A paragraph under ""About this prototype"""
+gettysburg,about.3,"Base map: John B. Bachelder, Map of the battle field of Gettysburg: First day's battle (1876), Boston Public Library copy. The whole sheet is shown; the ground of the first morning, west and north-west of the town, is drawn at twice the detail of the rest. Its printed red and blue bars show the whole day; the labelled symbols on top are this playback.","A paragraph under ""About this prototype"""
+gettysburg,about.4,"Current map: today's roads, streams, woods and names from OpenStreetMap, as far as the 1876 sheet reaches. North is up on both maps, so the 1876 sheet sits about 1° askew. At the three buildings used to fit the sheet the two maps differ by 15 to 18 metres. Road names are today's; the 1863 name follows in brackets where it differs. The Satellite view is aerial photography from the USGS, cut to the same edge. Terrain views are not in this prototype.","A paragraph under ""About this prototype"""
+gettysburg,question_mark,location,What marks a unit as doubtful: location (how sure the place is) or overall
+gettysburg,rules.pace.infantry,80,"March pace in metres a minute, for rows marked arrive_at_pace: infantry"
+gettysburg,rules.pace.cavalry,110,"March pace in metres a minute, for rows marked arrive_at_pace: cavalry"
+gettysburg,rules.pace.artillery,90,"March pace in metres a minute, for rows marked arrive_at_pace: artillery"
+gettysburg,clock_title,Battle of Gettysburg,The battle's name in the date box on the map
+gettysburg,formations.echelon,division,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
+gettysburg,formations.below,0.155,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
+gettysburg,formations.label,Divisions,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
+gettysburg,formations.on,False,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"

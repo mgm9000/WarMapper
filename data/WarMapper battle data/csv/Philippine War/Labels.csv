@@ -1,0 +1,120 @@
+playback_id,text,other_name,lat,lon,angle,level,kind,show,approximate
+manila,Santa Mesa,,14.601609,121.012095,,,town,both,yes
+manila,Santa Ana,,14.580423,121.012705,,,town,both,yes
+manila,San Juan del Monte,,14.599957,121.031278,,,town,both,yes
+manila,Caloocan,,14.651896,120.972558,,,town,both,yes
+manila,Pasay,,14.535469,121.004157,,,town,both,yes
+manila,San Pedro Macati,,14.5659,121.03137,,,town,both,
+manila,La Loma,,14.633636,120.982263,,,town,both,yes
+manila,Paco,,14.578484,120.996051,,,town,both,yes
+manila,Malate,,14.572869,120.985341,,,town,both,yes
+manila,Tondo,,14.6133,120.967581,,,town,both,yes
+manila,Walled City,,14.5896,120.974673,,,town,both,yes
+manila,Blockhouse 6,,14.60986,121.011399,,,landmark,both,yes
+manila,Blockhouse 7,,14.60556,121.014041,,,landmark,both,yes
+manila,Blockhouse 5,,14.614503,121.004399,,,landmark,both,yes
+manila,Blockhouse 14,,14.565312,120.995973,,,landmark,both,yes
+manila,Chinese Hospital,,14.627176,120.986637,,,landmark,both,yes
+manila,Powder magazine,,14.60572,121.02245,,,landmark,both,
+manila,El Deposito (reservoir),,14.60421,121.03176,,,landmark,both,
+manila,San Juan bridge,,14.600654,121.017387,,,landmark,both,yes
+luzon1899,Manila,,14.5958,120.9772,,0,town,both,
+luzon1899,Caloocan,,14.6517,120.9728,,1,town,both,
+luzon1899,Malolos,,14.8423,120.8116,,0,town,both,
+luzon1899,Calumpit,,14.9161,120.769,,1,town,both,
+luzon1899,San Fernando (Pampanga),,15.0284,120.6931,,0,town,both,
+luzon1899,Angeles,,15.1343,120.5903,,1,town,both,
+luzon1899,Tarlac,,15.4877,120.588,,0,town,both,
+luzon1899,Bayambang,,15.8086,120.4556,,1,town,both,
+luzon1899,Dagupan,,16.0423,120.3344,,1,town,both,
+luzon1899,San Fabian,,16.15,120.45,,0,town,both,yes
+luzon1899,San Jacinto,,16.0725,120.4411,,1,town,both,
+luzon1899,Pozorrubio,,16.1167,120.55,,1,town,both,yes
+luzon1899,Aringay,,16.3982,120.3555,,1,town,both,
+luzon1899,San Fernando de la Union,,16.6157,120.3179,,0,town,both,
+luzon1899,Candon,,17.1933,120.4492,,0,town,both,
+luzon1899,Vigan,,17.5748,120.389,,0,town,both,
+luzon1899,Tirad Pass,,17.15,120.6333,,0,landmark,both,yes
+luzon1899,Cervantes,,16.9917,120.7333,,0,town,both,yes
+luzon1899,Baliuag,,14.9555,120.9004,,1,town,both,
+luzon1899,San Miguel,,15.1409,120.976,,1,town,both,
+luzon1899,San Isidro,,15.3077,120.9066,,0,town,both,
+luzon1899,Arayat,,15.1514,120.773,,1,town,both,
+luzon1899,Cabanatuan,,15.4892,120.9642,,0,town,both,
+luzon1899,Tayug,,16.0267,120.7478,,1,town,both,
+luzon1899,Bayombong,,16.4839,121.151,,0,town,both,
+luzon1899,Aparri,,18.3667,121.6333,,0,town,both,yes
+luzon1899,Santa Cruz,,14.2833,121.4167,,1,town,both,yes
+luzon1899,Norzagaray,,14.9167,121.05,,1,town,both,yes
+luzon1899,San Jose,,15.7922,120.9895,,1,town,both,
+luzon1899,Tuguegarao,,17.6135,121.7305,,0,town,both,
+luzon1899,Laoag,,18.1938,120.594,,0,town,both,
+luzon1899,Pasig,,14.5605,121.0765,,1,town,both,
+manila,Intramuros,,14.590427,120.974997,,0,area,recon,
+manila,Binondo,,14.598613,120.970673,,0,area,recon,
+manila,Tondo,,14.60902,120.968215,,0,area,recon,
+manila,Quiapo,,14.596982,120.982634,,1,area,recon,
+manila,S. Miguel,,14.593885,120.987507,,1,area,recon,
+manila,Sampaloc,,14.602677,120.99487,,0,area,recon,
+manila,Santa Cruz,,14.601836,120.979158,,1,area,recon,
+manila,Ermita,,14.579679,120.982138,,0,area,recon,
+manila,Malate,,14.57331,120.985768,,0,area,recon,
+manila,Paco,,14.580893,120.996076,,0,area,recon,
+manila,Pandacan,,14.59152,121.004465,,0,area,recon,
+manila,Santa Mesa,,14.599047,121.015396,,0,area,recon,
+manila,Santa Ana,,14.581542,121.014146,,0,area,recon,
+manila,Caloocan,,14.654226,120.972323,,0,area,recon,
+manila,Lico,,14.627831,120.983069,,1,area,recon,
+manila,Manila Bay,,14.603825,120.957262,,0,area,recon,
+manila,Pasig River,,14.595455,120.973207,0,0,water,recon,
+manila,Pasig River,,14.595535,121.00622,11,1,water,recon,
+manila,San Juan River,,14.596802,121.025068,78,1,water,recon,
+manila,Reservoir,,14.604746,121.03076,,1,landmark,recon,
+manila,La Loma church,,14.635464,120.987339,,1,landmark,recon,
+manila,Chinese Hospital,,14.625205,120.988205,,1,landmark,recon,
+manila,Chinese Cemetery,,14.6322,120.985427,,1,landmark,recon,
+manila,Leper Hospital,,14.615223,120.981438,,1,landmark,recon,
+manila,R.R. Station,,14.608505,120.972274,,1,landmark,recon,
+manila,Prison,,14.605166,120.984014,,1,landmark,recon,
+manila,General Hospital,,14.591004,120.982989,,1,landmark,recon,
+manila,Botanical Garden,,14.593047,120.980883,,1,landmark,recon,
+manila,Luneta,,14.582663,120.977021,,1,landmark,recon,
+manila,Cemetery,,14.581469,120.988917,,1,landmark,recon,
+manila,Race Course,,14.597288,121.011754,,1,landmark,recon,
+manila,Arsenal,,14.606316,121.022403,,1,landmark,recon,
+manila,San Juan church,,14.598274,121.030172,,1,landmark,recon,
+manila,Jetty,,14.585766,120.960311,,1,landmark,recon,
+manila,Calle de Azcarraga,,14.606349,120.975742,17,1,road,recon,
+manila,Calle de Iris,,14.602024,120.987551,20,1,road,recon,
+manila,Calle de Alix,,14.600986,120.997492,-8,1,road,recon,
+manila,Calle de Santa Mesa,,14.602242,121.006475,-5,1,road,recon,
+manila,Malabon Road,,14.658632,120.968989,6,1,road,recon,
+manila,B.H. 1,,14.638741,120.97696,,1,place,recon,
+manila,B.H. 2,,14.637908,120.985746,,1,place,recon,
+manila,B.H. 3,,14.628204,120.993955,,1,place,recon,
+manila,B.H. 4,,14.620196,120.997673,,1,place,recon,
+manila,B.H. 5,,14.61453,121.006949,,1,place,recon,
+manila,B.H. 6,,14.610164,121.014217,,1,place,recon,
+manila,B.H. 7,,14.605908,121.016848,,1,place,recon,
+manila,B.H. 8,,14.593282,121.017786,,1,place,recon,
+manila,B.H. 9,,14.587325,121.012385,,1,place,recon,
+manila,B.H. 10,,14.584749,120.999801,,1,place,recon,
+manila,B.H. 11,,14.580348,121.003928,,1,place,recon,
+manila,B.H. 12,,14.572969,120.998092,,1,place,recon,
+manila,Pasay,,14.547642,121.000585,,0,area,recon,
+manila,San Pedro Macati,,14.5659,121.03137,,0,area,recon,yes
+manila,Woods and sloughs,,14.647371,120.970167,,1,wood,recon,
+manila,High ground,,14.64676,120.974176,,1,wood,recon,
+manila,Scattered trees,,14.644103,120.97669,,1,wood,recon,
+manila,Open high ground,,14.642152,120.981678,,1,wood,recon,
+manila,Scattering woods,,14.641048,120.972868,,1,wood,recon,
+manila,Rice field,,14.630717,120.977992,,1,wood,recon,
+manila,Woods,,14.635109,120.978071,,1,wood,recon,
+manila,Open,,14.634011,120.992885,,1,wood,recon,
+manila,Scattered trees,,14.63009,120.98931,,1,wood,recon,
+manila,B.H. 13,,14.565814,120.998369,,1,place,recon,
+manila,B.H. 14,,14.563024,120.996897,,1,place,recon,
+manila,Swamp,,14.557296,120.995814,,1,wood,recon,
+manila,Swamp,,14.556457,120.99999,,1,wood,recon,
+manila,Cemetery,,14.563199,120.989806,,1,wood,recon,
+manila,Cingalon,,14.571812,120.99559,,1,area,recon,

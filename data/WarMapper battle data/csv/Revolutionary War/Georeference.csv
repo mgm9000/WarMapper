@@ -1,0 +1,74 @@
+"Georeference: Trenton, Wiederhold's sketch",,,,,,,,,
+How Wiederhold's sketch of Trenton was tied to the current street map,,,,,,,,,
+"The sketch is not a survey. Six places in the town centre were matched to the same places on the current street map (OpenStreetMap, S39) and a best-fit shift, turn and uniform scale computed from them: 0.689 m per pixel, turned 4.4 degrees.",,,,,,,,,
+"The fit holds from the English Church south to the creek and east to the surrender ground. North of the church the sketch is squeezed to about half scale, and the outposts are not to scale, so positions there come from markers, street corners or distances scaled along a road.",,,,,,,,,
+,,,,,,,,,
+Control point,pixel x,pixel y,lat,lon,misfit (m),,,,
+Queen and Second Streets (Broad and State),2290,1125,40.22015,-74.76421,19,,,,
+King and Second Streets (Warren and State),2095,1125,40.2203,-74.76589,11,,,,
+Queen and Third Streets (Broad and East Hanover),2290,990,40.22096,-74.76425,23,,,,
+King and Third Streets (Warren and East Hanover),2095,990,40.22104,-74.76577,10,,,,
+English Church (St. Michael's),2190,850,40.2222,-74.76535,28,,,,
+Queen Street bridge over the Assunpink,2265,1490,40.21816,-74.76413,13,,,,
+,,,,,,,,,
+Place on the sketch,pixel x,pixel y,,,lat,lon,precision (m),,how placed
+monument,2255,650,,,40.22575,-74.76478,20,,marker
+headking,2085,505,,,40.2256,-74.765,40,,modern_map
+headqueen,2265,730,,,40.2253,-74.76455,40,,modern_map
+rallhq,2060,850,,,40.22248,-74.76587,20,,marker
+stmich,2170,850,,,40.2222,-74.76552,20,,marker
+barracks,1960,1430,,,40.21948,-74.7685,20,,marker
+bridge,2265,1490,,,40.21816,-74.76413,15,,modern_map
+qfront,2279,1341,,,40.21898,-74.76418,15,,modern_map
+kstate,2095,1125,,,40.2203,-74.76589,15,,modern_map
+khanover,2095,990,,,40.22104,-74.76577,15,,modern_map
+qstate,2290,1125,,,40.22015,-74.76421,15,,modern_map
+qperry,2301,738,,,40.22272,-74.76437,100,,modern_map
+yard,2297,935,,,40.2215,-74.76428,40,,modern_map
+grave,2190,892,,,40.2219,-74.765,40,,derived
+pettys,2100,745,,,40.22258,-74.76555,60,,sketch_read
+gknyp,2360,1148,,,40.22021,-74.76364,60,,sketch_read
+nguns,2215,895,,,40.22171,-74.76497,60,,sketch_read
+second,2187,1134,,,40.22022,-74.76505,40,,modern_map
+meeting,2567,998,,,40.22124,-74.76206,30,,modern_map
+hlossN,2575,665,,,40.2233,-74.7622,60,,sketch_read
+hlossS,2545,820,,,40.22233,-74.76235,60,,sketch_read
+hrallN,2525,860,,,40.22207,-74.76249,60,,sketch_read
+hrallS,2485,1010,,,40.22113,-74.76272,60,,sketch_read
+hknypN,2505,1025,,,40.22104,-74.76255,60,,sketch_read
+hknypS,2590,1185,,,40.22009,-74.76176,60,,sketch_read
+ikingN,2180,690,,,40.22296,-74.76538,60,,sketch_read
+ikingS,2180,830,,,40.2221,-74.76529,60,,sketch_read
+iqueenN,2325,770,,,40.22254,-74.76416,60,,sketch_read
+iqueenS,2325,920,,,40.22161,-74.76407,60,,sketch_read
+klossW,2650,715,,,40.22303,-74.76157,60,,sketch_read
+klossE,2895,645,,,40.22358,-74.75963,60,,sketch_read
+krallN,2670,725,,,40.22298,-74.7614,60,,sketch_read
+krallS,2700,900,,,40.22191,-74.76105,60,,sketch_read
+kcentre,2714,789,,,40.2226,-74.761,80,,sketch_read
+lW,2640,1340,,,40.21916,-74.76126,60,,sketch_read
+lE,2770,1340,,,40.21922,-74.76021,60,,sketch_read
+mguns,2420,1365,,,40.2189,-74.76302,60,,sketch_read
+creeklow,2609,1363,,,40.219,-74.7615,200,,estimate
+mercN,2000,800,,,40.2222,-74.76677,60,,sketch_read
+mercS,2000,1220,,,40.2196,-74.76651,60,,sketch_read
+stirEN,2392,890,,,40.22183,-74.76354,60,,sketch_read
+stirES,2397,1280,,,40.21942,-74.76326,60,,sketch_read
+xsW,2470,1205,,,40.21991,-74.76272,60,,sketch_read
+xsE,2770,1205,,,40.22006,-74.76029,60,,sketch_read
+xnW,2550,672,,,40.22325,-74.7624,60,,sketch_read
+xnE,2860,672,,,40.2234,-74.7599,60,,sketch_read
+sfarN,2960,700,,,40.22327,-74.75907,80,,sketch_read
+sfarS,2990,900,,,40.22205,-74.7587,80,,sketch_read
+gloverW,2550,1675,,,40.21704,-74.76178,120,,sketch_read
+gloverE,2700,1675,,,40.21712,-74.76057,120,,sketch_read
+howell,1090,440,,,40.23163,-74.76951,200,,sketch_read
+halt500,600,495,,,40.23531,-74.77185,300,,derived
+calhoun,1530,440,,,40.22906,-74.76852,80,,modern_map
+hermitage,1110,1320,,,40.2277,-74.7834,150,,modern_map
+riverrd,1340,1280,,,40.22459,-74.77735,150,,modern_map
+foxchase,2867,237,,,40.22871,-74.76022,250,,sketch_read
+washpost,2170,440,,,40.22855,-74.76367,50,,modern_map
+brunsblk,2660,500,,,40.22753,-74.76199,200,,sketch_read
+fermoy,2800,330,,,40.2283,-74.7608,300,,estimate
+ferry,2930,2310,,,40.2075,-74.763,500,,estimate
