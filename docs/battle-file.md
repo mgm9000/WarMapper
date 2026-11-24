@@ -35,6 +35,7 @@ give is `null`.
 | `units` | Every unit in the battle's order of battle, whether or not it is placed |
 | `tracks` | One per symbol on the map: a unit and its recorded positions in time order |
 | `events` | The named moments on the timeline |
+| `links` | Optional. The campaign this battle is part of, or the battles inside this campaign (BP-34) |
 | `sources` | Every source the file cites |
 | `labels` | Names written on the map |
 | `maps` | Period maps |
@@ -150,6 +151,24 @@ Optional. A summary of a day or a week, shown when the playback stops at the end
 
 `kind` is `day` or `week`; `from` and `to` are the dates it covers (the same date for a day). Where a day has no summary
 the pause shows that day's events, and the units whose record changes that day, instead.
+
+### links
+
+Optional (since 23 Nov 2026, BP-34). A campaign followed by the day and the battles inside it, each followed by the minute, link to each
+other: the campaign's file lists its battles, and each battle's file names its campaign.
+
+```json
+"links": [{"kind": "battle", "playback": "manila", "title": "Manila, 4-5 February 1899", "label": "Manila",
+           "from": "1899-02-04T18:00", "to": "1899-02-05T20:00", "at": "1899-02-04T20:00", "unit": "minute"}]
+```
+
+- `kind` is `battle` (a battle inside this campaign) or `campaign` (the campaign this battle is part of). `playback` is the other
+  playback's folder under `playbacks/`; `title` its title, and `label` the shorter name to show, if there is one.
+- `from` and `to` are the other playback's own start and end (`time.start` and `time.end` of its file); `unit` its time unit.
+- `at`, on a battle link, is where the battle opens from the campaign; left out, at its start, or at the campaign's date if that is later.
+- The player shows a battle link on the campaign's timeline as a band over the battle's dates, lists the battles in the side pane, and
+  while the clock is on a battle's dates offers to open it there (`#at=` in the address, as a copied link). A campaign link is offered at
+  the top of the battle's side pane, and opens the campaign at the date on the battle's clock. A file with no `links` shows none of this.
 
 ### sources
 
@@ -353,6 +372,7 @@ Every sheet below is on each war's workbook, but for `Sources`, which is in `Sou
 | a step's `via` | `Routes`: a route from one row to the next, where its `playback` column says yes |
 | `events` | `Events`: those of the battles the playback's `record_battles` names. `timeline` is `name`, `dot` or `off`; `playback_at`, `playback_label` and `playback_text` are the playback's moment, short name and wording where they differ from the record's |
 | `summaries` | `Summaries`: one row per day or week (`kind`, `from`, `to`, `title`, `text`, `source_ids`) |
+| `links` | `Links`: one row per campaign playback and battle playback inside it, both of one war (`campaign_playback`, `battle_playback`, `label`, `campaign_label`, `opens_at`). The dates come from each one's `Playbacks` row |
 | `sources` | `Sources`: only those the battle cites |
 | `labels` | `Labels` |
 | `maps` | `Maps`: one row per picture; the `iiif_...` columns on a map's first picture |

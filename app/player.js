@@ -29,6 +29,27 @@ var B=WM.battle(raw),P=raw.playback||{},Z=P.zoom||{},RU=P.rules||{};
 var $=WM.$,esc=WM.esc,chip=WM.chip,lerpG=WM.lerpG,cen=WM.cen,plen=WM.plen;
 var byDay=B.unit==='day',style=P.style||(byDay?'operational':'tactical'),compact=style==='operational';
 var T0=B.T0,T1=B.T1;
+/* BP-34: a campaign and the battles inside it link to each other (raw.links: written by the exporter from the Links sheet; a battle file
+   with no links has none, and nothing below shows). A campaign lists its battles and marks their dates on the timeline; while the clock is
+   on a battle's dates the pane offers to open it there. A battle offers the way back to its campaign at the date on its clock. */
+var LINKS=(raw.links||[]).map(function(x){return {kind:x.kind,id:x.playback,name:x.label||x.title,from:x.from,to:x.to,at:x.at||x.from,t0:B.time(x.from),t1:B.time(x.to)}});
+var LMON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function lday(s){return (+s.slice(8,10))+' '+LMON[+s.slice(5,7)-1]}
+function lspan(x){var a=x.from.slice(0,10),b=x.to.slice(0,10),y=' '+b.slice(0,4);if(a===b)return lday(a)+y;return (a.slice(5,7)===b.slice(5,7)?(+a.slice(8,10)):lday(a))+' to '+lday(b)+y}
+function linkNow(x){return x.kind==='battle'&&t>=x.t0-1e-6&&t<=x.t1+(byDay?0.999:0)}
+function linkAt(x){   // where the other playback opens: the battle at its start, or at the campaign's day if later; the campaign at the battle's day
+  if(x.kind==='battle'){var d=B.isoOf(Math.floor(t+1e-6)).slice(0,10)+'T00:00';return d>x.at?(d<x.to?d:x.to):x.at}
+  var e=B.isoOf(t).slice(0,10);return e<x.from.slice(0,10)?x.from.slice(0,10):e>x.to.slice(0,10)?x.to.slice(0,10):e}
+function openLink(id){var x=LINKS.filter(function(l){return l.id===id})[0];if(!x)return;var h=document.querySelector('a.home'),home=h?h.getAttribute('href'):'../../',
+  url=home+'playbacks/'+encodeURIComponent(x.id)+'/#at='+encodeURIComponent(linkAt(x));clk.setPlaying(false);
+  if(/^https?:/.test(home))window.open(url,'_blank','noopener');else location.href=url}   // from an offline copy the site opens in a new tab
+function linksHtml(){if(!LINKS.length)return '';var h='',now=LINKS.filter(linkNow),bt=LINKS.filter(function(x){return x.kind==='battle'});
+  LINKS.forEach(function(x){if(x.kind==='campaign')h+='<div class="cbl"><span class="eyebrow">Part of a campaign</span><button data-lnk="'+esc(x.id)+'">'+esc(x.name)+' <span class="cbs">'+esc(lspan(x))+'</span><span class="cbg">Open the campaign at this date &rarr;</span></button></div>'});
+  now.forEach(function(x){h+='<div class="cbl on"><span class="eyebrow">A battle on this date</span><button data-lnk="'+esc(x.id)+'">'+esc(x.name)+' <span class="cbs">'+esc(lspan(x))+'</span><span class="cbg">Open the battle &rarr;</span></button></div>'});
+  if(bt.length){h+='<details class="evs cbls"'+(lnkOpen?' open':'')+'><summary>Battles in this campaign ('+bt.length+')</summary><ul class="evl">';
+    bt.forEach(function(x){h+='<li><button data-lnk="'+esc(x.id)+'"><span class="tm">'+esc(lspan(x))+'</span><span>'+esc(x.name)+'</span></button></li>'});h+='</ul></details>'}
+  return h}
+var lnkOpen=false;
 var BLEND=RU.blend||4,NEAR=RU.near||15,LEAD_IN=RU.lead||0.35,LINGER=RU.linger||2,PACE=RU.pace||null;
 /* march pace in metres a minute (rules.pace: one number, or one per branch). A unit moving to a step marked "march", with nothing on record
    between, leaves when the earlier record ends and moves at that pace, rather than drifting across the whole gap; it then waits there. */
@@ -1027,7 +1048,7 @@ function renderPanel(sc){
   if(sumAt!=null){var sk='sum|'+sumAt+'|'+sumMode;if(sk!==panelKey){panelKey=sk;panel.innerHTML=summaryHtml();panel.scrollTop=0}return}
   if(rcSel&&!sel&&base.rc&&RCF[rcSel]){var rk2='rc|'+rcSel;if(rk2!==panelKey){panelKey=rk2;panel.innerHTML=featureHtml();panel.scrollTop=0}return}
   if(info&&!sel){var ik='info|'+base.id+'|'+(seriesShown?seriesShown.id:'')+(hsRc?'r':'');if(ik!==panelKey){panelKey=ik;panel.innerHTML=mapDetails()+aroundNote();panel.scrollTop=0}return}
-  var key=base.id+'|'+(sel?sel+'|'+(me?me.s.k.id+me.s.kind+(byDay?stamp(t):''):'x'):'now|'+(landing?'L':'')+(ev?ev.id:0)+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(','));
+  var key=base.id+'|'+(sel?sel+'|'+(me?me.s.k.id+me.s.kind+(byDay?stamp(t):''):'x'):'now|'+(landing?'L':'')+(ev?ev.id:0)+'|'+LINKS.filter(linkNow).map(function(x){return x.id}).join(',')+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(','));
   if(key===panelKey) return; panelKey=key; var h='';
   if(sel){
     var tr=B.track(sel),lk=look(tr),p=parentAt(tr,t),pu=p&&p[2]&&B.units[p[2]];
@@ -1042,6 +1063,7 @@ function renderPanel(sc){
     if(tr.notes) h+='<p class="meta" style="margin-top:12px">'+esc(tr.notes)+'</p>';
   } else {
     /* the Now text and the lists of units share the pane: opening a list folds the Now text away, and closing every list opens it again */
+    h+=linksHtml();
     h+='<details class="nowd"'+(nowOpen?' open':'')+'><summary class="eyebrow">'+esc(ev?'Now: '+ev.name:B.opening.label)+'</summary><p class="phase">'+esc(ev?ev.text:B.opening.text)+'</p></details>';
     if(landing) h+='<p class="meta start">Press play to begin. The units come onto the map as the battle starts.</p>';
     if(B.events.length){h+='<details class="evs"'+(evOpen?' open':'')+'><summary>Key events: jump to one</summary><ul class="evl">';
@@ -1210,9 +1232,11 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,stopAt:stopAt,onStop:function(b){openSummary(b,b
   else{for(m=Math.ceil(T0/60)*60;m<TM;m+=60){h+='<span class="tick" style="left:'+pc(m)+'"></span>';if(m%120===0)h+='<span class="tk minor" style="left:'+pc(m)+'">'+fmt(m)+'</span>'}
     var st=lg?30:15,lb=lg?60:30;   // a long day: a tick each half hour and a time each hour
     for(m=Math.ceil(TM/30)*30;m<=T1;m+=st){h+='<span class="tick" style="left:'+pc(m)+'"></span>';if(m%lb===0)h+='<span class="tk'+(m%(lb*2)?' minor':'')+'" style="left:'+pc(m)+'">'+fmt(m)+'</span>'}}
+  LINKS.forEach(function(x){if(x.kind!=='battle')return;var a0=Math.max(T0,x.t0),a1=Math.min(T1,x.t1+(byDay?1:0));if(a1<a0)return;
+    h+='<button class="cblb" data-t="'+a0+'" style="left:'+pc(a0)+';width:'+((t2u(a1)-t2u(a0))*100)+'%" title="'+esc(x.name+', '+lspan(x))+'" aria-label="'+esc('Go to '+x.name)+'"></button>'});
   B.events.forEach(function(e){h+='<button class="ev'+(e.quiet?' mute':'')+'" data-id="'+esc(e.id)+'" data-t="'+e.t+'" style="left:'+pc(e.t)+'" title="'+esc(e.name)+'" aria-label="'+esc(e.name)+'">'+esc(e.name)+'</button>'});
   tl.insertAdjacentHTML('afterbegin',h);
-  tl.addEventListener('click',function(ev){var b=ev.target.closest('.ev');if(b){clk.setPlaying(false);clk.setTime(+b.dataset.t)}});
+  tl.addEventListener('click',function(ev){var b=ev.target.closest('.ev,.cblb');if(b){clk.setPlaying(false);clk.setTime(+b.dataset.t)}});
 })();
 function on(id,fn){var e=$(id);if(e)e.addEventListener('click',fn)}
 bases.forEach(function(b){if(!b.of)on('b-'+b.id,function(){if(base.of===b.id){var p=sheetToGround(base,mv.map.getCenter());setBase(b);if(p)mv.map.jumpTo({center:p,zoom:mv.zoomFor(0.2)})}else setBase(b)})});
@@ -1306,6 +1330,8 @@ function restart(){closeSummary();$('ask').hidden=true;clk.setPlaying(false);sel
 on('evprev',function(){clk.setPlaying(false);clk.setTime(stepBy(-1,t))}); on('evnext',function(){clk.setPlaying(false);clk.setTime(stepBy(1,t))}); on('step',function(){setStep(stepI+1)});
 WM.panelClicks(panel,select);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-ev]');if(!b)return;var ev=B.events.filter(function(x){return x.id===b.getAttribute('data-ev')})[0];if(ev){clk.setPlaying(false);clk.setTime(ev.t)}});
+panel.addEventListener('click',function(e){var b=e.target.closest('[data-lnk]');if(b)openLink(b.getAttribute('data-lnk'))});
+panel.addEventListener('toggle',function(e){if(e.target.classList&&e.target.classList.contains('cbls'))lnkOpen=e.target.open},true);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-base]');if(!b)return;setBase(b.getAttribute('data-base'));info=true;rcSel=null;panelKey='';mv.kick()});   // a map offered in the map details
 panel.addEventListener('toggle',function(e){if(!e.target.classList)return;
   if(e.target.classList.contains('nowd')){nowOpen=e.target.open;return}

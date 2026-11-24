@@ -16,3 +16,5 @@ Gaps logged,=COUNTA(Gaps!A:A)-1
 Playbacks,=COUNTA(Playbacks!A:A)-1
 ,
 Hypotheses (23 Nov 2026),"One row per disputed point, in place of the Conflicts sheet: the question, the readings (A, B, C), the evidence for and against the reading the playback follows, each item with its source and page, the reading adopted, how sure it is, who decided and when, the rows it touches and what would settle it. The history column keeps everything the Conflicts row said. Status: Open (a ruling is wanted), Proposed (a reading is put forward for Morgan to accept), Settled, No ruling needed."
+,
+Links (23 Nov 2026),"One row per campaign playback and battle playback inside it (BP-34). The campaign lists its battles, with a button that opens each at its date; the battle links back to the campaign at the date on its clock. Columns: link_id, campaign_playback, battle_playback (playback ids from Playbacks), label and campaign_label (optional names), opens_at (optional: where the battle opens from the campaign; its start if empty), notes. Dates come from Playbacks."

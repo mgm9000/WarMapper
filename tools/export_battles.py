@@ -222,6 +222,30 @@ def reconstructions(name, W):
     return out
 
 
+def links(pb, W):
+    """BP-34: a campaign playback and the battle playbacks inside it link to each other (Links sheet: one row per pair, both of one war).
+    The campaign's file lists its battles, each with the stretch of time the battle's playback covers; the battle's file names its campaign.
+    Times come from the Playbacks rows, so they cannot drift apart. `at` is where the battle opens from the campaign (its start if empty)."""
+    rows = {r['playback_id']: r for r in W['Playbacks']}; out = []
+    camp_of = {r['playback_id']: r['campaign_id'] for r in W['Playbacks']}
+    war = {c['campaign_id']: c['war_id'] for c in W['Campaigns']}
+    for r in W.get('Links', []):
+        c, b = text(r.get('campaign_playback')), text(r.get('battle_playback'))
+        assert c in rows and b in rows, 'Links %s: %s and %s must both be rows on Playbacks' % (r['link_id'], c, b)
+        assert war[camp_of[c]] == war[camp_of[b]], 'Links %s: %s and %s are not of the same war' % (r['link_id'], c, b)
+        assert c != b, 'Links %s: a playback cannot link to itself' % r['link_id']
+        if pb['playback_id'] == c:
+            o = rows[b]
+            out.append({'kind': 'battle', 'playback': b, 'title': o['title'], 'label': text(r.get('label')), 'from': when(o['time_start']), 'to': when(o['time_end']),
+                        'at': when(r.get('opens_at')), 'unit': o['time_unit']})
+        elif pb['playback_id'] == b:
+            o = rows[c]
+            out.append({'kind': 'campaign', 'playback': c, 'title': o['title'], 'label': text(r.get('campaign_label')), 'from': when(o['time_start']), 'to': when(o['time_end']),
+                        'unit': o['time_unit']})
+    out.sort(key=lambda x: (x['kind'], x['from']))
+    return out
+
+
 def export(pb, W):
     """One battle file, from the workbook's rows for the playback `pb` (a row of the Playbacks sheet)."""
     name, camp = pb['playback_id'], pb['campaign_id']
@@ -385,6 +409,8 @@ def export(pb, W):
               'sides': sides, 'nations': [{k: n[k] for k in ('name', 'short', 'code', 'colour', 'dark', 'paper')} for n in mine(W.get('Nations', []))],
               'units': ulist, 'tracks': tracks, 'events': events, 'labels': labels, 'maps': list(maps.values()), 'base': base}
     if summaries: battle['summaries'] = summaries
+    lk = links(pb, W)
+    if lk: battle['links'] = lk
     rc = reconstructions(name, W)
     if rc: battle['reconstructions'] = rc
     catalogue = {s['source_id']: {'title': s['title'], 'author': text(s.get('author')), 'date': str(s['date']) if not blank(s.get('date')) else None, 'citation': text(s['citation']),

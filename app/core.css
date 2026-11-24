@@ -370,3 +370,12 @@ details.umd>summary{font-size:13.5px;font-weight:600;color:var(--fg)}
 
 .linkish{background:none;border:0;padding:0;font:inherit;color:var(--accent,#7a4a22);text-decoration:underline;cursor:pointer}
 .othermaps{margin:4px 0 14px}.othermaps h3{margin-top:6px}.othermaps li span{display:block}
+
+/* BP-34: links between a campaign and the battles inside it */
+.cbl{margin:0 0 10px;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--surface-2)}
+.cbl.on{border-color:var(--accent);background:var(--accent-soft)}
+.cbl button{display:block;width:100%;text-align:left;background:none;border:0;padding:2px 0 0;color:var(--fg);font:inherit;font-weight:600;cursor:pointer}
+.cbl .cbs{font-weight:400;color:var(--muted);font-size:12.5px}
+.cbl .cbg{display:block;color:var(--accent);font-size:12.5px;margin-top:3px}
+.tl .cblb{position:absolute;top:33px;height:4px;min-width:6px;border:0;padding:0;border-radius:2px;background:var(--accent);opacity:.8;cursor:pointer}
+.tl .cblb:hover{opacity:1}

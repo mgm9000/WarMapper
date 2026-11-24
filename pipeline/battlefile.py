@@ -236,6 +236,15 @@ def validate(b, folder=None):
         if x.get('kind') not in ('day', 'week'): bad.append(w + ': kind must be "day" or "week"')
         for k in ('from', 'to'): time_ok(x.get(k), w + '.' + k)
         if isinstance(x.get('from'), str) and isinstance(x.get('to'), str) and x['to'] < x['from']: bad.append(w + ': ends before it starts')
+    for x in b.get('links', []):   # optional (BP-34): the campaign this battle is part of, or the battles inside this campaign
+        w = 'link to %s' % x.get('playback'); need(x, ['kind', 'playback', 'title', 'from', 'to'], w)
+        if x.get('kind') not in ('battle', 'campaign'): bad.append(w + ': kind must be "battle" or "campaign"')
+        for k in ('from', 'to'): time_ok(x.get(k), w + '.' + k)
+        time_ok(x.get('at'), w + '.at', allow_none=True)
+        if isinstance(x.get('from'), str) and isinstance(x.get('to'), str) and x['to'][:10] < x['from'][:10]: bad.append(w + ': ends before it starts')
+        if x.get('kind') == 'battle' and isinstance(x.get('from'), str) and isinstance(b['time'].get('end'), str) and (
+                x['from'][:10] > b['time']['end'][:10] or x['to'][:10] < b['time']['start'][:10]):
+            bad.append(w + ': the battle falls outside this playback\'s time')
     for e in b['events']:
         w = 'event %s' % e.get('id'); need(e, ['id', 'start', 'end', 'at', 'name', 'text'], w)
         for k in ('start', 'end', 'at'): time_ok(e.get(k), w + '.' + k)
