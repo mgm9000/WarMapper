@@ -372,7 +372,7 @@ Every sheet below is on each war's workbook, but for `Sources`, which is in `Sou
 |---|---|
 | `id`, `title`, `subtitle`, `time`, `view`, `opening`, `record` | `Playbacks`: one row per playback |
 | `playback`, and `view.presets` | `Playback settings`: one setting per row. `bases.1.label` is the label of the first base; a value written `[..]` is a list |
-| `sides` | `Sides` (`code` and `short` are the playback's) |
+| `sides` | `Sides`: the sides of the playback's war. A playback that needs its own words for a side sets `sides.<code>.short` and `sides.<code>.name` on `Playback settings` (since 23 Nov 2026: the Crown side is "Hessian and British" at Trenton and "British" at Cowpens); they replace the war's `short` and `name` in that playback's file and are not copied into its `playback` section |
 | `nations` | `Nations` |
 | `units` and their `assignments` | `Units`, `Assignments`: every unit of the campaign's war, but for units that only another playback of that war draws (Manila and Luzon 1899 share one war) |
 | `tracks` | `Tracks`: one row per symbol. `rows` lists the `Positions` rows it follows; left empty, it follows every row of its unit. `starts_from_row`, `starts_at` and `start_route` (and `start_move_minutes`, how long it takes to reach its first row, such as a river crossing) give a symbol a stand-in start from a row of its division's (`start_route` may name several routes in order, `RT01; RT02`; `start_route_points` caps the points taken from the last) |
