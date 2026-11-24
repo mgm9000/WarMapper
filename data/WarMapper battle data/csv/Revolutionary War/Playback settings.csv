@@ -110,12 +110,12 @@ cowpens,follow.empty,field,
 cowpens,follow.lookahead,12,Minutes ahead the camera looks
 cowpens,preset.field,"[-81.8205, 35.1298, -81.8055, 35.1392]","A named view: [west, south, east, north]"
 cowpens,preset.approach,"[-81.8300, 35.1130, -81.7800, 35.1450]",
-cowpens,views.1.preset,field,Named views
-cowpens,views.1.label,The battlefield,
-cowpens,views.1.short,Field,
-cowpens,views.2.preset,approach,
-cowpens,views.2.label,Tarleton's approach,
-cowpens,views.2.short,Approach,
+cowpens,views.1.preset,approach,"Named views; the first is the one the page opens on (since 24 Nov: the whole ground, then Follow eases in)"
+cowpens,views.1.label,Tarleton's approach,
+cowpens,views.1.short,Approach,
+cowpens,views.2.preset,field,
+cowpens,views.2.label,The battlefield,
+cowpens,views.2.short,Field,
 cowpens,modern.tiles,https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x},
 cowpens,modern.max_zoom,16,
 cowpens,modern.credit,USGS The National Map,
@@ -138,7 +138,7 @@ cowpens,trails.on,True,Routes taken: the way a unit has come is drawn behind it
 cowpens,trails.opacity,0.5,
 cowpens,trails.fade_after,6,
 cowpens,trails.fade_over,6,
-cowpens,rules.blend,2,Minutes over which a unit shifts from one row to the next when they meet
+cowpens,rules.blend,4,Minutes over which a unit shifts from one row to the next when they meet (was 2: the moves looked like jumps)
 cowpens,rear.side,US,Symbols sit behind their own lines: the American rear is up the road to the north-west
 cowpens,rear.lat,35.141,
 cowpens,rear.lon,-81.8188,
@@ -226,3 +226,6 @@ cowpens,bases.10.hidden,True,
 cowpens,bases.10.note,"The National Park Service's map of the park today: trails, monuments and the trace of the road.",
 cowpens,start_base,r81t,
 cowpens,about.8,"The playback opens on ""1781 with terrain"", a reconstruction: the roads Edwin Bearss drew in 1967 as the roads of the battle, laid on the ground by the road the park still keeps, and today's ground, which the park has kept open. The map details (the i button) list each road with its source and how sure it is, and offer the other maps of this ground: Bearss's own maps phase by phase, the Army War College sketches of 1928, the USGS maps of 1959 and 1975, Mills's map of 1825 and the park map.",
+cowpens,follow.glide_seconds,10,"Once play is pressed, the camera eases in from the whole ground to the action over this many seconds"
+cowpens,event_dim,0.7,Units not named in the current key event are drawn at this strength (the player's default is 0.32; at Cowpens it made most symbols faint)
+cowpens,arrows.reach_minutes,6,"An arrow runs this many minutes of march ahead of its unit, not to the end of the road"

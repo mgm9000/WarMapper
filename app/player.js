@@ -54,7 +54,7 @@ var lnkOpen=false;
    formations above those, so a regiment folded into its brigade still counts). While an event is current, and for a while after its mark
    (the record's end, or 45 minutes / 2 days at least), its units and their arrows stand out and the other symbols are dimmed. Picking an
    event in the pane moves the clock to it and frames its units; a unit's details list the events that name it. Nothing new in the file. */
-var EVT={},EVOF={},EVDIM=0.32,EVHOLD=byDay?2:45;
+var EVT={},EVOF={},EVDIM=(P.event_dim!=null?P.event_dim:0.32),EVHOLD=byDay?2:45,EVEASE=600,evCur={};   // EVDIM: how faint the units not in the current event are; EVEASE: ms over which a unit fades or comes back
 B.events.forEach(function(e){var m={};
   B.tracks.forEach(function(tr){if(tr.k.some(function(k){return !k.virtual&&e.steps.indexOf(k.id)>=0})){m[tr.id]=1;(EVOF[tr.id]=EVOF[tr.id]||[]).push(e.id)}});
   var own=Object.keys(m);
@@ -145,8 +145,11 @@ function prevGeo(ks,i,key){for(var j=i-1;j>=0;j--){var g=geo(ks[j],key);if(g)ret
 function noPlace(k,key){return (key!=='g'&&k.g)?'offthis':'unplaced'}   // on a map of its own, a unit placed on the ground but not on that map
 function placed(k){return k.method==='inferred'?'inferred':'stated'}
 function move(a,b,f,key){ // from step a to step b: along the route the record gives (via) if it has one, else straight
-  var V=key==='g'?b.via:(b.vo&&b.vo[key]),G=geo(b,key);   // a picture not to scale may carry the route in its own pixels (vo)
-  if(V&&V.length>1&&G){ if(f>0.92&&G.length>1){return lerpG([alongP(V,0.92)],G,(f-0.92)/0.08)} return [alongP(V,Math.min(f/0.92,1))]; }
+  var V=key==='g'?b.via:(b.vo&&b.vo[key]),G=geo(b,key),ga=geo(a,key);   // a picture not to scale may carry the route in its own pixels (vo)
+  if(V&&V.length>1&&G){
+    if(ga){var c0=cen(ga);if(Math.hypot(c0[0]-V[0][0],c0[1]-V[0][1])>1)V=[c0].concat(V)}   // the route may begin a little way off: the unit walks to it, it does not jump
+    if(f>0.92&&G.length>1){return lerpG([alongP(V,1)],G,(f-0.92)/0.08)}   // at the route's end it opens out into its line (from the end, not back along the route)
+    return [alongP(V,Math.min(f/0.92,1))]; }
   return lerpG(geo(a,key),geo(b,key),f)}
 /* A battle followed by the clock. A unit stands at a step's place for the step's time; between two steps it moves; where one step
    ends as the next begins it shifts over the last few minutes; after its last step it stays, faded, unless the record says it left. */
@@ -407,6 +410,10 @@ function subPath(V,f){if(f>=1)return V;var L=0,i,seg=[];for(i=1;i<V.length;i++)L
    where the record next puts it, along the route the record gives (straight where it gives none). On in every battle for moves of
    20 km or more; a battle can set min_km (how long a move earns an arrow), lead (how long before the unit sets off the arrow
    appears, in the battle's time unit: 3 days or 45 minutes unless set) or on: false. */
+function evOp(id){   // a unit's opacity under the event focus, easing towards its target so it never flicks on and off
+  var want=(evf&&!evf[id])?EVDIM:1,now=Date.now(),c=evCur[id];if(!c){evCur[id]={v:want,ts:now};return want}
+  var dt=Math.min(200,now-c.ts),k=Math.min(1,dt/EVEASE)*(1-EVDIM+0.0001);c.ts=now;
+  if(Math.abs(want-c.v)<=k)c.v=want;else{c.v+=want>c.v?k:-k;mv.kick()}return c.v}
 var ARW=P.arrows||{},arwOn=ARW.on!==false,ARW_MIN=(ARW.min_km!=null?ARW.min_km:20)*1000,ARW_ANY=null;
 function arrowsAny(){ // does any unit of this battle make a move long enough for an arrow? If none, the menu does not offer them
   if(ARW_ANY==null){ARW_ANY=false;B.tracks.forEach(function(tr){var ks=tr.k,i;for(i=1;i<ks.length&&!ARW_ANY;i++){var a=ks[i-1].g,b=ks[i].g;if(a&&b&&plen((ks[i].via&&ks[i].via.length>1)?ks[i].via:[cen(a),cen(b)])>=ARW_MIN)ARW_ANY=true}})}
@@ -422,13 +429,15 @@ function arrowsSvg(sc){ if(!arwOn||landing||!unitsOn||base.own||!arrowsAny()) re
     if(moving){a=st.from;b=st.k} else {a=st.k;b=ks[ks.indexOf(a)+1]; if(!b||st.kind==='lost'||t<a.t1-lead) return}
     var ga=geo(a,'g'),gb=geo(b,'g'); if(!ga||!gb) return;
     var V=(b.via&&b.via.length>1)?b.via:[cen(ga),cen(gb)]; if(plen(V)<minU) return;
-    var pts=(moving?ahead(V,cen(st.g)):V).map(S),n=pts.length,L=plen(pts); if(L<46) return;   // too short on screen to read as an arrow
+    var Vg=moving?ahead(V,cen(st.g)):V;
+    if(ARW.reach_minutes){var cap=plen(V)*ARW.reach_minutes/Math.max(1,b.t0-a.t1),lv=plen(Vg); if(lv>cap) Vg=subPath(Vg,cap/lv)}   // the arrow runs a few minutes' march ahead of the unit, not to the end of a long road
+    var pts=Vg.map(S),n=pts.length,L=plen(pts); if(L<46) return;   // too short on screen to read as an arrow
     var e=WM.along(pts,1-9/L),s0=WM.along(pts,Math.min(0.4,18/L)),d='M'+f1(s0.p[0])+' '+f1(s0.p[1]),acc=0,i;   // clear of the symbol at one end, room for the head at the other
     for(i=1;i<n;i++){acc+=Math.hypot(pts[i][0]-pts[i-1][0],pts[i][1]-pts[i-1][1]); if(acc>18&&acc<L-9) d+='L'+f1(pts[i][0])+' '+f1(pts[i][1])}
     d+='L'+f1(e.p[0])+' '+f1(e.p[1]);
     var tip=pts[n-1],vx=tip[0]-e.p[0],vy=tip[1]-e.p[1],vl=Math.hypot(vx,vy)||1; vx/=vl; vy/=vl;
     var hd='M'+f1(tip[0])+' '+f1(tip[1])+'L'+f1(e.p[0]-vx*4-vy*6)+' '+f1(e.p[1]-vy*4+vx*6)+'L'+f1(e.p[0]-vx*4+vy*6)+' '+f1(e.p[1]-vy*4-vx*6)+'Z',col=look(tr).col,w=compact?2.4:3;
-    h+='<g class="ahead" style="pointer-events:none" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="'+((moving?0.9:0.75)*((evf&&!evf[tr.id])?EVDIM:1))+'"><path d="'+d+'" stroke="var(--u-halo)" stroke-width="'+(w+3)+'"/><path d="'+hd+'" fill="var(--u-halo)" stroke="var(--u-halo)" stroke-width="4"/>'
+    h+='<g class="ahead" style="pointer-events:none" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="'+((moving?0.9:0.75)*evOp(tr.id))+'"><path d="'+d+'" stroke="var(--u-halo)" stroke-width="'+(w+3)+'"/><path d="'+hd+'" fill="var(--u-halo)" stroke="var(--u-halo)" stroke-width="4"/>'
       +'<path d="'+d+'" style="stroke:'+col+'" stroke-width="'+w+'" stroke-dasharray="'+(moving?'':'7 6')+'"/><path d="'+hd+'" style="fill:'+col+';stroke:'+col+'" stroke-width="1"/></g>'});
   return h}
 function trailsSvg(){ if(!TRL||!trlOn||landing||!unitsOn) return ''; var key=base.own?base.map:'g',by={};
@@ -499,7 +508,7 @@ function setDayEnds(v){deOn=v;tick('cDayEnds',v);remember('dayends',v);mv.kick()
 function unitSvg(u,part){   // the last position on record stays plain to see: dashed, barely faded
   var o=u.o,tr=o.tr,s=o.s,pts=u.pts,lk=look(tr),col=lk.col,k=s.kind;
   var soft=(k==='moving'||k==='early'||k==='after'||k==='unplaced'),low=u.low,op=(k==='unplaced'?0.5:k==='after'?0.8:1)*(u.fade==null?1:u.fade)*(u.o.s.fade==null?1:u.o.s.fade),isSel=!!tr.id&&sel===tr.id,h='',x=u.x,y=u.y,c=u.c;
-  if(evf&&!evf[tr.id]) op*=EVDIM;   // BP-32: not one of the current event's units
+  op*=tr.id?evOp(tr.id):1;   // BP-32: not one of the current event's units
   if(part==='line'){ if(!u.line) return '';
     var d=pts.map(function(p,i){return (i?'L':'M')+f1(p[0])+' '+f1(p[1])}).join('');
     var w=compact?((tr.ech==='corps'||tr.ech==='army')?5:tr.ech==='division'?4:3):((!tr.parent&&(tr.ech==='brigade'||tr.ech==='division'))?6:4.5);
@@ -1402,7 +1411,7 @@ mv.start(function(){buildBase();paintTime(T0);(P.views||[]).forEach(function(v){
 var api={battle:B,setTime:clk.setTime,select:select,setFollow:setFollow,setBase:setBase,setNames:setNames,setUnits:setUnits,setFold:setFold,setPreset:setPreset,mv:mv,
   focus:function(){var f=focusPoint();return f?WORLDS[worldOf(base)].toLL(f):null},setNarrative:setNarr,setSymbols:setSymbols,setSeenFrom:setSeenFrom,setOpacity:setOpacity,setStep:setStep,link:linkHash,
   begin:function(){landing=false;panelKey='';mv.kick()},setFormations:setFormations,setMute:setMute,setHill:setHill,
-  scene:function(){return scene().map(function(o){return {id:o.tr.id,kind:o.s.kind,row:o.s.k.id,drawn:o.drawn}})}};
+  scene:function(){var f=evFocus();return scene().map(function(o){return {id:o.tr.id,kind:o.s.kind,row:o.s.k.id,drawn:o.drawn,c:o.s.g?cen(o.s.g):null,dim:!!(f&&!f[o.tr.id])}})}};   // c: where it stands, in the frame's metres; dim: faded by the event focus (BP-32)
 Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}}); Object.defineProperty(api,'landing',{get:function(){return landing}}); Object.defineProperty(api,'summary',{get:function(){return sumAt==null?null:{at:sumAt,mode:sumMode}}});
 api.stops=function(m){return stopsFor(m)};api.merging=function(){return Object.keys(mrg)};api.stopAt=stopAt;
 Object.defineProperty(api,'modern',{get:function(){return {on:!!modOn,off:modOff,hill:!!hsVis}}});
