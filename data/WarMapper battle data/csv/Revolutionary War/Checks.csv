@@ -1,0 +1,22 @@
+rule,what the rule tests,result,battle,record,finding
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T11 and T56,Bridge guard and Sullivan are 0 m apart for 30 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T18 and T30,Rall guns and Mercer are 83 m apart for 15 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T30 and T31,Mercer and Rall Regt are 75 m apart for 25 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T30 and T32,Mercer and Lossberg are 147 m apart for 25 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T30 and T60,Mercer and Knyphausen guns are 148 m apart for 30 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T31 and T46,Rall Regt and Stark are 110 m apart for 20 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T31 and T47,Rall Regt and Moulder are 110 m apart for 20 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T32 and T36,Lossberg and Stirling are 124 m apart for 10 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T33 and T36,Knyphausen and Stirling are 24 m apart for 10 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T33 and T46,Knyphausen and Stark are 120 m apart for 20 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T33 and T47,Knyphausen and Moulder are 120 m apart for 20 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T36 and T37,Stirling and Rall Regt are 63 m apart for 30 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T36 and T38,Stirling and Lossberg are 115 m apart for 30 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T36 and T44,Stirling and Lossberg guns are 61 m apart for 45 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T36 and T61,Stirling and Knyphausen are 76 m apart for 35 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T56 and T44,Sullivan and Lossberg guns are 125 m apart for 75 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,TREN,T60 and T36,Knyphausen guns and Stirling are 122 m apart for 20 minutes. Check that neither row has gone stale.
+K03,Times can be read and run in order,note,TREN,T05,One or more times are unknown.
+K03,Times can be read and run in order,note,TREN,T10,One or more times are unknown.
+K03,Times can be read and run in order,note,TREN,T12,One or more times are unknown.
+K03,Times can be read and run in order,note,TREN,T13,One or more times are unknown.

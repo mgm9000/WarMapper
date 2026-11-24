@@ -1,0 +1,1 @@
+route_id,campaign_id,battle_id,unit_id,kind,start,end,from_pos_id,to_pos_id,"waypoints (lat, lon; ...)",source_ids,source_wording,confidence,notes,playback

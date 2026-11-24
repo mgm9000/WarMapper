@@ -1,0 +1,16 @@
+"Georeference: First Ypres, the sketch maps of the British official history",,,,,
+How the Ypres sketch maps of the British official history were tied to the current map,,,,,
+"Sketch A (the Ypres area) is bound across two pages; about a kilometre of ground is lost in the binding between them, so each page was fitted on its own: a shift, a turn and one scale, from villages that are both on the sketch and in OpenStreetMap (S39). The dated sketches were fitted the same way, each on its own, allowing a slightly different scale across and down the page.",,,,,
+"The misfit is the typical distance between where the fit puts a village and where OpenStreetMap has it. It mixes three things: the sketch is generalised, my reading of each village symbol is good to about 50 m, and a village is not a point.",,,,,
+,,,,,
+Sketch,dates shown,villages used,typical misfit (m),metres per pixel,used for
+"Sketch A, left page",no date (topography),19,113,8.18,Base map in the playback; ten places re-read (right page)
+"Sketch A, right page",no date (topography),21,149,8.17,Base map in the playback; ten places re-read (right page)
+Sketch 4,18 to 21 October,16,142,14.7,Backdrop in the playback; British and French lines for its last date read from it (v7)
+Sketch 7,22 and 23 October,17,139,14.7,Backdrop in the playback; British and French lines for its last date read from it (v7)
+Sketch 8,24 and 25 October,17,174,14.7,Backdrop in the playback; British and French lines for its last date read from it (v7)
+Sketch 9,26 to 29 October,25,145,14.7,Backdrop in the playback; British and French lines for its last date read from it (v7)
+Sketch 10,30 and 31 October,35,134,14.7,Backdrop in the playback; British and French lines for its last date read from it (v7)
+Sketch 12,1 to 4 November,23,151,14.7,Backdrop in the playback; British and French lines for its last date read from it (v7)
+Sketch 13,5 to 9 November,16,135,14.7,Backdrop in the playback; British and French lines for its last date read from it (v7)
+Sketch 14,10 and 11 November,14,186,14.7,Backdrop in the playback; British and French lines for its last date read from it (v7)

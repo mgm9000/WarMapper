@@ -1,39 +1,137 @@
 """Write every battle's battle file from the master workbook, or check the ones already written.
 
-The workbook (data/WarMapper battle data.xlsx) is the master copy of the battle data. This script reads it and writes one battle file
-per row of its Playbacks sheet (playbacks/<playback>/battle.json, in the format docs/battle-file.md describes). No battle has a script
-of its own: a new battle is new rows in the workbook.
+The workbooks in data/WarMapper battle data/ are the master copy of the battle data: one per war (the same sheets in each, holding only
+that war's rows) and "Sources and notes.xlsx" (the change log, Sources and Source candidates, which every war shares). This script reads
+them all as one set of tables and writes one battle file per row of the Playbacks sheets (playbacks/<playback>/battle.json, in the format
+docs/battle-file.md describes). No battle has a script of its own: a new battle is new rows in its war's workbook. It also writes every
+sheet as a CSV file (data/WarMapper battle data/csv/<workbook>/<sheet>.csv), so a change to a workbook can be read line by line in git.
 
   python3 tools/export_battles.py              write all battle files, then check them
   python3 tools/export_battles.py ypres        one battle only
-  python3 tools/export_battles.py --check      check the files as they stand, without rewriting them
+  python3 tools/export_battles.py --check      check the files as they stand, without rewriting them (and that the CSV copies are current)
 
 A battle file that breaks the format is not written. Positions that would have a unit move implausibly fast are listed as warnings, and so
 are places where one side's symbol is drawn on top of the other's (a unit overrun on the map without the data saying what became of it).
 After exporting, run tools/build.py to put the new data into the pages.
 """
-import datetime as dt, json, math, os, sys
+import csv, datetime as dt, io, json, math, os, sys
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(ROOT, 'pipeline'))
 import battlefile as bf
 
-WORKBOOK = os.path.join(ROOT, 'data', 'WarMapper battle data.xlsx')
+WORKBOOK = os.path.join(ROOT, 'data', 'WarMapper battle data')   # the folder of workbooks; its name is the record's "workbook"
+SHARED = 'Sources and notes'                                       # the workbook every war shares
+CSV_DIR = os.path.join(WORKBOOK, 'csv')
 BRANCH = {'horse artillery': 'artillery'}
 ECHELON = {'regiment (part)': 'regiment'}
 ARRIVAL_NOTE = "The approach is not recorded in the sources read. The unit is drawn coming up from %s the day before it is first placed."
 VIRTUAL_NOTE = "Shown leaving its division's last recorded position. Where the unit itself was at this moment is not in the sources read."
+# a row's own id, on the sheets whose ids must not repeat across the workbooks (a war's rows sit in one workbook only)
+IDS = {'Wars': 'war_id', 'Campaigns': 'campaign_id', 'Battles': 'battle_id', 'Phases': 'phase_id', 'Sides': 'side_id', 'Units': 'unit_id',
+       'Assignments': 'assign_id', 'Positions': 'pos_id', 'Routes': 'route_id', 'Events': 'event_id', 'Hypotheses': 'hypothesis_id',
+       'Gaps': 'gap_id', 'Places': 'place_id', 'Sources': 'source_id', 'Source candidates': 'candidate_id', 'Playbacks': 'playback_id',
+       'Reconstructions': 'recon_id', 'Links': 'link_id'}
+
+
+def workbooks():
+    """The workbooks of the folder, the war workbooks first (by name), then the shared one."""
+    names = sorted(f[:-5] for f in os.listdir(WORKBOOK) if f.endswith('.xlsx') and not f.startswith('~$'))
+    assert SHARED in names, 'no "%s.xlsx" in %s' % (SHARED, WORKBOOK)
+    return [n for n in names if n != SHARED] + [SHARED]
 
 
 def load():
-    """Every sheet as a list of rows, each a dict by column heading."""
+    """Every sheet as a list of rows, each a dict by column heading: a sheet that more than one workbook has is read as one, the rows of
+    each workbook in turn. Each war workbook holds one war: a row naming another war's campaign, side or playback stops the export, and so
+    does an id used twice, or a war workbook whose sheets differ from the others'."""
     import openpyxl
-    wb = openpyxl.load_workbook(WORKBOOK, read_only=True, data_only=True); out = {}
-    for ws in wb.worksheets:
-        it = ws.iter_rows(values_only=True); head = next(it, None)
-        if not head: continue
-        out[ws.title] = [dict(zip(head, r)) for r in it if r and r[0] not in (None, '')]
+    out = {}; layout = {}; whose = {}
+    for name in workbooks():
+        wb = openpyxl.load_workbook(os.path.join(WORKBOOK, name + '.xlsx'), read_only=True, data_only=True)
+        if name != SHARED: layout[name] = [ws.title for ws in wb.worksheets]
+        for ws in wb.worksheets:
+            it = ws.iter_rows(values_only=True); head = next(it, None)
+            if not head: continue
+            rows = [dict(zip(head, r)) for r in it if r and r[0] not in (None, '')]
+            for r in rows: whose[id(r)] = name
+            out.setdefault(ws.title, []).extend(rows)
+    first = next(iter(layout.values()), [])
+    for name, sheets in layout.items():
+        assert sheets == first, '%s.xlsx: its sheets (%s) differ from the other war workbooks\' (%s)' % (name, ', '.join(sheets), ', '.join(first))
+    for sheet, key in IDS.items():
+        seen = {}
+        for r in out.get(sheet, []):
+            k = r.get(key)
+            if k in (None, ''): continue
+            assert k not in seen, '%s: id %s is in both %s.xlsx and %s.xlsx (or twice in one)' % (sheet, k, seen[k], whose[id(r)])
+            seen[k] = whose[id(r)]
+    war_of = {}                                       # each war workbook's war, from its Wars sheet
+    for r in out.get('Wars', []): war_of.setdefault(whose[id(r)], set()).add(r['war_id'])
+    for name, w in war_of.items(): assert len(w) == 1, '%s.xlsx: its Wars sheet must name one war, not %s' % (name, ', '.join(sorted(w)))
+    war_of = {n: next(iter(w)) for n, w in war_of.items()}
+    camp = {r['campaign_id']: r['war_id'] for r in out.get('Campaigns', [])}
+    side = {r['side_id']: r['war_id'] for r in out.get('Sides', [])}
+    pb = {r['playback_id']: camp.get(r['campaign_id']) for r in out.get('Playbacks', [])}
+    test = {'Campaigns': lambda r: r['war_id'], 'Sides': lambda r: r['war_id'], 'Units': lambda r: side.get(r['side_id']),
+            'Positions': lambda r: camp.get(r['campaign_id']), 'Routes': lambda r: camp.get(r['campaign_id']), 'Events': lambda r: camp.get(r['campaign_id']),
+            'Playbacks': lambda r: camp.get(r['campaign_id'])}
+    for s in ('Tracks', 'Playback settings', 'Labels', 'Maps', 'Summaries', 'Nations', 'Reconstructions'): test[s] = lambda r: pb.get(r['playback_id'])
+    for sheet, f in test.items():
+        for r in out.get(sheet, []):
+            name = whose[id(r)]
+            if name == SHARED: continue
+            assert f(r) == war_of.get(name), '%s.xlsx, %s: the row %s belongs to %s, not to this workbook\'s war (%s)' % (
+                name, sheet, next(iter(r.values())), f(r), war_of.get(name))
+    title = {r['source_id']: r['title'] for r in out.get('Sources', [])}
+    for r in out.get('Source uses', []):
+        assert r['source_id'] in title, '%s.xlsx, Source uses: %s is not on the Sources sheet' % (whose[id(r)], r['source_id'])
     return out
+
+
+def cell_text(v):
+    """A cell as the CSV copy writes it: formulas as written, dates and times as the workbook's own form, numbers without a needless .0."""
+    if v is None: return ''
+    if isinstance(v, dt.datetime): return v.strftime('%Y-%m-%d %H:%M:%S' if v.second else '%Y-%m-%d %H:%M') if (v.hour or v.minute or v.second) else v.strftime('%Y-%m-%d')
+    if isinstance(v, dt.date): return v.isoformat()
+    if isinstance(v, float) and v.is_integer(): return str(int(v))
+    return str(v)
+
+
+def csv_copies():
+    """{path: text}: every sheet of every workbook as CSV, formulas as written, trailing empty rows and columns left off."""
+    import openpyxl
+    files = {}
+    for name in workbooks():
+        wb = openpyxl.load_workbook(os.path.join(WORKBOOK, name + '.xlsx'), read_only=True)
+        for ws in wb.worksheets:
+            rows = [[cell_text(v) for v in r] for r in ws.iter_rows(values_only=True)]
+            while rows and not any(rows[-1]): rows.pop()
+            width = max((max((i + 1 for i, v in enumerate(r) if v), default=0) for r in rows), default=0)
+            buf = io.StringIO(); w = csv.writer(buf, lineterminator='\n')
+            for r in rows: w.writerow((r + [''] * width)[:width])
+            files[os.path.join(CSV_DIR, name, ws.title + '.csv')] = buf.getvalue()
+    return files
+
+
+def write_csv():
+    files = csv_copies()
+    for path, text in files.items():
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        if not os.path.exists(path) or open(path, encoding='utf-8').read() != text: open(path, 'w', encoding='utf-8').write(text)
+    stale = [os.path.join(d, f) for d, _, fs in os.walk(CSV_DIR) for f in fs if os.path.join(d, f) not in files]
+    for p in stale: os.remove(p)                       # a sheet that is gone
+    return len(files)
+
+
+def check_csv():
+    """The CSV copies that do not match their workbook: they are written by the export, never edited by hand."""
+    files = csv_copies(); bad = []
+    for path, text in files.items():
+        if not os.path.exists(path) or open(path, encoding='utf-8').read() != text: bad.append(os.path.relpath(path, ROOT))
+    have = {os.path.join(d, f) for d, _, fs in os.walk(CSV_DIR) for f in fs} if os.path.isdir(CSV_DIR) else set()
+    bad += [os.path.relpath(p, ROOT) + ' (no such sheet)' for p in sorted(have - set(files))]
+    return bad
 
 
 def yes(v): return v is True or str(v or '').strip().lower() in ('yes', 'y', 'true', '1')
@@ -399,6 +497,11 @@ def main(argv):
         for b in (args or sorted(d for d in os.listdir(os.path.join(ROOT, 'playbacks')) if os.path.exists(os.path.join(ROOT, 'playbacks', d, 'battle.json')))):
             folder = os.path.join(ROOT, 'playbacks', b); bad = bf.validate(json.load(open(os.path.join(folder, 'battle.json'), encoding='utf-8')), folder)
             print('%s: %s' % (b, 'meets the format' if not bad else '%d problem(s)\n  %s' % (len(bad), '\n  '.join(bad[:40])))); failed += bool(bad)
+        if not args:
+            load()                                       # the workbooks themselves: one war each, no id twice
+            stale = check_csv()
+            print('workbooks: %s' % ('CSV copies current' if not stale else 'CSV copies out of date (run the export):\n  ' + '\n  '.join(stale)))
+            failed += bool(stale)
         return 1 if failed else 0
     W = load()
     for pb in W['Playbacks']:
@@ -407,6 +510,7 @@ def main(argv):
         battle = bf.write(export(pb, W), os.path.join(folder, 'battle.json'))
         for w in pace(battle): print('  check this:', w)
         for w in contacts(battle): print('  contact:', w)
+    print('CSV copies: %d sheets' % write_csv())
     return 0
 
 

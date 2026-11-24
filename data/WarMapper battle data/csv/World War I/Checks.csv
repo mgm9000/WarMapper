@@ -1,0 +1,24 @@
+rule,what the rule tests,result,battle,record,finding
+K03,Times can be read and run in order,note,MESS14,Y034,One or more times are unknown.
+K03,Times can be read and run in order,note,MESS14,Y039,One or more times are unknown.
+K03,Times can be read and run in order,note,MESS14,Y160,One or more times are unknown.
+K03,Times can be read and run in order,note,YP-LANG,Y054,One or more times are unknown.
+K03,Times can be read and run in order,note,YP-LANG,Y095,One or more times are unknown.
+K03,Times can be read and run in order,note,YP-NONNE,Y046,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y010,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y063,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y101,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y124,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y126,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y169,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y171,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y178,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y205,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y211,One or more times are unknown.
+K03,Times can be read and run in order,note,YPRES1,Y214,One or more times are unknown.
+K03,Times can be read and run in order,note,YSER,Y065,One or more times are unknown.
+K12,Wars and battles carry a Wikidata ID,note,MESS14,MESS14,No Wikidata ID: not looked up.
+K12,Wars and battles carry a Wikidata ID,note,YP-GHEL,YP-GHEL,No Wikidata ID (a part of a larger battle).
+K12,Wars and battles carry a Wikidata ID,note,YP-LANG,YP-LANG,No Wikidata ID (a part of a larger battle).
+K12,Wars and battles carry a Wikidata ID,note,YP-NONNE,YP-NONNE,No Wikidata ID (a part of a larger battle).
+K12,Wars and battles carry a Wikidata ID,note,YSER,YSER,No Wikidata ID: not looked up.

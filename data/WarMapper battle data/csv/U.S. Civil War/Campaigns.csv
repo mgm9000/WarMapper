@@ -1,0 +1,2 @@
+campaign_id,war_id,name,start_date,end_date,wikidata_qid,notes
+ACW-GETT,ACW,Gettysburg campaign,1863-06-03,1863-07-24,Q1377639,Start date and Wikidata ID from the War Atlas dataset (S35). End date is the usual one; not checked here.

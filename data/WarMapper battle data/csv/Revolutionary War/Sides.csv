@@ -1,0 +1,3 @@
+side_id,war_id,name,frame,colour,notes,code,short
+ARW-US,ARW,United States (Continental Army and militia),blue,124F93,,US,American
+ARW-CR,ARW,British Crown forces (British and German troops),red,B02A1C,"One side, several nations: the nation is on each unit.",CR,Hessian and British

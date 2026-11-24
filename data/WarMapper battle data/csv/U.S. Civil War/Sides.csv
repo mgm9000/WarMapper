@@ -1,0 +1,3 @@
+side_id,war_id,name,frame,colour,notes,code,short
+ACW-US,ACW,United States (Union),blue,124F93,"Frame colour is a drawing convention, not a judgement.",US,Union
+ACW-CS,ACW,Confederate States,red,B02A1C,,CS,Confederate

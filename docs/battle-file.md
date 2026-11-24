@@ -5,7 +5,7 @@ The playback pages read nothing else: units, where the sources put them and when
 and the current map all come from it.
 
 - Format name: `warmapper-battle/1` (the file says so in its first field; a page refuses a file with another name).
-- Written by: `python3 tools/export_battles.py`, from the master workbook (`data/WarMapper battle data.xlsx`). The last section says which sheet each part comes from.
+- Written by: `python3 tools/export_battles.py`, from the master workbooks (`data/WarMapper battle data/`: one per war, read as one set of tables, and `Sources and notes.xlsx`, which holds the sources every war shares). The last section says which sheet each part comes from.
 - Checked by: `pipeline/battlefile.py`. A file that breaks a rule below is not written, and
   `python3 tools/export_battles.py --check` checks the files as they stand.
 - Read by: `WM.battle()` in `app/core.js`, and played by `WM.play()` in `app/player.js`. No battle has code of its own.
@@ -25,7 +25,7 @@ give is `null`.
 |---|---|
 | `format` | `warmapper-battle/1` |
 | `id`, `title`, `subtitle` | The battle's short id and its name as shown |
-| `record` | Where the data came from: the workbook, and its campaign and battle ids |
+| `record` | Where the data came from: the set of workbooks (`WarMapper battle data`), and the campaign and battle ids |
 | `time` | The stretch of time the playback covers and how time is counted |
 | `view` | Where on the earth the battle is |
 | `playback` | How this battle is played back: the settings the shared player reads |
@@ -337,7 +337,9 @@ Elsewhere in the file the player also reads:
 Code. The page (`app/page.html`) and the player are the same for every battle; `tools/build.py` writes the
 battle file into the page.
 
-## Where each part comes from in the workbook
+## Where each part comes from in the workbooks
+
+Every sheet below is on each war's workbook, but for `Sources`, which is in `Sources and notes.xlsx`.
 
 | Part of the battle file | Sheet |
 |---|---|

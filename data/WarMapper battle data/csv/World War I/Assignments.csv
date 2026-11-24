@@ -1,0 +1,70 @@
+assign_id,unit_id,parent_unit_id,commander,strength / equipment,valid_from,valid_to,source_ids,notes
+A072,Y-BR-BEF,,Field Marshal Sir John French,,1914-10-18,1914-11-22,S44,
+A073,Y-BR-1C,Y-BR-BEF,Lt. Gen. Sir Douglas Haig,,1914-10-19,1914-11-22,S40,
+A074,Y-BR-4C,Y-BR-BEF,Lt. Gen. Sir Henry Rawlinson,,1914-10-18,1914-10-26,S40,"Commander from general knowledge, not from the sources read: check. End date is when its troops passed to I Corps, also from general knowledge."
+A075,Y-BR-CC,Y-BR-BEF,Lt. Gen. Edmund Allenby,,1914-10-18,1914-11-22,S40,
+A076,Y-BR-3C,Y-BR-BEF,Lt. Gen. William Pulteney,,1914-10-18,1914-11-22,S40,"Commander from general knowledge, not from the sources read: check."
+A077,Y-BR-1D,Y-BR-1C,Maj. Gen. S. H. Lomax,,1914-10-19,1914-10-31,S42,Lomax was wounded when his headquarters at Hooge was shelled on 31 October (S42).
+A078,Y-BR-1D,Y-BR-1C,Brig. Gen. H. J. S. Landon (acting),,1914-10-31,1914-11-22,S43,"S43 speaks of ""Landon's line"" from 31 October. How long he held the command is not in the sources read."
+A079,Y-BR-2D,Y-BR-1C,Maj. Gen. C. C. Monro,,1914-10-19,1914-11-22,S40,"Commander from general knowledge, not from the sources read: check."
+A080,Y-BR-7D,Y-BR-4C,Maj. Gen. Thompson Capper,,1914-10-16,1914-10-26,S46,
+A081,Y-BR-7D,Y-BR-1C,Maj. Gen. Thompson Capper,,1914-10-27,1914-11-05,S46,Date of transfer to I Corps from general knowledge.
+A082,Y-BR-3CD,Y-BR-4C,Maj. Gen. Julian Byng,,1914-10-16,1914-10-26,S40; S46,
+A083,Y-BR-3CD,Y-BR-1C,Maj. Gen. Julian Byng,,1914-10-27,1914-11-22,S40; S46,Parent after 26 October inferred from where it fought.
+A084,Y-BR-1CD,Y-BR-CC,Maj. Gen. H. de B. de Lisle,,1914-10-18,1914-11-22,S40; S46,
+A085,Y-BR-2CD,Y-BR-CC,Maj. Gen. Hubert Gough,,1914-10-18,1914-11-22,S40; S46,
+A086,Y-BR-4D,Y-BR-3C,,,1914-10-18,1914-11-22,S40,Commander not in the sources read.
+A087,Y-BR-3D,Y-BR-1C,,,1914-11-05,1914-11-20,S41; S42,Commander not in the sources read. Under I Corps while on the Menin road (inferred).
+A088,Y-BR-BULF,Y-BR-1C,Brig. Gen. E. S. Bulfin,,1914-10-30,1914-11-01,S42; S43,Bulfin was wounded on 1 November (S43).
+A089,Y-BR-BULF,Y-BR-1C,Brig. Gen. the Earl of Cavan,,1914-11-01,1914-11-20,S43,
+A090,Y-FR-8A,,Gen. Victor d'Urbal,,1914-10-20,1914-11-22,S46,"Commander from general knowledge, not from the sources read: check."
+A091,Y-FR-9C,Y-FR-8A,Gen. Pierre Dubois,,1914-10-22,1914-11-22,S44,"Commander from general knowledge, not from the sources read: check."
+A092,Y-FR-16C,Y-FR-8A,,,1914-10-30,1914-11-22,S44,Commander not in the sources read.
+A093,Y-FR-2CC,Y-FR-8A,Gen. Antoine de Mitry,,1914-10-17,1914-11-22,S40,
+A094,Y-FR-87T,Y-FR-8A,Gen. Roy,,1914-10-14,1914-11-22,S46,
+A095,Y-FR-89T,Y-FR-8A,,,1914-10-14,1914-11-22,S40,Commander not in the sources read.
+A096,Y-FR-17D,Y-FR-9C,Gen. Guignabaudet,,1914-10-23,1914-11-22,S46,
+A097,Y-FR-18D,Y-FR-9C,Gen. Lefevre,,1914-10-24,1914-11-22,S46,
+A098,Y-FR-31D,Y-FR-16C,Gen. Vidal,,1914-10-25,1914-11-22,S46,"S43 calls Vidal a commander of ""the Ninth French Corps"" on 2 November; S46 lists him with the 31st Division. See YG09."
+A099,Y-FR-32D,Y-FR-16C,Gen. Bouchez,,1914-10-31,1914-11-22,S46,
+A100,Y-FR-MOUS,Y-FR-9C,Gen. Moussy,,1914-10-31,1914-11-22,S43,"S43 gives Moussy to ""the 16th French Corps"". Parent uncertain."
+A101,Y-FR-42D,Y-FR-8A,Gen. Paul Grossetti,,1914-10-20,1914-11-22,S40,
+A102,Y-FR-FM,Y-FR-8A,Rear Adm. Pierre Ronarc'h,,1914-10-16,1914-11-22,S40,"Commander from general knowledge, not from the sources read: check."
+A103,Y-BE-ARMY,,King Albert I,,1914-10-18,1914-11-22,S44,
+A104,Y-GE-4A,,Duke Albrecht of Wurttemberg,,1914-10-10,1914-11-22,S41,S41 dates the army's part to 10 October to 16 November.
+A105,Y-GE-6A,,Crown Prince Rupprecht of Bavaria,,1914-10-18,1914-11-22,S44,
+A106,Y-GE-AGF,Y-GE-6A,Gen. Max von Fabeck,,1914-10-27,1914-11-20,S41,
+A107,Y-GE-AGL,Y-GE-6A,Gen. Alexander von Linsingen,,1914-11-08,1914-11-18,S41,
+A108,Y-GE-PLET,Y-GE-AGL,Gen. von Plettenberg,,1914-11-08,1914-11-18,S41,
+A109,Y-GE-3RC,Y-GE-4A,Gen. Hans von Beseler,"5th and 6th Reserve Divisions, 4th Ersatz Division; from 3 November also the 44th and 9th Reserve Divisions",1914-10-14,1914-11-17,S41,
+A110,Y-GE-22RC,Y-GE-4A,Gen. Eugen von Falkenhayn,43rd and 44th Reserve Divisions,1914-10-14,1914-11-22,S41,
+A111,Y-GE-23RC,Y-GE-4A,Gen. Georg von Kleist,45th and 46th Reserve Divisions,1914-10-14,1914-11-22,S41,
+A112,Y-GE-26RC,Y-GE-4A,Gen. Otto von Hugel,51st and 52nd Reserve Divisions,1914-10-14,1914-11-22,S41,
+A113,Y-GE-27RC,Y-GE-4A,Gen. Adolph von Carlowitz,53rd (Saxon) and 54th (Wurttemberg) Reserve Divisions,1914-10-14,1914-10-27,S41,
+A114,Y-GE-27RC,Y-GE-4A,Gen. Richard von Schubert,53rd (Saxon) and 54th (Wurttemberg) Reserve Divisions,1914-10-27,1914-11-22,S41,S41: Carlowitz was relieved on 27 October.
+A115,Y-GE-HKK,Y-GE-6A,Gen. Georg von der Marwitz,,1914-10-19,1914-11-22,S41,S41 names Marwitz for the army cavalry on the left of the Fourth Army.
+A116,Y-GE-15C,Y-GE-AGF,Gen. Berthold von Deimling,30th and 39th Divisions,1914-10-27,1914-11-08,S41,
+A117,Y-GE-15C,Y-GE-AGL,Gen. Berthold von Deimling,30th and 39th Divisions; Hofmann's Composite Division from 16 November,1914-11-08,1914-11-18,S41,The same corps under a second parent: the case the Assignments table exists for.
+A118,Y-GE-2BC,Y-GE-AGF,Gen. Karl von Martini,3rd and 4th Bavarian Divisions,1914-10-27,1914-11-05,S41,
+A119,Y-GE-2BC,Y-GE-AGF,Gen. Otto von Stetten,3rd and 4th Bavarian Divisions,1914-11-05,1914-11-20,S41,S41: Martini was relieved on 5 November.
+A120,Y-GE-5RD,Y-GE-3RC,Lt. Gen. Richard Voigt,,1914-10-14,1914-11-17,S46,
+A121,Y-GE-9RD,Y-GE-3RC,,,1914-11-03,1914-11-17,S41,Commander not in the sources read.
+A122,Y-GE-43RD,Y-GE-22RC,Lt. Gen. Karl Stenger,,1914-10-14,1914-11-22,S46,
+A123,Y-GE-44RD,Y-GE-22RC,Lt. Gen. Eugen von Dorrer,,1914-10-14,1914-11-02,S46,
+A124,Y-GE-44RD,Y-GE-3RC,Lt. Gen. Eugen von Dorrer,,1914-11-03,1914-11-17,S41; S46,S41 lists the division with the III Reserve Corps group from 3 November.
+A125,Y-GE-45RD,Y-GE-23RC,Lt. Gen. Albert Schopflin,,1914-10-14,1914-11-22,S46,
+A126,Y-GE-46RD,Y-GE-23RC,Lt. Gen. Bruno Hahn,,1914-10-14,1914-11-22,S46,
+A127,Y-GE-51RD,Y-GE-26RC,Lt. Gen. Ferdinand Waenker von Dankenschweil,,1914-10-14,1914-11-22,S46,
+A128,Y-GE-52RD,Y-GE-26RC,Lt. Gen. Emil Waldorf,,1914-10-14,1914-11-22,S46,
+A129,Y-GE-53RD,Y-GE-27RC,Lt. Gen. Hans von Watzdorf,,1914-10-14,1914-11-22,S46,
+A130,Y-GE-54RD,Y-GE-27RC,Lt. Gen. Paul von Schaefer,,1914-10-14,1914-11-22,S46,
+A131,Y-GE-3CD,Y-GE-HKK,Lt. Gen. Kurt von Unger,,1914-10-19,1914-11-22,S46,
+A132,Y-GE-30D,Y-GE-15C,Lt. Gen. Friedrich von Gontard,,1914-10-27,1914-11-18,S46,
+A133,Y-GE-39D,Y-GE-15C,,,1914-10-27,1914-11-18,S41,Commander not in the sources read.
+A134,Y-GE-26D,Y-GE-AGF,"Lt. Gen. Wilhelm, Duke of Urach",,1914-10-27,1914-11-20,S41,
+A135,Y-GE-6BRD,Y-GE-AGF,,,1914-10-28,1914-11-20,S41,Commander not in the sources read.
+A136,Y-GE-3D,Y-GE-AGF,Lt. Gen. Ferdinand von Trossel,,1914-11-01,1914-11-20,S41; S46,
+A137,Y-GE-4D,Y-GE-PLET,Lt. Gen. Erich Freyer,,1914-11-09,1914-11-18,S41; S46,
+A138,Y-GE-GD,Y-GE-PLET,Lt. Gen. Arnold von Winckler,,1914-11-09,1914-11-18,S41,
+A139,Y-FR-HELY,Y-FR-8A,Gen. Hély d'Oissel,,1914-10-29,1914-11-22,S40,Name from the sketch labels. Parent not given in the sources read; put under the army.
+A140,Y-FR-OLL,Y-FR-16C,,,1914-10-31,1914-11-08,S40,Parent inferred from the sector.

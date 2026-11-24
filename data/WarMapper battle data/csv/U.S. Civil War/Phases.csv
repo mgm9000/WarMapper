@@ -1,0 +1,5 @@
+phase_id,battle_id,label,start,end,source_ids,notes
+PH-G1,GETT,Day 1 fighting (CDB90 active period 1),1863-07-01 10:00,1863-07-01 17:00,S34,
+PH-G2,GETT,Day 2 fighting (CDB90 active period 2),1863-07-02 16:00,1863-07-02 20:30,S34,
+PH-G3,GETT,Day 3 fighting (CDB90 active period 3),1863-07-03 05:00,1863-07-03 10:30,S34,CDB90 ends the period at 10:30 but the battle at 15:00.
+PH-G4,GETT-D1-AM,Cavalry delaying action,1863-07-01 07:30,1863-07-01 10:15,pilot,Starts earlier than CDB90 counts the battle as beginning.

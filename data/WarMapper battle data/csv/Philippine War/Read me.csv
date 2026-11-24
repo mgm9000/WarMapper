@@ -1,0 +1,16 @@
+WarMapper battle data: Philippine War,
+What this file is,"The battle data for one war. Every war has a workbook like this one, with the same sheets in the same order; a sheet with nothing for this war keeps its headings so the layout stays the same."
+Where the rest is,"Sources, Source candidates and the change log of the battle data are in ""Sources and notes.xlsx"", in the same folder. Every source id (S01, S02 ...) is listed there once, for every war: add a new source there, with the next free id."
+How it is used,"python3 tools/export_battles.py reads every workbook in the folder and writes each playback's battle file (playbacks/<playback>/battle.json). It also writes each sheet as a CSV file under csv/ in this folder, so GitHub can show what changed."
+Split,"Written on 23 Nov 2026 from the single workbook ""WarMapper battle data.xlsx"", which it replaces (pipeline/split_workbook.py). Every row and every id is as it was."
+,
+Counts,
+Position rows,=COUNTA(Positions!A:A)-1
+Rows with coordinates,"=COUNTIF(Positions!O:O,""<>"")-1"
+Rows still needing review,"=COUNTIF(Positions!AC:AC,""Needs review"")"
+Rows accepted,"=COUNTIF(Positions!AC:AC,""Accepted"")"
+Units,=COUNTA(Units!A:A)-1
+Events,=COUNTA(Events!A:A)-1
+Disputed points,=COUNTA(Conflicts!A:A)-1
+Gaps logged,=COUNTA(Gaps!A:A)-1
+Playbacks,=COUNTA(Playbacks!A:A)-1
