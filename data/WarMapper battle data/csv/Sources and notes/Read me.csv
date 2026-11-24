@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (later still): Tarleton's road at Cowpens
+"Revolutionary War.xlsx: at Morgan's request, routes RC01 to RC06 (Tarleton's march in, the British escapes, Washington's pursuit) leave the straight line across the 900 m between today's Green River Road and the old trace, and follow the road the maps show there: north on a road of the 1959 USGS sheet (S108) that Landers (1928, S103) calls ""Green River Road"", then west on Bearss's Mill Gap road (S107). CP40 moves about 1 km up the road so it stays 3.3 km by road from the field. Gap CG06 partly closed. Written by pipeline/cowpens_tarleton_road_2026_11_24.py."
+""
 "What changed on 24 November 2026 (later): a reconstructed 1781 map of the Cowpens, and nine other maps of the ground"
 "Revolutionary War.xlsx, Cowpens only: a WarMapper reconstruction of the ground in January 1781 (Reconstructions, Recon layers; data/recon/cowpens-1781.geojson), on today's terrain, is the base the playback opens on. Nine other maps are fitted to the ground and offered under ""Other maps of this ground"": Bearss's four plates of 1967 (one base that follows the clock), Landers's two sketches of 1928, the USGS sheets of 1959 and 1975, Mills's map of 1825 and the park map. New sources S108 to S111; S107 may be hosted. Gap CG02 closed; a note on CG06. Written by pipeline/cowpens_period_maps_2026_11_24.py."
 ""
