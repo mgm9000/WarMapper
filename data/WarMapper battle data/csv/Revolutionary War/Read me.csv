@@ -11,6 +11,8 @@ Rows still needing review,"=COUNTIF(Positions!AC:AC,""Needs review"")"
 Rows accepted,"=COUNTIF(Positions!AC:AC,""Accepted"")"
 Units,=COUNTA(Units!A:A)-1
 Events,=COUNTA(Events!A:A)-1
-Disputed points,=COUNTA(Conflicts!A:A)-1
+Disputed points,=COUNTA(Hypotheses!A:A)-1
 Gaps logged,=COUNTA(Gaps!A:A)-1
 Playbacks,=COUNTA(Playbacks!A:A)-1
+,
+Hypotheses (23 Nov 2026),"One row per disputed point, in place of the Conflicts sheet: the question, the readings (A, B, C), the evidence for and against the reading the playback follows, each item with its source and page, the reading adopted, how sure it is, who decided and when, the rows it touches and what would settle it. The history column keeps everything the Conflicts row said. Status: Open (a ruling is wanted), Proposed (a reading is put forward for Morgan to accept), Settled, No ruling needed."

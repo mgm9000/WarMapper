@@ -1,0 +1,118 @@
+hypothesis_id,battle_id,question,reading_a,reading_b,reading_c,evidence_for,evidence_against,adopted_reading,adopted_because,confidence,status,decided_by,decided_on,reviewed_on,rows,source_ids,next_step,history
+TC01,TREN,When were the first shots fired?,Shortly after 07:30,08:00,About 07:45,"S21 Stryker, quoting Lt. Piel: ""shortly after half past seven"".
+S61: about 7:30.
+S22, p. 10: shortly before eight o'clock.","S20 Washington to Hancock: the upper division reached the post ""exactly at eight OClock"".
+S34 CDB90: 08:00.
+S59 Elliott, p. 45: both columns reached their starting points around 0800.
+S21 Stryker: about 7:45, ""nearly eight o'clock"".",Range 07:30 to 08:00,The sources spread over half an hour; the range keeps them all.,medium,Open,pilot default,,2026-11-23,T19; TE06,S20; S21; S22; S34; S59; S61,,"Status in Conflicts: Open
+what the sources say: Washington: the upper division reached the advanced post ""exactly at eight OClock"" (S20). Stryker: about 7:45, and ""nearly eight o'clock"". Lt. Piel: ""shortly after half past seven"" (in S21). CDB90 starts the battle at 08:00 (S34).
+how the pilot handled it: Held as a range, 07:30 to 08:00, on T19 and event TE06.
+v3 update: New in v3
+v10 check: Elliott (S59), S22, JAR (S60, S61): S59: both columns reached their starting points around 0800 (p. 45). S22: shortly before eight o'clock (p. 10). S61: about 7:30. The range 07:30 to 08:00 stands."
+TC02,TREN,When and where did the army divide?,"At Birmingham, about 06:00","At Birmingham, at 07:00",At Bear Tavern,"S59 Elliott, p. 44: about two hours from the start of the march (04:00) to Birmingham.
+S63 driving tour: 6 a.m.
+S22, pp. 8-9: Birmingham, after weighing Bear Tavern.","S29 marker: the split at Birmingham at 7 AM.
+S22, pp. 8-9: some historians put it at Bear Tavern.
+S20, note 6: the upper division halted near the picket about 7 a.m. (kept as T05).",A,Two modern accounts and the march times agree.,medium,Proposed,Morgan,2026-11-18,2026-11-23,T05,S20; S22; S29; S59; S63,Close.,"Status in Conflicts: Open
+what the sources say: A modern marker times the split at Birmingham at 7 AM (S29). The editors of Washington's papers have the upper division halted 500 yards from the Hessian picket around 7 a.m. (S20, note 6). The two points are more than four miles apart. S22 adds that some historians put the split at Bear Tavern.
+how the pilot handled it: Split placed at Birmingham at about 06:00 (S59; S63). The 7 a.m. halt is kept as T05 with low confidence.
+v3 update: New in v3
+v4 update: what the sketch adds: Measured on the current map: Birmingham to the halt is about 6 km by the route drawn.
+v10 check: Elliott (S59), S22, JAR (S60, S61): S59 and S22 both divide the army at Birmingham; S22 weighs the Bear Tavern argument and keeps Birmingham (pp. 8-9). This one could be closed.
+v11 update (18 Nov 2026): Elliott has the army take about two hours to reach Birmingham (S59, p. 44), and the march began at 04:00; the Washington Crossing Park Association's driving tour gives 6 a.m. (S63). The split is now shown at about 06:00, and Jacobs Creek at about 05:10. The marker's 7 AM (S29) is the outlier."
+TC03,TREN,How strong was the River road picket?,"The whole jäger company, about 50",A sergeant and 15 men,,"S36 Wiederhold's sketch, legend F: one officer and 50 jägers.
+S59 Elliott, p. 44: a company of jaegers at the Hermitage.
+S61: about 50 under Lt. von Grothausen.","S21 Stryker gives both ""a commissioned officer and fifty men"" and ""a sergeant and fifteen men"".",none (both on the unit record),The evidence leans to A.,low,Open,pilot default,,2026-11-23,,S21; S36; S59; S61,Adopt A on the unit record.,"Status in Conflicts: Open
+what the sources say: Stryker gives both ""a commissioned officer and fifty men"" and ""a sergeant and fifteen men"" (S21). The jäger company was 50 in all (S22), part of it quartered at the barracks.
+how the pilot handled it: Strength left open on the unit record.
+v3 update: New in v3
+v4 update: what the sketch adds: Wiederhold's sketch, legend F: one officer and 50 jägers. That supports the larger figure, though it may count the whole company.
+v10 check: Elliott (S59), S22, JAR (S60, S61): S59: a company of jaegers at the Hermitage (p. 44). S61: about 50 under Lt. von Grothausen. Both lean to the whole company, not Stryker's smaller figure."
+TC04,TREN,How long did the fighting last?,About an hour,"About ninety minutes, 08:00 to 09:30",About two hours,"S59 Elliott, p. 49 (cited as p. 48 on 17 Nov): ""The battle lasted only an hour.""","S34 CDB90: 08:00 to 09:30.
+S23 tour script: over by 10 a.m.
+S21 Stryker, the Lossberg quartermaster: the regiment defended about two hours.",Range: the surrender rows end between 08:45 and 10:00,The rows' ranges cover all three.,low,Open,pilot default,,2026-11-23,,S21; S23; S34; S59,,"Status in Conflicts: Open
+what the sources say: CDB90: 08:00 to 09:30, ninety minutes (S34). Trenton Historical Society tour: over by 10 a.m., roughly two hours (S23). The Lossberg quartermaster: the regiment defended about two hours (in S21). S33 calls it short and gives no figure.
+how the pilot handled it: Surrender rows end between 08:45 and 10:00.
+v3 update: New in v3
+v4 update: what the sketch adds: The sketch gives no times.
+v10 check: Elliott (S59), S22, JAR (S60, S61): S59: the battle lasted only an hour (p. 48)."
+TC05,TREN,How long after the others did the Knyphausen regiment surrender?,Shortly after the others,About an hour after the others,,"S59 Elliott, p. 49 (cited as p. 48 on 17 Nov): the Knyphausen soldiers ""laid down their arms shortly after their comrades"".
+S33, citing Wood: minutes after the rest of the brigade.",S21 Stryker: Biesenrodt surrendered about an hour after the other regiments.,Range: T51 runs 09:00 to 10:30,The range covers both.,low,Open,pilot default,,2026-11-23,T51,S21; S33; S59,"Narrow T51 towards A, two modern accounts against Stryker.","Status in Conflicts: Open
+what the sources say: Stryker: Captain von Biesenrodt surrendered ""about an hour after the other regiments"" (S21, as summarised). Wikipedia, citing Wood 2003: ""minutes after the rest of the brigade"" (S33).
+how the pilot handled it: T51 runs from 08:45-09:15 to 09:00-10:30.
+v3 update: New in v3
+v4 update: what the sketch adds: The sketch gives separate surrender places (K and L) about 450 m apart, but no times.
+v10 check: Elliott (S59), S22, JAR (S60, S61): S59: the Knyphausen regiment laid down its arms shortly after the other two (p. 48). With S33 that is two modern accounts against Stryker's hour."
+TC06,TREN,"How many Hessians were there, and how many were taken?","Garrison 1,382 effectives; 896 surrendered","Garrison about 1,400 to 1,520","Prisoners 909 (23 officers and 886 men), 918 or 868","S59 Elliott, p. 42 (cited as p. 41 on 17 Nov): 1,382 effectives on 26 December (Rall 512, Knyphausen 429, Lossberg 345, 50 jaegers, 20 dragoons); p. 49 (cited as p. 48): 22 killed, 83 badly wounded, 896 surrendered.
+S33, citing Fischer: 896.","S22, S33: about 1,400. S35 (Park Service): 1,500. S34: 1,520.
+S20 Washington: 23 officers and 886 men; the enclosed return, 918 (note 15).
+S21: 868 on the Hessian officers' list.
+S34: 996 Hessian casualties in all.",none (all figures on the records),"Counts differ by what they include (effectives, servants, the band).",low,Open,pilot default,,2026-11-23,,S20; S21; S22; S33; S34; S35; S59,Adopt S59 on the battle record.,"Status in Conflicts: Open
+what the sources say: Garrison: about 1,400 (S22; S33), 1,500 (S35, from the Park Service), 1,520 (S34). Prisoners: 23 officers and 886 men (Washington, S20); 918 on the enclosed return (S20, note 15); 868 on the Hessian officers' list (S21); 896 (S33, citing Fischer). CDB90 counts 996 Hessian casualties in all (S34).
+how the pilot handled it: All figures recorded on the unit and battle records; none chosen.
+v3 update: New in v3
+v10 check: Elliott (S59), S22, JAR (S60, S61): S59: 1,382 effectives on 26 December (Rall 512, Knyphausen 429, Lossberg 345, 50 jaegers, 20 dragoons, six guns); 22 killed, 83 badly wounded and 896 surrendered (pp. 41, 48). S61: Fischer's itemised list of those who escaped totals 368."
+TC07,TREN,How strong was the Crosswicks detachment?,About 100,Four officers and 82 men,About 150,"S21 Stryker: three officers and 100 men.
+S61: about 100.","S21 Stryker, elsewhere: four officers and 82 men.
+S61, Fischer's list: 150.",none,The detachment took no part.,low,No ruling needed,pilot default,,2026-11-23,,S21; S61,,"Status in Conflicts: Open
+what the sources say: Stryker gives three officers and 100 men in one place and four officers and 82 men in another (S21).
+how the pilot handled it: Left open; the detachment took no part.
+v3 update: New in v3
+v10 check: Elliott (S59), S22, JAR (S60, S61): S61: about 100 at Crosswicks; Fischer's list gives 150."
+TC08,TREN,Where did the Rall and Lossberg regiments go when they left King Street?,"Line of battle on the east edge, the counter-attack into King and Queen Streets, surrender between Montgomery and Stockton at Perry Street","To The Swamp, a bayonet attack, then the orchard","A field outside the town, a final attack, then the orchard","S36 Wiederhold's sketch: line H along today's Montgomery Street, the attack I on King and Queen Streets, the surrender ground K between Montgomery and Stockton at Perry Street.","S22, p. 12: to The Swamp, north of Perry Street between Stockton and Montgomery, then a bayonet attack, then the orchard.
+S59 Elliott, p. 48 (cited as p. 47 on 17 Nov): east to the orchard, then a counter-attack north toward the Princeton road.
+S21 Stryker: the surrender in the orchard east of the Friends' Meeting House.",A,"The sketch puts the three descriptions on one block: The Swamp, the orchard and K are the same ground.",medium,Proposed,pilot default,,2026-11-23,,S21; S22; S36; S59,Close: the readings describe one place.,"Status in Conflicts: Open
+what the sources say: The 1929 history: they fell back to ""The Swamp"", north of Perry Street between Stockton and Montgomery (S22). Wikipedia, citing Fischer: ""a field outside town"", then a final attack, then the orchard (S33). Stryker places the surrender in the orchard east of the Friends' Meeting House (S21).
+how the pilot handled it: Sequence used: formed in the town, line of battle on the east edge, counter-attack to King and Queen Streets, surrender east of the town.
+v3 update: New in v3
+v4 update: what the sketch adds: Largely settled by the sketch. It draws a line of battle (H) along today's Montgomery Street, the attack into the town (I) on King and Queen Streets, and the surrender ground (K) between Montgomery and Stockton Streets at Perry Street. That is the block the 1929 history calls the Swamp, and about 110 m from the Friends' Meeting House. The three descriptions are one place.
+v10 check: Elliott (S59), S22, JAR (S60, S61): S59: east to the orchard, then a counter-attack north toward the Princeton road, then one west into the town, then the retreat to the orchard (p. 47). S22: to The Swamp, between Stockton and Montgomery Streets north of Perry, then a bayonet attack, then the orchard (p. 12)."
+TC09,TREN,What were the American losses?,None killed; two officers and two privates wounded; some died of exposure on the march,Two officers and one or two privates wounded,Two privates killed and two wounded,"S59 Elliott, p. 49 (cited as p. 48 on 17 Nov): none killed in action, two officers and two privates wounded, an unknown number dead of exposure.","S20 Washington: two officers and one or two privates wounded.
+S20, note 9 (Tilghman): two privates killed, two wounded.
+S33, citing Fischer: two died of exposure, five wounded.
+S34 CDB90: 12.",none (not used in the positions),,low,No ruling needed,pilot default,,2026-11-23,,S20; S33; S34; S59,,"Status in Conflicts: Open
+what the sources say: Washington: two officers and one or two privates wounded (S20). Tilghman: two officers slightly wounded, two privates killed and two wounded (S20, note 9). Wikipedia, citing Fischer: two died of exposure on the march and five were wounded (S33). CDB90: 12 (S34).
+how the pilot handled it: Not used in position data.
+v3 update: New in v3
+v10 check: Elliott (S59), S22, JAR (S60, S61): S59: none killed; two officers and two privates wounded; an unknown number died of exposure on the night march (p. 48)."
+TC10,TREN,How strong were the pickets?,Pennington road: an officer and 24 or 25 men,"An officer, an NCO and 19 men",,"S36 sketch, A: 1 officer and 25 privates.
+S59 Elliott, p. 44: a detachment of twenty-four.
+S61: a corporal and 24 men.","S21 Stryker: an officer, an NCO and 19 men. Maidenhead road: about 70 (S21) or 1 captain, 1 officer and 75 (sketch, D). Ferry: 1 officer and 27 (S21) or 30 (sketch, E).",none (both on the unit records),,low,Open,pilot default,,2026-11-23,,S21; S36; S59; S61,Adopt A for the Pennington road picket.,"Status in Conflicts: Open
+what the sources say: Pennington road: an officer, an NCO and 19 men (S21); 1 officer and 25 privates (sketch, A). Maidenhead road: about 70 men (S21); 1 captain, 1 officer and 75 men (sketch, D). Ferry: 1 officer and 27 men (S21); 1 officer and 30 privates (sketch, E).
+how the pilot handled it: Both figures recorded; none chosen. Wiederhold commanded the Pennington road picket himself.
+v4 update: what the sketch adds: New in v4.
+v10 check: Elliott (S59), S22, JAR (S60, S61): Pennington road: twenty-four soldiers (S59, p. 44); a corporal and 24 men (S61)."
+TC11,TREN,Which regiment was where at G and I?,Rall formed on King Street at Pinkerton's alley and counter-attacked on Queen Street; Lossberg on King Street,"Rall up King Street, Lossberg up Queen Street",,"S21 Stryker: the Rall regiment formed on King Street at Pinkerton's alley, and Rall was shot on Queen Street.","S33, citing Wood: Rall's regiment up King Street, Lossberg's up Queen Street.
+S59 Elliott, p. 47 (cited as p. 46 on 17 Nov): the two regiments tried to form along King and Queen Streets, without saying which was where.",A,,low,Open,pilot default,,2026-11-23,,S21; S33; S59,"The Hessian court of inquiry testimony, printed in Stryker (S21), should settle it.","Status in Conflicts: Open
+what the sources say: The sketch marks three forming places (G) and two attack positions (I) without naming the regiment at each. Stryker has the Rall regiment forming on King Street at Pinkerton's alley, about 150 m west of the nearest G, and Rall shot on Queen Street. Wikipedia, citing Wood, has Rall's regiment advancing up King Street and Lossberg up Queen Street.
+how the pilot handled it: Rall regiment: formed at King Street and Pinkerton's alley (Stryker); counter-attack on Queen Street, where Rall fell. Lossberg: formed behind the church; counter-attack on King Street. Knyphausen: formed at the southern G.
+v4 update: what the sketch adds: New in v4. The Hessian court of inquiry testimony, printed in Stryker, should settle it.
+v10 check: Elliott (S59), S22, JAR (S60, S61): S59: the Rall and Lossberg regiments tried to form along King and Queen Streets (p. 46), without saying which was where."
+TC12,TREN,Where did Stirling's brigade go?,"East of Queen Street, Third Street to Front Street (the sketch's bars)",Down King Street after the guns were taken,Its men retook the guns on King Street; the brigade received the surrender in the orchard,S36 Wiederhold's sketch: Stirling's bars (T) just east of Queen Street.,"S33, citing Wood: Weedon's men down King Street after the guns were taken.
+S59 Elliott, p. 47: reinforcements from Stirling's brigade retook the guns; Monroe of the 3d Virginia wounded there.
+S21 Stryker: Stirling received the surrender in the orchard.",A for row T36,A brigade could have done all three; the sketch shows one moment.,low,Open,pilot default,,2026-11-23,T36,S21; S33; S36; S59,,"Status in Conflicts: Open
+what the sources say: Wikipedia, citing Wood: Weedon's men advanced down King Street after the guns were taken (S33). The sketch draws Stirling's bars (T) just east of Queen Street, from Third Street to Front Street. Stryker: Stirling received the surrender in the orchard.
+how the pilot handled it: T36 uses the sketch line east of Queen Street.
+v4 update: what the sketch adds: New in v4. A brigade could have done both; the sketch shows one moment.
+v10 check: Elliott (S59), S22, JAR (S60, S61): S59: reinforcements from Stirling's brigade retook the guns, and Monroe of the 3d Virginia was wounded there (p. 47)."
+TC13,TREN,When was the crossing complete?,"Infantry over by about 02:00, artillery by 03:00","Infantry by 03:00, artillery an hour later",All over by about 04:00,"S60: Knox put the infantry over by about 2 a.m., the artillery by about 3.","S59 Elliott, p. 43: the infantry by 0300, the artillery an hour later.
+S61: about 4 a.m.
+S22, p. 8: four o'clock.",Range: event TE03 02:00 to 04:00,All agree the march began about 04:00.,medium,Open,pilot default,,2026-11-23,TE03,S22; S59; S60; S61,,"Status in Conflicts: Open
+what the sources say: S60: Knox put the infantry over by about 2 a.m. and Washington the artillery by about 3 a.m. | S59: the infantry by 0300 and the artillery an hour later (p. 43) | S61: all over by about 4 a.m. | S22: four o'clock (p. 8). All agree the march began about 4 a.m.
+how the pilot handled it: Event TE03 now holds 02:00 to 04:00."
+TC14,TREN,Where was Stephen's brigade in Greene's attack?,"Toward the Princeton road, on the left",In the centre of Greene's three columns,,"S22, p. 11: Hand's riflemen and Scott's and Lawson's battalions (Stephen's Virginians) through the fields on the left to the Princeton road.","S59 Elliott, p. 47 (cited as p. 46 on 17 Nov): Mercer's brigade to the west, Stephen's in the centre, Fermoy's to the east, Stirling's in reserve.",A for row T28,,low,Open,pilot default,,2026-11-23,T28,S22; S59,S59 is the Army's own history and names the order; consider moving T28 to the centre.,"Status in Conflicts: Open
+what the sources say: S59: in the centre of the three columns, Mercer to the west and de Fermoy to the east (p. 46). | S22: Hand's riflemen and Scott's and Lawson's battalions (Stephen's Virginians) ran through the fields on the left to the Princeton road (p. 11).
+how the pilot handled it: Row T28 keeps S22: Stephen toward the Princeton road, low confidence."
+TC15,TREN,Where and when was Rall shot?,"On Queen Street in front of Isaac Yard's house, during the attack from The Swamp","After ordering the retreat to the orchard, when the second counter-attack failed",,"S22, p. 12: shot from his horse on Queen Street in front of Isaac Yard's house.
+S21 Stryker: shot on Queen Street.","S59 Elliott, p. 48 (cited as p. 47 on 17 Nov): mortally wounded just after ordering the retreat to the orchard.",A for row T39,,low,Open,pilot default,,2026-11-23,T39,S21; S22; S59,,"Status in Conflicts: Open
+what the sources say: S22: shot from his horse on Queen Street in front of Isaac Yard's house during the attack from The Swamp (p. 12). | S59: mortally wounded just after ordering the retreat to the orchard, when the second counter-attack had failed (p. 47).
+how the pilot handled it: Row T39 keeps S22 and Stryker: shot on Queen Street."
+TC16,TREN,How long did the bridge guard hold?,"Taken quickly, as Sullivan's men reached the bridge",Held for over an hour,,"S59 Elliott, p. 45: Sullivan's men took the barracks and headed for the bridge; p. 47: Glover's and St. Clair's brigades reached the bridges.","S61, citing Fischer: Sgt. Müller's 18 men held the Assunpink bridge for over an hour.",A: row T11 ends at 08:27,,low,Open,pilot default,,2026-11-23,T11; T56,S59; S61,,"Status in Conflicts: Open
+what the sources say: S61, citing Fischer: Sgt. Müller's 18 men held the Assunpink bridge for over an hour. | S59: Sullivan's men took the barracks and headed for the bridge; Glover's and St. Clair's brigades reached the bridges (pp. 45, 47).
+how the pilot handled it: Row T11 ends at 08:27, when Sullivan holds the bridge (T56)."
+TC17,TREN,How strong was the von Lossberg regiment?,345 soldiers,467 men and 16 officers,,"S59 Elliott, p. 42 (cited as p. 41 on 17 Nov): 345.",S21 Stryker: 467 men and 16 officers.,none (both on the assignment record),Probably effectives against the roll.,low,Open,pilot default,,2026-11-23,,S21; S59,,"Status in Conflicts: Open
+what the sources say: S21: 467 men and 16 officers. | S59: 345 soldiers (p. 41).
+how the pilot handled it: Both figures on the assignment record; none chosen."
+TC18,TREN,Where did the jägers go?,Toward Bordentown,"Toward Princeton, after the dragoons",,S20 Washington and S21 Stryker: some down the road toward Bordentown.,"S61: they followed the dragoons, so probably toward Princeton (its inference).",A for track T-HE-PKRIV (route T63),,low,Open,pilot default,,2026-11-23,T63; T-HE-PKRIV,S20; S21; S61,,"Status in Conflicts: Open
+what the sources say: S20 and S21: down the road toward Bordentown (some of them, S21). | S61: they followed the dragoons, so probably toward Princeton (its inference).
+how the pilot handled it: The jäger picket (T-HE-PKRIV) is drawn going to Bordentown (T63), low confidence."
