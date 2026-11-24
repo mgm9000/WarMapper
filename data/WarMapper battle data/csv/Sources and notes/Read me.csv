@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (night): the nearest towns at Cowpens
+"Revolutionary War.xlsx, Cowpens: four Labels rows with show ""far"" (new): Gilbert Town, Charlotte, Winnsborough and Ninety Six, the nearest places of 1781, named at the edge of the map with an arrow and a straight-line distance, since the reader cannot zoom out 30 to 110 km. Sources S112 to S115 (positions, each checked against a second source). Playback setting about.9 explains them. Written by pipeline/cowpens_far_towns_2026_11_24.py."
+""
 What changed on 24 November 2026 (evening): the Cowpens playback after Morgan's review
 "Revolutionary War.xlsx, Cowpens: the page opens on the whole ground and eases in; units outside the current event keep 70% of their strength; Tarleton's column marches as one symbol (C-BR-TARL, rows CP40 and a new row CP138) and its eight units set off from CP138 instead of marching the road on top of one another; arrows reach 6 minutes ahead; rows that meet blend over 4 minutes. No source reading changed. With player fixes for two jumps (a move along a route that began away from the unit, and the end of a route into a line) and eased event dimming. Written by pipeline/cowpens_playback_fixes_2026_11_24.py."
 ""

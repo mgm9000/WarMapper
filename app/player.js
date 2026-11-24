@@ -560,6 +560,32 @@ function unitSvg(u,part){   // the last position on record stays plain to see: d
 }
 /* Names on the map. Names from today's map are drawn where today's map shows: not on a period map, which carries its own.
    A name marked for period maps (show "period" or "both") is drawn there too. */
+/* Places far off the map (show "far"): a town the reader knows the battle by, too far away to zoom out to. While it is off screen it is
+   named at the edge of the map, on the line from the middle of the screen towards it, with an arrow and how far it is from the middle of
+   the screen in a straight line; on screen it is a town like any other. They are named on every map, a reconstruction too. The edge is
+   kept clear of the buttons over the map. */
+var farKey='',farLater=0;
+function farFrame(z){
+  var R=wrap.getBoundingClientRect(),f={w:z.w,h:z.h,l:12,t:12,r:z.w-12,b:z.h-12};
+  function rc(e){if(!e||e.classList.contains('gone'))return null;var r=e.getBoundingClientRect();return r.width&&r.height?[r.left-R.left,r.top-R.top,r.right-R.left,r.bottom-R.top]:null}
+  [].forEach.call(wrap.querySelectorAll('.ctl'),function(e){var r=rc(e);if(!r)return;if(r[0]>z.w*0.6&&r[3]>z.h*0.2)f.r=Math.min(f.r,r[0]-10);else if(r[1]<z.h*0.3)f.t=Math.max(f.t,r[3]+10)});
+  var bl=rc(wrap.querySelector('.bl'));if(bl)f.b=Math.min(f.b,bl[1]-8);
+  var key=[f.l,f.t,f.r,f.b].map(Math.round).join();   // the buttons can settle after the map is first drawn: draw again once they have
+  if(key!==farKey){farKey=key;clearTimeout(farLater);farLater=setTimeout(function(){mv.kick()},400)}
+  return f}
+function farName(l,L,z){
+  var q=S(l.p),f=farFrame(z),cx=(f.l+f.r)/2,cy=(f.t+f.b)/2;
+  if(q[0]>f.l&&q[0]<f.r&&q[1]>f.t&&q[1]<f.b){ var w=l.t.length*6.6+4,pr=[q[0]+5,q[1]-15,q[0]+8+w,q[1]-1]; L.keep(pr);   // on screen: a town like any other
+    return '<circle cx="'+f1(q[0])+'" cy="'+f1(q[1])+'" r="3.4" fill="var(--u-ink)"/><text class="pl big far" x="'+f1(q[0]+7)+'" y="'+f1(q[1]-4)+'">'+esc(l.t)+'</text>'}
+  var dx=q[0]-cx,dy=q[1]-cy,k=Math.min(dx?((dx>0?f.r:f.l)-cx)/dx:1e9,dy?((dy>0?f.b:f.t)-cy)/dy:1e9),px=cx+dx*k,py=cy+dy*k,a=Math.atan2(dy,dx);
+  var mi=Math.hypot(dx,dy)/sNow/1609.344,d=(mi<10?mi.toFixed(1):String(Math.round(mi)))+' mi',txt=l.t,tw=Math.max(txt.length*6.9,d.length*6)+6;
+  var side=Math.abs(px-f.r)<1?'r':Math.abs(px-f.l)<1?'l':Math.abs(py-f.t)<1?'t':'b',ax,ay,an;   // the name sits inside the arrow, on the map side of it
+  if(side==='r'){ax=px-14;ay=py;an='end'} else if(side==='l'){ax=px+14;ay=py;an='start'} else if(side==='t'){ax=px;ay=py+22;an='middle'} else {ax=px;ay=py-26;an='middle'}
+  var x0=an==='end'?ax-tw:an==='start'?ax:ax-tw/2,r=[x0,ay-12,x0+tw,ay+16],n=0;
+  while(L.hit(r)&&n++<6){var s=side==='r'||side==='l'?[0,18]:[tw+6,0];r=[r[0]+s[0],r[1]+s[1],r[2]+s[0],r[3]+s[1]];ax+=s[0];ay+=s[1];px+=s[0];py+=s[1]}   // two places the same way: the second steps along the edge
+  L.keep(r);
+  var arrow='<path class="farr" transform="translate('+f1(px)+' '+f1(py)+') rotate('+f1(a*180/Math.PI)+')" d="M0 0L-11 -6L-8 0L-11 6Z"/>';
+  return arrow+'<text class="pl big far" text-anchor="'+an+'" x="'+f1(ax)+'" y="'+f1(ay)+'">'+esc(txt)+'</text><text class="pl far d" text-anchor="'+an+'" x="'+f1(ax)+'" y="'+f1(ay+13)+'">'+esc(d)+'</text>'}
 function mapNames(L,cover){
   var z=mv.size(),lvl=sNow>=(Z.labels||0)?1:0,h='',cur=!!(base.current||base.sat||base.backdrop==='current'||through()),tp=cur&&!base.sat&&topo();
   var TER={ridge:1,hill:1},LB=B.labels.filter(function(l){return TER[l.k]}).concat(B.labels.filter(function(l){return !TER[l.k]}));   // the lie of the land is named first, so roads and woods give way to it
@@ -567,6 +593,7 @@ function mapNames(L,cover){
     if(sNow>0.04&&sNow<0.3&&tq[0]>-200&&tq[1]>20&&tq[0]<z.w&&tq[1]<z.h+40){var tr=[tq[0]-6,tq[1]-44,tq[0]+215,tq[1]+24];L.keep(tr);
       h+='<g class="rct" transform="translate('+f1(tq[0])+' '+f1(tq[1])+')"><text class="t1" y="-24">'+esc(tt[0].split(', ')[0])+'</text><text class="t2" y="-4">'+esc(tt[0].split(', ').slice(1).join(', '))+'</text><text class="t3" y="16">'+esc(cap(tt[1]||'A reconstruction'))+'</text></g>'}}
   LB.forEach(function(l){
+    if(l.show==='far'){ if(placeNames) h+=farName(l,L,z); return }
     var show=l.show||'current'; if(base.rc?show!=='recon':(show==='recon'||(cur?show==='period':show==='current'))) return;   // a reconstructed map carries the names read for it, and only those
     if(tp&&(l.k==='road'||l.k==='water'||l.k==='town')) return;   // the modern map names its own roads, streams and towns; the battle's landmarks and high ground are still named
     if((l.k==='road'||l.k==='water')?!lineNames:!placeNames) return;
