@@ -96,7 +96,7 @@ WM.battle=function(raw){
       k:tr.steps.map(step)}});
   B.track=function(id){for(var i=0;i<B.tracks.length;i++)if(B.tracks[i].id===id)return B.tracks[i]};
   /* events: t is the moment the timeline marks the event at */
-  B.events=(raw.events||[]).map(function(e){return {id:e.id,t:B.time(e.at),t0:B.time(e.start),t1:B.time(e.end),name:e.label||e.name,full:e.name,text:e.text,quiet:!!e.quiet}});
+  B.events=(raw.events||[]).map(function(e){return {id:e.id,t:B.time(e.at),t0:B.time(e.start),t1:B.time(e.end),name:e.label||e.name,full:e.name,text:e.text,quiet:!!e.quiet,steps:e.steps||[]}});   // steps: the position rows the event rests on (BP-32)
   B.eventAt=function(t){var p=null;B.events.forEach(function(e){if(t>=e.t)p=e});return p};   // the latest event to have begun
   /* names on the map: t text, s the other name (the period's, or today's), p place, a angle, l level (0 shows first), k kind, e placed only roughly */
   B.labels=(raw.labels||[]).map(function(l){return {t:l.text,s:l.alt||'',p:B.fromLL(l.at),a:l.angle||0,l:l.level||0,k:l.kind,e:l.approximate?1:0,show:l.show||'current'}});

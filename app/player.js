@@ -50,6 +50,26 @@ function linksHtml(){if(!LINKS.length)return '';var h='',now=LINKS.filter(linkNo
     bt.forEach(function(x){h+='<li><button data-lnk="'+esc(x.id)+'"><span class="tm">'+esc(lspan(x))+'</span><span>'+esc(x.name)+'</span></button></li>'});h+='</ul></details>'}
   return h}
 var lnkOpen=false;
+/* BP-32: events tied to the map. An event lists the position rows it rests on (steps); the units are the tracks that carry them (and the
+   formations above those, so a regiment folded into its brigade still counts). While an event is current, and for a while after its mark
+   (the record's end, or 45 minutes / 2 days at least), its units and their arrows stand out and the other symbols are dimmed. Picking an
+   event in the pane moves the clock to it and frames its units; a unit's details list the events that name it. Nothing new in the file. */
+var EVT={},EVOF={},EVDIM=0.32,EVHOLD=byDay?2:45;
+B.events.forEach(function(e){var m={};
+  B.tracks.forEach(function(tr){if(tr.k.some(function(k){return !k.virtual&&e.steps.indexOf(k.id)>=0})){m[tr.id]=1;(EVOF[tr.id]=EVOF[tr.id]||[]).push(e.id)}});
+  var own=Object.keys(m);
+  own.forEach(function(id){var tr=B.track(id),n=0;while(tr&&tr.parent&&n++<6){m[tr.parent]=1;tr=B.track(tr.parent)}});   // the formations above count too
+  B.tracks.forEach(function(tr){var p=tr,n=0;while(p&&p.parent&&n++<6){if(own.indexOf(p.parent)>=0){m[tr.id]=1;break}p=B.track(p.parent)}});   // and the parts below (a brigade's regiments, zoomed in)
+  EVT[e.id]=m});
+var EVH_OK=B.events.some(function(e){return e.steps.length}),evhOn=EVH_OK,evf=null;
+function evFocus(){if(!evhOn||landing||sel)return null;var e=curEvent();if(!e||!e.steps.length||!Object.keys(EVT[e.id]).length)return null;
+  return t>Math.max(e.t1==null?e.t:e.t1,e.t)+EVHOLD?null:EVT[e.id]}
+function frameEvent(e){   // frame the event's own rows, wherever they are on the map now
+  if(base.own||!e)return;var x0=1e18,y0=1e18,x1=-1e18,y1=-1e18;
+  B.tracks.forEach(function(tr){tr.k.forEach(function(k){if(k.g&&!k.virtual&&e.steps.indexOf(k.id)>=0)k.g.forEach(function(p){x0=Math.min(x0,p[0]);y0=Math.min(y0,p[1]);x1=Math.max(x1,p[0]);y1=Math.max(y1,p[1])})})});
+  if(x0>x1)return;var mn=((P.follow||{}).min)||(byDay?[30000,22000]:[900,650]),cx=(x0+x1)/2,cy=(y0+y1)/2,w=Math.max(x1-x0,mn[0]),hh=Math.max(y1-y0,mn[1]);
+  setFollow(false);setPreset(null);mv.jump(mv.cameraFor([cx-w/2,cy-hh/2,cx+w/2,cy+hh/2],{t:60,b:40,l:30,r:30}))}
+function setEvh(v){evhOn=v;tick('cEvh',v);remember('evh',v);mv.kick()}
 var BLEND=RU.blend||4,NEAR=RU.near||15,LEAD_IN=RU.lead||0.35,LINGER=RU.linger||2,PACE=RU.pace||null;
 /* march pace in metres a minute (rules.pace: one number, or one per branch). A unit moving to a step marked "march", with nothing on record
    between, leaves when the earlier record ends and moves at that pace, rather than drifting across the whole gap; it then waits there. */
@@ -408,7 +428,7 @@ function arrowsSvg(sc){ if(!arwOn||landing||!unitsOn||base.own||!arrowsAny()) re
     d+='L'+f1(e.p[0])+' '+f1(e.p[1]);
     var tip=pts[n-1],vx=tip[0]-e.p[0],vy=tip[1]-e.p[1],vl=Math.hypot(vx,vy)||1; vx/=vl; vy/=vl;
     var hd='M'+f1(tip[0])+' '+f1(tip[1])+'L'+f1(e.p[0]-vx*4-vy*6)+' '+f1(e.p[1]-vy*4+vx*6)+'L'+f1(e.p[0]-vx*4+vy*6)+' '+f1(e.p[1]-vy*4-vx*6)+'Z',col=look(tr).col,w=compact?2.4:3;
-    h+='<g class="ahead" style="pointer-events:none" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="'+(moving?0.9:0.75)+'"><path d="'+d+'" stroke="var(--u-halo)" stroke-width="'+(w+3)+'"/><path d="'+hd+'" fill="var(--u-halo)" stroke="var(--u-halo)" stroke-width="4"/>'
+    h+='<g class="ahead" style="pointer-events:none" fill="none" stroke-linecap="round" stroke-linejoin="round" opacity="'+((moving?0.9:0.75)*((evf&&!evf[tr.id])?EVDIM:1))+'"><path d="'+d+'" stroke="var(--u-halo)" stroke-width="'+(w+3)+'"/><path d="'+hd+'" fill="var(--u-halo)" stroke="var(--u-halo)" stroke-width="4"/>'
       +'<path d="'+d+'" style="stroke:'+col+'" stroke-width="'+w+'" stroke-dasharray="'+(moving?'':'7 6')+'"/><path d="'+hd+'" style="fill:'+col+';stroke:'+col+'" stroke-width="1"/></g>'});
   return h}
 function trailsSvg(){ if(!TRL||!trlOn||landing||!unitsOn) return ''; var key=base.own?base.map:'g',by={};
@@ -479,6 +499,7 @@ function setDayEnds(v){deOn=v;tick('cDayEnds',v);remember('dayends',v);mv.kick()
 function unitSvg(u,part){   // the last position on record stays plain to see: dashed, barely faded
   var o=u.o,tr=o.tr,s=o.s,pts=u.pts,lk=look(tr),col=lk.col,k=s.kind;
   var soft=(k==='moving'||k==='early'||k==='after'||k==='unplaced'),low=u.low,op=(k==='unplaced'?0.5:k==='after'?0.8:1)*(u.fade==null?1:u.fade)*(u.o.s.fade==null?1:u.o.s.fade),isSel=!!tr.id&&sel===tr.id,h='',x=u.x,y=u.y,c=u.c;
+  if(evf&&!evf[tr.id]) op*=EVDIM;   // BP-32: not one of the current event's units
   if(part==='line'){ if(!u.line) return '';
     var d=pts.map(function(p,i){return (i?'L':'M')+f1(p[0])+' '+f1(p[1])}).join('');
     var w=compact?((tr.ech==='corps'||tr.ech==='army')?5:tr.ech==='division'?4:3):((!tr.parent&&(tr.ech==='brigade'||tr.ech==='division'))?6:4.5);
@@ -584,6 +605,7 @@ function draw(){
   sNow=mv.scale(); mv.hits.length=0;
   var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintModern(H); paintHill(); paintCredit(H); trnTick(); inkTick();
   var cover=base.backdrop==='current'?(H||base.m).box:null;
+  evf=evFocus();
   var sc=scene(),L=layout(unitsOn&&!landing?sc:[]),h=mapNames(L,cover);   // on landing the map is shown alone; the units come on when the battle is started
   L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});   // the selected unit last, so it sits on top
   h+=trailsSvg()+dayEndsSvg(sc)+arrowsSvg(sc); L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h;
@@ -1061,6 +1083,8 @@ function renderPanel(sc){
       else if(kd==='early'){h+=rowHtml(me.s.k,'Next record');if(me.s.from)h+=rowHtml(me.s.from,'Came from')}
       else h+=rowHtml(me.s.k,(kd==='after'||kd==='lost')?'Last record':'Current record');}
     if(tr.notes) h+='<p class="meta" style="margin-top:12px">'+esc(tr.notes)+'</p>';
+    var evs=(EVOF[sel]||[]).map(function(id){return B.events.filter(function(x){return x.id===id})[0]});
+    if(evs.length){h+='<h3>Events that name this unit</h3><ul class="evl">';evs.forEach(function(x){h+='<li><button data-ev="'+esc(x.id)+'" data-evu="1"><span class="tm">'+esc(whenText(x.t))+'</span><span>'+esc(x.full)+'</span></button></li>'});h+='</ul>'}
   } else {
     /* the Now text and the lists of units share the pane: opening a list folds the Now text away, and closing every list opens it again */
     h+=linksHtml();
@@ -1150,7 +1174,7 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   $('layers').innerHTML=L;
   // Battle options
   G+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')+(TRL?ck('cTrail','Routes taken',trlOn):'')+(arrowsAny()?ck('cArrow','Arrows to where units go next',arwOn):'')
-    +(DE_OK?ck('cDayEnds','Where units began and ended each day',deOn):'')+ck('cNarr','The current event, in words, on the map',false)+(DE_OK?'<p class="gn">Dashed: where a unit began the day. Thin solid: where it ended it.</p>':'')+'</div>';
+    +(DE_OK?ck('cDayEnds','Where units began and ended each day',deOn):'')+ck('cNarr','The current event, in words, on the map',false)+(EVH_OK?ck('cEvh','Highlight the units in the current event',evhOn):'')+(DE_OK?'<p class="gn">Dashed: where a unit began the day. Thin solid: where it ended it.</p>':'')+'</div>';
   G+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Unit symbols',[sb('fr-none','Neutral',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Choose a side to see the battle from its point of view: the other side&rsquo;s units take the diamond frame of the standard military symbols.</p></div>';
   if(PZ_OK) G+='<div class="grp"><div class="gh">Pause and summary</div>'+seg('Pause and summary',[sb('pz-off','Off',pzMode==='off'),sb('pz-day','Each day',pzMode==='day'),sb('pz-week','Each week',pzMode==='week')])+'<p class="gn">While it plays, the battle stops at the end of each day or week and shows a summary. Press Continue to go on.</p></div>';
   $('pBattle').innerHTML=G;
@@ -1259,7 +1283,7 @@ bases.forEach(function(b){var e=$('b-'+b.id);if(e)e.addEventListener('click',fun
 (P.views||[]).forEach(function(v){var e=$('v-'+v.preset);if(e)e.addEventListener('click',function(){openPop('pType',false)})});
 function onCheck(id,fn){var e=$(id);if(e)e.addEventListener('change',function(){fn(e.checked)})}
 onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations); onCheck('cTrail',setTrails); onCheck('cArrow',setArrows); onCheck('cMute',setMute); onCheck('cHill',setHill);
-onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
+onCheck('cEvh',setEvh); onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
 on('sy-standard',function(){setSymbols('standard')}); on('sy-period',function(){setSymbols('period')});
 on('fr-none',function(){setSeenFrom('')}); raw.sides.forEach(function(sd){on('fr-'+sd.code,function(){setSeenFrom(sd.code)})});
 var opr=$('opac'); if(opr) opr.addEventListener('input',function(){setOpacity(+opr.value/100)});
@@ -1329,7 +1353,7 @@ function restart(){closeSummary();$('ask').hidden=true;clk.setPlaying(false);sel
   if(P.follow){follow=true;press('bFollow',true)} landing=true;panelKey='';clk.setTime(T0);setBase(startBase(),true);mv.jump(home());mv.kick()}
 on('evprev',function(){clk.setPlaying(false);clk.setTime(stepBy(-1,t))}); on('evnext',function(){clk.setPlaying(false);clk.setTime(stepBy(1,t))}); on('step',function(){setStep(stepI+1)});
 WM.panelClicks(panel,select);
-panel.addEventListener('click',function(e){var b=e.target.closest('[data-ev]');if(!b)return;var ev=B.events.filter(function(x){return x.id===b.getAttribute('data-ev')})[0];if(ev){clk.setPlaying(false);clk.setTime(ev.t)}});
+panel.addEventListener('click',function(e){var b=e.target.closest('[data-ev]');if(!b)return;var ev=B.events.filter(function(x){return x.id===b.getAttribute('data-ev')})[0];if(ev){clk.setPlaying(false);if(b.hasAttribute('data-evu')){sel=null;panelKey=''}clk.setTime(ev.t);frameEvent(ev)}});
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-lnk]');if(b)openLink(b.getAttribute('data-lnk'))});
 panel.addEventListener('toggle',function(e){if(e.target.classList&&e.target.classList.contains('cbls'))lnkOpen=e.target.open},true);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-base]');if(!b)return;setBase(b.getAttribute('data-base'));info=true;rcSel=null;panelKey='';mv.kick()});   // a map offered in the map details
@@ -1368,6 +1392,7 @@ on('bLink',function(){var url=location.href.split('#')[0]+linkHash(),ok=$('linko
 /* ---------- start ---------- */
 try{if(DE_OK&&localStorage.getItem('wm.'+B.id+'.dayends')==='1'){deOn=true;tick('cDayEnds',true)}}catch(e){}
 try{if(localStorage.getItem('wm.'+B.id+'.arrow')==='0'){arwOn=false;tick('cArrow',false)}}catch(e){}
+try{if(EVH_OK&&localStorage.getItem('wm.'+B.id+'.evh')==='0'){evhOn=false;tick('cEvh',false)}}catch(e){}
 try{if(localStorage.getItem('wm.'+B.id+'.hill')==='0'){hsOn=false;tick('cHill',false)} if(localStorage.getItem('wm.'+B.id+'.mute')==='0'){muteOn=false;tick('cMute',false);wrap.classList.add('vivid')} if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)} var ts=localStorage.getItem('wm.'+B.id+'.trail'); if(TRL&&ts!=null){trlOn=ts==='1';tick('cTrail',trlOn)}}catch(_){ }
 setStep(stepNear(P.rate||(byDay?1:5)));
 if(P.views) preset=P.views[0].preset;

@@ -535,6 +535,8 @@ def main(argv):
         folder = os.path.join(ROOT, 'playbacks', pb['playback_id']); os.makedirs(folder, exist_ok=True)
         battle = bf.write(export(pb, W), os.path.join(folder, 'battle.json'))
         for w in pace(battle): print('  check this:', w)
+        bare = [e['id'] for e in battle['events'] if not e.get('steps')]
+        if bare: print('  events with no position rows (BP-32 cannot tie them to units on the map): %s' % ', '.join(bare))
         for w in contacts(battle): print('  contact:', w)
     print('CSV copies: %d sheets' % write_csv())
     return 0

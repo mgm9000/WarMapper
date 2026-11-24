@@ -140,6 +140,14 @@ Steps on a track are in time order.
 `start` and `end` are the range the record gives; `at` is where the timeline marks it. `label` is a shorter name
 for the timeline, `quiet` marks an event shown as a dot without its name, `steps` are the rows it rests on.
 
+Since 23 Nov 2026 (BP-32) the player uses `steps` to tie an event to the map: the event's units are the tracks that carry those rows,
+with the formations above them and the parts below them. While the event is current (until the next one begins, and no longer than its
+record's end or 45 minutes, or two days in a battle followed by the day, after its mark), its units and their arrows stand out and the
+other symbols are dimmed (Battle options: Highlight the units in the current event). Picking an event in the side pane moves the clock to
+it and frames its rows; a unit's details list the events that name it. An event with no `steps` is shown as before, and the export lists
+it (First Ypres: none of its 15 events names its rows yet). An event about a place with no unit (a bridge blown, a town taken empty)
+cannot be tied to the map this way: that would need a place on the event, which the format does not have.
+
 ### summaries
 
 Optional. A summary of a day or a week, shown when the playback stops at the end of one (see `day_pause`).
