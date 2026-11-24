@@ -170,7 +170,11 @@ def bases(sat):
     """The playback's bases, in button order: the reconstruction on its terrain (where the playback opens), today's map, the satellite
     view as it was, and the other maps, hidden from the menu and offered from the map details."""
     S = [('bases.1.id', 'r81t'), ('bases.1.label', '1781 with terrain'), ('bases.1.short', '1781'), ('bases.1.recon', 'cowpens-1781'),
-         ('bases.1.terrain', json.dumps({'zoom': 14, 'extent': [-81.86, 35.095, -81.75, 35.165], 'open_m': 20, 'smooth_m': 20, 'relief': 3, 'spots_from': 14.4, 'doubt': False})),
+         ('bases.1.terrain', json.dumps({'zoom': 14, 'extent': [-81.86, 35.095, -81.75, 35.165], 'open_m': 20, 'smooth_m': 20, 'relief': 3, 'spots_from': 14.4, 'doubt': False,
+                                       'about': 'In the United States these tiles come from the USGS\'s National Elevation Dataset, a survey of the bare ground with no buildings or trees in it. '
+                                                'Bumps narrower than about 20 m are taken off and the rest smoothed over about 20 m. Heights are in metres, good to a metre or two. This is today\'s ground: '
+                                                'the park keeps the field open, but SC 11, the park roads and the visitor centre have cut into it since 1781.',
+                                       'beyond': 'Beyond the dotted line the roads of 1781 stop: only today\'s relief and contours are drawn there, so the map fills the window.'})),
          ('bases.2.id', 'mod'), ('bases.2.label', 'Current map'), ('bases.2.short', 'Today'), ('bases.2.current', True)]
     S += [('bases.3.' + k, v) for k, v in sat.items()]
     k = 4
