@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (evening): the Cowpens playback after Morgan's review
+"Revolutionary War.xlsx, Cowpens: the page opens on the whole ground and eases in; units outside the current event keep 70% of their strength; Tarleton's column marches as one symbol (C-BR-TARL, rows CP40 and a new row CP138) and its eight units set off from CP138 instead of marching the road on top of one another; arrows reach 6 minutes ahead; rows that meet blend over 4 minutes. No source reading changed. With player fixes for two jumps (a move along a route that began away from the unit, and the end of a route into a line) and eased event dimming. Written by pipeline/cowpens_playback_fixes_2026_11_24.py."
+""
 What changed on 24 November 2026 (later still): Tarleton's road at Cowpens
 "Revolutionary War.xlsx: at Morgan's request, routes RC01 to RC06 (Tarleton's march in, the British escapes, Washington's pursuit) leave the straight line across the 900 m between today's Green River Road and the old trace, and follow the road the maps show there: north on a road of the 1959 USGS sheet (S108) that Landers (1928, S103) calls ""Green River Road"", then west on Bearss's Mill Gap road (S107). CP40 moves about 1 km up the road so it stays 3.3 km by road from the field. Gap CG06 partly closed. Written by pipeline/cowpens_tarleton_road_2026_11_24.py."
 ""
