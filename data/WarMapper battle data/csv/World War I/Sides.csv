@@ -1,0 +1,3 @@
+side_id,war_id,name,frame,colour,notes,code,short
+WW1-ALL,WW1,"Allies (British, French and Belgian)",blue,124F93,"One side, three nations: the nation is on each unit.",AL,Allied
+WW1-GER,WW1,Germany,red,B02A1C,,GE,German

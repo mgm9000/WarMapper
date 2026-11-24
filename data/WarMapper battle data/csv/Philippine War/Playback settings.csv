@@ -1,0 +1,150 @@
+playback_id,setting,value,what it does
+manila,page_title,Manila 1899 Playback,The browser tab title
+manila,style,tactical,tactical (a battlefield) or operational (a front)
+manila,scale_bar,yards,yards or km
+manila,rate,10,Time units played per second
+manila,clock_title,Battle of Manila,The battle's name in the date box
+manila,lead.share,0.12,Share of the timeline given to the stretch before the focus
+manila,lead.rate,10,Time units per second in that stretch
+manila,bases.1.id,p99,A map the reader can put under the units; the first is the opening one
+manila,bases.1.label,"Signal Corps map, Feb 1899",
+manila,bases.1.short,1899,
+manila,bases.1.map,warking-1899,
+manila,bases.1.backdrop,current,
+manila,bases.1.hidden,True,"Not on the Type of map menu (Morgan, 22 Nov 2026); offered in the map details."
+manila,bases.1.note,"The Army's own map of the battle, as drawn in February 1899: a blue-line copy, north to the left, turned and fitted to the ground to within about 170 m.",Shown beside the link in the map details.
+manila,bases.2.id,now,
+manila,bases.2.label,Current map,
+manila,bases.2.short,Now,
+manila,bases.2.current,True,
+manila,views.1.preset,lines,Named views
+manila,views.1.label,The lines around Manila,
+manila,views.1.short,Lines,
+manila,views.2.preset,sheet,
+manila,views.2.label,The whole 1899 map,
+manila,views.2.short,Map,
+manila,preset.lines,"[120.955, 14.528, 121.048, 14.662]","A named view: [west, south, east, north]"
+manila,preset.sheet,"[120.874, 14.429, 121.058, 14.705]",
+manila,start_base,r99t,"The base the playback opens on: ""1899 with terrain"", at Morgan's choice (22 Nov 2026), which also took the Signal Corps map and the plain reconstruction off the Type of map menu (they are offered in the map details). Earlier the same day it was the plain reconstruction (r99), itself an exception to the landing rule (open on a period map that covers the opening view)."
+manila,bounds,warking-1899,The map that bounds the view
+manila,modern.tiles,https://a.tile.opentopomap.org/{z}/{x}/{y}.png,"The modern map (OpenTopoMap, as Ypres)"
+manila,modern.max_zoom,17,"The modern map (OpenTopoMap, as Ypres)"
+manila,modern.credit,"OpenTopoMap (CC-BY-SA); data: OpenStreetMap contributors, SRTM","The modern map (OpenTopoMap, as Ypres)"
+manila,modern.name,OpenTopoMap,"The modern map (OpenTopoMap, as Ypres)"
+manila,modern.about,"Today's ground: OpenTopoMap, a topographic map drawn from OpenStreetMap with contours and hill shading from satellite radar heights. Place names on it are today's spellings; the battle's own names are written over it. It is streamed from opentopomap.org while it is on screen, so it needs a connection.","The modern map (OpenTopoMap, as Ypres)"
+manila,modern.rights,"Map: CC-BY-SA, OpenTopoMap. Data: Open Database License, OpenStreetMap contributors; SRTM heights","The modern map (OpenTopoMap, as Ypres)"
+manila,modern.link,https://opentopomap.org/about,"The modern map (OpenTopoMap, as Ypres)"
+manila,zoom.max,1.6,"Closest zoom, screen pixels per metre"
+manila,zoom.min_factor,0.9,
+manila,zoom.follow_max,0.6,
+manila,zoom.labels,0.12,
+manila,zoom.towns_until,0.3,
+manila,follow.min,"[3000, 2000]","Smallest box the camera frames, metres"
+manila,follow.margin,300,
+manila,texts.stated,A report or the Signal Corps map puts the unit here.,
+manila,texts.inferred,Worked out from the reports or the order of events; the sources read do not put this unit here.,
+manila,texts.after,The sources read do not follow this unit further. It is shown where they last put it.,
+manila,texts.unplaced,The sources read do not say where the unit was.,
+manila,found.map_read,read from the Signal Corps map of February 1899,
+manila,found.modern_map,at a place named in the report (its present-day coordinates),
+manila,question_mark,overall,
+manila,about.1,"Data pilot, 20 November 2026. Positions come from Otis's report of 1899 (the telegrams and their clock times), the January 1899 roster of the Eighth Army Corps, and the Signal Corps map of February 1899 with its index of final positions. Nothing here has been checked by a historian.",
+manila,about.2,"The Filipino side is thin: the sources read are American, and Taylor's notes on the Filipino commands around Manila date from August-September 1898. Every Filipino position is inferred, and the commanders named are those of 1898.",
+manila,about.3,"Many clock times are ranges: the reports give ""early in the morning"" or ""during the afternoon"". Telegram times (11:20, 12:30, about 16:30, 16:45) are exact to the minute.",
+manila,about.4,"The 1899 map is a blue-line photocopy drawn with north to the left, shown turned to north-up and fitted to today's ground to within about 170 m (at worst 270 m).",
+manila,about.5,Symbols are blue for the Americans and red for the Filipino army; the colours are a drawing convention.,
+luzon1899,page_title,Luzon 1899 Playback,The browser tab title
+luzon1899,style,operational,tactical (a battlefield) or operational (a front)
+luzon1899,scale_bar,km,yards or km
+luzon1899,rate,1,"Days played per second (1 since 21 Nov 2026, so the moves and the arrows ahead of them can be followed; it was a week a second)"
+luzon1899,clock_title,"Luzon campaign, 1899",The campaign's name in the date box
+luzon1899,bases.1.id,now,The opening map: no period map covers Manila and northern Luzon together (the landing-view rule)
+luzon1899,bases.1.label,Current map,
+luzon1899,bases.1.short,Now,
+luzon1899,bases.1.current,True,
+luzon1899,bases.2.id,c99,
+luzon1899,bases.2.label,"Central Luzon, 1899",
+luzon1899,bases.2.short,1899,
+luzon1899,bases.2.map,siebert-1899,
+luzon1899,bases.2.backdrop,current,
+luzon1899,bases.3.id,n00,
+luzon1899,bases.3.label,"Northern Luzon, 1900 (Young)",
+luzon1899,bases.3.short,1900,
+luzon1899,bases.3.map,young-1900,
+luzon1899,bases.3.backdrop,current,
+luzon1899,views.1.preset,all,Named views
+luzon1899,views.1.label,All of the campaign,
+luzon1899,views.1.short,All,
+luzon1899,views.2.preset,central,
+luzon1899,views.2.label,Manila to Lingayen Gulf,
+luzon1899,views.2.short,Central,
+luzon1899,views.3.preset,north,
+luzon1899,views.3.label,Northern Luzon,
+luzon1899,views.3.short,North,
+luzon1899,preset.all,"[119.6, 14.15, 122.4, 18.75]","A named view: [west, south, east, north]"
+luzon1899,preset.central,"[120.1, 14.4, 121.35, 16.35]",
+luzon1899,preset.north,"[119.9, 15.8, 122.2, 18.75]",
+luzon1899,modern.tiles,https://a.tile.opentopomap.org/{z}/{x}/{y}.png,"The modern map (OpenTopoMap, as Ypres and Manila)"
+luzon1899,modern.max_zoom,17,"The modern map (OpenTopoMap, as Ypres and Manila)"
+luzon1899,modern.credit,"OpenTopoMap (CC-BY-SA); data: OpenStreetMap contributors, SRTM","The modern map (OpenTopoMap, as Ypres and Manila)"
+luzon1899,modern.name,OpenTopoMap,"The modern map (OpenTopoMap, as Ypres and Manila)"
+luzon1899,modern.about,"Today's ground: OpenTopoMap, a topographic map drawn from OpenStreetMap with contours and hill shading from satellite radar heights. Place names on it are today's spellings; the campaign's own names are written over it. It is streamed from opentopomap.org while it is on screen, so it needs a connection.","The modern map (OpenTopoMap, as Ypres and Manila)"
+luzon1899,modern.rights,"Map: CC-BY-SA, OpenTopoMap. Data: Open Database License, OpenStreetMap contributors; SRTM heights","The modern map (OpenTopoMap, as Ypres and Manila)"
+luzon1899,modern.link,https://opentopomap.org/about,"The modern map (OpenTopoMap, as Ypres and Manila)"
+luzon1899,zoom.max,0.05,"Closest zoom, screen pixels per metre"
+luzon1899,zoom.min_factor,0.85,
+luzon1899,zoom.labels,0.0024,Town names appear from this zoom
+luzon1899,zoom.full_names,0.006,
+luzon1899,question_mark,overall,
+luzon1899,texts.stated,A report puts the column or headquarters at this town on this date.,
+luzon1899,texts.inferred,Worked out from the reports or the order of events; the sources read do not put it here on this date.,
+luzon1899,texts.moving,"The reports give the places reached and the dates. Between them the symbol follows the railway, road, river or coast the column took, as far as the reports say; the route is approximate.",
+luzon1899,texts.after,The sources read do not follow this column further. It is shown where they last put it.,
+luzon1899,texts.unplaced,The sources read do not say where it was.,
+luzon1899,found.modern_map,at the town the report names (its present-day coordinates),
+luzon1899,about.1,"Data pilot, 21 November 2026. One symbol is a column or a headquarters, placed at the town a report names on the date it gives. Positions are good to a kilometre or two at best. Nothing here has been checked by a historian.",
+luzon1899,about.2,"American positions come from General Otis's two reports and their telegrams, Major Batson's report, and the dates printed on General Young's map. Where a date is a range (""during August"", a blurred telegram date), the row says so and says which day the symbol is shown from.",
+luzon1899,about.3,The Filipino side is thin and comes from American reports: where the Republic's government and its main army were said to be. Strengths are American estimates. Much of it is inferred and marked so.,
+luzon1899,about.4,"Aguinaldo's movements after 19 November, and the fight at Tirad Pass, are taken from Young's and March's reports as printed in a 1901 anti-imperialist pamphlet (the Philippine Information Society); the reports themselves were not found in the volumes read.",
+luzon1899,about.5,"Operations south and east of Manila in 1899 (Paranaque and Zapote in June, Cavite in October) are not shown. The playback ends on 15 December; Lawton was killed at San Mateo on the 19th.",
+luzon1899,about.6,"The three period maps are the Army's and the War Department's own. They were compiled from reconnaissance and older Spanish maps, not surveyed, so towns on them can be one to five kilometres from where they are; units are drawn at the true places.",
+luzon1899,about.7,Symbols are blue for the Americans and red for the Philippine Republic; the colours are a drawing convention.,
+luzon1899,bases.4.id,wd99,"A third period map, added 21 Nov 2026"
+luzon1899,bases.4.label,"Luzon theatre, 1899 (War Dept)",
+luzon1899,bases.4.short,Theatre,
+luzon1899,bases.4.map,theatre-1899,
+luzon1899,bases.4.backdrop,current,
+luzon1899,arrows.on,True,"Arrows ahead: before a long move and during it, an arrow from the unit to where the record next puts it, along the route"
+luzon1899,arrows.min_km,20,Moves shorter than this get no arrow
+luzon1899,arrows.lead,4,Days before the unit sets off that the arrow appears
+luzon1899,zoom.fold,0.006,"Zoomed in past this (screen pixels per metre), a unit with parts on record is shown by its parts"
+luzon1899,fold.label,Brigades,The name of the parts in the Battle options menu
+luzon1899,about.8,"A trial: for the advance of 24 to 27 March, MacArthur's division is shown by brigade when you zoom in on Manila (Hale, H. G. Otis, and Wheaton beside them). The brigades' places are rough, from one paragraph of Otis's report.",
+luzon1899,skip.1.from,1899-06-04,"While playing, a quiet stretch is shown for a moment and then skipped"
+luzon1899,skip.1.to,1899-08-11,
+luzon1899,skip.1.after_seconds,3,
+luzon1899,skip.1.note,The rains: nothing on record moves until August. On to 11 August.,
+luzon1899,skip.2.from,1899-08-20,"While playing, a quiet stretch is shown for a moment and then skipped"
+luzon1899,skip.2.to,1899-10-10,
+luzon1899,skip.2.after_seconds,3,
+luzon1899,skip.2.note,MacArthur holds Angeles while new regiments arrive. On to 10 October and the fall campaign.,
+luzon1899,about.9,"Ships are drawn where the reports read have them firing in support of the troops, landing men or carrying them. Their places on the water are estimates (the reports say ""off"" a town and no more), and this is the Army's account: no naval report was read.",
+manila,about.6,"Ships are drawn where the reports read have them firing in support of the troops, landing men or carrying them. Their places on the water are estimates (the reports say ""off"" a town and no more), and this is the Army's account: no naval report was read.",
+manila,bases.3.id,r99,A reconstructed base: drawn by the page from the layers on the Recon layers sheet
+manila,bases.3.label,1899 (reconstructed),
+manila,bases.3.short,1899 R,
+manila,bases.3.recon,manila-1899,The reconstruction this base draws (Reconstructions sheet)
+manila,bases.3.hidden,True,"Not on the Type of map menu (Morgan, 22 Nov 2026); offered in the map details."
+manila,bases.3.note,"The same reconstruction without the terrain or the 1898 city plan: the lines read from the maps of 1899, on their framed sheet.",Shown beside the link in the map details.
+manila,bases.4.id,r99t,"A fourth base: the reconstructed 1899 map with the lie of the land drawn in detail (added 22 Nov 2026 at Morgan's request, to see the ridgelines as one zooms in)."
+manila,bases.4.label,1899 with terrain,
+manila,bases.4.short,Terrain,
+manila,bases.4.recon,manila-1899,The same reconstruction as base r99.
+manila,bases.4.terrain,"{""zoom"": 12, ""extent"": [120.82, 14.43, 121.19, 14.71], ""open_m"": 230, ""smooth_m"": 60, ""relief"": 4, ""steps"": [[0, 20, 100], [11.2, 10, 50], [12.4, 5, 25], [13.4, 2, 10], [14.4, 1, 5], [15.6, 0.5, 5]], ""spots_from"": 12.6, ""doubt"": {""below_m"": 9, ""rise_m"": 2.5, ""across_m"": 600}}","Relief, contours and spot heights worked out in the page from elevation tiles. zoom: the tile zoom read (12, about 37 m a pixel; the cleaned surface holds nothing finer). extent: [west, south, east, north], the ground the terrain is worked for; wider than the reconstruction's sheet, so the map fills any window and the reader cannot move past it. open_m: bumps narrower than this are taken off (buildings, the Tondo dump); smooth_m: smoothing; relief: how much the shading exaggerates the heights. steps: [map zoom, contour interval in metres, interval of the heavier lines], closing in as the reader zooms in; half-metre lines are drawn dashed. spots_from: the zoom from which spot heights show. doubt: a rise of more than rise_m above ground lower than below_m, narrower than across_m, is taken for a mass of buildings: its contours are dotted and carry no heights. Rewritten 22 Nov 2026 at Morgan's request: fill the screen, and show more as one zooms in."
+manila,trails.on,True,Routes taken: the road a unit has come by is drawn behind it
+manila,trails.opacity,0.55,
+manila,trails.fade_after,120,Minutes a unit stands still before its route fades
+manila,trails.fade_over,60,
+manila,arrows.on,True,Arrows ahead of a move: from the unit to where the record next puts it
+manila,arrows.min_km,0.7,"Moves shorter than this get no arrow. The whole battle is fought within a few kilometres, so the limit is far below the 20 km of a campaign"
+manila,arrows.lead,30,Minutes before the unit sets off that the arrow appears

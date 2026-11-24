@@ -1,0 +1,42 @@
+unit_id,unit_name,map_label,side_id,nation,branch,echelon,symbol_code,wikidata_qid,source_ids,sourced?,notes
+T-US-ARMY,Washington's army (Trenton force),Washington,ARW-US,United States,Infantry,Army,10031000231211000000,,S20; S21,yes,The whole crossing force. Brigade strengths are not in the sources read (TG03).
+T-US-HQ,Washington's headquarters,Washington (HQ),ARW-US,United States,Infantry,Headquarters,10031000001211000000,,S21; S22,yes,Rode with Greene's division.
+T-US-GREENE,Greene's division (left wing),Greene,ARW-US,United States,Infantry,Division,10031000211211000000,,S21; S22,yes,"Upper column, by the Scotch and Pennington roads. Wiederhold's sketch marks ""Gen. Greene's Brigade"" (U) at the head of the town."
+T-US-SULL,Sullivan's division (right wing),Sullivan,ARW-US,United States,Infantry,Division,10031000211211000000,,S21; S22,yes,"Lower column, by the River Road. Wiederhold's sketch marks ""Gen. Sullivan's Brigade"" (Q)."
+T-US-STEPH,Stephen's brigade,Stephen,ARW-US,United States,Infantry,Brigade,10031000181211000000,,S21; S22; S36,yes,Advance of the army. Scott's and Lawson's battalions named in S22.
+T-US-MERC,Mercer's brigade,Mercer,ARW-US,United States,Infantry,Brigade,10031000181211000000,,S21; S22; S36,yes,
+T-US-STIR,Lord Stirling's brigade,Stirling,ARW-US,United States,Infantry,Brigade,10031000181211000000,,S21; S22; S36,yes,Reserve of the left wing. Weedon's regiment named in S33.
+T-US-FERM,De Fermoy's brigade,Fermoy,ARW-US,United States,Infantry,Brigade,10031000181211000000,,S21; S22,yes,Hand's riflemen and the German Battalion (S20 note 7; S33). Not marked on Wiederhold's sketch.
+T-US-STCL,St. Clair's brigade,St. Clair,ARW-US,United States,Infantry,Brigade,10031000181211000000,,S21; S22,yes,
+T-US-STARK,Stark's regiment,Stark,ARW-US,United States,Infantry,Regiment,10031000171211000000,,S21; S33,yes,
+T-US-GLOV,Glover's brigade,Glover,ARW-US,United States,Infantry,Brigade,10031000181211000000,,S21; S22,yes,Glover's own 14th Continental Regiment manned the boats (S33).
+T-US-SARG,Sargent's brigade,Sargent,ARW-US,United States,Infantry,Brigade,10031000181211000000,,S21; S22,yes,No position during the attack in the sources read (TG04).
+T-US-ADVW,Capt. William Washington's advance party,W. Washington,ARW-US,United States,Infantry,Detachment,10031000141211000000,,S21,yes,3rd Virginia Regiment (S33). Lt. James Monroe was with it.
+T-US-ADVF,Capt. John Flahaven's advance party,Flahaven,ARW-US,United States,Infantry,Detachment,10031000141211000000,,S21,yes,
+T-US-FORR,Forrest's battery,Forrest,ARW-US,United States,Artillery,Battery,10031000151303000000,,S21; S22,yes,
+T-US-HAM,Hamilton's battery (New York),Hamilton,ARW-US,United States,Artillery,Battery,10031000151303000000,,S21; S22,yes,
+T-US-BAUM,Bauman's battery,Bauman,ARW-US,United States,Artillery,Battery,10031000151303000000,,S21; S22,yes,No position during the attack in the sources read (TG04).
+T-US-MOUL,Moulder's battery,Moulder,ARW-US,United States,Artillery,Battery,10031000151303000000,,S21; S22,yes,
+T-US-NEIL,Neil's battery,Neil,ARW-US,United States,Artillery,Battery,10031000151303000000,,S21; S22,yes,No position during the attack in the sources read (TG04).
+T-US-HUGG,Hugg's battery,Hugg,ARW-US,United States,Artillery,Battery,10031000151303000000,,S21; S22,yes,No position during the attack in the sources read (TG04).
+T-US-SARGB,Sargent's battery,Sargent (bty),ARW-US,United States,Artillery,Battery,10031000151303000000,,S21; S22,yes,No position during the attack in the sources read (TG04).
+T-US-EWING,Ewing's brigade (Pennsylvania militia),Ewing,ARW-US,United States,Infantry,Brigade,10031000181211000000,,S20,yes,Did not cross. Was to seize the Assunpink bridge.
+T-US-CADW,Cadwalader's force,Cadwalader,ARW-US,United States,Infantry,Brigade,10031000181211000000,,S20,yes,Did not complete its crossing from Bristol.
+T-HE-BDE,Rall's brigade,Rall,ARW-CR,Hesse-Cassel,Infantry,Brigade,10061000181211000000,,S21; S22,yes,Garrison of Trenton. See TC06 on its strength.
+T-HE-RALL,Rall regiment,Rall Regt,ARW-CR,Hesse-Cassel,Infantry,Regiment,10061000171211000000,,S21; S36,yes,"The regiment ""of the day"" on 26 December."
+T-HE-LOSS,Von Lossberg regiment,Lossberg,ARW-CR,Hesse-Cassel,Infantry,Regiment,10061000171211000000,,S21; S36,yes,Lt. Col. Scheffer and Maj. von Hanstein surrendered the Rall and Lossberg regiments (S22).
+T-HE-KNYP,Von Knyphausen regiment,Knyphausen,ARW-CR,Hesse-Cassel,Infantry,Regiment,10061000171211000000,,S21; S33; S36,yes,Wiederhold's own regiment.
+T-HE-ALT,Capt. von Altenbockum's company (Lossberg),Altenbockum,ARW-CR,Hesse-Cassel,Infantry,Company,10061000151211000000,,S21; S36,yes,
+T-HE-JAG,Jäger company,Jägers,ARW-CR,Hesse-Cassel,Infantry,Company,10061000151211000000,,S21; S22,yes,
+T-GB-16LD,16th Light Dragoons (detachment),16 LD,ARW-CR,Great Britain,Cavalry,Detachment,10061000141213000000,,S21; S22,yes,The only British troops in the garrison.
+T-HE-ARTR,Rall regiment's guns,Rall guns,ARW-CR,Hesse-Cassel,Artillery,Section,10061000131303000000,,S21; S36,yes,
+T-HE-ARTL,Von Lossberg regiment's guns,Lossberg guns,ARW-CR,Hesse-Cassel,Artillery,Section,10061000131303000000,,S21; S36,yes,Six 3-pounders in the brigade (S21; S34).
+T-HE-ARTK,Von Knyphausen regiment's guns,Knyphausen guns,ARW-CR,Hesse-Cassel,Artillery,Section,10061000131303000000,,S21; S36,yes,
+T-HE-PKPEN,Pennington road picket,Wiederhold,ARW-CR,Hesse-Cassel,Infantry,Detachment,10061000141211000000,,S21; S22; S36,yes,Wiederhold drew the sketch (S36).
+T-HE-PKRIV,River road picket (jägers),Jäger picket,ARW-CR,Hesse-Cassel,Infantry,Detachment,10061000141211000000,,S21; S22; S36,yes,
+T-HE-PKMAI,Maidenhead road picket,Fox Chase picket,ARW-CR,Hesse-Cassel,Infantry,Detachment,10061000141211000000,,S21; S36,yes,The principal picket.
+T-HE-PKBRG,Assunpink bridge guard,Bridge guard,ARW-CR,Hesse-Cassel,Infantry,Detachment,10061000141211000000,,S21,yes,
+T-HE-PKFER,Trenton Ferry picket,Ferry picket,ARW-CR,Hesse-Cassel,Infantry,Detachment,10061000141211000000,,S21; S36,yes,
+T-HE-PKCRO,Crosswicks drawbridge detachment,Crosswicks,ARW-CR,Hesse-Cassel,Infantry,Detachment,10061000141211000000,,S21,yes,About 7 miles from Trenton; off the battle map.
+T-HE-KNYPX,Von Knyphausen regiment: the men who got away,Knyphausen (escaped),ARW-CR,Hesse-Cassel,Infantry,Detachment,10061000161211000000,,S59; S61,yes,About fifty men under Capt. von Biesenrodt who forded or swam the Assunpink before the regiment surrendered.
+T-US-KNOX,Knox's artillery (Col. Henry Knox),Knox,ARW-US,United States,Artillery,Brigade,10031000181303000000,,S59; S21,yes,"Knox commanded the army's artillery and rode with Washington in Greene's column; the batteries of that column (Forrest, Hamilton, Bauman) are drawn under him. Sullivan's batteries stay with Sullivan."

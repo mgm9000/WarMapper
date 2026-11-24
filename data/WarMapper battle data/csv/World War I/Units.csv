@@ -1,0 +1,62 @@
+unit_id,unit_name,map_label,side_id,nation,branch,echelon,symbol_code,wikidata_qid,source_ids,sourced?,notes
+Y-BR-BEF,British Expeditionary Force,BEF,WW1-ALL,Great Britain,Infantry,Army,10031000231211000000,,S44,yes,Headquarters only; no position rows.
+Y-BR-1C,I Corps,I Corps,WW1-ALL,Great Britain,Infantry,Corps,10031000221211000000,,S40,yes,No position rows of its own: its divisions are placed.
+Y-BR-4C,IV Corps,IV Corps,WW1-ALL,Great Britain,Infantry,Corps,10031000221211000000,,S40,yes,No position rows of its own.
+Y-BR-CC,Cavalry Corps,Cav Corps,WW1-ALL,Great Britain,Cavalry,Corps,10031000221213000000,,S40,yes,No position rows of its own.
+Y-BR-3C,III Corps,III Corps,WW1-ALL,Great Britain,Infantry,Corps,10031000221211000000,,S40,yes,Only its left division is in the pilot; the 6th Division is south of the map.
+Y-BR-1D,1st Division,1 Div,WW1-ALL,Great Britain,Infantry,Division,10031000211211000000,,S40; S42; S43,yes,
+Y-BR-2D,2nd Division,2 Div,WW1-ALL,Great Britain,Infantry,Division,10031000211211000000,,S40; S42,yes,
+Y-BR-7D,7th Division,7 Div,WW1-ALL,Great Britain,Infantry,Division,10031000211211000000,,S40; S42; S46,yes,
+Y-BR-3CD,3rd Cavalry Division,3 Cav Div,WW1-ALL,Great Britain,Cavalry,Division,10031000211213000000,,S40; S42,yes,
+Y-BR-1CD,1st Cavalry Division,1 Cav Div,WW1-ALL,Great Britain,Cavalry,Division,10031000211213000000,,S40; S42,yes,
+Y-BR-2CD,2nd Cavalry Division,2 Cav Div,WW1-ALL,Great Britain,Cavalry,Division,10031000211213000000,,S40; S42,yes,
+Y-BR-4D,4th Division,4 Div,WW1-ALL,Great Britain,Infantry,Division,10031000211211000000,,S40,yes,Fought the battle of Armentieres; kept here because it held the flank of the Messines sector.
+Y-BR-3D,3rd Division (II Corps brigades on the Menin road),3 Div,WW1-ALL,Great Britain,Infantry,Division,10031000211211000000,,S41; S42,yes,A mixed force of II Corps brigades. The sources disagree on what to call it: see YC03.
+Y-BR-BULF,"Bulfin's Force, from 1 November Cavan's",Bulfin / Cavan,WW1-ALL,Great Britain,Infantry,Brigade,10031000181211000000,,S42; S43,yes,"An improvised group of battalions from several brigades, about a brigade and a half strong. Drawn as a brigade."
+Y-FR-8A,"French forces in Flanders (d'Urbal's army detachment, later Eighth Army)",Fr 8th Army,WW1-ALL,France,Infantry,Army,10031000231211000000,,S46,yes,Headquarters only; no position rows.
+Y-FR-9C,IX Corps,IX Corps (Fr),WW1-ALL,France,Infantry,Corps,10031000221211000000,,S40; S44; S47,yes,"Position rows from 29 October, when the sketches show the corps sector without naming its divisions."
+Y-FR-16C,XVI Corps,XVI Corps (Fr),WW1-ALL,France,Infantry,Corps,10031000221211000000,,S40; S41; S44,yes,Position rows from 4 November for the part of the corps line south of the 32nd Division.
+Y-FR-2CC,de Mitry's cavalry corps,de Mitry,WW1-ALL,France,Cavalry,Corps,10031000221213000000,,S40,yes,
+Y-FR-87T,87th Territorial Division,87 Terr (Fr),WW1-ALL,France,Infantry,Division,10031000211211000000,,S40; S42; S46,yes,
+Y-FR-89T,89th Territorial Division,89 Terr (Fr),WW1-ALL,France,Infantry,Division,10031000211211000000,,S40,yes,
+Y-FR-17D,17th Division,17 Div (Fr),WW1-ALL,France,Infantry,Division,10031000211211000000,,S44; S46; S47,yes,
+Y-FR-18D,18th Division,18 Div (Fr),WW1-ALL,France,Infantry,Division,10031000211211000000,,S44; S46,yes,
+Y-FR-31D,31st Division,31 Div (Fr),WW1-ALL,France,Infantry,Division,10031000211211000000,,S44; S46,yes,
+Y-FR-32D,32nd Division,32 Div (Fr),WW1-ALL,France,Infantry,Division,10031000211211000000,,S45; S46,yes,
+Y-FR-MOUS,Moussy's detachment,Moussy (Fr),WW1-ALL,France,Infantry,Brigade,10031000181211000000,,S42; S43,yes,A detachment of several battalions; size not given in the sources read. Drawn as a brigade.
+Y-FR-HELY,Hély d'Oissel's group,Hély d'Oissel (Fr),WW1-ALL,France,Cavalry,Division,10031000211213000000,,S40,yes,"Named on Sketches 9 and 12 to 14 of the official history, between de Mitry and the IX Corps. What it was made of is not in the sources read. Drawn as a division."
+Y-FR-OLL,"French detachments between the canal and St. Eloi (Woillemont, then Olleris)",Woillemont / Olleris (Fr),WW1-ALL,France,Infantry,Brigade,10031000181211000000,,S40,yes,"Two names on the sketches for the same stretch: Woillemont on 31 October, Olleris on 4 November. Size not given. Drawn as a brigade."
+Y-FR-42D,42nd Division,42 Div (Fr),WW1-ALL,France,Infantry,Division,10031000211211000000,,S40; S44,yes,
+Y-FR-FM,Naval Brigade (fusiliers marins),Naval Bde (Fr),WW1-ALL,France,Infantry,Brigade,10031000181211000000,,S40; S41,yes,
+Y-BE-ARMY,Belgian Army,Belgian Army,WW1-ALL,Belgium,Infantry,Army,10031000231211000000,,S40; S44,yes,"Six divisions, drawn as one line. The battle of the Yser is outside the British definition of First Ypres."
+Y-GE-4A,Fourth Army,4th Army (Ge),WW1-GER,Germany,Infantry,Army,10061000231211000000,,S41,yes,Headquarters only; no position rows.
+Y-GE-6A,Sixth Army,6th Army (Ge),WW1-GER,Germany,Infantry,Army,10061000231211000000,,S41; S44,yes,Headquarters only; no position rows.
+Y-GE-AGF,Army Group Fabeck,Gp Fabeck,WW1-GER,Germany,Infantry,Army,10061000231211000000,,S41,yes,An army group formed for the attack of 30 October. No position rows of its own. Echelon set to Army for want of a better code.
+Y-GE-AGL,Army Group Linsingen,Gp Linsingen,WW1-GER,Germany,Infantry,Army,10061000231211000000,,S41,yes,Formed for the attack of 10-11 November. No position rows of its own.
+Y-GE-PLET,Plettenberg's Corps,Plettenberg,WW1-GER,Germany,Infantry,Corps,10061000221211000000,,S41,yes,No position rows of its own.
+Y-GE-3RC,III Reserve Corps,III Res,WW1-GER,Germany,Infantry,Corps,10061000221211000000,,S41,yes,
+Y-GE-22RC,XXII Reserve Corps,XXII Res,WW1-GER,Germany,Infantry,Corps,10061000221211000000,,S41,yes,
+Y-GE-23RC,XXIII Reserve Corps,XXIII Res,WW1-GER,Germany,Infantry,Corps,10061000221211000000,,S41,yes,
+Y-GE-26RC,XXVI Reserve Corps,XXVI Res,WW1-GER,Germany,Infantry,Corps,10061000221211000000,,S41,yes,
+Y-GE-27RC,XXVII Reserve Corps,XXVII Res,WW1-GER,Germany,Infantry,Corps,10061000221211000000,,S41,yes,
+Y-GE-HKK,"Army cavalry (I, II, IV and V Cavalry Corps)",Ge cavalry,WW1-GER,Germany,Cavalry,Corps,10061000221213000000,,S40; S41,yes,Four cavalry corps drawn as one line; the sources read do not separate them day by day.
+Y-GE-15C,XV Corps,XV Corps,WW1-GER,Germany,Infantry,Corps,10061000221211000000,,S41,yes,
+Y-GE-2BC,II Bavarian Corps,II Bav,WW1-GER,Germany,Infantry,Corps,10061000221211000000,,S41,yes,
+Y-GE-5RD,5th Reserve Division,5 Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41; S46,yes,Only one row: its time on the Yser is covered by the corps row.
+Y-GE-9RD,9th Reserve Division,9 Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41,yes,
+Y-GE-43RD,43rd Reserve Division,43 Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41; S46,yes,
+Y-GE-44RD,44th Reserve Division,44 Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41; S46,yes,
+Y-GE-45RD,45th Reserve Division,45 Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S40; S41; S46,yes,
+Y-GE-46RD,46th Reserve Division,46 Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S40; S41; S46,yes,
+Y-GE-51RD,51st Reserve Division,51 Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S40; S41; S46,yes,
+Y-GE-52RD,52nd Reserve Division,52 Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S40; S41; S46,yes,
+Y-GE-53RD,53rd (Saxon) Reserve Division,53 Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S40; S41; S46,yes,
+Y-GE-54RD,54th (Wurttemberg) Reserve Division,54 Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41; S46,yes,
+Y-GE-3CD,3rd Cavalry Division,3 Cav (Ge),WW1-GER,Germany,Cavalry,Division,10061000211213000000,,S41; S46,yes,
+Y-GE-30D,30th Division,30 Div (Ge),WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41; S46,yes,
+Y-GE-39D,39th Division,39 Div (Ge),WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41,yes,
+Y-GE-26D,26th (Wurttemberg) Division,26 Div (Ge),WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41,yes,
+Y-GE-6BRD,6th Bavarian Reserve Division,6 Bav Res,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41,yes,
+Y-GE-3D,3rd Division,3 Div (Ge),WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41; S46,yes,
+Y-GE-4D,4th Division,4 Div (Ge),WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41; S46,yes,
+Y-GE-GD,Winckler's Guard Division,Guard Div,WW1-GER,Germany,Infantry,Division,10061000211211000000,,S41,yes,A composite division of the Guard Corps.

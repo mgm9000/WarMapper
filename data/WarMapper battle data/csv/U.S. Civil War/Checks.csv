@@ -1,0 +1,18 @@
+rule,what the rule tests,result,battle,record,finding
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,GETT-D1-AM,P03 and P15,Gamble and Marye are 100 m apart for 60 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,GETT-D1-AM,P03 and P16,Gamble and Archer are 100 m apart for 30 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,GETT-D1-AM,P07 and P17,6 NY Cav and Archer are 143 m apart for 60 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,GETT-D1-AM,P07 and P20,6 NY Cav and Davis are 41 m apart for 60 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,GETT-D1-AM,P07 and P21,6 NY Cav and 42 MS are 40 m apart for 60 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,GETT-D1-AM,P07 and P22,6 NY Cav and 2 MS are 72 m apart for 60 minutes. Check that neither row has gone stale.
+K09,Opposing units are not within 150 m of each other unless a row says they are in contact,review,GETT-D1-AM,P07 and P32,6 NY Cav and 7 TN are 143 m apart for 60 minutes. Check that neither row has gone stale.
+K10,A regiment lies within 400 m of its brigade when both are placed,review,GETT-D1-AM,P07 and P06,6 NY Cav is 1164 m from the nearest row of its brigade (Devin).
+K03,Times can be read and run in order,note,GETT-D1,P38,One or more times are unknown.
+K03,Times can be read and run in order,note,GETT-D1-AM,P16,One or more times are unknown.
+K08,A unit is not asked to move faster than it could,note,GETT-D1-AM,P01 to P03,Gamble: the two rows are 2292 m apart with no time between them. The move happens inside one of the rows.
+K08,A unit is not asked to move faster than it could,note,GETT-D1-AM,P03 to P04,Gamble: the two rows are 1803 m apart with no time between them. The move happens inside one of the rows.
+K08,A unit is not asked to move faster than it could,note,GETT-D1-AM,P06 to P08,Devin: the two rows are 1050 m apart with no time between them. The move happens inside one of the rows.
+K08,A unit is not asked to move faster than it could,note,GETT-D1-AM,P17 to P18,Archer: the two rows are 634 m apart with no time between them. The move happens inside one of the rows.
+K08,A unit is not asked to move faster than it could,note,GETT-D1-AM,P20 to P24,Davis: the two rows are 315 m apart with no time between them. The move happens inside one of the rows.
+K08,A unit is not asked to move faster than it could,note,GETT-D1-AM,P24 to P37,Davis: the two rows are 786 m apart with no time between them. The move happens inside one of the rows.
+K12,Wars and battles carry a Wikidata ID,note,GETT-D1-AM,GETT-D1-AM,No Wikidata ID (a part of a larger battle).

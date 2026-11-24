@@ -1,0 +1,82 @@
+assign_id,unit_id,parent_unit_id,commander,strength / equipment,valid_from,valid_to,source_ids,notes
+A177,PH-US-CORPS,,Maj. Gen. Elwell S. Otis,,1899-01-01,1899-02-28,S66,
+A178,PH-US-1DIV,PH-US-CORPS,Maj. Gen. Thomas M. Anderson,,1899-01-01,1899-02-28,S66; S65,
+A179,PH-US-1-1,PH-US-1DIV,Brig. Gen. Charles King,,1899-01-01,1899-02-28,S66; S65,
+A180,PH-US-1-2,PH-US-1DIV,Brig. Gen. Samuel Ovenshine,,1899-01-01,1899-02-28,S66; S65,
+A181,PH-US-2DIV,PH-US-CORPS,Maj. Gen. Arthur MacArthur,,1899-01-01,1899-02-28,S66; S65,
+A182,PH-US-2-1,PH-US-2DIV,Brig. Gen. Harrison Gray Otis,,1899-01-01,1899-02-28,S66,
+A183,PH-US-2-2,PH-US-2DIV,Brig. Gen. Irving Hale,,1899-01-01,1899-02-28,S66,
+A184,PH-US-PROV,PH-US-CORPS,Brig. Gen. Robert P. Hughes,,1899-01-01,1899-02-28,S66; S65,
+A185,PH-US-CAL,PH-US-1-1,Col. James F. Smith,,1899-01-01,1899-02-28,S66; S65,12 companies (S66). In King's brigade both in January (S66) and on 5 Feb (S65).
+A186,PH-US-WASH,PH-US-1-2,,,1899-01-01,1899-02-03,S66,January roster: Ovenshine's brigade. See C-PW1.
+A187,PH-US-WASH,PH-US-1-1,,,1899-02-04,1899-02-28,S65,On 5 Feb Otis has the Washingtons in King's brigade (p. 164). See C-PW1.
+A188,PH-US-IDA,PH-US-1-2,,,1899-01-01,1899-02-03,S66,January roster: Ovenshine's brigade. See C-PW1.
+A189,PH-US-IDA,PH-US-1-1,,,1899-02-04,1899-02-28,S65,On 5 Feb Otis has the Idahos in King's brigade (p. 164). See C-PW1.
+A190,PH-US-NDAK,PH-US-1-2,,,1899-01-01,1899-02-28,S66; S65,
+A191,PH-US-14INF,PH-US-1-1,,,1899-01-01,1899-02-03,S66,January roster: King's brigade. See C-PW1.
+A192,PH-US-14INF,PH-US-1-2,"Capt. Murphy (the part in the centre, 5 Feb)",,1899-02-04,1899-02-28,S65,On 5 Feb Otis lists it with the 1st North Dakota and 4th Cavalry on Ovenshine's line (p. 166). See C-PW1.
+A193,PH-US-4CAV,PH-US-1-1,,,1899-01-01,1899-02-03,S66,January roster: King's brigade. See C-PW1.
+A194,PH-US-4CAV,PH-US-1-2,,,1899-02-04,1899-02-28,S65,"As the 14th Infantry. ""Wheeler's troop of the 4th Cavalry"" fought in the centre (p. 164)."
+A195,PH-US-MTNBTY,PH-US-1DIV,,,1899-01-01,1899-02-28,S66,
+A196,PH-US-NEB,PH-US-2-2,Col. John M. Stotsenburg,,1899-01-01,1899-02-28,S66; S65,
+A197,PH-US-SDAK,PH-US-2-2,,,1899-01-01,1899-02-28,S66,
+A198,PH-US-COL,PH-US-2-2,,,1899-01-01,1899-02-28,S66,
+A199,PH-US-KANS,PH-US-2-1,,,1899-01-01,1899-02-28,S66,
+A200,PH-US-MONT,PH-US-2-1,,,1899-01-01,1899-02-28,S66,
+A201,PH-US-PENN,PH-US-2-1,,,1899-01-01,1899-02-28,S66,
+A202,PH-US-3ART,PH-US-2-1,,,1899-01-01,1899-02-28,S66,
+A203,PH-US-UTAH,PH-US-2DIV,,,1899-01-01,1899-02-28,S66,
+A204,PH-US-TENN,PH-US-PROV,,,1899-01-01,1899-02-28,S66; S65,Lent to MacArthur in the morning of 5 Feb (S65).
+A205,PH-US-TENN2,PH-US-PROV,,,1899-01-01,1899-02-28,S65,Lent to Anderson in the afternoon of 5 Feb (S65).
+A206,PH-PH-MNL,,Gen. Artemio Ricarte (August 1898),,1898-08-01,1898-09-30,S67,Dated by Taylor to August 1898. Not shown for February 1899.
+A207,PH-PH-Z3,PH-PH-MNL,Col. Luciano San Miguel,,1898-08-15,1899-02-04,S67,Taylor names San Miguel as chief of the 3rd zone (Aug 1898) and puts the outbreak of 4 Feb in this zone; the dates of his command are not given.
+A208,PH-PH-Z4,PH-PH-MNL,Lt. Col. Pilar (Aug 1898); Pantaleon Garcia (Aug 1898),,1898-08-01,1898-09-30,S67,Dated by Taylor to August 1898.
+A209,PH-PH-SOUTH,PH-PH-MNL,Gen. Mariano Noriel (July-Aug 1898),,1898-07-15,1898-09-30,S67,Dated by Taylor to July-August 1898.
+A210,PH-PH-SPM,PH-PH-MNL,Gen. Pio del Pilar (Aug 1898),,1898-08-01,1898-09-30,S67,Dated by Taylor to August 1898.
+A211,PH-US-CORPS,,Maj. Gen. Elwell S. Otis,,1899-03-01,1899-12-31,S65; S74,
+A212,PH-US-2DIV,PH-US-CORPS,Maj. Gen. Arthur MacArthur,,1899-03-01,1899-12-31,S65; S74,
+A213,PH-US-1DIV,PH-US-CORPS,Maj. Gen. Thomas M. Anderson,,1899-03-01,1899-03-16,S65,
+A214,PH-US-1DIV,PH-US-CORPS,Maj. Gen. Henry W. Lawton,,1899-03-17,1899-12-18,S65; S74,"S65 p. 186: ""New military combinations were made on March 17, General Lawton relieving Major General Anderson"". In the field he led a column, not the whole division."
+A215,LZ-US-WHE-PB,PH-US-CORPS,Brig. Gen. Loyd Wheaton,,1899-03-10,1899-03-17,S65,
+A216,LZ-US-KOBBE,PH-US-CORPS,"Maj. William A. Kobbe, 3rd Artillery",,1899-05-06,1899-05-31,S65,
+A217,LZ-US-YOUNG,PH-US-1DIV,Brig. Gen. Samuel B. M. Young,,1899-10-01,1899-12-31,S74; S71,"S74: reported late in July, given the 3rd Brigade, First Division, and sent to San Fernando ""to form a provisional brigade to be attached to General Lawton's division""."
+A218,LZ-US-WHE-X,PH-US-CORPS,Brig. Gen. Loyd Wheaton,,1899-11-06,1899-12-31,S74,
+A219,LZ-US-33,LZ-US-WHE-X,Col. Luther R. Hare,,1899-11-07,1899-12-31,S74,
+A220,LZ-US-MARCH,LZ-US-YOUNG,Maj. Peyton C. March,,1899-11-26,1899-12-31,S74; S68; S80,Put himself under Young at Namacpacan on 26 November (S80 p. 155).
+A221,LZ-US-BATCH,LZ-US-YOUNG,Capt. Joseph B. Batchelor,,1899-11-20,1899-12-31,S74,
+A222,LZ-PH-GOV,,"Emilio Aguinaldo, President",,1899-02-04,1899-12-31,S65; S74,
+A223,LZ-PH-NORTH,LZ-PH-GOV,Lt. Gen. Antonio Luna,,1899-02-10,1899-05-18,S65,S65 names Luna with this army from 10 Feb to 18 May 1899. Later commanders are not in the sources read.
+A224,LZ-PH-EAST,LZ-PH-GOV,"Generals Pilar and Geronimo (reported, 11 May)",,1899-04-28,1899-05-16,S65,
+A226,LZ-PH-TINIO,LZ-PH-GOV,Gen. Manuel Tinio,,1899-11-09,1899-12-04,S68; S74; S80,
+A227,LZ-PH-ARI,LZ-PH-GOV,,,1899-11-19,1899-11-19,S75,
+A228,LZ-PH-PILAR,LZ-PH-GOV,Gen. Gregorio del Pilar,,1899-11-28,1899-12-02,S68; S74,
+A229,LZ-US-SHIPS,LZ-US-WHE-X,,,1899-11-06,1899-11-08,S74,Under Wheaton for the voyage is a drawing choice: the Navy's ships were not his to command.
+A230,PH-US-2-1,PH-US-2DIV,Brig. Gen. Harrison G. Otis,,1899-03-17,1899-04-30,S65,"S65 p. 186: after 17 March the brigades of the Second Division were ""commanded by ... Brigadier Generals Hale, Otis and Hall"". When Otis left the brigade was not read."
+A231,PH-US-2-2,PH-US-2DIV,Brig. Gen. Irving Hale,,1899-03-17,1899-05-31,S65,
+A232,LZ-US-WHE-B,PH-US-CORPS,Brig. Gen. Loyd Wheaton,,1899-03-24,1899-03-27,S65,
+A233,PH-US-NAVY-N,,,,1899-02-04,1899-02-05,S65,
+A234,PH-US-NAVY-S,,,,1899-02-04,1899-02-05,S65; S81,
+A235,LZ-US-NAVY-CAL,,,,1899-02-10,1899-02-10,S65,
+A236,LZ-US-GUNB,,"Capt. Randolph, 3rd Artillery, then Capt. Grant, Utah Artillery",,1899-03-10,1899-05-31,S65,
+A237,LZ-US-SAMAR,,Ensign Mustin,,1899-11-20,1899-12-11,S68; S74; S75,
+A238,LZ-US-OREGON,,Capt. Wilde,,1899-11-08,1899-12-05,S74; S75,
+A239,LZ-US-CALLAO,,,,1899-11-26,1899-11-29,S74,
+A240,LZ-US-NEWARK,,Capt. McCalla,,1899-12-10,1899-12-15,S74,
+A241,LZ-US-WHEEL,,Cmdr. W. L. Burwell,,1899-12-10,1899-12-13,S74,
+A242,LZ-US-VIG-LP,,,,1899-11-25,1899-12-03,S75; S74,
+A243,LZ-US-33-CO,,,,1899-11-27,1899-12-05,S74,
+A244,LZ-US-LAO-LP,,"Lt. Kaiser, Navy; Capt. Koehler with the gun",,1899-12-10,1899-12-15,S74,
+A245,PH-PH-SANA,PH-PH-MNL,,,1899-02-04,1899-02-05,S65,Commander not in the sources read.
+A246,LZ-US-SCHWAN,PH-US-CORPS,Brig. Gen. Theodore Schwan,,1899-10-07,1899-10-20,S80,
+A247,LZ-US-MARINES,,,,1899-10-07,1899-10-09,S80,
+A248,LZ-US-CAV-SHIPS,,,,1899-10-07,1899-10-09,S80,
+A249,LZ-PH-CAVITE,LZ-PH-GOV,Gen. Mariano Trias,,1899-10-01,1899-10-10,S80,
+A250,LZ-US-WHEELER,PH-US-2DIV,Brig. Gen. Joseph Wheeler,,1899-11-01,1899-11-30,S80,
+A251,LZ-US-SWIG,LZ-US-YOUNG,Maj. Samuel Swigert,,1899-11-07,1899-12-31,S80,
+A252,LZ-US-33-F,LZ-US-33,Capt. Godfrey Fowler,,1899-11-07,1899-12-31,S80,
+A253,LZ-PH-ALEJ,LZ-PH-GOV,Brig. Gen. Jose Alejandrino,,1899-11-22,1899-11-23,S80,
+A254,LZ-US-36,PH-US-2DIV,Col. J. Franklin Bell,,1899-10-01,1899-12-31,S80,
+A255,LZ-US-33-B,LZ-US-33,,,1899-12-03,1899-12-31,S80,
+A256,LZ-PH-VILLAMOR,LZ-PH-GOV,Juan and Blas Villamor,,1899-12-04,1899-12-04,S80,
+A257,LZ-US-HOWZE,LZ-US-YOUNG,Lt. Col. Robert L. Howze,,1899-12-05,1899-12-31,S80,
+A258,LZ-US-MARCH,LZ-US-33,Maj. Peyton C. March,,1899-11-07,1899-11-25,S80,

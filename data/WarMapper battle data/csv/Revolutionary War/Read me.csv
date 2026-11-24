@@ -1,0 +1,20 @@
+WarMapper battle data: Revolutionary War,
+What this file is,"The battle data for one war. Every war has a workbook like this one, with the same sheets in the same order; a sheet with nothing for this war keeps its headings so the layout stays the same."
+Where the rest is,"Sources, Source candidates and the change log of the battle data are in ""Sources and notes.xlsx"", in the same folder. Every source id (S01, S02 ...) is listed there once, for every war: add a new source there, with the next free id."
+How it is used,"python3 tools/export_battles.py reads every workbook in the folder and writes each playback's battle file (playbacks/<playback>/battle.json). It also writes each sheet as a CSV file under csv/ in this folder, so GitHub can show what changed."
+Split,"Written on 23 Nov 2026 from the single workbook ""WarMapper battle data.xlsx"", which it replaces (pipeline/split_workbook.py). Every row and every id is as it was."
+,
+Counts,
+Position rows,=COUNTA(Positions!A:A)-1
+Rows with coordinates,"=COUNTIF(Positions!O:O,""<>"")-1"
+Rows still needing review,"=COUNTIF(Positions!AC:AC,""Needs review"")"
+Rows accepted,"=COUNTIF(Positions!AC:AC,""Accepted"")"
+Units,=COUNTA(Units!A:A)-1
+Events,=COUNTA(Events!A:A)-1
+Disputed points,=COUNTA(Hypotheses!A:A)-1
+Gaps logged,=COUNTA(Gaps!A:A)-1
+Playbacks,=COUNTA(Playbacks!A:A)-1
+,
+Hypotheses (23 Nov 2026),"One row per disputed point, in place of the Conflicts sheet: the question, the readings (A, B, C), the evidence for and against the reading the playback follows, each item with its source and page, the reading adopted, how sure it is, who decided and when, the rows it touches and what would settle it. The history column keeps everything the Conflicts row said. Status: Open (a ruling is wanted), Proposed (a reading is put forward for Morgan to accept), Settled, No ruling needed."
+,
+Links (23 Nov 2026),"One row per campaign playback and battle playback inside it (BP-34). The campaign lists its battles, with a button that opens each at its date; the battle links back to the campaign at the date on its clock. Columns: link_id, campaign_playback, battle_playback (playback ids from Playbacks), label and campaign_label (optional names), opens_at (optional: where the battle opens from the campaign; its start if empty), notes. Dates come from Playbacks."

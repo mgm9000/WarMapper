@@ -5,7 +5,7 @@ The playback pages read nothing else: units, where the sources put them and when
 and the current map all come from it.
 
 - Format name: `warmapper-battle/1` (the file says so in its first field; a page refuses a file with another name).
-- Written by: `python3 tools/export_battles.py`, from the master workbook (`data/WarMapper battle data.xlsx`). The last section says which sheet each part comes from.
+- Written by: `python3 tools/export_battles.py`, from the master workbooks (`data/WarMapper battle data/`: one per war, read as one set of tables, and `Sources and notes.xlsx`, which holds the sources every war shares). The last section says which sheet each part comes from.
 - Checked by: `pipeline/battlefile.py`. A file that breaks a rule below is not written, and
   `python3 tools/export_battles.py --check` checks the files as they stand.
 - Read by: `WM.battle()` in `app/core.js`, and played by `WM.play()` in `app/player.js`. No battle has code of its own.
@@ -25,7 +25,7 @@ give is `null`.
 |---|---|
 | `format` | `warmapper-battle/1` |
 | `id`, `title`, `subtitle` | The battle's short id and its name as shown |
-| `record` | Where the data came from: the workbook, and its campaign and battle ids |
+| `record` | Where the data came from: the set of workbooks (`WarMapper battle data`), and the campaign and battle ids |
 | `time` | The stretch of time the playback covers and how time is counted |
 | `view` | Where on the earth the battle is |
 | `playback` | How this battle is played back: the settings the shared player reads |
@@ -35,6 +35,7 @@ give is `null`.
 | `units` | Every unit in the battle's order of battle, whether or not it is placed |
 | `tracks` | One per symbol on the map: a unit and its recorded positions in time order |
 | `events` | The named moments on the timeline |
+| `links` | Optional. The campaign this battle is part of, or the battles inside this campaign (BP-34) |
 | `sources` | Every source the file cites |
 | `labels` | Names written on the map |
 | `maps` | Period maps |
@@ -139,6 +140,14 @@ Steps on a track are in time order.
 `start` and `end` are the range the record gives; `at` is where the timeline marks it. `label` is a shorter name
 for the timeline, `quiet` marks an event shown as a dot without its name, `steps` are the rows it rests on.
 
+Since 23 Nov 2026 (BP-32) the player uses `steps` to tie an event to the map: the event's units are the tracks that carry those rows,
+with the formations above them and the parts below them. While the event is current (until the next one begins, and no longer than its
+record's end or 45 minutes, or two days in a battle followed by the day, after its mark), its units and their arrows stand out and the
+other symbols are dimmed (Battle options: Highlight the units in the current event). Picking an event in the side pane moves the clock to
+it and frames its rows; a unit's details list the events that name it. An event with no `steps` is shown as before, and the export lists
+it (First Ypres: none of its 15 events names its rows yet). An event about a place with no unit (a bridge blown, a town taken empty)
+cannot be tied to the map this way: that would need a place on the event, which the format does not have.
+
 ### summaries
 
 Optional. A summary of a day or a week, shown when the playback stops at the end of one (see `day_pause`).
@@ -150,6 +159,24 @@ Optional. A summary of a day or a week, shown when the playback stops at the end
 
 `kind` is `day` or `week`; `from` and `to` are the dates it covers (the same date for a day). Where a day has no summary
 the pause shows that day's events, and the units whose record changes that day, instead.
+
+### links
+
+Optional (since 23 Nov 2026, BP-34). A campaign followed by the day and the battles inside it, each followed by the minute, link to each
+other: the campaign's file lists its battles, and each battle's file names its campaign.
+
+```json
+"links": [{"kind": "battle", "playback": "manila", "title": "Manila, 4-5 February 1899", "label": "Manila",
+           "from": "1899-02-04T18:00", "to": "1899-02-05T20:00", "at": "1899-02-04T20:00", "unit": "minute"}]
+```
+
+- `kind` is `battle` (a battle inside this campaign) or `campaign` (the campaign this battle is part of). `playback` is the other
+  playback's folder under `playbacks/`; `title` its title, and `label` the shorter name to show, if there is one.
+- `from` and `to` are the other playback's own start and end (`time.start` and `time.end` of its file); `unit` its time unit.
+- `at`, on a battle link, is where the battle opens from the campaign; left out, at its start, or at the campaign's date if that is later.
+- The player shows a battle link on the campaign's timeline as a band over the battle's dates, lists the battles in the side pane, and
+  while the clock is on a battle's dates offers to open it there (`#at=` in the address, as a copied link). A campaign link is offered at
+  the top of the battle's side pane, and opens the campaign at the date on the battle's clock. A file with no `links` shows none of this.
 
 ### sources
 
@@ -337,7 +364,9 @@ Elsewhere in the file the player also reads:
 Code. The page (`app/page.html`) and the player are the same for every battle; `tools/build.py` writes the
 battle file into the page.
 
-## Where each part comes from in the workbook
+## Where each part comes from in the workbooks
+
+Every sheet below is on each war's workbook, but for `Sources`, which is in `Sources and notes.xlsx`.
 
 | Part of the battle file | Sheet |
 |---|---|
@@ -351,6 +380,7 @@ battle file into the page.
 | a step's `via` | `Routes`: a route from one row to the next, where its `playback` column says yes |
 | `events` | `Events`: those of the battles the playback's `record_battles` names. `timeline` is `name`, `dot` or `off`; `playback_at`, `playback_label` and `playback_text` are the playback's moment, short name and wording where they differ from the record's |
 | `summaries` | `Summaries`: one row per day or week (`kind`, `from`, `to`, `title`, `text`, `source_ids`) |
+| `links` | `Links`: one row per campaign playback and battle playback inside it, both of one war (`campaign_playback`, `battle_playback`, `label`, `campaign_label`, `opens_at`). The dates come from each one's `Playbacks` row |
 | `sources` | `Sources`: only those the battle cites |
 | `labels` | `Labels` |
 | `maps` | `Maps`: one row per picture; the `iiif_...` columns on a map's first picture |

@@ -1,0 +1,5 @@
+phase_id,battle_id,label,start,end,source_ids,notes
+PH-T1,TREN,Crossing the Delaware,1776-12-25 17:00,1776-12-26 03:00,S20; S21,Before the battle; shown so the playback can start here.
+PH-T2,TREN,March to Trenton,1776-12-26 04:00,1776-12-26 07:45,S20; S21,
+PH-T3,TREN,Outposts driven in,1776-12-26 07:30,1776-12-26 08:10,S20; S21,See TC01.
+PH-T4,TREN,Fight in the town (CDB90 active period),1776-12-26 08:00,1776-12-26 09:30,S34,See TC04.

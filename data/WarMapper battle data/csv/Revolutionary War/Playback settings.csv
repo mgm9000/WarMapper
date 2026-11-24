@@ -1,0 +1,94 @@
+playback_id,setting,value,what it does
+trenton,page_title,First Battle of Trenton (1776) Playback,The browser tab title
+trenton,style,tactical,tactical (a battlefield) or operational (a front)
+trenton,scale_bar,yards,yards or km: the measure the scale bar writes first; the other follows under it
+trenton,rate,3,Time units played per second
+trenton,lead.share,0.3,Share of the timeline given to the stretch before the focus
+trenton,lead.rate,5,"Time units per second in that stretch (5, the same as the battle, since 18 Nov 2026: the march no longer runs faster than the fight)"
+trenton,lead.step,5,Minutes an arrow key moves in that stretch
+trenton,time_note.from,1776-12-26T07:45,From this time a note shows under the clock
+trenton,time_note.text,Times are estimates,The note
+trenton,follow.min,"[1600, 1100]","Smallest box the camera frames, metres [width, height]"
+trenton,follow.margin,90,"Space around the units, metres"
+trenton,follow.exclude,"[""T-HE-PKFER""]",Tracks the camera ignores
+trenton,follow.empty,march,The view shown while no unit is placed (a preset)
+trenton,bases.1.id,mod,A map the reader can put under the units; the first is the opening one
+trenton,bases.1.label,Current map,A map the reader can put under the units; the first is the opening one
+trenton,bases.1.short,Today,A map the reader can put under the units; the first is the opening one
+trenton,bases.1.current,True,A map the reader can put under the units; the first is the opening one
+trenton,bases.2.id,sk,A map the reader can put under the units; the first is the opening one
+trenton,bases.2.label,1776 sketch,A map the reader can put under the units; the first is the opening one
+trenton,bases.2.short,1776,A map the reader can put under the units; the first is the opening one
+trenton,bases.2.map,wiederhold-1776,A map the reader can put under the units; the first is the opening one
+trenton,bases.3.id,fd,A map the reader can put under the units; the first is the opening one
+trenton,bases.3.label,1777 map,A map the reader can put under the units; the first is the opening one
+trenton,bases.3.short,1777,A map the reader can put under the units; the first is the opening one
+trenton,bases.3.title,"Faden's 1777 plan of Washington's operations, warped to fit the ground (M switches maps)",A map the reader can put under the units; the first is the opening one
+trenton,bases.3.map,faden-1777,A map the reader can put under the units; the first is the opening one
+trenton,bases.3.backdrop,current,A map the reader can put under the units; the first is the opening one
+trenton,modern.tiles,https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x},"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+trenton,modern.max_zoom,16,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+trenton,modern.credit,USGS The National Map,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+trenton,modern.name,USGS Topo base map,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+trenton,modern.about,"Today's ground: the US Geological Survey's topographic base map, with roads, towns, streams, contours and hill shading. It is streamed from the USGS while it is on screen, so it needs a connection.","The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+trenton,modern.rights,Public domain (US government work),"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+trenton,modern.link,https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
+trenton,zoom.max,8,"Closest zoom, screen pixels per metre"
+trenton,zoom.min_factor,0.9,How far out the reader can zoom (1 = the whole battle just fits)
+trenton,zoom.follow_max,2.2,Closest the Follow camera goes
+trenton,zoom.labels,0.12,"From this zoom, level 1 names show"
+trenton,zoom.towns_until,0.09,Town names hide above this zoom
+trenton,groups.1.label,Rall's brigade (garrison),Units drawn as one symbol when zoomed right out
+trenton,groups.1.side,CR,Units drawn as one symbol when zoomed right out
+trenton,groups.1.except,"[""T-HE-PKFER""]",Units drawn as one symbol when zoomed right out
+trenton,groups.1.below,0.085,Units drawn as one symbol when zoomed right out
+trenton,groups.1.echelon,brigade,Units drawn as one symbol when zoomed right out
+trenton,groups.1.branch,inf,Units drawn as one symbol when zoomed right out
+trenton,rules.blend,3,Minutes over which a unit shifts from one row to the next when they meet
+trenton,texts.stated,"A report, a history, a marker or the 1776 sketch puts the unit here.",The sentence under this state in the unit panel
+trenton,texts.inferred,Worked out from the sequence of events; the sources do not name this unit here.,The sentence under this state in the unit panel
+trenton,texts.moving,No source records this stretch. The unit is drawn along a road or a straight line between two recorded positions.,The sentence under this state in the unit panel
+trenton,texts.offthis,This position lies outside what Wiederhold drew. Switch to the current map to see it.,The sentence under this state in the unit panel
+trenton,found.map_read,read from a surveyed period map,Words for how a place was found
+trenton,found.sketch_read,read from Wiederhold's sketch,Words for how a place was found
+trenton,about.1,"Unit positions come from the data pilot spreadsheet (61 Trenton rows), built from Washington's report, Stryker's 1898 history, markers, the current street map and Lt. Wiederhold's sketch. Nothing here has been checked by a historian.","A paragraph under ""About this prototype"""
+trenton,about.2,Clock times after the first shots are midpoints of estimated ranges: the sources give almost none.,"A paragraph under ""About this prototype"""
+trenton,about.3,The Names button hides the names beside the symbols; tap a symbol to see whose it is.,"A paragraph under ""About this prototype"""
+trenton,about.4,Solid symbols are positions a source gives. Dashed symbols are interpolated or the last position on record. A question mark means low confidence.,"A paragraph under ""About this prototype"""
+trenton,about.5,Symbols are blue for the Americans and red for the Hessian and British garrison. On his own sketch Wiederhold drew the Hessians in blue and the Americans in orange.,"A paragraph under ""About this prototype"""
+trenton,about.6,"The current map is the US Geological Survey's topographic map, and Satellite its aerial photography, both streamed from the USGS. If they cannot be reached, a simplified drawing of OpenStreetMap streets is shown instead.","A paragraph under ""About this prototype"""
+trenton,question_mark,overall,What marks a unit as doubtful: location (how sure the place is) or overall
+trenton,preset.march,"[-74.87088, 40.2149, -74.75794, 40.30135]","A named view: [west, south, east, north]"
+trenton,clock_title,First Battle of Trenton,The battle's name in the date box on the map
+trenton,bases.4.id,sat,A map the reader can put under the units; the first is the opening one
+trenton,bases.4.label,Satellite,A map the reader can put under the units; the first is the opening one
+trenton,bases.4.short,Sat,A map the reader can put under the units; the first is the opening one
+trenton,bases.4.title,"Aerial photography of the ground today, from the USGS (M switches maps)",A map the reader can put under the units; the first is the opening one
+trenton,bases.4.imagery.tiles,https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x},A map the reader can put under the units; the first is the opening one
+trenton,bases.4.imagery.max_zoom,16,A map the reader can put under the units; the first is the opening one
+trenton,bases.4.imagery.credit,"USDA, USGS The National Map: Orthoimagery",A map the reader can put under the units; the first is the opening one
+trenton,bases.4.imagery.name,Aerial photography (USGS),A map the reader can put under the units; the first is the opening one
+trenton,bases.4.imagery.about,"Today's ground from the air: photography from the US Department of Agriculture's National Agriculture Imagery Program (about 1 m detail), served free by the USGS National Map. The names on it come from OpenStreetMap.",A map the reader can put under the units; the first is the opening one
+trenton,bases.4.imagery.rights,Public domain (US government work),A map the reader can put under the units; the first is the opening one
+trenton,bases.4.imagery.link,https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer,A map the reader can put under the units; the first is the opening one
+trenton,formations.echelon,division,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
+trenton,formations.below,0.3,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
+trenton,formations.label,Divisions,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
+trenton,formations.on,False,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
+trenton,about.7,"The army crosses the Delaware as one symbol and divides on the New Jersey bank into Greene's and Sullivan's divisions; Greene, Sullivan and Knox's artillery are drawn whole until the first shots, then as their brigades and batteries. Formations, in the Layers menu, draws them whole again when zoomed out. Routes taken, also in Layers, draws the roads each unit has marched. The escapes (the dragoons to Princeton, the jägers to Bordentown, about fifty of the Knyphausen regiment to Crosswicks) follow roads the sources do not give.","A paragraph under ""About this prototype"""
+trenton,bases.5.id,fs,A base reached from another (of): not on the base bar
+trenton,bases.5.label,1777 sheet,
+trenton,bases.5.short,1777,
+trenton,bases.5.map,faden-1777-sheet,
+trenton,bases.5.of,fd,The 1:1 button on that base opens this one; that base's button brings it back
+trenton,trails.on,True,"Routes taken: the road each unit has marched so far, drawn under the units as the clock runs (Layers: Routes taken)."
+trenton,trails.opacity,0.55,How strongly the routes taken are drawn (0 to 1).
+trenton,trails.fade_after,10,"Once a unit has stood still this many minutes, the routes it took to get there fade out (Morgan, 19 Nov 2026)."
+trenton,trails.fade_over,10,How many minutes the routes take to fade out.
+trenton,follow.side_from.CR,1776-12-26T07:00,"Follow leaves this side (by its code) out of the frame until this time, so the camera stays on the crossing and the march while the garrison sleeps."
+trenton,formations.until,1776-12-26T07:45,"Before this time the formations are drawn whatever the zoom (Trenton: Greene, Sullivan and Knox stay whole until the first shots)."
+trenton,formations.also,T-US-KNOX,Units that count as formations though not of the echelon (Trenton: Knox's artillery).
+trenton,skip.1.from,1776-12-25T18:00,"While playing, after after_seconds in this stretch the clock jumps to its end (moving the clock by hand is not affected); note is shown as it jumps."
+trenton,skip.1.to,1776-12-26T03:00,
+trenton,skip.1.after_seconds,2,
+trenton,skip.1.note,"The crossing takes all night: on to 03:00, with the army over the river.",

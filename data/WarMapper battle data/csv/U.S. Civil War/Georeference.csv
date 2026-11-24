@@ -1,0 +1,46 @@
+"Georeference: Gettysburg, the Bachelder map",,,,,,,,,
+How the Bachelder map was tied to modern coordinates,,,,,,,,,
+"Four places that are on the 1876 map and still stand were matched to their modern coordinates. A best-fit shift, turn and uniform scale (no stretching) was computed from them and applied to every pixel position read off the scan.",,,,,,,,,
+"Fit: 1.232 m per pixel, map turned 0.98 degrees from true north. Pixel positions are in the full-resolution scan (7,814 x 9,310).",,,,,,,,,
+,,,,,,,,,
+Control point,pixel x,pixel y,lat,lon,misfit (m),,,,
+"Schmucker Hall, Lutheran Seminary",3745,3433,39.83194,-77.24472,17.9,,,,
+"Pennsylvania Hall, Pennsylvania College",4444,3168,39.835,-77.23472,15,,,,
+"Lincoln Square (the Diamond), centre",4680,3530,39.8309,-77.2311,16.9,,,,
+"Big Round Top, summit",4203,7560,39.78625,-77.23919,4.7,,,,
+,,,,,,,,,
+Independent check,result,,,,,,,,
+"Buford memorial, Chambersburg Pike (S15)",Lands on the pike 33 m from the map's symbol for Calef's guns.,,,,,,,,
+"First Shot marker, pike at Knoxlyn Road (S14)","Lands about 70 m from the junction as drawn. This is 2.5 km west of the nearest control point, so it shows the error at the west edge.",,,,,,,,
+"Gamble brigade tablet, Reynolds Avenue (S09)",Lands beside the map's bar for the 8th Illinois Cavalry.,,,,,,,,
+Morgan's P19 point for the railroad cut,Lands about 90 m from the east end of the map's bars for Davis at the cut.,,,,,,,,
+,,,,,,,,,
+Position read from the map,pixel x1,pixel y1,pixel x2,pixel y2,lat,lon,end lat,end lon,used in
+"Marye's battery, gun symbol",2290,2413,,,39.84369,-77.2654,,,"P15, P16"
+"Brockenbrough, reserve symbols (centre)",2315,2540,,,39.84228,-77.26507,,,P27
+"Pettigrew, reserve symbols (centre)",2175,2805,,,39.83936,-77.26715,,,P26
+"42nd Mississippi, 9 A.M.",2660,2590,2710,2505,39.84166,-77.26012,39.84259,-77.25938,"P20, P21"
+"2nd Mississippi, 9 A.M.",2720,2490,2770,2408,39.84276,-77.25923,39.84366,-77.25849,P22
+"55th North Carolina, 9 A.M.",2780,2390,2850,2280,39.84385,-77.25834,39.84506,-77.25731,"P20, P23"
+"7th Tennessee, 9 A.M.",2633,2625,2590,2702,39.84127,-77.26051,39.84043,-77.26115,"P17, P32"
+"14th Tennessee, 9 A.M.",2575,2720,2530,2795,39.84023,-77.26137,39.83941,-77.26204,P33
+"5th Alabama Battalion, 9 A.M.",2525,2805,2485,2880,39.8393,-77.26211,39.83847,-77.26271,P34
+"13th Alabama, 9 A.M.",2470,2898,2422,2978,39.83828,-77.26293,39.8374,-77.26364,P35
+"1st Tennessee, 9 A.M. (number hidden)",2405,2998,2355,3082,39.83718,-77.26389,39.83626,-77.26463,"P17, P36"
+Willoughby Run between pike and railroad bed,2885,2655,,,39.84089,-77.2569,,,P24
+"2nd Mississippi, 10.15 A.M.",3397,2660,3493,2577,39.84074,-77.24953,39.84164,-77.24813,P37
+"55th North Carolina, 10.15 A.M.",3505,2570,3648,2563,39.84172,-77.24795,39.84177,-77.2459,P37
+"Bar labelled ""Miss."", 10.15 A.M. (probably 42nd)",3345,2740,3388,2675,39.83986,-77.2503,39.84058,-77.24966,P37 note
+Davis at the railroad cut (42nd and 2nd Mississippi),3318,2848,3500,2978,39.83867,-77.25071,39.83719,-77.24813,P38
+"Davis, line just east of the run (no time)",2905,2755,2990,2635,39.83978,-77.25663,39.8411,-77.25538,P24 note
+"Archer, line just east of the run (no time)",3010,2890,2855,3330,39.83826,-77.25516,39.83341,-77.25749,P18 note
+"3rd Indiana Cavalry, Morning",3600,2790,3540,2910,39.83926,-77.24664,39.83794,-77.24753,"P04, P28"
+"12th Illinois Cavalry, Morning",3480,3010,3457,3062,39.83684,-77.24842,39.83627,-77.24877,P29
+"8th Illinois Cavalry, Morning",3430,3100,3385,3232,39.83585,-77.24916,39.8344,-77.24984,P30
+"8th New York Cavalry, Morning",3358,3390,3295,3560,39.83265,-77.25027,39.83078,-77.25122,"P04, P31"
+Calef's guns on the pike,3250,2940,,,39.83766,-77.25171,,,"check for P10, P11"
+"Gun symbol ""A. 2' U.S. Calef"" south of the woods",3238,3300,,,39.83367,-77.25198,,,P12 note
+"Devin's brigade, Morning",3612,2472,3820,2050,39.84279,-77.24639,39.84743,-77.24329,P06
+"Devin's skirmishers, west stretch",4125,2478,4575,2388,39.84262,-77.23901,39.84354,-77.23251,P08
+"Devin's skirmishers, east stretch",4575,2388,5000,2125,39.84354,-77.23251,39.84637,-77.22634,P08
+Herr Tavern (landmark),2484,2545,,,39.84219,-77.26264,,,distances

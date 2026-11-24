@@ -1,0 +1,8 @@
+phase_id,battle_id,label,start,end,source_ids,notes
+PH-Y1,YPRES1,Encounter battle,1914-10-19,1914-10-21,S40,"Edmonds, chapter V."
+PH-Y2,YPRES1,Battle of Langemarck,1914-10-22,1914-10-24,S40,"Edmonds, chapter VI."
+PH-Y3,YPRES1,Attempted renewal of the Allied offensive,1914-10-25,1914-10-28,S40,"Edmonds, chapter IX (title only read)."
+PH-Y4,YPRES1,Battle of Gheluvelt,1914-10-29,1914-11-05,S40,"Edmonds, chapters X to XV (titles only read)."
+PH-Y5,YPRES1,"Renewal of the German offensive (Zwarteleen, St. Eloi, Dixmude)",1914-11-06,1914-11-10,S40,"Edmonds, chapter XVI (title only read)."
+PH-Y6,YPRES1,Battle of Nonne Bosschen,1914-11-11,1914-11-11,S40,"Edmonds, chapter XVII (title only read)."
+PH-Y7,YPRES1,Close of the battles of Ypres,1914-11-12,1914-11-22,S40,"Edmonds, chapter XVIII (title only read)."
