@@ -220,6 +220,121 @@ def refactor(B):
     return report
 
 
+def tidy_all(B):
+    return {pb: tidy(B, pb) for pb in BASED_ON}
+
+
+def symbols(B):
+    """SR-11: units outside the current event keep 70% strength on every battle (Morgan, 24 Nov 2026)."""
+    assert not B.pget('all', 'event_dim'), 'already done'
+    B.pset('all', 'event_dim', 0.7, 'How strongly units outside the current event are drawn (0 to 1; the player\'s own default is 0.32)',
+           'SR-11: unit symbols stay clearly visible on every battle (Morgan, 24 Nov 2026).')
+    return tidy_all(B)
+
+
+def glide(B):
+    """SR-04: the slow ease in from the whole ground, made at Cowpens, for every battle followed by the clock."""
+    assert not B.pget('tactical', 'follow.glide_seconds'), 'already done'
+    B.pset('tactical', 'follow.glide_seconds', 14, 'When play is first pressed, the camera eases in from the whole ground over this many seconds (the player\'s default is 6)',
+           'SR-04: open zoomed out, then ease in slowly, on every battle (Morgan, 24 Nov 2026; values from the Cowpens review, PR 68).')
+    B.pset('tactical', 'follow.glide_rate', 0.006, 'How fast the camera eases in after the hold (the player\'s default is 0.03)', 'SR-04, as above.')
+    return tidy_all(B)
+
+
+def ease(B):
+    """SR-04 for the battles with no Follow (followed by the day): the same slow ease in from the whole ground. Needs the player's
+    opening_ease setting (app/player.js, same commit)."""
+    assert not B.pget('operational', 'opening_ease'), 'already done'
+    B.pset('operational', 'opening_ease', 0.006, 'Without Follow: how fast the camera eases in from the whole ground when play is first pressed (the player\'s default is 0.03)',
+           'SR-04: open zoomed out, then ease in slowly, on every battle (Morgan, 24 Nov 2026), as Follow does on the battlefields.')
+    return tidy_all(B)
+
+
+def routes(B):
+    """SR-16: every battle has the routes-taken layer, fading on the battle's time scale (Morgan, 24 Nov 2026)."""
+    assert not B.pget('all', 'trails.on'), 'already done'
+    B.pset('all', 'trails.on', True, 'Routes taken: the road each unit has marched so far, drawn under the units as the clock runs (Layers: Routes taken)',
+           'SR-16: every battle has the routes-taken layer (Morgan, 24 Nov 2026).')
+    B.pset('all', 'trails.opacity', 0.55, 'How strongly the routes taken are drawn (0 to 1)', 'SR-16; the Trenton value (19 Nov 2026).')
+    B.pset('all', 'trails.fade_seconds', 4, 'Worked out by the exporter: once a unit has stood still for this many seconds of play, its routes fade out over as many again (gives trails.fade_after and trails.fade_over in the battle\'s time unit)',
+           'SR-16: routes fade on the battle\'s own time scale (Morgan, 24 Nov 2026).')
+    for pb, why in (('trenton', 'Morgan\'s decision when the fade was made, at Trenton (19 Nov 2026).'),
+                    ('manila', 'Kept as set while reviewing Manila (Morgan, 24 Nov 2026: Manila and Cowpens keep theirs).'),
+                    ('cowpens', 'Kept as set while reviewing Cowpens (Morgan, 24 Nov 2026: Manila and Cowpens keep theirs).')):
+        for s in ('trails.fade_after', 'trails.fade_over'): B.get(pb, s)['why'] = why
+    B.get('cowpens', 'trails.opacity')['why'] = 'Kept as set while reviewing Cowpens (24 Nov 2026).'
+    return tidy_all(B)
+
+
+def arrows(B):
+    """SR-06 and SR-07: arrows on every battle, the shortest move that earns one scaled to the battle, running a few seconds of play ahead."""
+    assert not B.pget('all', 'arrows.reach_seconds'), 'already done'
+    B.pset('all', 'arrows.on', True, 'Arrows ahead of a long move', 'SR-06: arrows ahead of long moves (Morgan, 21 Nov 2026).')
+    B.pset('all', 'arrows.reach_seconds', 6, 'Worked out by the exporter: an arrow runs this many seconds of play ahead of its unit, not to the end of a long road (gives arrows.reach_minutes in the battle\'s time unit)',
+           'SR-07: "Arrows will run ahead depending on the time scale being used" (Morgan, 24 Nov 2026). 6 s is the Cowpens value (6 minutes at 1 minute a second).')
+    B.pset('tactical', 'arrows.min_share', 0.06, 'Worked out by the exporter: a move shorter than this share of the width of the battle\'s ground gets no arrow (gives arrows.min_km)',
+           'SR-06: the limit scales with the battle (Morgan, 24 Nov 2026). 6% is Manila\'s 700 m trial on 12 km of ground.')
+    B.pset('operational', 'arrows.min_km', 20, 'Moves shorter than this many km get no arrow', 'SR-06: 20 km stays for campaigns (Morgan, 21 and 24 Nov 2026).')
+    for pb in BASED_ON: B.drop(pb, 'arrows.on')
+    assert B.get('cowpens', 'arrows.reach_minutes')['value'] == 6; B.drop('cowpens', 'arrows.reach_minutes')   # what reach_seconds gives at 1 minute a second
+    return tidy_all(B)
+
+
+def modern(B):
+    """SR-26: the Current map's button reads "Modern" on every battle (Morgan, 24 Nov 2026)."""
+    assert not B.pget('all', 'base.current.short'), 'already done'
+    B.pset('all', 'base.current.short', 'Modern', 'The short word on the Current map\'s button', 'SR-26: "Modern" on every battle (Morgan, 24 Nov 2026, over "Today" and "Now").')
+    for pb in BASED_ON:
+        for r in list(B.rows[pb]):
+            n = r['setting'].split('.')
+            if len(n) == 3 and n[0] == 'bases' and n[2] == 'short' and B.get(pb, 'bases.%s.use' % n[1]) and B.get(pb, 'bases.%s.use' % n[1])['value'] == 'current': B.drop(pb, r['setting'])
+    return tidy_all(B)
+
+
+def note(B):
+    """SR-25: no "Times are estimates" note under the clock on any map (Morgan, 24 Nov 2026)."""
+    n = sum(B.drop(pb, s) for pb in ('trenton', 'cowpens') for s in ('time_note.from', 'time_note.text'))
+    assert n == 4, 'already done'
+    return tidy_all(B)
+
+
+MAIN = {   # SR-15: the one main map of each battle that had more than one on the menu; the others are offered from the map details
+    'trenton': ('fd', {'sk': 'Lt. Wiederhold\'s sketch of the fight in the town (1776), drawn by a Hessian officer who was there; not to scale.'}),
+    'ypres': ('day', {'m14': 'Sketch A of the British official history (1925): the whole Ypres front on one sheet.'}),
+    'luzon1899': ('c99', {'n00': 'Howard\'s map of northern Luzon for General Young (1900): the autumn campaign in the north.',
+                          'wd99': 'The War Department\'s map of the theatre of operations in Luzon (1899, second edition).'}),
+}
+
+
+def menu(B):
+    """SR-15: one main map on the Type of map menu for every battle (Morgan, 24 Nov 2026); the others from the map details."""
+    for pb, (main, others) in MAIN.items():
+        for bid, txt in others.items():
+            n = next(r['setting'].split('.')[1] for r in B.rows[pb] if r['setting'].endswith('.id') and r['setting'].startswith('bases.') and r['value'] == bid)
+            assert not B.get(pb, 'bases.%s.hidden' % n), 'already done'
+            B.set(pb, 'bases.%s.hidden' % n, True, why='SR-15: one main map on the Type of map menu (Morgan, 24 Nov 2026); the main map here is %s.' % main,
+                  what='Kept off the Type of map menu: the map details offer it, with the note', after='bases.%s.id' % n)
+            B.set(pb, 'bases.%s.note' % n, txt, after='bases.%s.hidden' % n)
+    return tidy_all(B)
+
+
+def align(B):
+    """SR-27: the battlefields share deepest zoom, Follow's deepest zoom, blend and the meaning of a question mark, and each has the division
+    view where it has divisions (Morgan, 24 Nov 2026: 8, 2.2, 4 minutes, overall; Cowpens keeps Follow 2.4)."""
+    assert not B.pget('tactical', 'rules.blend'), 'already done'
+    B.pset('tactical', 'rules.blend', 4, 'Minutes over which a unit shifts from one row to the next when they meet', 'SR-27: the battlefields share their settings (Morgan, 24 Nov 2026).')
+    for r in B.presets['tactical']:
+        if r['setting'] in ('zoom.max', 'zoom.follow_max', 'question_mark'): r['why'] = 'SR-27: the battlefields share their settings (Morgan, 24 Nov 2026).'
+    for pb, s in (('gettysburg', 'zoom.max'), ('gettysburg', 'zoom.follow_max'), ('gettysburg', 'question_mark'), ('manila', 'zoom.max'), ('manila', 'zoom.follow_max'), ('trenton', 'rules.blend')):
+        assert B.drop(pb, s) == 1, (pb, s)
+    a = B.get('gettysburg', 'about.2'); old = 'A question mark means the location is a loose estimate.'
+    assert old in a['value']; a['value'] = a['value'].replace(old, 'A question mark means low confidence.')
+    for s, v, what in (('formations.echelon', 'division', None), ('formations.below', 0.11, 'Zoomed out below this (screen pixels per metre), the brigades of each division are drawn as the division'),
+                       ('formations.label', 'Divisions', None), ('formations.on', False, None)):
+        B.set('manila', s, v, what=what, why='SR-27: each battlefield has the division view where it has divisions (Anderson\'s and MacArthur\'s); 0.11 is Gettysburg\'s 0.155 for ground half as wide again.' if s == 'formations.below' else None)
+    return tidy_all(B)
+
+
 def main(argv):
     step = argv[0] if argv else ''
     assert step in STEPS, 'which step? one of: ' + ', '.join(STEPS)
@@ -235,6 +350,24 @@ STEPS = {
                  'Rows that say the same as the battle\'s presets are taken off Playback settings; based_on names the presets; the new why column gives the reason where a battle differs. See the Playback presets sheet in Sources and notes.xlsx.',
                  ('What changed on 24 November 2026 (night): playback presets',
                   'New sheet Playback presets: the settings battles share (all, tactical, operational, us-maps, world-maps, civil-war). Each war\'s Playback settings has a based_on row per battle and a why column, and no longer repeats what its presets say. Every battle file is unchanged.')),
+    'symbols': (symbols, 'Presets: 70% symbol strength (24 Nov 2026)', 'event_dim 0.7 now comes from the preset "all" (SR-11).',
+                ('What changed on 24 November 2026 (night): symbols stay clearly visible', 'Playback presets, all: event_dim 0.7. Gettysburg, Trenton, First Ypres, Manila and Luzon 1899 change; Cowpens had it already.')),
+    'glide': (glide, 'Presets: the slow ease in (24 Nov 2026)', 'follow.glide_seconds 14 and follow.glide_rate 0.006 now come from the preset "tactical" (SR-04).',
+              ('What changed on 24 November 2026 (night): the slow ease in', 'Playback presets, tactical: follow.glide_seconds 14, follow.glide_rate 0.006 (from Cowpens). Gettysburg, Trenton and Manila change.')),
+    'ease': (ease, 'Presets: the slow ease in without Follow (24 Nov 2026)', 'opening_ease 0.006 comes from the preset "operational" (SR-04).',
+             ('What changed on 24 November 2026 (night): the slow ease in without Follow', 'Playback presets, operational: opening_ease 0.006 (new setting). First Ypres and Luzon 1899 change.')),
+    'routes': (routes, 'Presets: routes taken on every battle (24 Nov 2026)', 'trails.on, trails.opacity and trails.fade_seconds come from the preset "all" (SR-16).',
+               ('What changed on 24 November 2026 (night): routes taken on every battle', 'Playback presets, all: trails on, opacity 0.55, fading after 4 seconds of play. Gettysburg, First Ypres and Luzon 1899 change; Trenton, Manila and Cowpens keep their fade times.')),
+    'arrows': (arrows, 'Presets: arrows scaled to the battle (24 Nov 2026)', 'arrows.on, arrows.reach_seconds (all), arrows.min_share (tactical) and arrows.min_km 20 (operational) come from the presets (SR-06, SR-07).',
+               ('What changed on 24 November 2026 (night): arrows scaled to the battle', 'Playback presets: arrows on everywhere; the shortest move with an arrow is 6% of the battle\'s width on a battlefield, 20 km on a campaign; an arrow runs 6 seconds of play ahead. Manila and Cowpens keep their limits.')),
+    'modern': (modern, 'Presets: the "Modern" button (24 Nov 2026)', 'The Current map\'s short word comes from the preset "all" (SR-26).',
+               ('What changed on 24 November 2026 (night): the "Modern" button', 'Playback presets, all: base.current.short "Modern". All six battles change.')),
+    'note': (note, 'No "Times are estimates" note (24 Nov 2026)', 'Trenton and Cowpens: time_note rows removed (SR-25).',
+             ('What changed on 24 November 2026 (night): no note under the clock', 'Trenton and Cowpens no longer show "Times are estimates" under the clock (SR-25).')),
+    'menu': (menu, 'One main map on the menu (24 Nov 2026)', 'Trenton, First Ypres and Luzon 1899: the other period maps are hidden from the Type of map menu and offered from the map details (SR-15).',
+             ('What changed on 24 November 2026 (night): one main map on the menu', 'Trenton (main: Faden 1777), First Ypres (main: the sketch of the day) and Luzon 1899 (main: Siebert 1899) keep one period map on the Type of map menu (SR-15).')),
+    'align': (align, 'Battlefields aligned (24 Nov 2026)', 'Gettysburg, Trenton and Manila take the tactical preset\'s zoom, blend and question mark; Manila gets the division view (SR-27).',
+              ('What changed on 24 November 2026 (night): battlefields aligned', 'Playback presets, tactical: rules.blend 4. Gettysburg deepest zoom 8, Follow 2.2, question mark = overall; Manila deepest zoom 8, Follow 2.2, division view; Trenton blend 4 (SR-27).')),
 }
 
 if __name__ == '__main__':

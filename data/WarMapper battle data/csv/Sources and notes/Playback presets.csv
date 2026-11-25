@@ -1,6 +1,7 @@
 preset,setting,value,what it does,why
 all,base.current.label,Current map,The standard current map (a battle takes it with bases.N.use = current): its label on the Type of map menu,Every battle. SR-03.
 all,base.current.current,True,It is the current map: today's topographic map from the modern tile service,SR-03 (17 Nov 2026).
+all,event_dim,0.7,How strongly units outside the current event are drawn (0 to 1; the player's own default is 0.32),"SR-11: unit symbols stay clearly visible on every battle (Morgan, 24 Nov 2026)."
 tactical,style,tactical,tactical (a battlefield) or operational (a front),"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."
 tactical,scale_bar,yards,yards or km: the measure the scale bar writes first; the other follows under it,"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."
 tactical,question_mark,overall,What marks a unit as doubtful: location (how sure the place is) or overall,"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."
