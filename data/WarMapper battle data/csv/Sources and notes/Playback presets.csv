@@ -8,6 +8,8 @@ tactical,question_mark,overall,What marks a unit as doubtful: location (how sure
 tactical,zoom.max,8,"Closest zoom, screen pixels per metre","A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."
 tactical,zoom.follow_max,2.2,Closest the Follow camera goes,"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."
 tactical,zoom.min_factor,0.9,How far out the reader can zoom (1 = the whole battle just fits),"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."
+tactical,follow.glide_seconds,14,"When play is first pressed, the camera eases in from the whole ground over this many seconds (the player's default is 6)","SR-04: open zoomed out, then ease in slowly, on every battle (Morgan, 24 Nov 2026; values from the Cowpens review, PR 68)."
+tactical,follow.glide_rate,0.006,How fast the camera eases in after the hold (the player's default is 0.03),"SR-04, as above."
 operational,style,operational,tactical (a battlefield) or operational (a front),"A front or a campaign, followed by the day (First Ypres, Luzon 1899)."
 operational,scale_bar,km,yards or km: the measure the scale bar writes first; the other follows under it,"A front or a campaign, followed by the day (First Ypres, Luzon 1899)."
 operational,question_mark,overall,What marks a unit as doubtful: location (how sure the place is) or overall,"A front or a campaign, followed by the day (First Ypres, Luzon 1899)."

@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (night): the slow ease in
+"Playback presets, tactical: follow.glide_seconds 14, follow.glide_rate 0.006 (from Cowpens). Gettysburg, Trenton and Manila change. Written by pipeline/presets_2026_11_24.py glide."
+""
 What changed on 24 November 2026 (night): symbols stay clearly visible
 "Playback presets, all: event_dim 0.7. Gettysburg, Trenton, First Ypres, Manila and Luzon 1899 change; Cowpens had it already. Written by pipeline/presets_2026_11_24.py symbols."
 ""
