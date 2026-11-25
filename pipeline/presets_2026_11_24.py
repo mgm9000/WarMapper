@@ -326,6 +326,16 @@ def start(B):
     return tidy_all(B)
 
 
+def reasons(B):
+    """Reasons the record gives for rows that differ from values the exporter works out (arrows.min_km) or from a standard map; no setting changes."""
+    n = 0
+    for (pb, s), why in WHY_OWN.items():
+        r = B.get(pb, s)
+        if r and not r.get('why'): r['why'] = why; n += 1
+    assert n, 'already done'
+    return tidy_all(B)
+
+
 def align(B):
     """SR-27: the battlefields share deepest zoom, Follow's deepest zoom, blend and the meaning of a question mark, and each has the division
     view where it has divisions (Morgan, 24 Nov 2026: 8, 2.2, 4 minutes, overall; Cowpens keeps Follow 2.4)."""
@@ -376,6 +386,8 @@ STEPS = {
              ('What changed on 24 November 2026 (night): one main map on the menu', 'Trenton (main: Faden 1777), First Ypres (main: the sketch of the day) and Luzon 1899 (main: Siebert 1899) keep one period map on the Type of map menu (SR-15).')),
     'start': (start, 'Start map: the reconstruction first (24 Nov 2026)', 'Manila and Cowpens: start_base rows removed; the exporter opens a battle on its reconstruction (SR-02).',
               ('What changed on 24 November 2026 (night): the start map', 'A battle with a reconstructed map now opens on it by rule (SR-02); Manila\'s and Cowpens\'s start_base rows are gone. No battle file changes.')),
+    'reasons': (reasons, 'Reasons recorded (24 Nov 2026)', 'why filled in for Manila\'s and Cowpens\'s arrow limits and Cowpens\'s aerial photograph text.',
+                ('What changed on 24 November 2026 (night): reasons recorded', 'The why column now gives the record\'s reason for Manila\'s and Cowpens\'s arrow limits and the Cowpens aerial photograph text. No setting changes.')),
     'align': (align, 'Battlefields aligned (24 Nov 2026)', 'Gettysburg, Trenton and Manila take the tactical preset\'s zoom, blend and question mark; Manila gets the division view (SR-27).',
               ('What changed on 24 November 2026 (night): battlefields aligned', 'Playback presets, tactical: rules.blend 4. Gettysburg deepest zoom 8, Follow 2.2, question mark = overall; Manila deepest zoom 8, Follow 2.2, division view; Trenton blend 4 (SR-27).')),
 }

@@ -91,6 +91,13 @@ def overrides(W, name):
     own = E.settings(rows); names = E.chain(own); P = E.preset_table(W); F = {}
     for n in names: F.update(flat(E.settings(P.get(n, []))))
     use = {m.group(1): str(r['value']) for r in rows for m in [re.match(r'bases\.(\d+)\.use$', str(r['setting']))] if m}
+    pb = next(p for p in W['Playbacks'] if p['playback_id'] == name)
+    D = {k: v for k, v in F.items() if not k.startswith('base.')}; D = E.settings([{'setting': k, 'value': json.dumps(v) if isinstance(v, (list, dict)) else v} for k, v in D.items()])
+    D.setdefault('rate', own.get('rate'))
+    if D.get('rate') is None: D.pop('rate')
+    E.derive(D, {'time_unit': pb['time_unit'], 'extent': [float(pb[k]) for k in ('west', 'south', 'east', 'north')]})
+    for k, v in flat(D).items():
+        if k not in F and k != 'rate': F[k] = v          # worked out from the battle (arrows.min_km, arrows.reach_minutes, trails.fade_after ...)
     diff, same = [], []
     for r in rows:
         s = str(r['setting']); v = E.settings([{'setting': 'x', 'value': r['value']}])['x']
@@ -120,6 +127,26 @@ def rules(b, W):
         start = P.get('start_base')
         if start and start not in [x['id'] for x in recon]: fail.append('SR-02 landing view: it has a reconstructed map (%s) but opens on %s' % (recon[0]['id'], start))
         if not start and bases and not bases[0].get('recon'): fail.append('SR-02 landing view: it has a reconstructed map (%s) but does not open on it' % recon[0]['id'])
+    def covers(q, box):                               # the player's inQuad: is point q inside the four corners
+        sg = 0
+        for i in range(4):
+            p0, p1 = box[i], box[(i + 1) % 4]; c = (p1[0] - p0[0]) * (q[1] - p0[1]) - (p1[1] - p0[1]) * (q[0] - p0[0])
+            if c:
+                if sg and (c > 0) != (sg > 0): return False
+                sg = c
+        return True
+    def start_map():                                  # the player's startBase(): start_base, else a period map over the opening view, else current
+        if P.get('start_base'): return next((x for x in bases if x['id'] == P['start_base']), None)
+        V = b['view']; bx = (V.get('presets') or {}).get((P.get('views') or [{}])[0].get('preset')) if P.get('views') else None; bx = bx or V['extent']
+        dx, dy = (bx[2] - bx[0]) * 0.04, (bx[3] - bx[1]) * 0.04
+        C = [[bx[0] + dx, bx[1] + dy], [bx[2] - dx, bx[1] + dy], [bx[2] - dx, bx[3] - dy], [bx[0] + dx, bx[3] - dy]]
+        maps_ = {m['id']: m for m in b['maps']}
+        for x in bases:
+            m = maps_.get(x.get('map'))
+            if m and m.get('georeferenced') is not False and not x.get('series') and m['images'] and m['images'][0].get('corners') and all(covers(c, m['images'][0]['corners']) for c in C): return x
+        return next((x for x in bases if x.get('current')), bases[0] if bases else None)
+    sb = start_map()
+    if sb and sb.get('hidden'): fail.append('SR-02 landing view: it opens on %s, which is kept off the Type of map menu' % sb['id'])
     # SR-03 and SR-26: the Current map is today's topographic map, and its button says "Modern"
     cur = [x for x in bases if x.get('current')]
     if not cur: fail.append('SR-03 current map: no base is the current map')

@@ -93,7 +93,7 @@ cowpens,zoom.fold,0.45,"Zoomed in past this, Pickens's and Howard's lines are sh
 cowpens,zoom.labels,0.3,,
 cowpens,zoom.landmarks_from,0.25,,
 cowpens,fold.label,Regiments and companies,,
-cowpens,arrows.min_km,0.25,"Moves shorter than this get no arrow. The whole field is half a mile long, so the limit is far below the 20 km of a campaign",
+cowpens,arrows.min_km,0.25,"Moves shorter than this get no arrow. The whole field is half a mile long, so the limit is far below the 20 km of a campaign","The whole field is half a mile long, so the limit is far below a campaign's (PR 61); kept as the pattern for small fields (SR-06, 24 Nov)."
 cowpens,arrows.lead,3,Minutes before the unit sets off that the arrow appears,
 cowpens,trails.opacity,0.5,,Kept as set while reviewing Cowpens (24 Nov 2026).
 cowpens,trails.fade_after,6,,"Kept as set while reviewing Cowpens (Morgan, 24 Nov 2026: Manila and Cowpens keep theirs)."
@@ -121,7 +121,7 @@ cowpens,bases.1.terrain,"{""zoom"": 14, ""extent"": [-81.86, 35.095, -81.75, 35.
 cowpens,bases.2.id,mod,,
 cowpens,bases.2.use,current,A standard map from the presets (base.current): its rows below are only where this battle differs,
 cowpens,bases.3.use,satellite,A standard map from the presets (base.satellite): its rows below are only where this battle differs,
-cowpens,bases.3.imagery.about,"Today's ground from the air: photography from the US Department of Agriculture's National Agriculture Imagery Program (about 1 m detail), served free by the USGS National Map. The field is kept open by the National Park Service much as it was in 1781; the woods around it are thicker than the open wood of the battle.",,
+cowpens,bases.3.imagery.about,"Today's ground from the air: photography from the US Department of Agriculture's National Agriculture Imagery Program (about 1 m detail), served free by the USGS National Map. The field is kept open by the National Park Service much as it was in 1781; the woods around it are thicker than the open wood of the battle.",,"Says what the aerial photograph shows of this field: the park keeps it open much as in 1781, the woods are thicker."
 cowpens,bases.4.id,bz,,
 cowpens,bases.4.label,"Bearss 1967, phase by phase",,
 cowpens,bases.4.short,Bearss,,
