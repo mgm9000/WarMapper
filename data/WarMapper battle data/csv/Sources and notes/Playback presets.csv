@@ -7,6 +7,7 @@ all,trails.opacity,0.55,How strongly the routes taken are drawn (0 to 1),SR-16; 
 all,trails.fade_seconds,4,"Worked out by the exporter: once a unit has stood still for this many seconds of play, its routes fade out over as many again (gives trails.fade_after and trails.fade_over in the battle's time unit)","SR-16: routes fade on the battle's own time scale (Morgan, 24 Nov 2026)."
 all,arrows.on,True,Arrows ahead of a long move,"SR-06: arrows ahead of long moves (Morgan, 21 Nov 2026)."
 all,arrows.reach_seconds,6,"Worked out by the exporter: an arrow runs this many seconds of play ahead of its unit, not to the end of a long road (gives arrows.reach_minutes in the battle's time unit)","SR-07: ""Arrows will run ahead depending on the time scale being used"" (Morgan, 24 Nov 2026). 6 s is the Cowpens value (6 minutes at 1 minute a second)."
+all,base.current.short,Modern,The short word on the Current map's button,"SR-26: ""Modern"" on every battle (Morgan, 24 Nov 2026, over ""Today"" and ""Now"")."
 tactical,style,tactical,tactical (a battlefield) or operational (a front),"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."
 tactical,scale_bar,yards,yards or km: the measure the scale bar writes first; the other follows under it,"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."
 tactical,question_mark,overall,What marks a unit as doubtful: location (how sure the place is) or overall,"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."

@@ -15,7 +15,6 @@ gettysburg,bases.1.backdrop,paper,A map the reader can put under the units; the 
 gettysburg,bases.1.fade,True,A map the reader can put under the units; the first is the opening one,
 gettysburg,bases.2.id,mod,A map the reader can put under the units; the first is the opening one,
 gettysburg,bases.2.use,current,A standard map from the presets (base.current): its rows below are only where this battle differs,
-gettysburg,bases.2.short,Today,A map the reader can put under the units; the first is the opening one,
 gettysburg,bases.2.title,"Today's topographic map, from the USGS (M switches maps)",A map the reader can put under the units; the first is the opening one,
 gettysburg,bases.2.clip,bachelder-1876,A map the reader can put under the units; the first is the opening one,
 gettysburg,bases.3.use,satellite,A standard map from the presets (base.satellite): its rows below are only where this battle differs,

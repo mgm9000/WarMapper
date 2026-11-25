@@ -1,3 +1,6 @@
+"What changed on 24 November 2026 (night): the ""Modern"" button"
+"Playback presets, all: base.current.short ""Modern"". All six battles change. Written by pipeline/presets_2026_11_24.py modern."
+""
 What changed on 24 November 2026 (night): arrows scaled to the battle
 "Playback presets: arrows on everywhere; the shortest move with an arrow is 6% of the battle's width on a battlefield, 20 km on a campaign; an arrow runs 6 seconds of play ahead. Manila and Cowpens keep their limits. Written by pipeline/presets_2026_11_24.py arrows."
 ""
