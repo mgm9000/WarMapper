@@ -225,7 +225,9 @@ def resolve(rows, W, battle=None):
       bases.N.* rows win over it.
     - Worked out from the battle itself (where the battle does not set the value): arrows.min_share (a share of the width of the battle's
       ground, view extent) gives arrows.min_km; arrows.reach_seconds (seconds of play at the opening speed) gives arrows.reach_minutes;
-      trails.fade_seconds gives trails.fade_after and trails.fade_over. These three never reach the battle file themselves."""
+      trails.fade_seconds gives trails.fade_after and trails.fade_over. These three never reach the battle file themselves.
+    - start_base, where the battle does not set it: its first reconstructed map on the Type of map menu, if it has one (SR-02); otherwise
+      the player's own rule (a period map that covers the opening view, else the current map)."""
     own = settings(rows); P = preset_table(W); names = chain(own); out = {}
     for n in names:
         assert n in P, 'Playback settings: based_on names the preset %r, which is not on the Playback presets sheet' % n
@@ -249,6 +251,9 @@ def derive(S, battle):
         w, s_, e, n = battle['extent']; width = (e - w) * 111.32 * math.cos(math.radians((s_ + n) / 2))
         A['min_km'] = round(share * width, 2 if share * width < 1 else 1)
     if secs is not None and 'reach_minutes' not in A: A['reach_minutes'] = num(round(secs * rate, 2))
+    if 'start_base' not in S:   # SR-02: a battle with its own reconstructed map on the menu opens on it (Morgan, 24 Nov 2026)
+        rc = [x for x in S.get('bases') or [] if x and x.get('recon') and not x.get('hidden')]
+        if rc: S['start_base'] = rc[0]['id']
     T = S.get('trails') or {}; fs = T.pop('fade_seconds', None)
     if fs is not None:
         if 'fade_after' not in T: T['fade_after'] = num(round(fs * rate, 2))

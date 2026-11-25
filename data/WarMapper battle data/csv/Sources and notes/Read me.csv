@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (night): the start map
+A battle with a reconstructed map now opens on it by rule (SR-02); Manila's and Cowpens's start_base rows are gone. No battle file changes. Written by pipeline/presets_2026_11_24.py start.
+""
 What changed on 24 November 2026 (night): one main map on the menu
 "Trenton (main: Faden 1777), First Ypres (main: the sketch of the day) and Luzon 1899 (main: Siebert 1899) keep one period map on the Type of map menu (SR-15). Written by pipeline/presets_2026_11_24.py menu."
 ""

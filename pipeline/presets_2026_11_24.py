@@ -318,6 +318,14 @@ def menu(B):
     return tidy_all(B)
 
 
+def start(B):
+    """SR-02: a battle opens on its own reconstructed map if it has one. The exporter now works that out (tools/export_battles.py, derive),
+    so Manila's and Cowpens's own start_base rows, which said the same, go."""
+    assert B.get('manila', 'start_base') and B.get('cowpens', 'start_base'), 'already done'
+    for pb in ('manila', 'cowpens'): B.drop(pb, 'start_base')
+    return tidy_all(B)
+
+
 def align(B):
     """SR-27: the battlefields share deepest zoom, Follow's deepest zoom, blend and the meaning of a question mark, and each has the division
     view where it has divisions (Morgan, 24 Nov 2026: 8, 2.2, 4 minutes, overall; Cowpens keeps Follow 2.4)."""
@@ -366,6 +374,8 @@ STEPS = {
              ('What changed on 24 November 2026 (night): no note under the clock', 'Trenton and Cowpens no longer show "Times are estimates" under the clock (SR-25).')),
     'menu': (menu, 'One main map on the menu (24 Nov 2026)', 'Trenton, First Ypres and Luzon 1899: the other period maps are hidden from the Type of map menu and offered from the map details (SR-15).',
              ('What changed on 24 November 2026 (night): one main map on the menu', 'Trenton (main: Faden 1777), First Ypres (main: the sketch of the day) and Luzon 1899 (main: Siebert 1899) keep one period map on the Type of map menu (SR-15).')),
+    'start': (start, 'Start map: the reconstruction first (24 Nov 2026)', 'Manila and Cowpens: start_base rows removed; the exporter opens a battle on its reconstruction (SR-02).',
+              ('What changed on 24 November 2026 (night): the start map', 'A battle with a reconstructed map now opens on it by rule (SR-02); Manila\'s and Cowpens\'s start_base rows are gone. No battle file changes.')),
     'align': (align, 'Battlefields aligned (24 Nov 2026)', 'Gettysburg, Trenton and Manila take the tactical preset\'s zoom, blend and question mark; Manila gets the division view (SR-27).',
               ('What changed on 24 November 2026 (night): battlefields aligned', 'Playback presets, tactical: rules.blend 4. Gettysburg deepest zoom 8, Follow 2.2, question mark = overall; Manila deepest zoom 8, Follow 2.2, division view; Trenton blend 4 (SR-27).')),
 }
