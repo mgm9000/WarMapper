@@ -1,72 +1,61 @@
-playback_id,setting,value,what it does
-ypres,page_title,First Ypres Playback,The browser tab title
-ypres,style,operational,tactical (a battlefield) or operational (a front)
-ypres,scale_bar,km,yards or km: the measure the scale bar writes first; the other follows under it
-ypres,rate,0.5,"Days per second while playing with the 1-day step (0.5 since 18 Nov 2026: slower, so moves read smoothly; was 0.85)"
-ypres,views.1.preset,salient,A named-view button
-ypres,views.1.label,Ypres salient,A named-view button
-ypres,views.1.short,Salient,A named-view button
-ypres,views.2.preset,front,A named-view button
-ypres,views.2.label,Whole front,A named-view button
-ypres,views.2.short,All,A named-view button
-ypres,bases.1.id,now,A map the reader can put under the units; the first is the opening one
-ypres,bases.1.label,Current map,A map the reader can put under the units; the first is the opening one
-ypres,bases.1.short,Now,A map the reader can put under the units; the first is the opening one
-ypres,bases.1.current,True,A map the reader can put under the units; the first is the opening one
-ypres,bases.2.id,m14,A map the reader can put under the units; the first is the opening one
-ypres,bases.2.label,1914 map,A map the reader can put under the units; the first is the opening one
-ypres,bases.2.short,1914,A map the reader can put under the units; the first is the opening one
-ypres,bases.2.map,official-history-sketch-a,A map the reader can put under the units; the first is the opening one
-ypres,bases.2.backdrop,current,A map the reader can put under the units; the first is the opening one
-ypres,bases.3.id,day,A map the reader can put under the units; the first is the opening one
-ypres,bases.3.label,Sketch of the day,A map the reader can put under the units; the first is the opening one
-ypres,bases.3.short,Daily,A map the reader can put under the units; the first is the opening one
-ypres,bases.3.series,True,A map the reader can put under the units; the first is the opening one
-ypres,bases.3.backdrop,current,A map the reader can put under the units; the first is the opening one
-ypres,modern.tiles,https://a.tile.opentopomap.org/{z}/{x}/{y}.png,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-ypres,modern.max_zoom,17,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-ypres,modern.credit,"OpenTopoMap (CC-BY-SA); data: OpenStreetMap contributors, SRTM","The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-ypres,modern.name,OpenTopoMap,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-ypres,modern.about,"Today's ground: OpenTopoMap, a topographic map drawn from OpenStreetMap with contours and hill shading from satellite radar heights. Place names on it are today's spellings; the battle's own names are written over it. It is streamed from opentopomap.org while it is on screen, so it needs a connection.","The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-ypres,modern.rights,"Map: CC-BY-SA, OpenTopoMap. Data: Open Database License, OpenStreetMap contributors; SRTM heights","The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-ypres,modern.link,https://opentopomap.org/about,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-ypres,zoom.max,0.6,"Closest zoom, screen pixels per metre"
-ypres,zoom.min_factor,0.85,How far out the reader can zoom (1 = the whole battle just fits)
-ypres,zoom.fold,0.05,Below this zoom units fold into their parent
-ypres,zoom.labels,0.034,"From this zoom, level 1 names show"
-ypres,zoom.full_names,0.062,"From this zoom, a place shows its other name too"
-ypres,zoom.woods_from,0.02,Wood names show from this zoom
-ypres,fold.formation,True,Hide a unit while its parent formation has its own line and the reader is zoomed out
-ypres,fold.sides,"[""GE""]",Side codes that folding by formation applies to
-ypres,rear.side,AL,Side code whose symbols sit towards the rear point
-ypres,rear.lat,50.838691,The rear point
-ypres,rear.lon,2.713852,The rear point
-ypres,texts.stated,A history or official account names the unit at these places. The line between them is drawn straight.,The sentence under this state in the unit panel
-ypres,texts.inferred,Worked out from other units or from the order of events; the sources do not give this line.,The sentence under this state in the unit panel
-ypres,texts.moving,The sources give positions at nightfall. The path between two nights is not recorded.,The sentence under this state in the unit panel
-ypres,texts.after,The sources read do not follow this unit here. It is shown where they last put it.,The sentence under this state in the unit panel
-ypres,texts.unplaced,The sources read do not say where the unit was.,The sentence under this state in the unit panel
-ypres,found.map_read,read from the 1925 official-history map,Words for how a place was found
-ypres,found.modern_map,at a village centre on the current map,Words for how a place was found
-ypres,found.derived,offset from a village,Words for how a place was found
-ypres,found.estimate,placed from memory or a description,Words for how a place was found
-ypres,about.1,"Positions come from the data pilot spreadsheet (215 Ypres rows). British and French lines on 21, 23, 25, 29 and 31 October and 4, 9 and 11 November are read from the sketch maps of the British official history (1925); each holds until the next sketch or the next change in the text. Everything else, and every German position, comes from text: the first four days of the official history, the German General Staff account of 1917, two British histories of 1916 and encyclopedia articles. No French source was read. Nothing here has been checked by a historian.","A paragraph under ""About this prototype"""
-ypres,about.2,"A line read from a sketch follows the drawn line to about 250 m. A line from text runs straight through the centres of the villages the sources name. The sketches show the Germans only as arrows, so German lines are text, moved where needed to stand 500 m clear of the Allied line. The sources give positions by day, taken here as nightfall.","A paragraph under ""About this prototype"""
-ypres,about.3,"Solid lines are positions a source gives. Dashed lines are inferred, interpolated or the last position on record; faded symbols are units the sources stop following.","A paragraph under ""About this prototype"""
-ypres,about.4,"Dark blue is British, light blue French, teal Belgian, red German. Zoomed out, German divisions fold into their corps; zoom in to see them.","A paragraph under ""About this prototype"""
-ypres,about.5,"The current map is OpenTopoMap, a topographic map drawn from OpenStreetMap, with 1914 spellings in brackets when you zoom in. If it cannot be reached, a simplified drawing of today's roads, canals and villages is shown instead; its woods and the old Ypres-Comines canal are approximate.","A paragraph under ""About this prototype"""
-ypres,about.6,"The 1914 map is Sketch A of the British official history (1925). It is bound across two pages and about a kilometre is lost in the fold, so the current map shows through the gap. Sketch of the day puts the official history's own sketch for the date under the units, with its British (red), French (blue) and German (green) lines; there are eight, from 18 October to 11 November. Both are placed to within about 150 m. Use the Units button to read the sketch on its own. On a sketch's last date the British and French units should sit on its solid line. The sketches also draw the lines of the days before; those are not in the data.","A paragraph under ""About this prototype"""
-ypres,question_mark,overall,What marks a unit as doubtful: location (how sure the place is) or overall
-ypres,preset.salient,"[2.790688, 50.72792, 3.109419, 50.947661]","A named view: [west, south, east, north]"
-ypres,preset.front,"[2.696777, 50.709909, 3.190524, 51.162899]","A named view: [west, south, east, north]"
-ypres,clock_title,First Battle of Ypres,The battle's name in the date box on the map
-ypres,arrival.lead,1,"Units that come into the battle after it opens are drawn coming up the day before they are first placed: out of their parent formation if it is on the map, otherwise from `km` behind their own lines (towards the point `<side>.lat, lon`, or along `<side>.bearing`, degrees from north). The approach is marked as not recorded."
-ypres,arrival.km,10,"Units that come into the battle after it opens are drawn coming up the day before they are first placed: out of their parent formation if it is on the map, otherwise from `km` behind their own lines (towards the point `<side>.lat, lon`, or along `<side>.bearing`, degrees from north). The approach is marked as not recorded."
-ypres,arrival.AL.lat,50.838691,"Units that come into the battle after it opens are drawn coming up the day before they are first placed: out of their parent formation if it is on the map, otherwise from `km` behind their own lines (towards the point `<side>.lat, lon`, or along `<side>.bearing`, degrees from north). The approach is marked as not recorded."
-ypres,arrival.AL.lon,2.713852,"Units that come into the battle after it opens are drawn coming up the day before they are first placed: out of their parent formation if it is on the map, otherwise from `km` behind their own lines (towards the point `<side>.lat, lon`, or along `<side>.bearing`, degrees from north). The approach is marked as not recorded."
-ypres,arrival.GE.bearing,90,"Units that come into the battle after it opens are drawn coming up the day before they are first placed: out of their parent formation if it is on the map, otherwise from `km` behind their own lines (towards the point `<side>.lat, lon`, or along `<side>.bearing`, degrees from north). The approach is marked as not recorded."
-ypres,formations.echelon,corps,"Formations: zoomed out below `below` (screen pixels per metre), the units of each formation are drawn as the formation, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
-ypres,formations.below,0.045,"Formations: zoomed out below `below` (screen pixels per metre), the units of each formation are drawn as the formation, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
-ypres,formations.label,Corps,"Formations: zoomed out below `below` (screen pixels per metre), the units of each formation are drawn as the formation, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
-ypres,formations.on,False,"Formations: zoomed out below `below` (screen pixels per metre), the units of each formation are drawn as the formation, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
-ypres,about.7,"A unit that joins the battle after 18 October is drawn coming up the day before: out of its corps if the corps is on the map, otherwise from about 10 km behind its own side's lines. Its approach is not in the sources read. Formations, in the Layers menu, draws divisions as their corps when zoomed out.","A paragraph under ""About this prototype"""
+playback_id,setting,value,what it does,why
+ypres,page_title,First Ypres Playback,The browser tab title,
+ypres,based_on,"[""operational"", ""world-maps""]","The presets this battle is based on (Playback presets sheet in Sources and notes.xlsx), laid on in turn after ""all""; this battle's own rows win over them",
+ypres,rate,0.5,"Days per second while playing with the 1-day step (0.5 since 18 Nov 2026: slower, so moves read smoothly; was 0.85)",
+ypres,views.1.preset,salient,A named-view button,
+ypres,views.1.label,Ypres salient,A named-view button,
+ypres,views.1.short,Salient,A named-view button,
+ypres,views.2.preset,front,A named-view button,
+ypres,views.2.label,Whole front,A named-view button,
+ypres,views.2.short,All,A named-view button,
+ypres,bases.1.id,now,A map the reader can put under the units; the first is the opening one,
+ypres,bases.1.use,current,A standard map from the presets (base.current): its rows below are only where this battle differs,
+ypres,bases.1.short,Now,A map the reader can put under the units; the first is the opening one,
+ypres,bases.2.id,m14,A map the reader can put under the units; the first is the opening one,
+ypres,bases.2.label,1914 map,A map the reader can put under the units; the first is the opening one,
+ypres,bases.2.short,1914,A map the reader can put under the units; the first is the opening one,
+ypres,bases.2.map,official-history-sketch-a,A map the reader can put under the units; the first is the opening one,
+ypres,bases.2.backdrop,current,A map the reader can put under the units; the first is the opening one,
+ypres,bases.3.id,day,A map the reader can put under the units; the first is the opening one,
+ypres,bases.3.label,Sketch of the day,A map the reader can put under the units; the first is the opening one,
+ypres,bases.3.short,Daily,A map the reader can put under the units; the first is the opening one,
+ypres,bases.3.series,True,A map the reader can put under the units; the first is the opening one,
+ypres,bases.3.backdrop,current,A map the reader can put under the units; the first is the opening one,
+ypres,zoom.max,0.6,"Closest zoom, screen pixels per metre",
+ypres,zoom.fold,0.05,Below this zoom units fold into their parent,
+ypres,zoom.labels,0.034,"From this zoom, level 1 names show",
+ypres,zoom.full_names,0.062,"From this zoom, a place shows its other name too",
+ypres,zoom.woods_from,0.02,Wood names show from this zoom,
+ypres,fold.formation,True,Hide a unit while its parent formation has its own line and the reader is zoomed out,
+ypres,fold.sides,"[""GE""]",Side codes that folding by formation applies to,
+ypres,rear.side,AL,Side code whose symbols sit towards the rear point,
+ypres,rear.lat,50.838691,The rear point,
+ypres,rear.lon,2.713852,The rear point,
+ypres,texts.stated,A history or official account names the unit at these places. The line between them is drawn straight.,The sentence under this state in the unit panel,
+ypres,texts.inferred,Worked out from other units or from the order of events; the sources do not give this line.,The sentence under this state in the unit panel,
+ypres,texts.moving,The sources give positions at nightfall. The path between two nights is not recorded.,The sentence under this state in the unit panel,
+ypres,texts.after,The sources read do not follow this unit here. It is shown where they last put it.,The sentence under this state in the unit panel,
+ypres,texts.unplaced,The sources read do not say where the unit was.,The sentence under this state in the unit panel,
+ypres,found.map_read,read from the 1925 official-history map,Words for how a place was found,
+ypres,found.modern_map,at a village centre on the current map,Words for how a place was found,
+ypres,found.derived,offset from a village,Words for how a place was found,
+ypres,found.estimate,placed from memory or a description,Words for how a place was found,
+ypres,about.1,"Positions come from the data pilot spreadsheet (215 Ypres rows). British and French lines on 21, 23, 25, 29 and 31 October and 4, 9 and 11 November are read from the sketch maps of the British official history (1925); each holds until the next sketch or the next change in the text. Everything else, and every German position, comes from text: the first four days of the official history, the German General Staff account of 1917, two British histories of 1916 and encyclopedia articles. No French source was read. Nothing here has been checked by a historian.","A paragraph under ""About this prototype""",
+ypres,about.2,"A line read from a sketch follows the drawn line to about 250 m. A line from text runs straight through the centres of the villages the sources name. The sketches show the Germans only as arrows, so German lines are text, moved where needed to stand 500 m clear of the Allied line. The sources give positions by day, taken here as nightfall.","A paragraph under ""About this prototype""",
+ypres,about.3,"Solid lines are positions a source gives. Dashed lines are inferred, interpolated or the last position on record; faded symbols are units the sources stop following.","A paragraph under ""About this prototype""",
+ypres,about.4,"Dark blue is British, light blue French, teal Belgian, red German. Zoomed out, German divisions fold into their corps; zoom in to see them.","A paragraph under ""About this prototype""",
+ypres,about.5,"The current map is OpenTopoMap, a topographic map drawn from OpenStreetMap, with 1914 spellings in brackets when you zoom in. If it cannot be reached, a simplified drawing of today's roads, canals and villages is shown instead; its woods and the old Ypres-Comines canal are approximate.","A paragraph under ""About this prototype""",
+ypres,about.6,"The 1914 map is Sketch A of the British official history (1925). It is bound across two pages and about a kilometre is lost in the fold, so the current map shows through the gap. Sketch of the day puts the official history's own sketch for the date under the units, with its British (red), French (blue) and German (green) lines; there are eight, from 18 October to 11 November. Both are placed to within about 150 m. Use the Units button to read the sketch on its own. On a sketch's last date the British and French units should sit on its solid line. The sketches also draw the lines of the days before; those are not in the data.","A paragraph under ""About this prototype""",
+ypres,preset.salient,"[2.790688, 50.72792, 3.109419, 50.947661]","A named view: [west, south, east, north]",
+ypres,preset.front,"[2.696777, 50.709909, 3.190524, 51.162899]","A named view: [west, south, east, north]",
+ypres,clock_title,First Battle of Ypres,The battle's name in the date box on the map,
+ypres,arrival.lead,1,"Units that come into the battle after it opens are drawn coming up the day before they are first placed: out of their parent formation if it is on the map, otherwise from `km` behind their own lines (towards the point `<side>.lat, lon`, or along `<side>.bearing`, degrees from north). The approach is marked as not recorded.",
+ypres,arrival.km,10,"Units that come into the battle after it opens are drawn coming up the day before they are first placed: out of their parent formation if it is on the map, otherwise from `km` behind their own lines (towards the point `<side>.lat, lon`, or along `<side>.bearing`, degrees from north). The approach is marked as not recorded.",
+ypres,arrival.AL.lat,50.838691,"Units that come into the battle after it opens are drawn coming up the day before they are first placed: out of their parent formation if it is on the map, otherwise from `km` behind their own lines (towards the point `<side>.lat, lon`, or along `<side>.bearing`, degrees from north). The approach is marked as not recorded.",
+ypres,arrival.AL.lon,2.713852,"Units that come into the battle after it opens are drawn coming up the day before they are first placed: out of their parent formation if it is on the map, otherwise from `km` behind their own lines (towards the point `<side>.lat, lon`, or along `<side>.bearing`, degrees from north). The approach is marked as not recorded.",
+ypres,arrival.GE.bearing,90,"Units that come into the battle after it opens are drawn coming up the day before they are first placed: out of their parent formation if it is on the map, otherwise from `km` behind their own lines (towards the point `<side>.lat, lon`, or along `<side>.bearing`, degrees from north). The approach is marked as not recorded.",
+ypres,formations.echelon,corps,"Formations: zoomed out below `below` (screen pixels per metre), the units of each formation are drawn as the formation, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start",
+ypres,formations.below,0.045,"Formations: zoomed out below `below` (screen pixels per metre), the units of each formation are drawn as the formation, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start",
+ypres,formations.label,Corps,"Formations: zoomed out below `below` (screen pixels per metre), the units of each formation are drawn as the formation, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start",
+ypres,formations.on,False,"Formations: zoomed out below `below` (screen pixels per metre), the units of each formation are drawn as the formation, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start",
+ypres,about.7,"A unit that joins the battle after 18 October is drawn coming up the day before: out of its corps if the corps is on the map, otherwise from about 10 km behind its own side's lines. Its approach is not in the sources read. Formations, in the Layers menu, draws divisions as their corps when zoomed out.","A paragraph under ""About this prototype""",

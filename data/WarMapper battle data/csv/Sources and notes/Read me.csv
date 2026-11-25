@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (night): playback presets
+"New sheet Playback presets: the settings battles share (all, tactical, operational, us-maps, world-maps, civil-war). Each war's Playback settings has a based_on row per battle and a why column, and no longer repeats what its presets say. Every battle file is unchanged. Written by pipeline/presets_2026_11_24.py refactor."
+""
 What changed on 24 November 2026 (late): the Cowpens playback after Morgan's second review
 "Revolutionary War.xlsx, Cowpens: the light infantry, Legion infantry, 7th and 71st (CP56, CP66, CP76, CP104) are drawn until 07:56, a few minutes after they laid down their arms, not 08:30; Washington's pursuit (CP37) is drawn arriving at 08:22, not 08:16, so he stays behind Tarleton; settings follow.hold_until, follow.glide_rate, follow.glide_seconds, lead.until, texts.after and texts.lost. No reading, source or recorded time changed. With player changes: a route taken fades once its unit moves on without a route. Written by pipeline/cowpens_review2_2026_11_24.py."
 ""
