@@ -25,11 +25,11 @@ No rule was invented. Where no reason was recorded the entry says so.
 
 **Answers of 24 Nov 2026.** Morgan answered the batch of questions on 24 Nov. His answers are in each rule's entry and listed under "Answers from Morgan" and "Follow-ups" at the end. Session A changed nothing in the player, the exporter or the workbooks. Session B (branch `presets-and-checks`, the same night) built the presets and the check and carried out F-2 and most of F-3; the matrix below is that branch.
 
-## Matrix (as of 24 Nov 2026, branch `presets-and-checks`)
+## Matrix (as of 24 Nov 2026, evening: `main` after pull request 72, then the session C audit)
 
 | Rule | Gettysburg | Trenton | First Ypres | Manila | Luzon 1899 | Cowpens | Enforced by |
 |---|---|---|---|---|---|---|---|
-| SR-01 24-hour time | A* | A* | A* | A | A | A | player (clock); check (texts) |
+| SR-01 24-hour time | A | A | A | A | A | A | player (clock); check (texts) |
 | SR-02 Landing view | A | A | A | A | A | A | exporter (reconstruction first); player; check |
 | SR-03 Current map is a modern topographic map | A | A | A | A | A | A | preset (us-maps, world-maps, all); check |
 | SR-04 Open zoomed out, hold on the whole ground, ease in slowly | A | A | A | A | A | A | player; preset (tactical, operational); check |
@@ -57,42 +57,10 @@ No rule was invented. Where no reason was recorded the entry says so.
 | SR-26 Current-map button reads "Modern" | A | A | A | A | A | A | preset (all); check |
 | SR-27 Tactical battles share their settings unless a reason is recorded | A | A | N | A | N | A | preset (tactical); check (reasons) |
 
-Notes on the matrix. SR-01: eight texts still write a.m. or p.m. (Gettysburg GE04, GE07, GE12, GE13, GE19; Trenton TE03; First Ypres YE09 and the
-summary of 31 Oct, which the check found and session A had not listed); Manila's ME02 and ME04 now read 24-hour. SR-16: First Ypres has the layer
+Notes on the matrix. SR-01: the eight a.m./p.m. texts were converted in the session C audit (24 Nov; Morgan's yes), so all six now pass; SR-16: First Ypres has the layer
 but no route on record, so it draws nothing and the switch is not offered until routes are entered (F-7). SR-23: the out-of-date Philippine War
-CSV was exported on this branch (Morgan's "Accepted" review marks).
+CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the arrow lead time (how long before a unit sets off its arrow appears) is not scaled like the reach: see F-8.
 
----|---|---|---|---|---|---|
-| SR-01 24-hour time | A* | A* | A* | A* | A | A |
-| SR-02 Landing view | A | A | A | A | A | A |
-| SR-03 Current map is a modern topographic map | A | A | A | A | A | A |
-| SR-04 Open zoomed out, hold on the whole ground, ease in slowly | A* | A* | A* | A* | A* | A |
-| SR-05 Day pauses and summaries | N | N | A | N | A | N |
-| SR-06 Arrows ahead of long moves (limit scales with the battle) | A* | A* | A | A* | A | A* |
-| SR-07 Arrows run ahead of their unit by a time-scale reach | A* | A* | A* | A* | A* | A |
-| SR-08 Ships (boats at Trenton, naval gunfire at Ypres) | N | A* | A* | A | A | N |
-| SR-09 Map credits in the i button | A | A | A | A | A | A |
-| SR-10 Units visibly move; the enemy is shown | A | A | A | A | A | A |
-| SR-11 Symbols stay clearly visible (70%); moves and arrows smooth | A* | A* | A* | A* | A* | A |
-| SR-12 Reconstructed maps carry detail at every zoom | N | N | N | A | N | A |
-| SR-13 No reconstruction banner on the map | N | N | N | A | N | A |
-| SR-14 Elevation-derived terrain labelled, cleaned, never period | N | N | N | A | N | A |
-| SR-15 One main map on the Type of map menu | A | A* | A* | A | A* | A |
-| SR-16 Routes taken: layer on every battle; routes fade | A* | A | A* | A | A* | A |
-| SR-17 Events tied to units on the map | A | A | A* | A | A | A |
-| SR-18 Follow camera: smooth, keeps up | A | A | N | A | N | A |
-| SR-19 Scholarly history, where it cites the reports, settles dates and names; both readings kept | A* | A* | A* | A* | A | A* |
-| SR-20 Every time and position cross-checked | A | A | A | A | A | A |
-| SR-21 Never `stated` or `high` without a cited source | A | A | A | A | A | A |
-| SR-22 Rights: host only public-domain or open material | A | A | A | A | A | A |
-| SR-23 The workbook is master; CSV copies current | A | A | A | A | A | A |
-| SR-24 Controls and layout on phones, tablets and desktops | A | A | A | A | A | A |
-| SR-25 No "Times are estimates" note under the clock | N | A* | N | N | N | A* |
-| SR-26 Current-map button reads "Modern" | A* | A* | A* | A* | A* | A* |
-| SR-27 Tactical battles share their settings unless a reason is recorded | A* | A* | N | A* | N | A* |
-
-Two notes on the matrix. SR-23 passes for the rule but `export_battles.py --check` on `main` reports `csv/Philippine War/Positions.csv` out of date
-against its workbook (Manila and Luzon 1899); that is a defect to fix with the next export, not a decision. Cowpens in this matrix is `main` after pull request 70 (24 Nov, evening), which carried pull requests 67 and 68 (the far-town labels and the Cowpens second review) onto `main` after they had been merged into other branches by mistake.
 
 ---
 
@@ -105,7 +73,7 @@ against its workbook (Manila and Luzon 1899); that is a defect to fix with the n
 - **Built in:** shared player (clock, timeline, panel); exporter times. Event and summary text is typed by hand in each war's workbook (manual).
 - **Check:** `grep -rn "a\.m\.\|p\.m\." "data/WarMapper battle data/csv/<war>/Events.csv" "…/Summaries.csv"`.
 - **Enforced by:** player shows the clock and timeline in 24-hour time; `consistency_check.py` fails on a.m. or p.m. in an event, summary, opening, About or unit-panel text (a source's own wording, quoted in a row, is left as written).
-- **Status:** Luzon 1899 and Cowpens: applied. Nine event texts still use a.m. or p.m.: Gettysburg GE04 (playback text), GE07, GE12, GE13, GE19; Trenton TE03; First Ypres YE09 and the playback text; Manila ME02, ME04. **Morgan, 24 Nov: convert them to 24-hour** (Follow-up F-3). A* for those four battles. **Session B (24 Nov, branch `presets-and-checks`):** Manila now 24-hour; eight texts remain (matrix notes).
+- **Status:** all six applied. **Session C audit (24 Nov, evening):** the check found eight texts still on a.m./p.m. (Gettysburg GE04 playback text, GE07, GE12, GE13, GE19; Trenton TE03; First Ypres YE09 and the summary of 31 Oct). Morgan said yes to converting them as proposed; done in the three workbooks, re-exported, check clean. Manila had passed since session B.
 
 ## SR-02 Landing view
 
@@ -339,8 +307,8 @@ against its workbook (Manila and Luzon 1899); that is a defect to fix with the n
 - **Rule:** the battles followed by the clock (Gettysburg, Trenton, Manila, Cowpens) use one value for deepest zoom, Follow's deepest zoom, blend minutes and the question-mark meaning, and each has the division view where it has divisions. A difference needs a recorded reason (scale, or the ground).
 - **Scope:** tactical battles. **Built in:** `Playback settings`: `zoom.max`, `zoom.follow_max`, `rules.blend`, `question_mark`, `formations.*`.
 - **Check:** the inventory table in `docs/playback-settings-inventory.md`.
-- **Enforced by:** preset `tactical`: deepest zoom 8, Follow's deepest 2.2, blend 4 minutes, question mark = overall (Morgan's values, 24 Nov); Manila has the division view; check: lists every row where a battle differs from its presets and whether it gives a reason. Cowpens keeps Follow 2.4 (a small field). Gettysburg's `zoom.min_factor` 0.96 (preset 0.9) has no recorded reason: ask Morgan.
-- **Status:** today Gettysburg 1.95 against Trenton and Cowpens 8 (Manila 1.6); Trenton blend 3 against 4; Gettysburg question mark `location` against `overall`; Manila has no division view. A* for the four; First Ypres and Luzon are operational: N. The values are to be chosen in the follow-up session, and Morgan is asked before they change (F-3). **Session B (24 Nov, branch `presets-and-checks`):** done (Morgan's values); one difference without a reason, Gettysburg `zoom.min_factor`.
+- **Enforced by:** preset `tactical`: deepest zoom 8, Follow's deepest 2.2, blend 4 minutes, question mark = overall (Morgan's values, 24 Nov); Manila has the division view; check: lists every row where a battle differs from its presets and whether it gives a reason. Cowpens keeps Follow 2.4 (a small field). Gettysburg's `zoom.min_factor` was 0.96 (preset 0.9) with no recorded reason; Morgan chose to align it on 24 Nov (session C).
+- **Status:** today Gettysburg 1.95 against Trenton and Cowpens 8 (Manila 1.6); Trenton blend 3 against 4; Gettysburg question mark `location` against `overall`; Manila has no division view. A* for the four; First Ypres and Luzon are operational: N. The values are to be chosen in the follow-up session, and Morgan is asked before they change (F-3). **Session B (24 Nov, branch `presets-and-checks`):** done (Morgan's values); one difference without a reason, Gettysburg `zoom.min_factor`. **Session C audit (24 Nov, evening): Morgan said align; the 0.96 row was deleted, so Gettysburg now takes the preset 0.9.**
 
 ## Project-wide rules (no per-battle status)
 
@@ -382,11 +350,18 @@ Model per the project rules in brackets. Each is a separate session or pull requ
 
 - **F-1 (done, 24 Nov):** pull request 70 carried pull requests 67 and 68 (Cowpens far-town labels, Cowpens second review, the shared rule that a route fades once its unit moves on) from `cowpens-orientation-towns` onto `main`; Morgan merged it with pull request 69.
 - **F-2 (done on branch `presets-and-checks`, session B, 24 Nov; Opus):** shared player and exporter: default symbol strength 0.7 (SR-11); hold-then-ease opening for every battle, including those without Follow (SR-04); arrow limit and arrow reach that scale with the battle's size and time scale, with values for Gettysburg and Trenton agreed with Morgan (SR-06, SR-07); a default start map that prefers the battle's reconstruction (SR-02).
-- **F-3 (done on branch `presets-and-checks` but for the a.m./p.m. texts; values for SR-27 chosen by Morgan, 24 Nov):** routes layer for Gettysburg, First Ypres, Luzon (SR-16); hide the extra period maps for Trenton, First Ypres, Luzon (SR-15); button word "Modern" on all six (SR-26); remove `time_note` from Trenton and Cowpens (SR-25); align battlefield settings (SR-27); convert the a.m./p.m. texts (SR-01: still to do, Sonnet; now eight texts, see the matrix notes); run the export so `csv/Philippine War/Positions.csv` is current (SR-23).
+- **F-3 (done: on branch `presets-and-checks`, and the a.m./p.m. texts in the session C audit; values for SR-27 chosen by Morgan, 24 Nov):** routes layer for Gettysburg, First Ypres, Luzon (SR-16); hide the extra period maps for Trenton, First Ypres, Luzon (SR-15); button word "Modern" on all six (SR-26); remove `time_note` from Trenton and Cowpens (SR-25); align battlefield settings (SR-27); convert the a.m./p.m. texts (SR-01: done in the session C audit, 24 Nov); run the export so `csv/Philippine War/Positions.csv` is current (SR-23).
 - **F-4 (Opus; ties events to position rows):** name the position rows behind First Ypres's 15 events (SR-17). Then SR-11's 70% applies there too.
 - **F-5 (Fable or Opus; needs sources):** Delaware boats at Trenton and naval gunfire at First Ypres, with units, sources and confidence (SR-08).
 - **F-6 (Opus; conflicting sources):** re-read every battle's Hypotheses rows against SR-19; Gettysburg C03, C13 and Trenton TC14, TC15 first.
 - **F-7 (Sonnet or Opus; needs sources):** routes for First Ypres's moves (Routes sheet, `playback` yes), so its routes-taken layer draws something (SR-16).
-- **Ask Morgan:** Gettysburg's `zoom.min_factor` 0.96 against the tactical 0.9 (no reason recorded): keep with a reason, or align.
-- **Ask Morgan:** the main map chosen for Trenton (Faden 1777), First Ypres (the sketch of the day) and Luzon (Siebert 1899) on 24 Nov (session B); to change one, move the `hidden` row to the other base.
-- **Open, decide later:** satellite view for First Ypres, Manila and Luzon.
+- **F-8 (Opus; changes the shared rules; asked 24 Nov, session C, Morgan: scale it with the battle):** make the arrow lead time scale with the battle like the reach (SR-07) by a preset. Today Gettysburg and Trenton use the player's default of 45 minutes, First Ypres 3 days (default), Manila 30 minutes, Cowpens 3 minutes, Luzon 1899 4 days; the three explicit values have no reason written. Propose values to Morgan before building; the check should then compare the lead with the preset.
+- **Answered, 24 Nov (session C): Gettysburg's `zoom.min_factor` 0.96 against the tactical 0.9: align.** Done.
+- **Ask Morgan (asked again 24 Nov, session C; Morgan: decide later):** the main map chosen for Trenton (Faden 1777), First Ypres (the sketch of the day) and Luzon (Siebert 1899) on 24 Nov (session B); to change one, move the `hidden` row to the other base.
+- **Open, decide later (asked again 24 Nov, session C; Morgan: keep deferred):** satellite view for First Ypres, Manila and Luzon. Needs a non-US imagery source and a rights check; the three battles stay recorded as without it.
+
+## Audit of 24 Nov 2026, evening (session C)
+
+Run on `main` after pull request 72. Rebuild from the workbooks: all six current. Before the edits the check reported eight failures, all SR-01. Warnings left: opposing symbols within 50 m (Trenton 17, Gettysburg 11, Cowpens 63: where the lines meet in the fighting); implausibly fast moves (Luzon 9, Gettysburg 1: the Luzon ones are ship, transport and long-column moves, which the check does not yet allow for); SR-17 First Ypres 15 of 15 events without rows (F-4). A gap the check could not see: per-battle settings that no preset covers (arrow lead) have no reason written, so they are not listed as differences; F-8 closes it for the arrow lead.
+
+Morgan's answers: Gettysburg zoom-out limit, align to 0.9 (done). Arrow lead, scale with the battle (F-8). Main maps for Trenton, First Ypres and Luzon, decide later. Eight a.m./p.m. texts, yes as proposed (done). Satellite view, keep deferred. First follow-up to run: F-8.
