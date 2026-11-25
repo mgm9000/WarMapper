@@ -24,12 +24,28 @@ says only where it differs, and why.
 
 | Preset | For | What it holds |
 |---|---|---|
-| `all` | every battle | The Current map's place on the Type of map menu |
-| `tactical` | battles followed by the clock: Gettysburg, Trenton, Manila, Cowpens | Style, scale bar, what a question mark means, deepest zoom, Follow's deepest zoom, how far out the reader can zoom |
-| `operational` | battles followed by the day: First Ypres, Luzon 1899 | Style, scale bar, question mark, how far out the reader can zoom |
+| `all` | every battle | The Current map's place on the menu and its button word "Modern" (SR-03, SR-26); symbols outside the current event at 70% (SR-11); the routes-taken layer, fading after 4 seconds of play (SR-16); arrows on, running 6 seconds of play ahead (SR-06, SR-07) |
+| `tactical` | battles followed by the clock: Gettysburg, Trenton, Manila, Cowpens | Style, yards scale bar, question mark = overall, deepest zoom 8, Follow's deepest 2.2, zoom-out limit 0.9, blend 4 minutes (SR-27); the slow ease in, 14 s at 0.006 (SR-04); arrow limit 6% of the battle's width (SR-06). It turns Follow on: a battle followed by the clock has it |
+| `operational` | battles followed by the day: First Ypres, Luzon 1899 | Style, km scale bar, question mark, zoom-out limit 0.85; the slow ease in without Follow, `opening_ease` 0.006 (SR-04); arrow limit 20 km (SR-06) |
 | `us-maps` | ground in the United States: Gettysburg, Trenton, Cowpens | The USGS topographic map (the modern map) and the USGS aerial photography (`base.satellite`) |
 | `world-maps` | ground elsewhere: First Ypres, Manila, Luzon 1899 | OpenTopoMap as the modern map |
 | `civil-war` | Gettysburg (and the next Civil War battle) | March pace by branch |
+
+There is no preset yet for the Revolutionary War, the Philippine War or the First World War: their battles share nothing beyond the presets
+above. The next battle of a war is the time to start one (Guilford Courthouse for the Revolutionary War, say), with what it shares with the
+battle before it.
+
+## Where a battle differs, and why (24 Nov 2026)
+
+| Battle | Differs in | Why |
+|---|---|---|
+| Trenton | routes fade after 10 minutes, over 10 | Morgan's decision when the fade was made (19 Nov) |
+| Manila | arrow limit 0.7 km; routes fade 120 and 60 minutes | The 21 Nov trial; kept as set while reviewing Manila (Morgan, 24 Nov) |
+| Cowpens | arrow limit 0.25 km; Follow's deepest 2.4; routes 6 and 6 minutes, opacity 0.5; the modern map's and the aerial photograph's About text | A field half a mile long; a small field; kept as set while reviewing Cowpens (Morgan, 24 Nov); the text says what is particular to this ground |
+| Luzon 1899 | the modern map's About text | Says "campaign" for "battle" |
+| Gettysburg | zoom-out limit 0.96 | No reason recorded: for Morgan to keep or align |
+
+`python3 tools/consistency_check.py` prints this list from the workbooks as they stand.
 
 The full list of values is the sheet itself (and its CSV copy, `data/WarMapper battle data/csv/Sources and notes/Playback presets.csv`).
 
