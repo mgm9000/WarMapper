@@ -174,8 +174,9 @@ function stateClock(tr,tt,key){
       return {k:k,g:null,kind:noPlace(k,key)};
     }
   }
-  if(tr.hideAfter) return null;
-  var last=ks[n-1],gl=geo(last,key); if(gl) return {k:last,g:gl,kind:'after'};
+  var last=ks[n-1],gl=geo(last,key);
+  if(tr.hideAfter){ if(!tr.parent&&gl&&tt<=last.t1+LINGER) return {k:last,g:gl,kind:'after',fade:1-0.85*(tt-last.t1)/LINGER}; return null}   // taken off the map: a unit with no higher unit to slide into fades over the hold
+  if(gl) return {k:last,g:gl,kind:'after'};
   var un=noPlace(last,key); return {k:last,g:un==='unplaced'?prevGeo(ks,n-1,key):null,kind:un};
 }
 /* A battle followed by the day. The sources give a position at nightfall, so a step runs from the evening of its first date to the evening
@@ -254,8 +255,11 @@ function focusPoint(){var key=gkey(),F=P.follow||{},ex=F.exclude||[],U=[],mov=[]
   return cen(mov.length?mov:U.map(function(u){return u.c}))}
 /* The Follow camera. At its widest it frames every unit. Zoomed in from there with + (followK above 1) it cannot show them all,
    so it centres on where the action is and keeps doing so as time moves. */
-var FOL={rate:(P.follow&&P.follow.ease)||0.035,zoom_rate:0.02,pause_ms:((P.follow&&P.follow.pause_seconds!=null)?P.follow.pause_seconds:4)*1000,glide_rate:0.03,glide_ms:(P.follow&&P.follow.glide_seconds!=null?P.follow.glide_seconds:6)*1000};
+var FOL={rate:(P.follow&&P.follow.ease)||0.035,zoom_rate:0.02,pause_ms:((P.follow&&P.follow.pause_seconds!=null)?P.follow.pause_seconds:4)*1000,glide_rate:(P.follow&&P.follow.glide_rate)||0.03,glide_ms:(P.follow&&P.follow.glide_seconds!=null?P.follow.glide_seconds:6)*1000};
 var followK=1,glide=0;   // glide: until when (ms) the camera eases in slowly, after play is first pressed
+/* follow.hold_until: Follow leaves the camera on the wide opening view until this moment (at Cowpens, until Morgan's lines are on the
+   map), then eases in over glide_seconds, so the camera does not zoom in on the first unit and back out as the rest appear. */
+var FHOLD=(P.follow&&P.follow.hold_until)?B.time(P.follow.hold_until):null,fHeld=false;
 /* The Follow camera must not pulse. It zooms out as soon as the units need more room, but zooms in only when a view at least
    ZIN_MIN closer has been wanted for ZIN_WAIT ms; small wishes to come closer are ignored. Pans and zooms ease over about a second. */
 var ZIN_MIN=0.3,ZIN_WAIT=1500,zinSince=0;
@@ -452,6 +456,12 @@ function trailsSvg(){ if(!TRL||!trlOn||landing||!unitsOn) return ''; var key=bas
     if(FA!=null){ // when does the unit next stand still for FA or more after this leg?
       var j=i;while(j<ks.length-1&&(ks[j].t1-ks[j].t0)<FA)j++;var gone=ks[j].t0+FA;
       if(t>gone){op=1-(t-gone)/FO;if(op<=0)continue}}
+    /* the unit moves on from the end of this route without a route of its own (a line forming, a charge): the route would be left
+       lying on the map apart from it, so it fades as the unit leaves, over a third of fade_over */
+    for(var m=i+1;m<ks.length;m++){var c=ks[m],Vc=key==='g'?c.via:(c.vo&&c.vo[key]);if(Vc&&Vc.length>1)break;
+      var ga=geo(ks[m-1],key),gc=geo(c,key);if(!ga||!gc)continue;var ca=cen(ga),cc=cen(gc);
+      if(Math.hypot(ca[0]-cc[0],ca[1]-cc[1])>(key==='g'?30:3)){var lv=ks[m-1].t1;if(t>lv){op=Math.min(op,1-(t-lv)/(FO/3));if(op<=0)op=0}break}}
+    if(op<=0)continue;
     var f=Math.min(1,(t-end)/Math.max(0.01,b.t0-end)),pts=subPath(V,Math.min(f/0.92,1)).map(S);
     var g=(by[tr.side]=by[tr.side]||{}),k=op.toFixed(2);(g[k]=g[k]||[]).push(pts.map(function(p,j){return (j?'L':'M')+f1(p[0])+' '+f1(p[1])}).join(''))}});
   var h='',w=compact?3:4;Object.keys(by).forEach(function(sd){var c=look({side:sd}).col;Object.keys(by[sd]).forEach(function(k){
@@ -1229,7 +1239,7 @@ try{ mv=WM.mapView({container:'map',wrap:wrap,world:worldOf(base),worlds:WORLDS,
   onDraw:draw,onPick:select,
   onUserMove:function(){if(follow)pauseFollow();if(preset||goal)setPreset(null)},
   onResize:function(){if(preset){mv.jump(landing?home():cameraOf(preset));goal=null}else if(follow&&!landing)mv.jump(target());else if(landing)mv.jump(home())},
-  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,goalK))more=true;else{goal=null;goalK=0.2}}else if(follow&&!landing){if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(glide>Date.now()?mv.chase(target(),FOL.glide_rate):mv.chase(calmTarget(),FOL.rate,FOL.zoom_rate))more=true}}return more}});
+  onStep:function(ts){var more=(clk.playing&&Date.now()<holdUntil)?true:clk.step(ts);if(more)doSkip(ts);if(goal){if(mv.chase(goal,goalK))more=true;else{goal=null;goalK=0.2}}else if(follow&&!landing&&FHOLD!=null&&t<FHOLD){fHeld=true}else if(follow&&!landing){if(fHeld){fHeld=false;glide=Date.now()+FOL.glide_ms}if(Date.now()<fpause)more=true;else{if(fpause){resumeFollow();fpause=0}if(glide>Date.now()?mv.chase(target(),FOL.glide_rate):mv.chase(calmTarget(),FOL.rate,FOL.zoom_rate))more=true}}return more}});
 }catch(err){WM.noMap(wrap,err);return null}
 S=mv.S;
 mv.map.on('moveend',queueTiles); mv.map.on('error',tileError);
@@ -1238,6 +1248,7 @@ mv.map.on('click',function(e){ if(sel||!base.rc) return; var id=pickRecon(e.poin
 mv.map.on('mousemove',function(e){ if(base.rc&&!mv.map.getCanvas().style.cursor&&pickRecon(e.point)) mv.map.getCanvas().style.cursor='help' });
 /* the stretch before the part the data covers best (a night march before a fight) can be squeezed into a share of the bar and played faster */
 var LD=(P.lead&&B.focus&&B.focus[0]>T0)?P.lead:null,TM=LD?B.focus[0]:T0,UM=LD?LD.share:0,RNG=4000;
+var LDT=(LD&&LD.until)?Math.min(TM,B.time(LD.until)):TM;   // lead.until: the faster play ends here, before the focus (the bar keeps its share)
 function u2t(u){return (LD&&u<=UM)?T0+(TM-T0)*u/UM:TM+(T1-TM)*(u-UM)/(1-UM)}
 function t2u(v){return (LD&&v<=TM)?UM*(v-T0)/(TM-T0):UM+(1-UM)*(v-TM)/(T1-TM)}
 function paintTime(v){if(sumAt!=null&&Math.abs(v-sumAt)>1e-6)closeSummary();t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms;if(!follow&&OPEN_OUT&&!base.own&&mv){goal=home();goalK=0.03}}   // without Follow, the camera eases in from the wide opening to the battle's own first view   // the battle has been started: the units come on, and Follow takes the camera
@@ -1276,7 +1287,7 @@ var rng=$('time'); rng.min=0; rng.max=RNG; rng.step=1; rng.value=0; rng.setAttri
 clk=WM.clock({T0:T0,T1:T1,mv:mv,stopAt:stopAt,onStop:function(b){openSummary(b,b>=T1-1e-6&&pzMode==='week'?'week':pzMode)},
   beforePlay:function(){if(PZ_OK&&pzMode==null&&t<T1-1e-6){ask();return false}},toRange:function(v){return Math.round(t2u(v)*RNG)},fromRange:function(v){return u2t(v/RNG)},
   rate:function(v){var n=STEPS[stepI][0];if(byDay&&stepI===0&&P.rate>0&&P.rate<1)return P.rate;   /* a day battle can play slower than a day a second (Ypres: half a day) */
-    return (LD&&v<TM)?Math.max(LD.rate,n):n},onTime:paintTime,
+    return (LD&&v<LDT)?Math.max(LD.rate,n):n},onTime:paintTime,
   snap:byDay?function(v){return Math.round(v)}:null,   // the sources give one position a day, so time settles on nightfall
   arrow:stepBy,
   wheel:function(dd,v){if(stepI===0)return u2t(Math.max(0,Math.min(1,t2u(v)+dd*0.0002)));   // at the finest step scrolling is smooth; at a coarser one each notch is one step
