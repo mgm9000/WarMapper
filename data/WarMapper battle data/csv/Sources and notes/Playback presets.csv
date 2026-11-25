@@ -2,6 +2,9 @@ preset,setting,value,what it does,why
 all,base.current.label,Current map,The standard current map (a battle takes it with bases.N.use = current): its label on the Type of map menu,Every battle. SR-03.
 all,base.current.current,True,It is the current map: today's topographic map from the modern tile service,SR-03 (17 Nov 2026).
 all,event_dim,0.7,How strongly units outside the current event are drawn (0 to 1; the player's own default is 0.32),"SR-11: unit symbols stay clearly visible on every battle (Morgan, 24 Nov 2026)."
+all,trails.on,True,"Routes taken: the road each unit has marched so far, drawn under the units as the clock runs (Layers: Routes taken)","SR-16: every battle has the routes-taken layer (Morgan, 24 Nov 2026)."
+all,trails.opacity,0.55,How strongly the routes taken are drawn (0 to 1),SR-16; the Trenton value (19 Nov 2026).
+all,trails.fade_seconds,4,"Worked out by the exporter: once a unit has stood still for this many seconds of play, its routes fade out over as many again (gives trails.fade_after and trails.fade_over in the battle's time unit)","SR-16: routes fade on the battle's own time scale (Morgan, 24 Nov 2026)."
 tactical,style,tactical,tactical (a battlefield) or operational (a front),"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."
 tactical,scale_bar,yards,yards or km: the measure the scale bar writes first; the other follows under it,"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."
 tactical,question_mark,overall,What marks a unit as doubtful: location (how sure the place is) or overall,"A battlefield, followed by the clock (Gettysburg, Trenton, Manila, Cowpens)."

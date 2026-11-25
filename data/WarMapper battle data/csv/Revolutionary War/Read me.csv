@@ -30,3 +30,4 @@ Playback presets (24 Nov 2026),Rows that say the same as the battle's presets ar
 Presets: 70% symbol strength (24 Nov 2026),"event_dim 0.7 now comes from the preset ""all"" (SR-11)."
 Presets: the slow ease in (24 Nov 2026),"follow.glide_seconds 14 and follow.glide_rate 0.006 now come from the preset ""tactical"" (SR-04)."
 Presets: the slow ease in without Follow (24 Nov 2026),"opening_ease 0.006 comes from the preset ""operational"" (SR-04)."
+Presets: routes taken on every battle (24 Nov 2026),"trails.on, trails.opacity and trails.fade_seconds come from the preset ""all"" (SR-16)."

@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (night): routes taken on every battle
+"Playback presets, all: trails on, opacity 0.55, fading after 4 seconds of play. Gettysburg, First Ypres and Luzon 1899 change; Trenton, Manila and Cowpens keep their fade times. Written by pipeline/presets_2026_11_24.py routes."
+""
 What changed on 24 November 2026 (night): the slow ease in without Follow
 "Playback presets, operational: opening_ease 0.006 (new setting). First Ypres and Luzon 1899 change. Written by pipeline/presets_2026_11_24.py ease."
 ""
