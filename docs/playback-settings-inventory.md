@@ -5,7 +5,7 @@ Morgan's answers to the unexplained differences below are recorded in `docs/stan
 Written 24 Nov 2026 (session A of `claude/consistency-rules-prompt.md`). Nothing was changed: this reads the `Playback settings` sheets
 (`data/WarMapper battle data/csv/<war>/Playback settings.csv`) of the six playbacks as they stand on `main` (after pull request 66).
 `·` means the battle sets nothing and the shared player's default applies. **Bold** marks a row where the battles differ.
-Cowpens is read from `main`; where the unmerged pull requests 67 and 68 (see the last section) change it, that is shown in brackets.
+Cowpens is read from `main` as it stood after pull request 66; pull requests 67 and 68 (see the last section) changed it and reached `main` on 24 Nov (pull request 70). The brackets show what they changed.
 
 Settings that are text, lists of maps or per-map details are summarised in the last rows (maps on the menu, satellite, button word), not
 copied. The full list is in the CSVs.
@@ -22,9 +22,9 @@ copied. The full list is in the CSVs.
 | Follow camera | **yes** | **yes** | **none** | **yes** | **none** | **yes** | scale |
 | Follow: smallest box (m) | **[1000, 660]** | **[1600, 1100]** | **·** | **[3000, 2000]** | **·** | **[620, 460]** | scale |
 | Follow: margin (m) | **140** | **90** | **·** | **300** | **·** | **70** | scale |
-| Follow: opening glide (s; default 6) | **·** | **·** | **·** | **·** | **·** | **10 (on unmerged PR 68: 14)** | unexplained |
-| Follow: hold on whole ground until | **·** | **·** | **·** | **·** | **·** | **· (on unmerged PR 68: 1781-01-17T06:12)** | unexplained |
-| Follow: glide ease | **·** | **·** | **·** | **·** | **·** | **· (on unmerged PR 68: 0.006)** | unexplained |
+| Follow: opening glide (s; default 6) | **·** | **·** | **·** | **·** | **·** | **10 (PR 68, on `main` since PR 70: 14)** | unexplained |
+| Follow: hold on whole ground until | **·** | **·** | **·** | **·** | **·** | **· (PR 68, on `main` since PR 70: 1781-01-17T06:12)** | unexplained |
+| Follow: glide ease | **·** | **·** | **·** | **·** | **·** | **· (PR 68, on `main` since PR 70: 0.006)** | unexplained |
 | Follow: look-ahead (min; default 30) | **·** | **·** | **·** | **·** | **·** | **12** | scale |
 | Deepest zoom (screen px per m) | **1.95** | **8** | **0.6** | **1.6** | **0.05** | **8** | unexplained |
 | Follow: deepest zoom | **1.04** | **2.2** | **·** | **0.6** | **·** | **2.4** | unexplained |
@@ -81,7 +81,7 @@ fold button wording, `rear`, `arrival`, `groups`, `sides`, `texts`.
 
 ## Other things found while reading (not settings)
 
-- **Pull requests 67 and 68 are not on `main`.** Both are marked merged on GitHub, but 67 was merged into `opening-wide` after `opening-wide` (PR 66) had already gone to `main`, and 68 was merged into `cowpens-orientation-towns`. Their content (the far-town labels, the Cowpens second review, and the shared rule that a route fades once its unit moves on) is on the branch `cowpens-orientation-towns` only. The PRD and tracker call them "waiting to be merged after 66".
+- **Pull requests 67 and 68 were not on `main` when this was written (fixed by pull request 70, merged 24 Nov).** Both are marked merged on GitHub, but 67 was merged into `opening-wide` after `opening-wide` (PR 66) had already gone to `main`, and 68 was merged into `cowpens-orientation-towns`. Their content (the far-town labels, the Cowpens second review, and the shared rule that a route fades once its unit moves on) is on the branch `cowpens-orientation-towns` only. The PRD and tracker call them "waiting to be merged after 66".
 - `python3 tools/export_battles.py --check` on `main`: all six battles meet the format, but `data/WarMapper battle data/csv/Philippine War/Positions.csv` is out of date against its workbook (run the export).
 - Nine event texts still write a time as a.m. or p.m.: First Ypres YE09 and the `ypres` playback text; Manila ME02, ME04; Trenton TE03; Gettysburg GE04, GE07, GE12, GE13, GE19. Some are a source's time quoted beside the playback's, which is a judgement call.
 - First Ypres's 15 events name no position rows, so the event highlighting of 23 Nov (BP-32) does nothing there. The tracker records this.

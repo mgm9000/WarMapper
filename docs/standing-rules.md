@@ -23,7 +23,7 @@ No rule was invented. Where no reason was recorded the entry says so.
 | SR-01 24-hour time | A* | A* | A* | A* | A | A |
 | SR-02 Landing view | A | A | A | A | A | A |
 | SR-03 Current map is a modern topographic map | A | A | A | A | A | A |
-| SR-04 Open zoomed out, hold on the whole ground, ease in slowly | A* | A* | A* | A* | A* | A* |
+| SR-04 Open zoomed out, hold on the whole ground, ease in slowly | A* | A* | A* | A* | A* | A |
 | SR-05 Day pauses and summaries | N | N | A | N | A | N |
 | SR-06 Arrows ahead of long moves (limit scales with the battle) | A* | A* | A | A* | A | A* |
 | SR-07 Arrows run ahead of their unit by a time-scale reach | A* | A* | A* | A* | A* | A |
@@ -49,8 +49,7 @@ No rule was invented. Where no reason was recorded the entry says so.
 | SR-27 Tactical battles share their settings unless a reason is recorded | A* | A* | N | A* | N | A* |
 
 Two notes on the matrix. SR-23 passes for the rule but `export_battles.py --check` on `main` reports `csv/Philippine War/Positions.csv` out of date
-against its workbook (Manila and Luzon 1899); that is a defect to fix with the next export, not a decision. Cowpens in this matrix is `main`;
-pull requests 67 and 68 (Cowpens second review, the far-town labels) are not on `main` and are read from the branch `cowpens-orientation-towns`.
+against its workbook (Manila and Luzon 1899); that is a defect to fix with the next export, not a decision. Cowpens in this matrix is `main` after pull request 70 (24 Nov, evening), which carried pull requests 67 and 68 (the far-town labels and the Cowpens second review) onto `main` after they had been merged into other branches by mistake.
 
 ---
 
@@ -89,8 +88,8 @@ pull requests 67 and 68 (Cowpens second review, the far-town labels) are not on 
 - **Rule:** every playback opens one zoom level wider than its first view (twice as wide); pressing play eases the camera in. A link to a moment or view opens there; Start over returns to the wide opening.
 - **Scope:** all battles. **Built in:** shared player (`playback.opening_zoom_out`, default 1; Follow `glide_seconds`, default 6 s).
 - **Check:** open each playback, press play, watch the first 10 seconds.
-- **Added 24 Nov 2026 (Morgan's answer):** every battle holds on the whole ground until its first units are on the map, then eases in slowly (Cowpens: `follow.hold_until` 06:12, `follow.glide_rate` 0.006, on the unmerged PR 68).
-- **Status:** the wide opening is applied everywhere (PR 66 table: opening zooms 10.95, 10.26, 9.18, 10.74, 5.40, 12.49). The hold-then-ease is built for Cowpens only, and only on the unmerged PR 68: A* for all six (Follow-up F-2; First Ypres and Luzon have no Follow and need the same idea in their own ease).
+- **Added 24 Nov 2026 (Morgan's answer):** every battle holds on the whole ground until its first units are on the map, then eases in slowly (Cowpens: `follow.hold_until` 06:12, `follow.glide_rate` 0.006, on `main` since pull request 70).
+- **Status:** the wide opening is applied everywhere (PR 66 table: opening zooms 10.95, 10.26, 9.18, 10.74, 5.40, 12.49). The hold-then-ease is built for Cowpens only (on `main` since pull request 70): Cowpens applied, A* for the other five (Follow-up F-2; First Ypres and Luzon have no Follow and need the same idea in their own ease).
 
 ## SR-05 Day pauses and summaries
 
@@ -180,7 +179,7 @@ pull requests 67 and 68 (Cowpens second review, the far-town labels) are not on 
 
 ## SR-16 Routes taken fade
 
-- **Decided:** 19 Nov 2026 at Trenton (memory; PRD, PR 36). Made shared 24 Nov (PR 68, unmerged): a route also fades once its unit moves on without one.
+- **Decided:** 19 Nov 2026 at Trenton (memory; PRD, PR 36). Made shared 24 Nov (PR 68, on `main` since pull request 70): a route also fades once its unit moves on without one.
 - **Rule:** once a unit has stood still, the routes it took to get there fade out. **Updated 24 Nov 2026 (Morgan's answer): every battle has the routes-taken layer.**
 - **Scope:** all battles. **Built in:** `trails.*` settings; shared player.
 - **Check:** `Playback settings.csv`: `trails.on`.
@@ -305,13 +304,13 @@ Batch 1 (four questions) and a follow-up (three questions), both answered the sa
 
 **Technical**
 - Align battlefield settings: yes (SR-27). Scale the arrow limit with the battle: yes (SR-06). Name First Ypres's event rows: yes (SR-17).
-- Open a pull request for the stuck pull requests 67 and 68: yes (F-1). Not done in this session, as the question said "in a later session, not now".
+- Open a pull request for the stuck pull requests 67 and 68: yes (F-1). Done the same evening: pull request 70, merged.
 
 ## Follow-ups (decided, not yet done)
 
 Model per the project rules in brackets. Each is a separate session or pull request; the register's A* entries point here.
 
-- **F-1 (Sonnet):** open one pull request from `cowpens-orientation-towns` to `main` carrying pull requests 67 and 68 (Cowpens far-town labels, Cowpens second review, the shared rule that a route fades once its unit moves on). Morgan merges it. Do this first: the Cowpens column of the register and of the inventory is partly on that branch.
+- **F-1 (done, 24 Nov):** pull request 70 carried pull requests 67 and 68 (Cowpens far-town labels, Cowpens second review, the shared rule that a route fades once its unit moves on) from `cowpens-orientation-towns` onto `main`; Morgan merged it with pull request 69.
 - **F-2 (Opus; changes shared playback rules, project rule 3):** shared player and exporter: default symbol strength 0.7 (SR-11); hold-then-ease opening for every battle, including those without Follow (SR-04); arrow limit and arrow reach that scale with the battle's size and time scale, with values for Gettysburg and Trenton agreed with Morgan (SR-06, SR-07); a default start map that prefers the battle's reconstruction (SR-02).
 - **F-3 (Sonnet, workbook settings and text; ask Morgan before choosing values in SR-27):** routes layer for Gettysburg, First Ypres, Luzon (SR-16); hide the extra period maps for Trenton, First Ypres, Luzon (SR-15); button word "Modern" on all six (SR-26); remove `time_note` from Trenton and Cowpens (SR-25); align battlefield settings (SR-27); convert nine a.m./p.m. event texts (SR-01); run the export so `csv/Philippine War/Positions.csv` is current (SR-23).
 - **F-4 (Opus; ties events to position rows):** name the position rows behind First Ypres's 15 events (SR-17). Then SR-11's 70% applies there too.
