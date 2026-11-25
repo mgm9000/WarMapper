@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (night): arrows scaled to the battle
+"Playback presets: arrows on everywhere; the shortest move with an arrow is 6% of the battle's width on a battlefield, 20 km on a campaign; an arrow runs 6 seconds of play ahead. Manila and Cowpens keep their limits. Written by pipeline/presets_2026_11_24.py arrows."
+""
 What changed on 24 November 2026 (night): routes taken on every battle
 "Playback presets, all: trails on, opacity 0.55, fading after 4 seconds of play. Gettysburg, First Ypres and Luzon 1899 change; Trenton, Manila and Cowpens keep their fade times. Written by pipeline/presets_2026_11_24.py routes."
 ""
