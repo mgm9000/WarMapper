@@ -31,7 +31,6 @@ trenton,groups.1.except,"[""T-HE-PKFER""]",Units drawn as one symbol when zoomed
 trenton,groups.1.below,0.085,Units drawn as one symbol when zoomed right out,
 trenton,groups.1.echelon,brigade,Units drawn as one symbol when zoomed right out,
 trenton,groups.1.branch,inf,Units drawn as one symbol when zoomed right out,
-trenton,rules.blend,3,Minutes over which a unit shifts from one row to the next when they meet,
 trenton,texts.stated,"A report, a history, a marker or the 1776 sketch puts the unit here.",The sentence under this state in the unit panel,
 trenton,texts.inferred,Worked out from the sequence of events; the sources do not name this unit here.,The sentence under this state in the unit panel,
 trenton,texts.moving,No source records this stretch. The unit is drawn along a road or a straight line between two recorded positions.,The sentence under this state in the unit panel,
@@ -99,7 +98,6 @@ cowpens,arrows.lead,3,Minutes before the unit sets off that the arrow appears,
 cowpens,trails.opacity,0.5,,Kept as set while reviewing Cowpens (24 Nov 2026).
 cowpens,trails.fade_after,6,,"Kept as set while reviewing Cowpens (Morgan, 24 Nov 2026: Manila and Cowpens keep theirs)."
 cowpens,trails.fade_over,6,,"Kept as set while reviewing Cowpens (Morgan, 24 Nov 2026: Manila and Cowpens keep theirs)."
-cowpens,rules.blend,4,Minutes over which a unit shifts from one row to the next when they meet (was 2: the moves looked like jumps),
 cowpens,rear.side,US,Symbols sit behind their own lines: the American rear is up the road to the north-west,
 cowpens,rear.lat,35.141,,
 cowpens,rear.lon,-81.8188,,

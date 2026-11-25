@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (night): battlefields aligned
+"Playback presets, tactical: rules.blend 4. Gettysburg deepest zoom 8, Follow 2.2, question mark = overall; Manila deepest zoom 8, Follow 2.2, division view; Trenton blend 4 (SR-27). Written by pipeline/presets_2026_11_24.py align."
+""
 What changed on 24 November 2026 (night): the start map
 A battle with a reconstructed map now opens on it by rule (SR-02); Manila's and Cowpens's start_base rows are gone. No battle file changes. Written by pipeline/presets_2026_11_24.py start.
 ""

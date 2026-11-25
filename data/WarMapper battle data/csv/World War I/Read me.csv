@@ -28,3 +28,4 @@ Presets: arrows scaled to the battle (24 Nov 2026),"arrows.on, arrows.reach_seco
 "No ""Times are estimates"" note (24 Nov 2026)",Trenton and Cowpens: time_note rows removed (SR-25).
 One main map on the menu (24 Nov 2026),"Trenton, First Ypres and Luzon 1899: the other period maps are hidden from the Type of map menu and offered from the map details (SR-15)."
 Start map: the reconstruction first (24 Nov 2026),Manila and Cowpens: start_base rows removed; the exporter opens a battle on its reconstruction (SR-02).
+Battlefields aligned (24 Nov 2026),"Gettysburg, Trenton and Manila take the tactical preset's zoom, blend and question mark; Manila gets the division view (SR-27)."
