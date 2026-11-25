@@ -191,6 +191,15 @@ def settings(rows):
     return root
 
 
+def in_order(o):
+    """The playback settings with every set of names in alphabetical order (lists keep theirs: bases, views, about). The player looks
+    settings up by name, so the order means nothing to it; a fixed order keeps a battle file the same whichever rows, of the battle or of
+    its presets, a setting comes from."""
+    if isinstance(o, dict): return {k: in_order(o[k]) for k in sorted(o)}
+    if isinstance(o, list): return [in_order(v) for v in o]
+    return o
+
+
 def reconstructions(name, W):
     """Reconstructed base maps of a playback (Reconstructions and Recon layers sheets, and the GeoJSON each names): maps WarMapper draws
     itself from traced lines. Every feature keeps its own source, method, confidence and dates; a layer row gives the layer its title and
@@ -400,6 +409,7 @@ def export(pb, W):
     own = S.pop('sides', None) or {}                  # a playback's own names for the sides (sides.<code>.short, sides.<code>.name): a war's sides are shared by its playbacks
     for sd in sides: sd.update({k: v for k, v in (own.get(sd['code']) or {}).items() if k in ('short', 'name')})
     if 'rear' in S: S['rear']['at'] = bf.ll(S['rear'].pop('lat'), S['rear'].pop('lon'))
+    S = in_order(S)
     base = json.load(open(os.path.join(ROOT, 'data', 'base', name + '.json'), encoding='utf-8'))
     battle = {'id': pb['battle_file_id'], 'title': pb['title'], 'subtitle': text(pb.get('subtitle')),
               'record': {'workbook': os.path.splitext(os.path.basename(WORKBOOK))[0], 'campaign': camp, 'battles': bf.ids(pb.get('record_battles'))},
