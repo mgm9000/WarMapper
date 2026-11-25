@@ -43,7 +43,6 @@ battle before it.
 | Manila | arrow limit 0.7 km; routes fade 120 and 60 minutes | The 21 Nov trial; kept as set while reviewing Manila (Morgan, 24 Nov) |
 | Cowpens | arrow limit 0.25 km; Follow's deepest 2.4; routes 6 and 6 minutes, opacity 0.5; the modern map's and the aerial photograph's About text | A field half a mile long; a small field; kept as set while reviewing Cowpens (Morgan, 24 Nov); the text says what is particular to this ground |
 | Luzon 1899 | the modern map's About text | Says "campaign" for "battle" |
-| Gettysburg | zoom-out limit 0.96 | No reason recorded: for Morgan to keep or align |
 
 `python3 tools/consistency_check.py` prints this list from the workbooks as they stand.
 

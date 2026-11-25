@@ -19,7 +19,6 @@ gettysburg,bases.2.title,"Today's topographic map, from the USGS (M switches map
 gettysburg,bases.2.clip,bachelder-1876,A map the reader can put under the units; the first is the opening one,
 gettysburg,bases.3.use,satellite,A standard map from the presets (base.satellite): its rows below are only where this battle differs,
 gettysburg,bases.3.clip,bachelder-1876,A map the reader can put under the units; the first is the opening one,
-gettysburg,zoom.min_factor,0.96,How far out the reader can zoom (1 = the whole battle just fits),
 gettysburg,zoom.fold,0.215,Below this zoom units fold into their parent,
 gettysburg,zoom.labels,0.273,"From this zoom, level 1 names show",
 gettysburg,zoom.towns_until,0.487,Town names hide above this zoom,
