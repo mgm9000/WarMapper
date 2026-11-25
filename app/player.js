@@ -1251,7 +1251,7 @@ var LD=(P.lead&&B.focus&&B.focus[0]>T0)?P.lead:null,TM=LD?B.focus[0]:T0,UM=LD?LD
 var LDT=(LD&&LD.until)?Math.min(TM,B.time(LD.until)):TM;   // lead.until: the faster play ends here, before the focus (the bar keeps its share)
 function u2t(u){return (LD&&u<=UM)?T0+(TM-T0)*u/UM:TM+(T1-TM)*(u-UM)/(1-UM)}
 function t2u(v){return (LD&&v<=TM)?UM*(v-T0)/(TM-T0):UM+(1-UM)*(v-TM)/(T1-TM)}
-function paintTime(v){if(sumAt!=null&&Math.abs(v-sumAt)>1e-6)closeSummary();t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms;if(!follow&&OPEN_OUT&&!base.own&&mv){goal=home();goalK=0.03}}   // without Follow, the camera eases in from the wide opening to the battle's own first view   // the battle has been started: the units come on, and Follow takes the camera
+function paintTime(v){if(sumAt!=null&&Math.abs(v-sumAt)>1e-6)closeSummary();t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms;if(!follow&&OPEN_OUT&&!base.own&&mv){goal=home();goalK=(P.opening_ease!=null?+P.opening_ease:0.03)}}   // without Follow, the camera eases in from the wide opening to the battle's own first view (playback.opening_ease: how fast, a share of the way each frame)   // the battle has been started: the units come on, and Follow takes the camera
 
   if(byDay){var n=stamp(t),d=B.dateOf(n),night=Math.abs(t-Math.round(t))<0.02;
     $('clock').textContent=d.day+' '+d.mon+' '+d.year;$('clockdate').textContent=d.wd+' · '+(night?'at nightfall':'during the day');WM.paintDayNumber(B.cal.numbered?n+1:0)}

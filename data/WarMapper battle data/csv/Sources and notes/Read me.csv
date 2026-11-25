@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (night): the slow ease in without Follow
+"Playback presets, operational: opening_ease 0.006 (new setting). First Ypres and Luzon 1899 change. Written by pipeline/presets_2026_11_24.py ease."
+""
 What changed on 24 November 2026 (night): the slow ease in
 "Playback presets, tactical: follow.glide_seconds 14, follow.glide_rate 0.006 (from Cowpens). Gettysburg, Trenton and Manila change. Written by pipeline/presets_2026_11_24.py glide."
 ""
