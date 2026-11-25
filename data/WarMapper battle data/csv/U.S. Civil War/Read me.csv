@@ -18,3 +18,15 @@ Playbacks,=COUNTA(Playbacks!A:A)-1
 Hypotheses (23 Nov 2026),"One row per disputed point, in place of the Conflicts sheet: the question, the readings (A, B, C), the evidence for and against the reading the playback follows, each item with its source and page, the reading adopted, how sure it is, who decided and when, the rows it touches and what would settle it. The history column keeps everything the Conflicts row said. Status: Open (a ruling is wanted), Proposed (a reading is put forward for Morgan to accept), Settled, No ruling needed."
 ,
 Links (23 Nov 2026),"One row per campaign playback and battle playback inside it (BP-34). The campaign lists its battles, with a button that opens each at its date; the battle links back to the campaign at the date on its clock. Columns: link_id, campaign_playback, battle_playback (playback ids from Playbacks), label and campaign_label (optional names), opens_at (optional: where the battle opens from the campaign; its start if empty), notes. Dates come from Playbacks."
+Playback presets (24 Nov 2026),Rows that say the same as the battle's presets are taken off Playback settings; based_on names the presets; the new why column gives the reason where a battle differs. See the Playback presets sheet in Sources and notes.xlsx.
+Presets: 70% symbol strength (24 Nov 2026),"event_dim 0.7 now comes from the preset ""all"" (SR-11)."
+Presets: the slow ease in (24 Nov 2026),"follow.glide_seconds 14 and follow.glide_rate 0.006 now come from the preset ""tactical"" (SR-04)."
+Presets: the slow ease in without Follow (24 Nov 2026),"opening_ease 0.006 comes from the preset ""operational"" (SR-04)."
+Presets: routes taken on every battle (24 Nov 2026),"trails.on, trails.opacity and trails.fade_seconds come from the preset ""all"" (SR-16)."
+Presets: arrows scaled to the battle (24 Nov 2026),"arrows.on, arrows.reach_seconds (all), arrows.min_share (tactical) and arrows.min_km 20 (operational) come from the presets (SR-06, SR-07)."
+"Presets: the ""Modern"" button (24 Nov 2026)","The Current map's short word comes from the preset ""all"" (SR-26)."
+"No ""Times are estimates"" note (24 Nov 2026)",Trenton and Cowpens: time_note rows removed (SR-25).
+One main map on the menu (24 Nov 2026),"Trenton, First Ypres and Luzon 1899: the other period maps are hidden from the Type of map menu and offered from the map details (SR-15)."
+Start map: the reconstruction first (24 Nov 2026),Manila and Cowpens: start_base rows removed; the exporter opens a battle on its reconstruction (SR-02).
+Battlefields aligned (24 Nov 2026),"Gettysburg, Trenton and Manila take the tactical preset's zoom, blend and question mark; Manila gets the division view (SR-27)."
+Reasons recorded (24 Nov 2026),why filled in for Manila's and Cowpens's arrow limits and Cowpens's aerial photograph text.

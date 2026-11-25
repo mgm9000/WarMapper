@@ -1,237 +1,179 @@
-playback_id,setting,value,what it does
-trenton,page_title,First Battle of Trenton (1776) Playback,The browser tab title
-trenton,style,tactical,tactical (a battlefield) or operational (a front)
-trenton,scale_bar,yards,yards or km: the measure the scale bar writes first; the other follows under it
-trenton,rate,3,Time units played per second
-trenton,lead.share,0.3,Share of the timeline given to the stretch before the focus
-trenton,lead.rate,5,"Time units per second in that stretch (5, the same as the battle, since 18 Nov 2026: the march no longer runs faster than the fight)"
-trenton,lead.step,5,Minutes an arrow key moves in that stretch
-trenton,time_note.from,1776-12-26T07:45,From this time a note shows under the clock
-trenton,time_note.text,Times are estimates,The note
-trenton,follow.min,"[1600, 1100]","Smallest box the camera frames, metres [width, height]"
-trenton,follow.margin,90,"Space around the units, metres"
-trenton,follow.exclude,"[""T-HE-PKFER""]",Tracks the camera ignores
-trenton,follow.empty,march,The view shown while no unit is placed (a preset)
-trenton,bases.1.id,mod,A map the reader can put under the units; the first is the opening one
-trenton,bases.1.label,Current map,A map the reader can put under the units; the first is the opening one
-trenton,bases.1.short,Today,A map the reader can put under the units; the first is the opening one
-trenton,bases.1.current,True,A map the reader can put under the units; the first is the opening one
-trenton,bases.2.id,sk,A map the reader can put under the units; the first is the opening one
-trenton,bases.2.label,1776 sketch,A map the reader can put under the units; the first is the opening one
-trenton,bases.2.short,1776,A map the reader can put under the units; the first is the opening one
-trenton,bases.2.map,wiederhold-1776,A map the reader can put under the units; the first is the opening one
-trenton,bases.3.id,fd,A map the reader can put under the units; the first is the opening one
-trenton,bases.3.label,1777 map,A map the reader can put under the units; the first is the opening one
-trenton,bases.3.short,1777,A map the reader can put under the units; the first is the opening one
-trenton,bases.3.title,"Faden's 1777 plan of Washington's operations, warped to fit the ground (M switches maps)",A map the reader can put under the units; the first is the opening one
-trenton,bases.3.map,faden-1777,A map the reader can put under the units; the first is the opening one
-trenton,bases.3.backdrop,current,A map the reader can put under the units; the first is the opening one
-trenton,modern.tiles,https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x},"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-trenton,modern.max_zoom,16,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-trenton,modern.credit,USGS The National Map,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-trenton,modern.name,USGS Topo base map,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-trenton,modern.about,"Today's ground: the US Geological Survey's topographic base map, with roads, towns, streams, contours and hill shading. It is streamed from the USGS while it is on screen, so it needs a connection.","The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-trenton,modern.rights,Public domain (US government work),"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-trenton,modern.link,https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer,"The modern map: today's topographic map from a tile service. It is the current map and lies around the period map; reach = how far out the reader can zoom, in widths of the battle's own maps"
-trenton,zoom.max,8,"Closest zoom, screen pixels per metre"
-trenton,zoom.min_factor,0.9,How far out the reader can zoom (1 = the whole battle just fits)
-trenton,zoom.follow_max,2.2,Closest the Follow camera goes
-trenton,zoom.labels,0.12,"From this zoom, level 1 names show"
-trenton,zoom.towns_until,0.09,Town names hide above this zoom
-trenton,groups.1.label,Rall's brigade (garrison),Units drawn as one symbol when zoomed right out
-trenton,groups.1.side,CR,Units drawn as one symbol when zoomed right out
-trenton,groups.1.except,"[""T-HE-PKFER""]",Units drawn as one symbol when zoomed right out
-trenton,groups.1.below,0.085,Units drawn as one symbol when zoomed right out
-trenton,groups.1.echelon,brigade,Units drawn as one symbol when zoomed right out
-trenton,groups.1.branch,inf,Units drawn as one symbol when zoomed right out
-trenton,rules.blend,3,Minutes over which a unit shifts from one row to the next when they meet
-trenton,texts.stated,"A report, a history, a marker or the 1776 sketch puts the unit here.",The sentence under this state in the unit panel
-trenton,texts.inferred,Worked out from the sequence of events; the sources do not name this unit here.,The sentence under this state in the unit panel
-trenton,texts.moving,No source records this stretch. The unit is drawn along a road or a straight line between two recorded positions.,The sentence under this state in the unit panel
-trenton,texts.offthis,This position lies outside what Wiederhold drew. Switch to the current map to see it.,The sentence under this state in the unit panel
-trenton,found.map_read,read from a surveyed period map,Words for how a place was found
-trenton,found.sketch_read,read from Wiederhold's sketch,Words for how a place was found
-trenton,about.1,"Unit positions come from the data pilot spreadsheet (61 Trenton rows), built from Washington's report, Stryker's 1898 history, markers, the current street map and Lt. Wiederhold's sketch. Nothing here has been checked by a historian.","A paragraph under ""About this prototype"""
-trenton,about.2,Clock times after the first shots are midpoints of estimated ranges: the sources give almost none.,"A paragraph under ""About this prototype"""
-trenton,about.3,The Names button hides the names beside the symbols; tap a symbol to see whose it is.,"A paragraph under ""About this prototype"""
-trenton,about.4,Solid symbols are positions a source gives. Dashed symbols are interpolated or the last position on record. A question mark means low confidence.,"A paragraph under ""About this prototype"""
-trenton,about.5,Symbols are blue for the Americans and red for the Hessian and British garrison. On his own sketch Wiederhold drew the Hessians in blue and the Americans in orange.,"A paragraph under ""About this prototype"""
-trenton,about.6,"The current map is the US Geological Survey's topographic map, and Satellite its aerial photography, both streamed from the USGS. If they cannot be reached, a simplified drawing of OpenStreetMap streets is shown instead.","A paragraph under ""About this prototype"""
-trenton,question_mark,overall,What marks a unit as doubtful: location (how sure the place is) or overall
-trenton,preset.march,"[-74.87088, 40.2149, -74.75794, 40.30135]","A named view: [west, south, east, north]"
-trenton,clock_title,First Battle of Trenton,The battle's name in the date box on the map
-trenton,bases.4.id,sat,A map the reader can put under the units; the first is the opening one
-trenton,bases.4.label,Satellite,A map the reader can put under the units; the first is the opening one
-trenton,bases.4.short,Sat,A map the reader can put under the units; the first is the opening one
-trenton,bases.4.title,"Aerial photography of the ground today, from the USGS (M switches maps)",A map the reader can put under the units; the first is the opening one
-trenton,bases.4.imagery.tiles,https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x},A map the reader can put under the units; the first is the opening one
-trenton,bases.4.imagery.max_zoom,16,A map the reader can put under the units; the first is the opening one
-trenton,bases.4.imagery.credit,"USDA, USGS The National Map: Orthoimagery",A map the reader can put under the units; the first is the opening one
-trenton,bases.4.imagery.name,Aerial photography (USGS),A map the reader can put under the units; the first is the opening one
-trenton,bases.4.imagery.about,"Today's ground from the air: photography from the US Department of Agriculture's National Agriculture Imagery Program (about 1 m detail), served free by the USGS National Map. The names on it come from OpenStreetMap.",A map the reader can put under the units; the first is the opening one
-trenton,bases.4.imagery.rights,Public domain (US government work),A map the reader can put under the units; the first is the opening one
-trenton,bases.4.imagery.link,https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer,A map the reader can put under the units; the first is the opening one
-trenton,formations.echelon,division,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
-trenton,formations.below,0.3,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
-trenton,formations.label,Divisions,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
-trenton,formations.on,False,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start"
-trenton,about.7,"The army crosses the Delaware as one symbol and divides on the New Jersey bank into Greene's and Sullivan's divisions; Greene, Sullivan and Knox's artillery are drawn whole until the first shots, then as their brigades and batteries. Formations, in the Layers menu, draws them whole again when zoomed out. Routes taken, also in Layers, draws the roads each unit has marched. The escapes (the dragoons to Princeton, the jägers to Bordentown, about fifty of the Knyphausen regiment to Crosswicks) follow roads the sources do not give.","A paragraph under ""About this prototype"""
-trenton,bases.5.id,fs,A base reached from another (of): not on the base bar
-trenton,bases.5.label,1777 sheet,
-trenton,bases.5.short,1777,
-trenton,bases.5.map,faden-1777-sheet,
-trenton,bases.5.of,fd,The 1:1 button on that base opens this one; that base's button brings it back
-trenton,trails.on,True,"Routes taken: the road each unit has marched so far, drawn under the units as the clock runs (Layers: Routes taken)."
-trenton,trails.opacity,0.55,How strongly the routes taken are drawn (0 to 1).
-trenton,trails.fade_after,10,"Once a unit has stood still this many minutes, the routes it took to get there fade out (Morgan, 19 Nov 2026)."
-trenton,trails.fade_over,10,How many minutes the routes take to fade out.
-trenton,follow.side_from.CR,1776-12-26T07:00,"Follow leaves this side (by its code) out of the frame until this time, so the camera stays on the crossing and the march while the garrison sleeps."
-trenton,formations.until,1776-12-26T07:45,"Before this time the formations are drawn whatever the zoom (Trenton: Greene, Sullivan and Knox stay whole until the first shots)."
-trenton,formations.also,T-US-KNOX,Units that count as formations though not of the echelon (Trenton: Knox's artillery).
-trenton,skip.1.from,1776-12-25T18:00,"While playing, after after_seconds in this stretch the clock jumps to its end (moving the clock by hand is not affected); note is shown as it jumps."
-trenton,skip.1.to,1776-12-26T03:00,
-trenton,skip.1.after_seconds,2,
-trenton,skip.1.note,"The crossing takes all night: on to 03:00, with the army over the river.",
-cowpens,page_title,Battle of Cowpens (1781) Playback,
-cowpens,clock_title,Cowpens,
-cowpens,style,tactical,
-cowpens,scale_bar,yards,
-cowpens,rate,1,Minutes a second the page opens at
-cowpens,lead.share,0.2,The forming-up before 06:55 takes this share of the timeline
-cowpens,lead.rate,4,
-cowpens,lead.step,5,
-cowpens,time_note.from,1781-01-17T06:00,
-cowpens,time_note.text,Times are estimates,The clock is the staff ride's reconstruction: see CH01 and CG04
-cowpens,sides.CR.short,British,"This playback's own name for the side (the war's Sides row says ""Hessian and British"", for Trenton)"
-cowpens,sides.CR.name,British Crown forces (British regulars and Loyalist provincials),
-cowpens,follow.min,"[620, 460]","Smallest box the camera frames, metres"
-cowpens,follow.margin,70,
-cowpens,follow.empty,field,
-cowpens,follow.lookahead,12,Minutes ahead the camera looks
-cowpens,preset.field,"[-81.8205, 35.1298, -81.8055, 35.1392]","A named view: [west, south, east, north]"
-cowpens,preset.approach,"[-81.8300, 35.1130, -81.7800, 35.1450]",
-cowpens,views.1.preset,approach,"Named views; the first is the one the page opens on (since 24 Nov: the whole ground, then Follow eases in)"
-cowpens,views.1.label,Tarleton's approach,
-cowpens,views.1.short,Approach,
-cowpens,views.2.preset,field,
-cowpens,views.2.label,The battlefield,
-cowpens,views.2.short,Field,
-cowpens,modern.tiles,https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer/tile/{z}/{y}/{x},
-cowpens,modern.max_zoom,16,
-cowpens,modern.credit,USGS The National Map,
-cowpens,modern.name,USGS Topo base map,
-cowpens,modern.about,"Today's ground: the US Geological Survey's topographic base map, with roads, streams, contours and hill shading. It is streamed from the USGS while it is on screen, so it needs a connection. No map of the time shows this ground: see the About text.",
-cowpens,modern.rights,Public domain (US government work),
-cowpens,modern.link,https://basemap.nationalmap.gov/arcgis/rest/services/USGSTopo/MapServer,
-cowpens,modern.reach,3,
-cowpens,zoom.max,8,"Closest zoom, screen pixels per metre"
-cowpens,zoom.min_factor,0.9,
-cowpens,zoom.follow_max,2.4,
-cowpens,zoom.fold,0.45,"Zoomed in past this, Pickens's and Howard's lines are shown by their parts"
-cowpens,zoom.labels,0.3,
-cowpens,zoom.landmarks_from,0.25,
-cowpens,fold.label,Regiments and companies,
-cowpens,arrows.on,True,Arrows ahead of a move
-cowpens,arrows.min_km,0.25,"Moves shorter than this get no arrow. The whole field is half a mile long, so the limit is far below the 20 km of a campaign"
-cowpens,arrows.lead,3,Minutes before the unit sets off that the arrow appears
-cowpens,trails.on,True,Routes taken: the way a unit has come is drawn behind it
-cowpens,trails.opacity,0.5,
-cowpens,trails.fade_after,6,
-cowpens,trails.fade_over,6,
-cowpens,rules.blend,4,Minutes over which a unit shifts from one row to the next when they meet (was 2: the moves looked like jumps)
-cowpens,rear.side,US,Symbols sit behind their own lines: the American rear is up the road to the north-west
-cowpens,rear.lat,35.141,
-cowpens,rear.lon,-81.8188,
-cowpens,question_mark,overall,
-cowpens,texts.stated,"A report, an eyewitness, the Army's staff ride or a National Park Service wayside puts the unit here.",
-cowpens,texts.inferred,Worked out from the sequence of events and from where its line stood; no source names this unit at this spot.,
-cowpens,texts.moving,No source records this stretch. The unit is drawn moving between two recorded positions.,
-cowpens,found.derived,"placed by a distance the sources give, measured along the Green River Road on today's map",
-cowpens,found.modern_map,a point on today's road map,
-cowpens,about.1,"Unit positions come from the Revolutionary War workbook (the Cowpens rows), built from Morgan's report, Tarleton's and Howard's accounts, the journals and memoirs of men in the ranks, the Army's 1996 staff ride handbook, the Army War College study of 1928 and the National Park Service's handbook and waysides. Nothing here has been checked by a historian.",
-cowpens,about.2,"No map made at the time shows this ground, and the accounts give distances, not places. Every unit is therefore placed by distance along the Green River Road, which still crosses the field, counted from the spot where Tarleton's column came out of the woods. Lines may be 50 to 100 m from where they really stood; none is rated better than medium.",
-cowpens,about.3,"The clock follows the staff ride's maps: first shots about 07:00, the end about 07:50. Eyewitnesses say only ""about sunrise"", which was at 07:07; one Army study puts everything an hour later. Tap a unit to see the range of times its record allows.",
-cowpens,about.4,Solid symbols are positions a source gives. Dashed symbols are worked out or are the last position on record. A question mark means the place is doubtful.,
-cowpens,about.5,Symbols are blue for the Americans and red for the British and Loyalist troops. Zoom in to see Pickens's line by its regiments and Howard's by its parts.,
-cowpens,about.6,"The current map is the US Geological Survey's topographic map, and Satellite its aerial photography, both streamed from the USGS. If they cannot be reached, a simplified drawing of OpenStreetMap roads and streams is shown instead.",
-cowpens,about.7,"Where the sources disagree (the hour, the numbers, which riflemen were on the right, how far Howard fell back, who brought the militia back), the workbook's Hypotheses sheet gives each reading and says which one the playback follows.",
-cowpens,bases.1.id,r81t,
-cowpens,bases.1.label,1781 with terrain,
-cowpens,bases.1.short,1781,
-cowpens,bases.1.recon,cowpens-1781,
-cowpens,bases.1.terrain,"{""zoom"": 14, ""extent"": [-81.86, 35.095, -81.75, 35.165], ""open_m"": 20, ""smooth_m"": 20, ""relief"": 3, ""spots_from"": 14.4, ""doubt"": false, ""about"": ""In the United States these tiles come from the USGS's National Elevation Dataset, a survey of the bare ground with no buildings or trees in it. Bumps narrower than about 20 m are taken off and the rest smoothed over about 20 m. Heights are in metres, good to a metre or two. This is today's ground: the park keeps the field open, but SC 11, the park roads and the visitor centre have cut into it since 1781."", ""beyond"": ""Beyond the dotted line the roads of 1781 stop: only today's relief and contours are drawn there, so the map fills the window.""}",
-cowpens,bases.2.id,mod,
-cowpens,bases.2.label,Current map,
-cowpens,bases.2.short,Today,
-cowpens,bases.2.current,True,
-cowpens,bases.3.id,sat,
-cowpens,bases.3.label,Satellite,
-cowpens,bases.3.short,Sat,
-cowpens,bases.3.title,"Aerial photography of the ground today, from the USGS (M switches maps)",
-cowpens,bases.3.imagery.tiles,https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer/tile/{z}/{y}/{x},
-cowpens,bases.3.imagery.max_zoom,16,
-cowpens,bases.3.imagery.credit,"USDA, USGS The National Map: Orthoimagery",
-cowpens,bases.3.imagery.name,Aerial photography (USGS),
-cowpens,bases.3.imagery.about,"Today's ground from the air: photography from the US Department of Agriculture's National Agriculture Imagery Program (about 1 m detail), served free by the USGS National Map. The field is kept open by the National Park Service much as it was in 1781; the woods around it are thicker than the open wood of the battle.",
-cowpens,bases.3.imagery.rights,Public domain (US government work),
-cowpens,bases.3.imagery.link,https://basemap.nationalmap.gov/arcgis/rest/services/USGSImageryOnly/MapServer,
-cowpens,bases.4.id,bz,
-cowpens,bases.4.label,"Bearss 1967, phase by phase",
-cowpens,bases.4.short,Bearss,
-cowpens,bases.4.series,True,
-cowpens,bases.4.backdrop,current,
-cowpens,bases.4.hidden,True,
-cowpens,bases.4.note,"Edwin Bearss's four troop-movement maps for the National Park Service (1967), each shown for its phase of the battle as the clock runs. His unit symbols are on them.",
-cowpens,bases.5.id,l28,
-cowpens,bases.5.label,"Army War College sketch, 1928",
-cowpens,bases.5.short,1928,
-cowpens,bases.5.map,landers-1928-1,
-cowpens,bases.5.backdrop,current,
-cowpens,bases.5.hidden,True,
-cowpens,bases.5.note,"Landers's sketch of the ground as it was in 1928: roads, houses, woods and 5-foot contours, with the two lines.",
-cowpens,bases.6.id,l28f,
-cowpens,bases.6.label,"Army War College formation, 1928",
-cowpens,bases.6.short,1928 F,
-cowpens,bases.6.map,landers-1928-2,
-cowpens,bases.6.backdrop,current,
-cowpens,bases.6.hidden,True,
-cowpens,bases.6.note,The Army War College's diagram of the two lines as they formed (1928).,
-cowpens,bases.7.id,u59,
-cowpens,bases.7.label,"USGS map, 1959",
-cowpens,bases.7.short,1959,
-cowpens,bases.7.map,usgs-1959,
-cowpens,bases.7.backdrop,current,
-cowpens,bases.7.hidden,True,
-cowpens,bases.7.note,"The oldest survey map of the ground, before the park was rebuilt: SC 11 still on the old road.",
-cowpens,bases.8.id,u75,
-cowpens,bases.8.label,"USGS photo map, 1975",
-cowpens,bases.8.short,1975,
-cowpens,bases.8.map,usgs-1975,
-cowpens,bases.8.backdrop,current,
-cowpens,bases.8.hidden,True,
-cowpens,bases.8.note,An aerial photograph of 1975 drawn to scale: the field before the park was rebuilt.,
-cowpens,bases.9.id,m25,
-cowpens,bases.9.label,"Mills's Atlas, 1825",
-cowpens,bases.9.short,1825,
-cowpens,bases.9.map,mills-1825,
-cowpens,bases.9.backdrop,current,
-cowpens,bases.9.hidden,True,
-cowpens,bases.9.note,"The nearest map to the time: the district at two miles to the inch, surveyed in 1820. It marks the battle at a crossroads. Good to about a kilometre.",
-cowpens,bases.10.id,nps,
-cowpens,bases.10.label,Park map (NPS),
-cowpens,bases.10.short,Park,
-cowpens,bases.10.map,nps-park-map,
-cowpens,bases.10.backdrop,current,
-cowpens,bases.10.hidden,True,
-cowpens,bases.10.note,"The National Park Service's map of the park today: trails, monuments and the trace of the road.",
-cowpens,start_base,r81t,
-cowpens,about.8,"The playback opens on ""1781 with terrain"", a reconstruction: the roads Edwin Bearss drew in 1967 as the roads of the battle, laid on the ground by the road the park still keeps, and today's ground, which the park has kept open. The map details (the i button) list each road with its source and how sure it is, and offer the other maps of this ground: Bearss's own maps phase by phase, the Army War College sketches of 1928, the USGS maps of 1959 and 1975, Mills's map of 1825 and the park map.",
-cowpens,follow.glide_seconds,14,"Once the hold ends, the camera eases in from the whole ground to the action over this many seconds"
-cowpens,event_dim,0.7,Units not named in the current key event are drawn at this strength (the player's default is 0.32; at Cowpens it made most symbols faint)
-cowpens,arrows.reach_minutes,6,"An arrow runs this many minutes of march ahead of its unit, not to the end of the road"
-cowpens,about.9,"No town or village stood near the Cowpens in 1781: Spartanburg was laid out in 1785, Gaffney in the 1800s, the town of Cowpens in 1880. The nearest places named in the campaign are shown at the edge of the map, with an arrow and their distance in a straight line from the middle of the screen: Gilbert Town in North Carolina (the Rutherford County seat, where Ferguson camped before Kings Mountain), Charlotte (the village Cornwallis held in the autumn of 1780), Winnsborough (Cornwallis's winter camp, which he left on 8 January) and Ninety Six (the British post Morgan was sent to threaten).",
-cowpens,follow.hold_until,1781-01-17T06:12,"The camera stays on the whole ground until this moment (Morgan's lines come onto the map), then eases in"
-cowpens,follow.glide_rate,0.006,How fast the camera eases in after the hold (the player's default is 0.03)
-cowpens,lead.until,1781-01-17T06:20,"The forming-up plays at lead.rate until here, before Tarleton's column sets off; its march plays at 1 minute a second"
-cowpens,texts.after,The last record for this unit. A unit that surrendered is taken off the map a few minutes after it laid down its arms.,
-cowpens,texts.lost,"Not on the map any more: it surrendered, was taken or left the field. Its last record is below.",
+playback_id,setting,value,what it does,why
+trenton,page_title,First Battle of Trenton (1776) Playback,The browser tab title,
+trenton,based_on,"[""tactical"", ""us-maps""]","The presets this battle is based on (Playback presets sheet in Sources and notes.xlsx), laid on in turn after ""all""; this battle's own rows win over them",
+trenton,rate,3,Time units played per second,
+trenton,lead.share,0.3,Share of the timeline given to the stretch before the focus,
+trenton,lead.rate,5,"Time units per second in that stretch (5, the same as the battle, since 18 Nov 2026: the march no longer runs faster than the fight)",
+trenton,lead.step,5,Minutes an arrow key moves in that stretch,
+trenton,follow.min,"[1600, 1100]","Smallest box the camera frames, metres [width, height]",
+trenton,follow.margin,90,"Space around the units, metres",
+trenton,follow.exclude,"[""T-HE-PKFER""]",Tracks the camera ignores,
+trenton,follow.empty,march,The view shown while no unit is placed (a preset),
+trenton,bases.1.id,mod,A map the reader can put under the units; the first is the opening one,
+trenton,bases.1.use,current,A standard map from the presets (base.current): its rows below are only where this battle differs,
+trenton,bases.2.id,sk,A map the reader can put under the units; the first is the opening one,
+trenton,bases.2.hidden,True,"Kept off the Type of map menu: the map details offer it, with the note","SR-15: one main map on the Type of map menu (Morgan, 24 Nov 2026); the main map here is fd."
+trenton,bases.2.note,"Lt. Wiederhold's sketch of the fight in the town (1776), drawn by a Hessian officer who was there; not to scale.",,
+trenton,bases.2.label,1776 sketch,A map the reader can put under the units; the first is the opening one,
+trenton,bases.2.short,1776,A map the reader can put under the units; the first is the opening one,
+trenton,bases.2.map,wiederhold-1776,A map the reader can put under the units; the first is the opening one,
+trenton,bases.3.id,fd,A map the reader can put under the units; the first is the opening one,
+trenton,bases.3.label,1777 map,A map the reader can put under the units; the first is the opening one,
+trenton,bases.3.short,1777,A map the reader can put under the units; the first is the opening one,
+trenton,bases.3.title,"Faden's 1777 plan of Washington's operations, warped to fit the ground (M switches maps)",A map the reader can put under the units; the first is the opening one,
+trenton,bases.3.map,faden-1777,A map the reader can put under the units; the first is the opening one,
+trenton,bases.3.backdrop,current,A map the reader can put under the units; the first is the opening one,
+trenton,zoom.labels,0.12,"From this zoom, level 1 names show",
+trenton,zoom.towns_until,0.09,Town names hide above this zoom,
+trenton,groups.1.label,Rall's brigade (garrison),Units drawn as one symbol when zoomed right out,
+trenton,groups.1.side,CR,Units drawn as one symbol when zoomed right out,
+trenton,groups.1.except,"[""T-HE-PKFER""]",Units drawn as one symbol when zoomed right out,
+trenton,groups.1.below,0.085,Units drawn as one symbol when zoomed right out,
+trenton,groups.1.echelon,brigade,Units drawn as one symbol when zoomed right out,
+trenton,groups.1.branch,inf,Units drawn as one symbol when zoomed right out,
+trenton,texts.stated,"A report, a history, a marker or the 1776 sketch puts the unit here.",The sentence under this state in the unit panel,
+trenton,texts.inferred,Worked out from the sequence of events; the sources do not name this unit here.,The sentence under this state in the unit panel,
+trenton,texts.moving,No source records this stretch. The unit is drawn along a road or a straight line between two recorded positions.,The sentence under this state in the unit panel,
+trenton,texts.offthis,This position lies outside what Wiederhold drew. Switch to the current map to see it.,The sentence under this state in the unit panel,
+trenton,found.map_read,read from a surveyed period map,Words for how a place was found,
+trenton,found.sketch_read,read from Wiederhold's sketch,Words for how a place was found,
+trenton,about.1,"Unit positions come from the data pilot spreadsheet (61 Trenton rows), built from Washington's report, Stryker's 1898 history, markers, the current street map and Lt. Wiederhold's sketch. Nothing here has been checked by a historian.","A paragraph under ""About this prototype""",
+trenton,about.2,Clock times after the first shots are midpoints of estimated ranges: the sources give almost none.,"A paragraph under ""About this prototype""",
+trenton,about.3,The Names button hides the names beside the symbols; tap a symbol to see whose it is.,"A paragraph under ""About this prototype""",
+trenton,about.4,Solid symbols are positions a source gives. Dashed symbols are interpolated or the last position on record. A question mark means low confidence.,"A paragraph under ""About this prototype""",
+trenton,about.5,Symbols are blue for the Americans and red for the Hessian and British garrison. On his own sketch Wiederhold drew the Hessians in blue and the Americans in orange.,"A paragraph under ""About this prototype""",
+trenton,about.6,"The current map is the US Geological Survey's topographic map, and Satellite its aerial photography, both streamed from the USGS. If they cannot be reached, a simplified drawing of OpenStreetMap streets is shown instead.","A paragraph under ""About this prototype""",
+trenton,preset.march,"[-74.87088, 40.2149, -74.75794, 40.30135]","A named view: [west, south, east, north]",
+trenton,clock_title,First Battle of Trenton,The battle's name in the date box on the map,
+trenton,bases.4.use,satellite,A standard map from the presets (base.satellite): its rows below are only where this battle differs,
+trenton,formations.echelon,division,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start",
+trenton,formations.below,0.3,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start",
+trenton,formations.label,Divisions,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start",
+trenton,formations.on,False,"Formations: zoomed out below `below` (screen pixels per metre), the brigades of each division are drawn as the division, with their lines as its front. Optional: the reader turns it on in the Layers menu; on = on at the start",
+trenton,about.7,"The army crosses the Delaware as one symbol and divides on the New Jersey bank into Greene's and Sullivan's divisions; Greene, Sullivan and Knox's artillery are drawn whole until the first shots, then as their brigades and batteries. Formations, in the Layers menu, draws them whole again when zoomed out. Routes taken, also in Layers, draws the roads each unit has marched. The escapes (the dragoons to Princeton, the jägers to Bordentown, about fifty of the Knyphausen regiment to Crosswicks) follow roads the sources do not give.","A paragraph under ""About this prototype""",
+trenton,bases.5.id,fs,A base reached from another (of): not on the base bar,
+trenton,bases.5.label,1777 sheet,,
+trenton,bases.5.short,1777,,
+trenton,bases.5.map,faden-1777-sheet,,
+trenton,bases.5.of,fd,The 1:1 button on that base opens this one; that base's button brings it back,
+trenton,trails.fade_after,10,"Once a unit has stood still this many minutes, the routes it took to get there fade out (Morgan, 19 Nov 2026).","Morgan's decision when the fade was made, at Trenton (19 Nov 2026)."
+trenton,trails.fade_over,10,How many minutes the routes take to fade out.,"Morgan's decision when the fade was made, at Trenton (19 Nov 2026)."
+trenton,follow.side_from.CR,1776-12-26T07:00,"Follow leaves this side (by its code) out of the frame until this time, so the camera stays on the crossing and the march while the garrison sleeps.",
+trenton,formations.until,1776-12-26T07:45,"Before this time the formations are drawn whatever the zoom (Trenton: Greene, Sullivan and Knox stay whole until the first shots).",
+trenton,formations.also,T-US-KNOX,Units that count as formations though not of the echelon (Trenton: Knox's artillery).,
+trenton,skip.1.from,1776-12-25T18:00,"While playing, after after_seconds in this stretch the clock jumps to its end (moving the clock by hand is not affected); note is shown as it jumps.",
+trenton,skip.1.to,1776-12-26T03:00,,
+trenton,skip.1.after_seconds,2,,
+trenton,skip.1.note,"The crossing takes all night: on to 03:00, with the army over the river.",,
+cowpens,page_title,Battle of Cowpens (1781) Playback,,
+cowpens,based_on,"[""tactical"", ""us-maps""]","The presets this battle is based on (Playback presets sheet in Sources and notes.xlsx), laid on in turn after ""all""; this battle's own rows win over them",
+cowpens,clock_title,Cowpens,,
+cowpens,rate,1,Minutes a second the page opens at,
+cowpens,lead.share,0.2,The forming-up before 06:55 takes this share of the timeline,
+cowpens,lead.rate,4,,
+cowpens,lead.step,5,,
+cowpens,sides.CR.short,British,"This playback's own name for the side (the war's Sides row says ""Hessian and British"", for Trenton)",
+cowpens,sides.CR.name,British Crown forces (British regulars and Loyalist provincials),,
+cowpens,follow.min,"[620, 460]","Smallest box the camera frames, metres",
+cowpens,follow.margin,70,,
+cowpens,follow.empty,field,,
+cowpens,follow.lookahead,12,Minutes ahead the camera looks,
+cowpens,preset.field,"[-81.8205, 35.1298, -81.8055, 35.1392]","A named view: [west, south, east, north]",
+cowpens,preset.approach,"[-81.8300, 35.1130, -81.7800, 35.1450]",,
+cowpens,views.1.preset,approach,"Named views; the first is the one the page opens on (since 24 Nov: the whole ground, then Follow eases in)",
+cowpens,views.1.label,Tarleton's approach,,
+cowpens,views.1.short,Approach,,
+cowpens,views.2.preset,field,,
+cowpens,views.2.label,The battlefield,,
+cowpens,views.2.short,Field,,
+cowpens,modern.about,"Today's ground: the US Geological Survey's topographic base map, with roads, streams, contours and hill shading. It is streamed from the USGS while it is on screen, so it needs a connection. No map of the time shows this ground: see the About text.",,Adds that no map of the time shows this ground: Cowpens has no period map.
+cowpens,modern.reach,3,,
+cowpens,zoom.follow_max,2.4,,"A small field (the fight is about 1 km across): the camera comes closer than on larger battlefields (Morgan, 24 Nov 2026, SR-27)."
+cowpens,zoom.fold,0.45,"Zoomed in past this, Pickens's and Howard's lines are shown by their parts",
+cowpens,zoom.labels,0.3,,
+cowpens,zoom.landmarks_from,0.25,,
+cowpens,fold.label,Regiments and companies,,
+cowpens,arrows.min_km,0.25,"Moves shorter than this get no arrow. The whole field is half a mile long, so the limit is far below the 20 km of a campaign","The whole field is half a mile long, so the limit is far below a campaign's (PR 61); kept as the pattern for small fields (SR-06, 24 Nov)."
+cowpens,arrows.lead,3,Minutes before the unit sets off that the arrow appears,
+cowpens,trails.opacity,0.5,,Kept as set while reviewing Cowpens (24 Nov 2026).
+cowpens,trails.fade_after,6,,"Kept as set while reviewing Cowpens (Morgan, 24 Nov 2026: Manila and Cowpens keep theirs)."
+cowpens,trails.fade_over,6,,"Kept as set while reviewing Cowpens (Morgan, 24 Nov 2026: Manila and Cowpens keep theirs)."
+cowpens,rear.side,US,Symbols sit behind their own lines: the American rear is up the road to the north-west,
+cowpens,rear.lat,35.141,,
+cowpens,rear.lon,-81.8188,,
+cowpens,texts.stated,"A report, an eyewitness, the Army's staff ride or a National Park Service wayside puts the unit here.",,
+cowpens,texts.inferred,Worked out from the sequence of events and from where its line stood; no source names this unit at this spot.,,
+cowpens,texts.moving,No source records this stretch. The unit is drawn moving between two recorded positions.,,
+cowpens,found.derived,"placed by a distance the sources give, measured along the Green River Road on today's map",,
+cowpens,found.modern_map,a point on today's road map,,
+cowpens,about.1,"Unit positions come from the Revolutionary War workbook (the Cowpens rows), built from Morgan's report, Tarleton's and Howard's accounts, the journals and memoirs of men in the ranks, the Army's 1996 staff ride handbook, the Army War College study of 1928 and the National Park Service's handbook and waysides. Nothing here has been checked by a historian.",,
+cowpens,about.2,"No map made at the time shows this ground, and the accounts give distances, not places. Every unit is therefore placed by distance along the Green River Road, which still crosses the field, counted from the spot where Tarleton's column came out of the woods. Lines may be 50 to 100 m from where they really stood; none is rated better than medium.",,
+cowpens,about.3,"The clock follows the staff ride's maps: first shots about 07:00, the end about 07:50. Eyewitnesses say only ""about sunrise"", which was at 07:07; one Army study puts everything an hour later. Tap a unit to see the range of times its record allows.",,
+cowpens,about.4,Solid symbols are positions a source gives. Dashed symbols are worked out or are the last position on record. A question mark means the place is doubtful.,,
+cowpens,about.5,Symbols are blue for the Americans and red for the British and Loyalist troops. Zoom in to see Pickens's line by its regiments and Howard's by its parts.,,
+cowpens,about.6,"The current map is the US Geological Survey's topographic map, and Satellite its aerial photography, both streamed from the USGS. If they cannot be reached, a simplified drawing of OpenStreetMap roads and streams is shown instead.",,
+cowpens,about.7,"Where the sources disagree (the hour, the numbers, which riflemen were on the right, how far Howard fell back, who brought the militia back), the workbook's Hypotheses sheet gives each reading and says which one the playback follows.",,
+cowpens,bases.1.id,r81t,,
+cowpens,bases.1.label,1781 with terrain,,
+cowpens,bases.1.short,1781,,
+cowpens,bases.1.recon,cowpens-1781,,
+cowpens,bases.1.terrain,"{""zoom"": 14, ""extent"": [-81.86, 35.095, -81.75, 35.165], ""open_m"": 20, ""smooth_m"": 20, ""relief"": 3, ""spots_from"": 14.4, ""doubt"": false, ""about"": ""In the United States these tiles come from the USGS's National Elevation Dataset, a survey of the bare ground with no buildings or trees in it. Bumps narrower than about 20 m are taken off and the rest smoothed over about 20 m. Heights are in metres, good to a metre or two. This is today's ground: the park keeps the field open, but SC 11, the park roads and the visitor centre have cut into it since 1781."", ""beyond"": ""Beyond the dotted line the roads of 1781 stop: only today's relief and contours are drawn there, so the map fills the window.""}",,
+cowpens,bases.2.id,mod,,
+cowpens,bases.2.use,current,A standard map from the presets (base.current): its rows below are only where this battle differs,
+cowpens,bases.3.use,satellite,A standard map from the presets (base.satellite): its rows below are only where this battle differs,
+cowpens,bases.3.imagery.about,"Today's ground from the air: photography from the US Department of Agriculture's National Agriculture Imagery Program (about 1 m detail), served free by the USGS National Map. The field is kept open by the National Park Service much as it was in 1781; the woods around it are thicker than the open wood of the battle.",,"Says what the aerial photograph shows of this field: the park keeps it open much as in 1781, the woods are thicker."
+cowpens,bases.4.id,bz,,
+cowpens,bases.4.label,"Bearss 1967, phase by phase",,
+cowpens,bases.4.short,Bearss,,
+cowpens,bases.4.series,True,,
+cowpens,bases.4.backdrop,current,,
+cowpens,bases.4.hidden,True,,
+cowpens,bases.4.note,"Edwin Bearss's four troop-movement maps for the National Park Service (1967), each shown for its phase of the battle as the clock runs. His unit symbols are on them.",,
+cowpens,bases.5.id,l28,,
+cowpens,bases.5.label,"Army War College sketch, 1928",,
+cowpens,bases.5.short,1928,,
+cowpens,bases.5.map,landers-1928-1,,
+cowpens,bases.5.backdrop,current,,
+cowpens,bases.5.hidden,True,,
+cowpens,bases.5.note,"Landers's sketch of the ground as it was in 1928: roads, houses, woods and 5-foot contours, with the two lines.",,
+cowpens,bases.6.id,l28f,,
+cowpens,bases.6.label,"Army War College formation, 1928",,
+cowpens,bases.6.short,1928 F,,
+cowpens,bases.6.map,landers-1928-2,,
+cowpens,bases.6.backdrop,current,,
+cowpens,bases.6.hidden,True,,
+cowpens,bases.6.note,The Army War College's diagram of the two lines as they formed (1928).,,
+cowpens,bases.7.id,u59,,
+cowpens,bases.7.label,"USGS map, 1959",,
+cowpens,bases.7.short,1959,,
+cowpens,bases.7.map,usgs-1959,,
+cowpens,bases.7.backdrop,current,,
+cowpens,bases.7.hidden,True,,
+cowpens,bases.7.note,"The oldest survey map of the ground, before the park was rebuilt: SC 11 still on the old road.",,
+cowpens,bases.8.id,u75,,
+cowpens,bases.8.label,"USGS photo map, 1975",,
+cowpens,bases.8.short,1975,,
+cowpens,bases.8.map,usgs-1975,,
+cowpens,bases.8.backdrop,current,,
+cowpens,bases.8.hidden,True,,
+cowpens,bases.8.note,An aerial photograph of 1975 drawn to scale: the field before the park was rebuilt.,,
+cowpens,bases.9.id,m25,,
+cowpens,bases.9.label,"Mills's Atlas, 1825",,
+cowpens,bases.9.short,1825,,
+cowpens,bases.9.map,mills-1825,,
+cowpens,bases.9.backdrop,current,,
+cowpens,bases.9.hidden,True,,
+cowpens,bases.9.note,"The nearest map to the time: the district at two miles to the inch, surveyed in 1820. It marks the battle at a crossroads. Good to about a kilometre.",,
+cowpens,bases.10.id,nps,,
+cowpens,bases.10.label,Park map (NPS),,
+cowpens,bases.10.short,Park,,
+cowpens,bases.10.map,nps-park-map,,
+cowpens,bases.10.backdrop,current,,
+cowpens,bases.10.hidden,True,,
+cowpens,bases.10.note,"The National Park Service's map of the park today: trails, monuments and the trace of the road.",,
+cowpens,about.8,"The playback opens on ""1781 with terrain"", a reconstruction: the roads Edwin Bearss drew in 1967 as the roads of the battle, laid on the ground by the road the park still keeps, and today's ground, which the park has kept open. The map details (the i button) list each road with its source and how sure it is, and offer the other maps of this ground: Bearss's own maps phase by phase, the Army War College sketches of 1928, the USGS maps of 1959 and 1975, Mills's map of 1825 and the park map.",,
+cowpens,about.9,"No town or village stood near the Cowpens in 1781: Spartanburg was laid out in 1785, Gaffney in the 1800s, the town of Cowpens in 1880. The nearest places named in the campaign are shown at the edge of the map, with an arrow and their distance in a straight line from the middle of the screen: Gilbert Town in North Carolina (the Rutherford County seat, where Ferguson camped before Kings Mountain), Charlotte (the village Cornwallis held in the autumn of 1780), Winnsborough (Cornwallis's winter camp, which he left on 8 January) and Ninety Six (the British post Morgan was sent to threaten).",,
+cowpens,follow.hold_until,1781-01-17T06:12,"The camera stays on the whole ground until this moment (Morgan's lines come onto the map), then eases in",
+cowpens,lead.until,1781-01-17T06:20,"The forming-up plays at lead.rate until here, before Tarleton's column sets off; its march plays at 1 minute a second",
+cowpens,texts.after,The last record for this unit. A unit that surrendered is taken off the map a few minutes after it laid down its arms.,,
+cowpens,texts.lost,"Not on the map any more: it surrendered, was taken or left the field. Its last record is below.",,

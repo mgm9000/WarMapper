@@ -26,3 +26,15 @@ Tarleton's road (24 Nov 2026),"Routes RC01 to RC06 follow the road the maps show
 Cowpens playback review (24 Nov 2026),"Opens on the whole ground; symbols less faint; Tarleton's column one symbol to the field (new row CP138), its units coming out of it; arrows reach 6 minutes ahead; blend 4 minutes. See pipeline/cowpens_playback_fixes_2026_11_24.py."
 Cowpens: nearest towns (24 Nov 2026),"Four labels with show ""far"" (Gilbert Town, Charlotte, Winnsborough, Ninety Six), named at the edge of the map for orientation; about.9. Sources S112-S115. See pipeline/cowpens_far_towns_2026_11_24.py."
 Cowpens: second review (24 Nov 2026),"Surrendered infantry leave the map at 07:56 (CP56, CP66, CP76, CP104); Washington drawn arriving at 08:22 (CP37) so he stays behind Tarleton; camera holds wide until 06:12; the column marches at 1 minute a second. See pipeline/cowpens_review2_2026_11_24.py."
+Playback presets (24 Nov 2026),Rows that say the same as the battle's presets are taken off Playback settings; based_on names the presets; the new why column gives the reason where a battle differs. See the Playback presets sheet in Sources and notes.xlsx.
+Presets: 70% symbol strength (24 Nov 2026),"event_dim 0.7 now comes from the preset ""all"" (SR-11)."
+Presets: the slow ease in (24 Nov 2026),"follow.glide_seconds 14 and follow.glide_rate 0.006 now come from the preset ""tactical"" (SR-04)."
+Presets: the slow ease in without Follow (24 Nov 2026),"opening_ease 0.006 comes from the preset ""operational"" (SR-04)."
+Presets: routes taken on every battle (24 Nov 2026),"trails.on, trails.opacity and trails.fade_seconds come from the preset ""all"" (SR-16)."
+Presets: arrows scaled to the battle (24 Nov 2026),"arrows.on, arrows.reach_seconds (all), arrows.min_share (tactical) and arrows.min_km 20 (operational) come from the presets (SR-06, SR-07)."
+"Presets: the ""Modern"" button (24 Nov 2026)","The Current map's short word comes from the preset ""all"" (SR-26)."
+"No ""Times are estimates"" note (24 Nov 2026)",Trenton and Cowpens: time_note rows removed (SR-25).
+One main map on the menu (24 Nov 2026),"Trenton, First Ypres and Luzon 1899: the other period maps are hidden from the Type of map menu and offered from the map details (SR-15)."
+Start map: the reconstruction first (24 Nov 2026),Manila and Cowpens: start_base rows removed; the exporter opens a battle on its reconstruction (SR-02).
+Battlefields aligned (24 Nov 2026),"Gettysburg, Trenton and Manila take the tactical preset's zoom, blend and question mark; Manila gets the division view (SR-27)."
+Reasons recorded (24 Nov 2026),why filled in for Manila's and Cowpens's arrow limits and Cowpens's aerial photograph text.

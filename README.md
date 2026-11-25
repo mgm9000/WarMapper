@@ -18,7 +18,7 @@ The playbacks are served with GitHub Pages at https://mgm9000.github.io/WarMappe
 | `playbacks/` | One folder per battle: its battle file (`battle.json`), the script that writes it (`prep.py`), its period-map images, and the built page (`index.html`). |
 | `app/` | The playback, the same for every battle: `page.html` (the page), `player.js` (the rules of a playback), `core.js` (reading a battle file, the map, the clock), `core.css`, and the map library in `app/vendor/`. |
 | `courses/` | Course pages: `page.html` (the template), and one folder per course with `course.json` (its class days, readings and playback slots) and the built `index.html`. See `courses/README.md`. |
-| `tools/` | `export_battles.py`, which writes every battle file from the workbooks and checks it, and `build.py`, which builds the battle pages and the course pages. |
+| `tools/` | `export_battles.py`, which writes every battle file from the workbooks and checks it; `build.py`, which builds the battle pages and the course pages; `consistency_check.py`, which checks every battle against the shared rules; and `screenshots.py`, which takes pictures of every playback to compare. |
 | `docs/` | `battle-file.md`: the layout of a battle file. |
 | `data/` | **`WarMapper battle data/`, the master copy of the battle data**: one workbook per war and `Sources and notes.xlsx` (see Changing the data), with a CSV copy of every sheet under `csv/`; `base/`, the current map under each battle; `recon/`, the lines of each reconstructed base map as GeoJSON (Manila 1899, Cowpens 1781); `osm/`, the OpenStreetMap extracts those were cut from (Natural Earth for Luzon 1899); `legacy/`, the two older workbooks. |
 | `pipeline/` | `battlefile.py` (checks a battle file against the format), `basemaps.py` (cuts the current maps from the extracts), `pictures.py` (cuts the period-map pictures from the full scans), `georef/` (how the period maps were fitted to the ground), `recon/` (how a reconstructed base map's lines were read from period maps), and `legacy/` (retired scripts). |
@@ -82,6 +82,9 @@ Python 3 with `openpyxl` (and `Pillow` and `numpy` for the two map scripts).
 - It also lists every place where one side's symbol is drawn within 50 m of the other's, minute by minute ("contact"). Close fights show up there, and so does a unit overrun on the map without the data saying what became of it: that one needs a row that has it fall back, or `show_to` so it leaves the map.
 - A new battle is new rows in its war's workbook: a row on `Playbacks`, its units, positions and sources, its symbols on `Tracks`, and a current map in `data/base/`. No code. Its sources go on `Sources` in `Sources and notes.xlsx`, with the next free id.
 - `python3 tools/export_battles.py --check` checks the battle files as they stand, that each workbook holds one war and no id twice, and that the CSV copies match the workbooks.
+- Playback settings that battles share live in **presets** (`Playback presets` in `Sources and notes.xlsx`); a battle's `based_on` row names its presets and it keeps a row only where it differs, with the reason in `why`. See `docs/presets.md`.
+- `python3 tools/consistency_check.py --against main` rebuilds every battle, lists what each one changed since `main`, lists every difference from its presets and whether it has a reason, and checks the standing rules a program can check (`docs/standing-rules.md`). Run it before every pull request.
+- `python3 tools/screenshots.py` takes every playback at the same views on a phone and a desktop and makes a contact sheet, outside the repo, to compare maps after a change (needs Playwright; see the script).
 
 ### Editing the workbooks
 

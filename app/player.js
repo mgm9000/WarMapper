@@ -407,6 +407,7 @@ function f1(v){return v.toFixed(1)}
 /* Routes taken: the road each unit has marched so far (the routes the record gives), drawn under the units and growing with the clock.
    Each side's lines are one group at reduced strength, so roads that several units took are not drawn darker. */
 var TRL=P.trails||null,trlOn=!!(TRL&&TRL.on!==false);
+if(TRL&&!B.tracks.some(function(tr){return tr.k.some(function(k){return k.via&&k.via.length>1})})) TRL=null;   // no route on record (First Ypres): no Routes taken switch, which would draw nothing
 var muteOn=true;
 function hillAbout(){return HS?'<h2 style="margin-top:18px">Terrain shading</h2><p>Shadows worked out from the height of the ground, so ridges and valleys show even where today\'s map is muted. They are drawn over today\'s map only, not over the period maps, which show the ground in their own way. Heights in the United States come from the USGS; elsewhere mostly from satellite radar. Layers turns them off.</p><dl><dt>Source</dt><dd>'+esc(HS.credit)+'</dd></dl><p style="margin-top:10px"><a href="'+esc(HS.link)+'" target="_blank" rel="noopener">Where the heights come from</a></p>':''}
 function setHill(v){hsOn=v;tick('cHill',v);remember('hill',v);hsVis=null;mv.kick()}
@@ -1251,7 +1252,7 @@ var LD=(P.lead&&B.focus&&B.focus[0]>T0)?P.lead:null,TM=LD?B.focus[0]:T0,UM=LD?LD
 var LDT=(LD&&LD.until)?Math.min(TM,B.time(LD.until)):TM;   // lead.until: the faster play ends here, before the focus (the bar keeps its share)
 function u2t(u){return (LD&&u<=UM)?T0+(TM-T0)*u/UM:TM+(T1-TM)*(u-UM)/(1-UM)}
 function t2u(v){return (LD&&v<=TM)?UM*(v-T0)/(TM-T0):UM+(1-UM)*(v-TM)/(T1-TM)}
-function paintTime(v){if(sumAt!=null&&Math.abs(v-sumAt)>1e-6)closeSummary();t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms;if(!follow&&OPEN_OUT&&!base.own&&mv){goal=home();goalK=0.03}}   // without Follow, the camera eases in from the wide opening to the battle's own first view   // the battle has been started: the units come on, and Follow takes the camera
+function paintTime(v){if(sumAt!=null&&Math.abs(v-sumAt)>1e-6)closeSummary();t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms;if(!follow&&OPEN_OUT&&!base.own&&mv){goal=home();goalK=(P.opening_ease!=null?+P.opening_ease:0.03)}}   // without Follow, the camera eases in from the wide opening to the battle's own first view (playback.opening_ease: how fast, a share of the way each frame)   // the battle has been started: the units come on, and Follow takes the camera
 
   if(byDay){var n=stamp(t),d=B.dateOf(n),night=Math.abs(t-Math.round(t))<0.02;
     $('clock').textContent=d.day+' '+d.mon+' '+d.year;$('clockdate').textContent=d.wd+' · '+(night?'at nightfall':'during the day');WM.paintDayNumber(B.cal.numbered?n+1:0)}

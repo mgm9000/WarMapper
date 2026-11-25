@@ -191,6 +191,84 @@ def settings(rows):
     return root
 
 
+EVERY = 'all'       # the preset every battle starts from, before the ones its based_on row names
+
+
+def preset_table(W):
+    """{preset: [rows]} from the Playback presets sheet of the shared workbook (columns preset, setting, value, what it does, why)."""
+    out = {}
+    for r in W.get('Playback presets', []):
+        out.setdefault(str(r['preset']).strip(), []).append({'setting': r['setting'], 'value': r['value']})
+    return out
+
+
+def merge(into, over):
+    """Lay `over` on `into`: names inside names are merged, anything else (a value, a list) replaces what was there."""
+    for k, v in over.items():
+        if isinstance(v, dict) and isinstance(into.get(k), dict): merge(into[k], v)
+        else: into[k] = json.loads(json.dumps(v))
+    return into
+
+
+def chain(own):
+    """The presets a battle is based on, in the order they are laid on: `all`, then those its based_on row names."""
+    named = own.get('based_on') or []
+    if isinstance(named, str): named = [n.strip() for n in named.split(',') if n.strip()]
+    return [EVERY] + [n for n in named if n != EVERY]
+
+
+def resolve(rows, W, battle=None):
+    """A battle's playback settings: its presets laid on one another in turn (Playback presets sheet), then its own rows on top. The battle
+    file gets the result, so it reads as if the battle had set everything itself: the format and the player are unchanged by presets.
+    - based_on (the battle's own row) names its presets, e.g. ["tactical", "us-maps"]; `all` comes first for every battle.
+    - A preset's base.<name>.* is a standard map for the Type of map menu; a battle's bases.N.use = <name> takes it, and the battle's own
+      bases.N.* rows win over it.
+    - Worked out from the battle itself (where the battle does not set the value): arrows.min_share (a share of the width of the battle's
+      ground, view extent) gives arrows.min_km; arrows.reach_seconds (seconds of play at the opening speed) gives arrows.reach_minutes;
+      trails.fade_seconds gives trails.fade_after and trails.fade_over. These three never reach the battle file themselves.
+    - start_base, where the battle does not set it: its first reconstructed map on the Type of map menu, if it has one (SR-02); otherwise
+      the player's own rule (a period map that covers the opening view, else the current map)."""
+    own = settings(rows); P = preset_table(W); names = chain(own); out = {}
+    for n in names:
+        assert n in P, 'Playback settings: based_on names the preset %r, which is not on the Playback presets sheet' % n
+        merge(out, settings(P[n]))
+    own.pop('based_on', None)
+    templates = out.pop('base', {}) or {}
+    for b in own.get('bases') or []:
+        if b and b.get('use'):
+            t = templates.get(b['use']); assert t, 'Playback settings: bases use %r, which no preset of this battle defines (base.%s.*)' % (b['use'], b['use'])
+            u = b.pop('use'); full = merge(json.loads(json.dumps(t)), b); b.clear(); b.update(full)
+    out = merge(out, own)
+    if battle is not None: derive(out, battle)
+    return out
+
+
+def derive(S, battle):
+    """The values a preset asks to be worked out from the battle's size and time scale (see resolve)."""
+    rate = S.get('rate') or (1 if battle['time_unit'] == 'day' else 5)
+    A = S.get('arrows') or {}; share = A.pop('min_share', None); secs = A.pop('reach_seconds', None)
+    if share is not None and 'min_km' not in A:
+        w, s_, e, n = battle['extent']; width = (e - w) * 111.32 * math.cos(math.radians((s_ + n) / 2))
+        A['min_km'] = round(share * width, 2 if share * width < 1 else 1)
+    if secs is not None and 'reach_minutes' not in A: A['reach_minutes'] = num(round(secs * rate, 2))
+    if 'start_base' not in S:   # SR-02: a battle with its own reconstructed map on the menu opens on it (Morgan, 24 Nov 2026)
+        rc = [x for x in S.get('bases') or [] if x and x.get('recon') and not x.get('hidden')]
+        if rc: S['start_base'] = rc[0]['id']
+    T = S.get('trails') or {}; fs = T.pop('fade_seconds', None)
+    if fs is not None:
+        if 'fade_after' not in T: T['fade_after'] = num(round(fs * rate, 2))
+        if 'fade_over' not in T: T['fade_over'] = num(round(fs * rate, 2))
+
+
+def in_order(o):
+    """The playback settings with every set of names in alphabetical order (lists keep theirs: bases, views, about). The player looks
+    settings up by name, so the order means nothing to it; a fixed order keeps a battle file the same whichever rows, of the battle or of
+    its presets, a setting comes from."""
+    if isinstance(o, dict): return {k: in_order(o[k]) for k in sorted(o)}
+    if isinstance(o, list): return [in_order(v) for v in o]
+    return o
+
+
 def reconstructions(name, W):
     """Reconstructed base maps of a playback (Reconstructions and Recon layers sheets, and the GeoJSON each names): maps WarMapper draws
     itself from traced lines. Every feature keeps its own source, method, confidence and dates; a layer row gives the layer its title and
@@ -280,7 +358,8 @@ def export(pb, W):
                 'confidence': text(p['overall_confidence']), 'time_basis': text(p['time_basis']), 'location': loc, 'sources': bf.ids(p['source_ids']), 'notes': text(p['notes']),
                 'review': text(p['review_status']), 'battle': text(p['battle_id']), 'shared': True if p['unit_id'] != tr['unit_id'] else None}
 
-    ARR = settings(mine(W['Playback settings'])).get('arrival')   # units that come into the battle late are drawn coming up, not appearing
+    S = resolve(mine(W['Playback settings']), W, {'time_unit': pb['time_unit'], 'extent': [float(pb[k]) for k in ('west', 'south', 'east', 'north')]})
+    ARR = S.get('arrival')   # units that come into the battle late are drawn coming up, not appearing
     code = {x['side_id']: x['code'] for x in W['Sides']}; T0 = when(pb['time_start'])
     def parent_of(uid, day):   # who the unit answered to on that day, by its assignment records
         rows = [a for a in W['Assignments'] if a['unit_id'] == uid and not blank(a.get('parent_unit_id'))]
@@ -396,10 +475,11 @@ def export(pb, W):
     for m in mine(W['Maps']):   # a picture not to scale whose pixel for each place comes from a fit (the unstretched Faden sheet): place every step on it
         if blank(m.get('xy_from')) or maps[m['map_id']].get('lookup'): continue
         sheet_positions(maps[m['map_id']], json.load(open(os.path.join(ROOT, m['xy_from']))), tracks)
-    S = settings(mine(W['Playback settings'])); presets = S.pop('preset', None)
+    presets = S.pop('preset', None)
     own = S.pop('sides', None) or {}                  # a playback's own names for the sides (sides.<code>.short, sides.<code>.name): a war's sides are shared by its playbacks
     for sd in sides: sd.update({k: v for k, v in (own.get(sd['code']) or {}).items() if k in ('short', 'name')})
     if 'rear' in S: S['rear']['at'] = bf.ll(S['rear'].pop('lat'), S['rear'].pop('lon'))
+    S = in_order(S)
     base = json.load(open(os.path.join(ROOT, 'data', 'base', name + '.json'), encoding='utf-8'))
     battle = {'id': pb['battle_file_id'], 'title': pb['title'], 'subtitle': text(pb.get('subtitle')),
               'record': {'workbook': os.path.splitext(os.path.basename(WORKBOOK))[0], 'campaign': camp, 'battles': bf.ids(pb.get('record_battles'))},

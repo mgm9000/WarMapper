@@ -1,3 +1,39 @@
+What changed on 24 November 2026 (night): reasons recorded
+The why column now gives the record's reason for Manila's and Cowpens's arrow limits and the Cowpens aerial photograph text. No setting changes. Written by pipeline/presets_2026_11_24.py reasons.
+""
+What changed on 24 November 2026 (night): battlefields aligned
+"Playback presets, tactical: rules.blend 4. Gettysburg deepest zoom 8, Follow 2.2, question mark = overall; Manila deepest zoom 8, Follow 2.2, division view; Trenton blend 4 (SR-27). Written by pipeline/presets_2026_11_24.py align."
+""
+What changed on 24 November 2026 (night): the start map
+A battle with a reconstructed map now opens on it by rule (SR-02); Manila's and Cowpens's start_base rows are gone. No battle file changes. Written by pipeline/presets_2026_11_24.py start.
+""
+What changed on 24 November 2026 (night): one main map on the menu
+"Trenton (main: Faden 1777), First Ypres (main: the sketch of the day) and Luzon 1899 (main: Siebert 1899) keep one period map on the Type of map menu (SR-15). Written by pipeline/presets_2026_11_24.py menu."
+""
+What changed on 24 November 2026 (night): no note under the clock
+"Trenton and Cowpens no longer show ""Times are estimates"" under the clock (SR-25). Written by pipeline/presets_2026_11_24.py note."
+""
+"What changed on 24 November 2026 (night): the ""Modern"" button"
+"Playback presets, all: base.current.short ""Modern"". All six battles change. Written by pipeline/presets_2026_11_24.py modern."
+""
+What changed on 24 November 2026 (night): arrows scaled to the battle
+"Playback presets: arrows on everywhere; the shortest move with an arrow is 6% of the battle's width on a battlefield, 20 km on a campaign; an arrow runs 6 seconds of play ahead. Manila and Cowpens keep their limits. Written by pipeline/presets_2026_11_24.py arrows."
+""
+What changed on 24 November 2026 (night): routes taken on every battle
+"Playback presets, all: trails on, opacity 0.55, fading after 4 seconds of play. Gettysburg, First Ypres and Luzon 1899 change; Trenton, Manila and Cowpens keep their fade times. Written by pipeline/presets_2026_11_24.py routes."
+""
+What changed on 24 November 2026 (night): the slow ease in without Follow
+"Playback presets, operational: opening_ease 0.006 (new setting). First Ypres and Luzon 1899 change. Written by pipeline/presets_2026_11_24.py ease."
+""
+What changed on 24 November 2026 (night): the slow ease in
+"Playback presets, tactical: follow.glide_seconds 14, follow.glide_rate 0.006 (from Cowpens). Gettysburg, Trenton and Manila change. Written by pipeline/presets_2026_11_24.py glide."
+""
+What changed on 24 November 2026 (night): symbols stay clearly visible
+"Playback presets, all: event_dim 0.7. Gettysburg, Trenton, First Ypres, Manila and Luzon 1899 change; Cowpens had it already. Written by pipeline/presets_2026_11_24.py symbols."
+""
+What changed on 24 November 2026 (night): playback presets
+"New sheet Playback presets: the settings battles share (all, tactical, operational, us-maps, world-maps, civil-war). Each war's Playback settings has a based_on row per battle and a why column, and no longer repeats what its presets say. Every battle file is unchanged. Written by pipeline/presets_2026_11_24.py refactor."
+""
 What changed on 24 November 2026 (late): the Cowpens playback after Morgan's second review
 "Revolutionary War.xlsx, Cowpens: the light infantry, Legion infantry, 7th and 71st (CP56, CP66, CP76, CP104) are drawn until 07:56, a few minutes after they laid down their arms, not 08:30; Washington's pursuit (CP37) is drawn arriving at 08:22, not 08:16, so he stays behind Tarleton; settings follow.hold_until, follow.glide_rate, follow.glide_seconds, lead.until, texts.after and texts.lost. No reading, source or recorded time changed. With player changes: a route taken fades once its unit moves on without a route. Written by pipeline/cowpens_review2_2026_11_24.py."
 ""
