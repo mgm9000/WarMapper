@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (late): the Cowpens playback after Morgan's second review
+"Revolutionary War.xlsx, Cowpens: the light infantry, Legion infantry, 7th and 71st (CP56, CP66, CP76, CP104) are drawn until 07:56, a few minutes after they laid down their arms, not 08:30; Washington's pursuit (CP37) is drawn arriving at 08:22, not 08:16, so he stays behind Tarleton; settings follow.hold_until, follow.glide_rate, follow.glide_seconds, lead.until, texts.after and texts.lost. No reading, source or recorded time changed. With player changes: a route taken fades once its unit moves on without a route. Written by pipeline/cowpens_review2_2026_11_24.py."
+""
 What changed on 24 November 2026 (night): the nearest towns at Cowpens
 "Revolutionary War.xlsx, Cowpens: four Labels rows with show ""far"" (new): Gilbert Town, Charlotte, Winnsborough and Ninety Six, the nearest places of 1781, named at the edge of the map with an arrow and a straight-line distance, since the reader cannot zoom out 30 to 110 km. Sources S112 to S115 (positions, each checked against a second source). Playback setting about.9 explains them. Written by pipeline/cowpens_far_towns_2026_11_24.py."
 ""

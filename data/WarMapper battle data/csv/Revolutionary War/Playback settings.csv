@@ -226,7 +226,12 @@ cowpens,bases.10.hidden,True,
 cowpens,bases.10.note,"The National Park Service's map of the park today: trails, monuments and the trace of the road.",
 cowpens,start_base,r81t,
 cowpens,about.8,"The playback opens on ""1781 with terrain"", a reconstruction: the roads Edwin Bearss drew in 1967 as the roads of the battle, laid on the ground by the road the park still keeps, and today's ground, which the park has kept open. The map details (the i button) list each road with its source and how sure it is, and offer the other maps of this ground: Bearss's own maps phase by phase, the Army War College sketches of 1928, the USGS maps of 1959 and 1975, Mills's map of 1825 and the park map.",
-cowpens,follow.glide_seconds,10,"Once play is pressed, the camera eases in from the whole ground to the action over this many seconds"
+cowpens,follow.glide_seconds,14,"Once the hold ends, the camera eases in from the whole ground to the action over this many seconds"
 cowpens,event_dim,0.7,Units not named in the current key event are drawn at this strength (the player's default is 0.32; at Cowpens it made most symbols faint)
 cowpens,arrows.reach_minutes,6,"An arrow runs this many minutes of march ahead of its unit, not to the end of the road"
 cowpens,about.9,"No town or village stood near the Cowpens in 1781: Spartanburg was laid out in 1785, Gaffney in the 1800s, the town of Cowpens in 1880. The nearest places named in the campaign are shown at the edge of the map, with an arrow and their distance in a straight line from the middle of the screen: Gilbert Town in North Carolina (the Rutherford County seat, where Ferguson camped before Kings Mountain), Charlotte (the village Cornwallis held in the autumn of 1780), Winnsborough (Cornwallis's winter camp, which he left on 8 January) and Ninety Six (the British post Morgan was sent to threaten).",
+cowpens,follow.hold_until,1781-01-17T06:12,"The camera stays on the whole ground until this moment (Morgan's lines come onto the map), then eases in"
+cowpens,follow.glide_rate,0.006,How fast the camera eases in after the hold (the player's default is 0.03)
+cowpens,lead.until,1781-01-17T06:20,"The forming-up plays at lead.rate until here, before Tarleton's column sets off; its march plays at 1 minute a second"
+cowpens,texts.after,The last record for this unit. A unit that surrendered is taken off the map a few minutes after it laid down its arms.,
+cowpens,texts.lost,"Not on the map any more: it surrendered, was taken or left the field. Its last record is below.",
