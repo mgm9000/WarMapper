@@ -1,3 +1,6 @@
+What changed on 24 November 2026 (night): no note under the clock
+"Trenton and Cowpens no longer show ""Times are estimates"" under the clock (SR-25). Written by pipeline/presets_2026_11_24.py note."
+""
 "What changed on 24 November 2026 (night): the ""Modern"" button"
 "Playback presets, all: base.current.short ""Modern"". All six battles change. Written by pipeline/presets_2026_11_24.py modern."
 ""

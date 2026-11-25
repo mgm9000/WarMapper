@@ -33,3 +33,4 @@ Presets: the slow ease in without Follow (24 Nov 2026),"opening_ease 0.006 comes
 Presets: routes taken on every battle (24 Nov 2026),"trails.on, trails.opacity and trails.fade_seconds come from the preset ""all"" (SR-16)."
 Presets: arrows scaled to the battle (24 Nov 2026),"arrows.on, arrows.reach_seconds (all), arrows.min_share (tactical) and arrows.min_km 20 (operational) come from the presets (SR-06, SR-07)."
 "Presets: the ""Modern"" button (24 Nov 2026)","The Current map's short word comes from the preset ""all"" (SR-26)."
+"No ""Times are estimates"" note (24 Nov 2026)",Trenton and Cowpens: time_note rows removed (SR-25).
