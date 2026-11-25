@@ -69,6 +69,8 @@ luzon1899,bases.2.short,1899,,
 luzon1899,bases.2.map,siebert-1899,,
 luzon1899,bases.2.backdrop,current,,
 luzon1899,bases.3.id,n00,,
+luzon1899,bases.3.hidden,True,"Kept off the Type of map menu: the map details offer it, with the note","SR-15: one main map on the Type of map menu (Morgan, 24 Nov 2026); the main map here is c99."
+luzon1899,bases.3.note,Howard's map of northern Luzon for General Young (1900): the autumn campaign in the north.,,
 luzon1899,bases.3.label,"Northern Luzon, 1900 (Young)",,
 luzon1899,bases.3.short,1900,,
 luzon1899,bases.3.map,young-1900,,
@@ -103,6 +105,8 @@ luzon1899,about.5,"Operations south and east of Manila in 1899 (Paranaque and Za
 luzon1899,about.6,"The three period maps are the Army's and the War Department's own. They were compiled from reconnaissance and older Spanish maps, not surveyed, so towns on them can be one to five kilometres from where they are; units are drawn at the true places.",,
 luzon1899,about.7,Symbols are blue for the Americans and red for the Philippine Republic; the colours are a drawing convention.,,
 luzon1899,bases.4.id,wd99,"A third period map, added 21 Nov 2026",
+luzon1899,bases.4.hidden,True,"Kept off the Type of map menu: the map details offer it, with the note","SR-15: one main map on the Type of map menu (Morgan, 24 Nov 2026); the main map here is c99."
+luzon1899,bases.4.note,"The War Department's map of the theatre of operations in Luzon (1899, second edition).",,
 luzon1899,bases.4.label,"Luzon theatre, 1899 (War Dept)",,
 luzon1899,bases.4.short,Theatre,,
 luzon1899,bases.4.map,theatre-1899,,

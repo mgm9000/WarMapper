@@ -12,6 +12,8 @@ trenton,follow.empty,march,The view shown while no unit is placed (a preset),
 trenton,bases.1.id,mod,A map the reader can put under the units; the first is the opening one,
 trenton,bases.1.use,current,A standard map from the presets (base.current): its rows below are only where this battle differs,
 trenton,bases.2.id,sk,A map the reader can put under the units; the first is the opening one,
+trenton,bases.2.hidden,True,"Kept off the Type of map menu: the map details offer it, with the note","SR-15: one main map on the Type of map menu (Morgan, 24 Nov 2026); the main map here is fd."
+trenton,bases.2.note,"Lt. Wiederhold's sketch of the fight in the town (1776), drawn by a Hessian officer who was there; not to scale.",,
 trenton,bases.2.label,1776 sketch,A map the reader can put under the units; the first is the opening one,
 trenton,bases.2.short,1776,A map the reader can put under the units; the first is the opening one,
 trenton,bases.2.map,wiederhold-1776,A map the reader can put under the units; the first is the opening one,

@@ -26,3 +26,4 @@ Presets: routes taken on every battle (24 Nov 2026),"trails.on, trails.opacity a
 Presets: arrows scaled to the battle (24 Nov 2026),"arrows.on, arrows.reach_seconds (all), arrows.min_share (tactical) and arrows.min_km 20 (operational) come from the presets (SR-06, SR-07)."
 "Presets: the ""Modern"" button (24 Nov 2026)","The Current map's short word comes from the preset ""all"" (SR-26)."
 "No ""Times are estimates"" note (24 Nov 2026)",Trenton and Cowpens: time_note rows removed (SR-25).
+One main map on the menu (24 Nov 2026),"Trenton, First Ypres and Luzon 1899: the other period maps are hidden from the Type of map menu and offered from the map details (SR-15)."

@@ -11,6 +11,8 @@ ypres,views.2.short,All,A named-view button,
 ypres,bases.1.id,now,A map the reader can put under the units; the first is the opening one,
 ypres,bases.1.use,current,A standard map from the presets (base.current): its rows below are only where this battle differs,
 ypres,bases.2.id,m14,A map the reader can put under the units; the first is the opening one,
+ypres,bases.2.hidden,True,"Kept off the Type of map menu: the map details offer it, with the note","SR-15: one main map on the Type of map menu (Morgan, 24 Nov 2026); the main map here is day."
+ypres,bases.2.note,Sketch A of the British official history (1925): the whole Ypres front on one sheet.,,
 ypres,bases.2.label,1914 map,A map the reader can put under the units; the first is the opening one,
 ypres,bases.2.short,1914,A map the reader can put under the units; the first is the opening one,
 ypres,bases.2.map,official-history-sketch-a,A map the reader can put under the units; the first is the opening one,
