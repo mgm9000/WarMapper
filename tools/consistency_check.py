@@ -112,12 +112,14 @@ def overrides(W, name):
 def rules(b, W):
     """(failures, warnings) for one battle file: the rules of the register that a program can check."""
     P = b.get('playback') or {}; fail = []; warn = []; day = b['time']['unit'] == 'day'
+    ori = P.get('style') == 'orientation'   # an orientation (25 Nov 2026): clashes and places, no units, so the rules about units do not apply
     bases = P.get('bases') or []
     # SR-01: 24-hour time in everything shown as the playback's own words (a source's own wording, quoted, keeps its form)
     shown = [('event %s' % e['id'], (e.get('name') or '') + ' ' + (e.get('label') or '') + ' ' + (e.get('text') or '')) for e in b['events']]
     shown += [('summary %s' % s['from'], s['title'] + ' ' + s['text']) for s in b.get('summaries', [])]
     shown += [('opening text', (b.get('opening') or {}).get('text') or '')] + [('about %d' % (i + 1), t) for i, t in enumerate(P.get('about') or [])]
     shown += [('texts.%s' % k, v) for k, v in (P.get('texts') or {}).items()]
+    shown += [('clash %s' % c['id'], ' '.join(str(c.get(k) or '') for k in ('result', 'captured', 'place')) + ' ' + str((c.get('other') or {}).get('text') or '')) for c in b.get('clashes', [])]
     for where, t in shown:
         m = AMPM.search(t)
         if m: fail.append('SR-01 24-hour time: %s says "%s"' % (where, t[max(0, m.start() - 25):m.end() + 5].strip()))
@@ -161,6 +163,7 @@ def rules(b, W):
     import datetime as dt
     span = lambda v: dt.datetime.fromisoformat(v if len(v) > 10 else v + 'T00:00')
     n = (span(b['time']['end']) - span(b['time']['start'])).total_seconds() / 86400   # the days this playback covers
+    if ori: orientation_rules(b, fail, warn); return fail, warn
     if n > 2 and P.get('day_pause') is False: fail.append('SR-05 day pauses: %.0f days and day_pause is off' % n)
     if n > 2 and not b.get('summaries'): warn.append('SR-05 day pauses: %.0f days and no summaries (the pause shows the day\'s events instead)' % n)
     # SR-06 and SR-07: arrows ahead of long moves, scaled to the battle, running a little way ahead
@@ -211,6 +214,45 @@ def rules(b, W):
     over = E.pace(b)
     if over: warn.append('implausibly fast moves: %d (first: %s)' % (len(over), over[0]))
     return fail, warn
+
+
+def orientation_rules(b, fail, warn):
+    """The rules of an orientation playback (SR-28 to SR-30, 25 Nov 2026), and the shared rules that still apply to it. The rules about
+    units (SR-05 day pauses, SR-06 and SR-07 arrows, SR-10 both sides' units, SR-16 routes, SR-17 events tied to units) do not: it has
+    none. Morgan's choice for the pauses: one stop, at the end (no day_pause), with a summary for each year and a closing summary."""
+    P = b.get('playback') or {}; bases = P.get('bases') or []
+    maps = {m['id']: m for m in b['maps']}; recs = {r['id']: r for r in b.get('reconstructions', [])}
+    for x in bases:   # SR-09, SR-15, SR-25 as for every battle
+        if x.get('map') and not (maps.get(x['map']) or {}).get('credit'): fail.append('SR-09 credits: map %s has no credit' % x['map'])
+        if x.get('imagery') and not x['imagery'].get('credit'): fail.append('SR-09 credits: imagery base %s has no credit' % x['id'])
+        if x.get('recon') and not (recs.get(x['recon']) or {}).get('credit'): fail.append('SR-09 credits: reconstruction %s has no credit' % x['recon'])
+    if not (P.get('modern') or {}).get('credit'): fail.append('SR-09 credits: the modern map has no credit')
+    main = [x['id'] for x in bases if not x.get('hidden') and not x.get('of') and not x.get('current') and not x.get('imagery')]
+    if len(main) > 1: fail.append('SR-15 one main map: %d on the Type of map menu (%s)' % (len(main), ', '.join(main)))
+    if not main: warn.append('SR-15 one main map: no period or reconstructed map yet (the modern map only)')
+    if P.get('time_note'): fail.append('SR-25 clock note: "%s" is shown under the clock' % P['time_note'].get('text'))
+    if P.get('day_pause') not in (False, None): fail.append('SR-05 (orientation): it pauses during play (day_pause %r); Morgan chose one stop, at the end' % P.get('day_pause'))
+    # SR-28: every clash is drawn by who won, from a cited source; a disputed one gives both readings
+    C = b.get('clashes', [])
+    if not C: warn.append('SR-28 clashes: an orientation with no clashes')
+    for c in C:
+        if not c.get('sources'): fail.append('SR-28 clashes: %s has no source for its result' % c['id'])
+        if (c.get('method') == 'stated' or c.get('confidence') == 'high') and not c.get('sources'): fail.append('SR-21 sources: clash %s is %s with no source' % (c['id'], 'stated' if c.get('method') == 'stated' else 'high'))
+        if c.get('disputed') and not (c.get('other') or {}).get('sources'): fail.append('SR-28 clashes: %s is disputed but its other reading cites no source' % c['id'])
+    # SR-29: every change of control is dated and sourced
+    for p in b.get('places', []):
+        if not p.get('control'): warn.append('SR-29 control: %s has no record of who held it' % p['id'])
+        for h in p.get('control', []):
+            if not h.get('sources'): fail.append('SR-29 control: %s from %s (%s) has no source' % (p['id'], h['from'], h['held_by']))
+            if (h.get('method') == 'stated' or h.get('confidence') == 'high') and not h.get('sources'): fail.append('SR-21 sources: %s from %s is %s with no source' % (p['id'], h['from'], h.get('method') or h.get('confidence')))
+    # the pane's summaries: one for each year played, and one at the end
+    y0, y1 = int(b['time']['start'][:4]), int(b['time']['end'][:4]); S = b.get('summaries', [])
+    have = {y for x in S if x['kind'] == 'year' for y in range(int(x['from'][:4]), int(x['to'][:4]) + 1)}
+    miss = [str(y) for y in range(y0, y1 + 1) if y not in have]
+    if miss: warn.append('SR-28 summaries: no year summary for %s' % ', '.join(miss))
+    if not any(x['kind'] == 'end' for x in S): warn.append('SR-28 summaries: no closing summary (kind end)')
+    for k, s in (b.get('sources') or {}).items():   # SR-22
+        if not s.get('rights'): warn.append('SR-22 rights: source %s has no rights recorded' % k)
 
 
 def main(argv):

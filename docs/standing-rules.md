@@ -56,6 +56,13 @@ No rule was invented. Where no reason was recorded the entry says so.
 | SR-25 No "Times are estimates" note under the clock | A | A | A | A | A | A | check |
 | SR-26 Current-map button reads "Modern" | A | A | A | A | A | A | preset (all); check |
 | SR-27 Tactical battles share their settings unless a reason is recorded | A | A | N | A | N | A | preset (tactical); check (reasons) |
+| SR-28 Orientations: clashes by who won, shape and colour, sourced, both readings where disputed | N | N | N | N | N | N | preset (orientation); player; check |
+| SR-29 Orientations: control of places, dated and sourced | N | N | N | N | N | N | player; check |
+| SR-30 Orientations: month by month, busy months slower, one stop at the end | N | N | N | N | N | N | preset (orientation); player; check |
+
+Since 25 Nov 2026 there is a seventh kind of playback, the **orientation** (clashes and places, no units), built for the HIST 340 South
+Carolina chapter and tried so far only on made-up rows (`tests/orientation/make_demo.py`). No orientation is on the site yet, so it has no
+column; the section "Orientations" below says which rules reach it.
 
 Notes on the matrix. SR-01: the eight a.m./p.m. texts were converted in the session C audit (24 Nov; Morgan's yes), so all six now pass; SR-16: First Ypres has the layer
 but no route on record, so it draws nothing and the switch is not offered until routes are entered (F-7). SR-23: the out-of-date Philippine War
@@ -310,6 +317,58 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
 - **Enforced by:** preset `tactical`: deepest zoom 8, Follow's deepest 2.2, blend 4 minutes, question mark = overall (Morgan's values, 24 Nov); Manila has the division view; check: lists every row where a battle differs from its presets and whether it gives a reason. Cowpens keeps Follow 2.4 (a small field). Gettysburg's `zoom.min_factor` was 0.96 (preset 0.9) with no recorded reason; Morgan chose to align it on 24 Nov (session C).
 - **Status:** today Gettysburg 1.95 against Trenton and Cowpens 8 (Manila 1.6); Trenton blend 3 against 4; Gettysburg question mark `location` against `overall`; Manila has no division view. A* for the four; First Ypres and Luzon are operational: N. The values are to be chosen in the follow-up session, and Morgan is asked before they change (F-3). **Session B (24 Nov, branch `presets-and-checks`):** done (Morgan's values); one difference without a reason, Gettysburg `zoom.min_factor`. **Session C audit (24 Nov, evening): Morgan said align; the 0.96 row was deleted, so Gettysburg now takes the preset 0.9.**
 
+## SR-28 Orientations: clashes drawn by who won, by shape as well as colour, from cited sources
+
+- **Decided:** 25 Nov 2026 (Morgan's answers, Session 1 of `claude/sc-orientation-prompt.md`; approved the design the same day).
+- **Rule:** an orientation shows no unit detail. Each clash is a crossed-swords symbol in the colour of the side that won: red British
+  (a Loyalist win counts as British; the pane says Loyalist), blue American, black Cherokee (the legend word is "Cherokee", not "Indian").
+  Colour is never the only cue: square British, circle American, triangle Cherokee, and a grey diamond where no side won. A post or stores
+  taken with no fight recorded is a small flag in the taker's colour. Where the sources disagree the symbol carries a dagger; the result
+  drawn is the one the sources settle on (SR-19) and the pane gives both readings with their sources; grey is only for a result that stays
+  indecisive. A clash stands out (larger, with a ring) in its own month, then stays on the map **at full strength** (Morgan chose this over
+  70% or fading), so the end shows the whole record. Where a fleet fought (Sullivan's Island 1776, Charleston 1780), a small ship mark in
+  that side's colour stands beside the symbol (Morgan, 25 Nov 2026: orientations only; SR-08 is unchanged for battles).
+- **Scope:** every orientation (Morgan, 25 Nov 2026: "Every orientation"). A later one that differs gives a reason, as with presets.
+- **Built in:** shared player (`ORI` block in `app/player.js`); battle file `clashes` (docs/battle-file.md); workbook sheet `Clashes`.
+- **Enforced by:** check (`orientation_rules` in `tools/consistency_check.py`): every result cites a source, a `stated` or `high` result
+  has one (SR-21), and a disputed one cites the other reading's sources; the format check refuses a `won_by` that is not a side.
+- **Status:** built and tested on made-up rows (pull request of 25 Nov 2026). South Carolina data comes in Sessions 2 and 3.
+
+## SR-29 Orientations: control of places, each change dated and sourced
+
+- **Decided:** 25 Nov 2026 (Morgan's request: "showing the current state of which side controls which towns and villages").
+- **Rule:** towns, villages, forts and ports each carry a small marker of the holder's shape and colour; contested (no side firmly holds it)
+  is a hollow grey diamond. In South Carolina, Cherokee towns are a fourth state (black triangle) until the cession of 20 May 1777
+  (Morgan, 25 Nov 2026). Each change of hands is a dated row with its basis, method, confidence and sources. The markers show throughout
+  play (Battle options can hide them) and the closing pane lists who held what.
+- **Scope:** every orientation. **Built in:** shared player; battle file `places`; sheets `Control places` and `Control`.
+- **Enforced by:** check: every change of control cites a source; `stated` or `high` needs one (SR-21).
+
+## SR-30 Orientations: month by month, busy months slower, one stop at the end
+
+- **Decided:** 25 Nov 2026. Morgan first asked for "a pause at each year"; asked again, he chose **one stop at the end only** (confirmed
+  the same day). Busy months play slower (his yes): about a second a month plus half a second for each event in the month, at speeds of 2,
+  1 and ½ seconds a month. Gaps in the list (South Carolina 1777 and 1778) are not filled from other lists: they are flagged on the timeline,
+  on the map and in the year's summary (Morgan, 25 Nov 2026).
+- **Rule:** the clock shows the month; the forward and back buttons move a month. Each year has a summary, shown in the pane while that
+  year plays; the stop at the end shows the closing summary, the wins by side and year, and who held what. It opens on its own base map,
+  zoomed out and with no symbols, and eases in when play is pressed (SR-02, SR-04); the camera stays on the whole state (no Follow, SR-18 N).
+- **Scope:** every orientation. **Built in:** preset `orientation` (`day_pause` false, `orientation.month_seconds` 1,
+  `orientation.event_seconds` 0.5, `orientation.speeds` [2, 1, 0.5], `opening_ease` 0.006); shared player.
+- **Enforced by:** check: an orientation that pauses during play fails; a year without a summary, or no closing summary, is a warning.
+
+## Orientations: which rules reach them (carry-forward check of 25 Nov 2026)
+
+Checked at the start of Session 1 of `claude/sc-orientation-prompt.md`, and shown to Morgan before his answers.
+
+- **Apply as written:** SR-01 (dates written "21 Apr 1775"), SR-02, SR-03 and SR-26, SR-04, SR-09, SR-12 to SR-14 (for the reconstructed
+  base map of Session 4), SR-15, SR-19 to SR-25.
+- **Carried over in a new form:** SR-05 day pauses became SR-30 (one stop at the end); SR-11 (70% strength) became SR-28's full strength for
+  past clashes, at Morgan's choice; SR-17 (events tied to units) became events tied to their clash or place (BP-35); SR-08 ships became the
+  ship mark of SR-28.
+- **Not applicable (no units):** SR-06, SR-07, SR-10, SR-16, SR-18, SR-27, F-8.
+- **Still open from before, not touched:** the main maps of Trenton, First Ypres and Luzon, and the satellite view (both "decide later").
+
 ## Project-wide rules (no per-battle status)
 
 - Wording: "battlefield study guide" or "military history map study guide"; audience "service members" (not "tour guide" or "military officers"). Memory, 13 to 15 Nov 2026.
@@ -317,6 +376,18 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
 - Work on a branch, open a pull request, don't merge. Ask Morgan before stacking on an unmerged branch. Prompt of 24 Nov.
 - Model rule: Sonnet default; Opus or Fable before changing the format, the workbook schema or shared playback rules, or setting a position from conflicting sources; after two failed fixes, move up a tier. Project instructions.
 - Morgan's folder on the Mac is `Documents/Starfishient/WarMapper`; the workbooks are in the repo under `data/WarMapper battle data/`.
+
+## Answers from Morgan (25 Nov 2026): the South Carolina orientation
+
+Two batches and a design approval, Session 1 of `claude/sc-orientation-prompt.md`.
+
+- Where it ends: at Cowpens, 17 Jan 1781, with control as it stood that day. Rows T40 to T50 go into the data as a later second stage.
+- Black is labelled "Cherokee"; Cherokee towns are a control state of their own until May 1777.
+- Disputed results: settled by the sources (SR-19), grey only where indecisive; a capture with no fight is a flag.
+- Loyalist wins count as British. The 1777 and 1778 gap is flagged, not filled from the SC Archives list.
+- Past clashes stay at full strength. Pause only at the end (replaces "a pause at each year"); busy months slower.
+- Ships: a small ship mark at Sullivan's Island and Charleston.
+- The design approved ("Approve, build it"). Scope of all of the above: every orientation.
 
 ## Answers from Morgan (24 Nov 2026)
 

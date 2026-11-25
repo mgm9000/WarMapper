@@ -31,7 +31,7 @@ VIRTUAL_NOTE = "Shown leaving its division's last recorded position. Where the u
 IDS = {'Wars': 'war_id', 'Campaigns': 'campaign_id', 'Battles': 'battle_id', 'Phases': 'phase_id', 'Sides': 'side_id', 'Units': 'unit_id',
        'Assignments': 'assign_id', 'Positions': 'pos_id', 'Routes': 'route_id', 'Events': 'event_id', 'Hypotheses': 'hypothesis_id',
        'Gaps': 'gap_id', 'Places': 'place_id', 'Sources': 'source_id', 'Source candidates': 'candidate_id', 'Playbacks': 'playback_id',
-       'Reconstructions': 'recon_id', 'Links': 'link_id'}
+       'Reconstructions': 'recon_id', 'Links': 'link_id', 'Clashes': 'clash_id', 'Control places': 'cplace_id', 'Control': 'control_id'}
 
 
 def workbooks():
@@ -76,7 +76,9 @@ def load():
     test = {'Campaigns': lambda r: r['war_id'], 'Sides': lambda r: r['war_id'], 'Units': lambda r: side.get(r['side_id']),
             'Positions': lambda r: camp.get(r['campaign_id']), 'Routes': lambda r: camp.get(r['campaign_id']), 'Events': lambda r: camp.get(r['campaign_id']),
             'Playbacks': lambda r: camp.get(r['campaign_id'])}
-    for s in ('Tracks', 'Playback settings', 'Labels', 'Maps', 'Summaries', 'Nations', 'Reconstructions'): test[s] = lambda r: pb.get(r['playback_id'])
+    for s in ('Tracks', 'Playback settings', 'Labels', 'Maps', 'Summaries', 'Nations', 'Reconstructions', 'Clashes', 'Control places'): test[s] = lambda r: pb.get(r['playback_id'])
+    cpl = {r['cplace_id']: pb.get(r['playback_id']) for r in out.get('Control places', [])}
+    test['Control'] = lambda r: cpl.get(r['cplace_id'])
     for sheet, f in test.items():
         for r in out.get(sheet, []):
             name = whose[id(r)]
@@ -324,6 +326,38 @@ def links(pb, W):
     return out
 
 
+def located(r):
+    """How a clash or a place was put on the map, from the same columns the Positions sheet uses."""
+    src = text(r.get('coord_source'))
+    return {'source': None if src == 'none' else src, 'basis': text(r.get('coordinate_basis')), 'confidence': text(r.get('coordinate_confidence')),
+            'precision_m': int(r['coord_precision_m']) if not blank(r.get('coord_precision_m')) else None}
+
+
+def orientation(pb, W):
+    """An orientation's clashes and places (since 25 Nov 2026): the Clashes sheet, one row per clash or capture, tied to its event; the
+    Control places sheet, one row per town, village, fort or port; the Control sheet, one row each time a place changes hands."""
+    name = pb['playback_id']
+    clashes = []
+    for r in [r for r in W.get('Clashes', []) if r.get('playback_id') == name]:
+        other = {'won_by': text(r.get('other_won_by')), 'text': text(r.get('other_reading')), 'sources': bf.ids(r.get('other_source_ids'))} if yes(r.get('disputed')) else None
+        clashes.append({'id': r['clash_id'], 'event': r['event_id'], 'kind': text(r.get('kind')) or 'fight', 'won_by': text(r.get('won_by')), 'at': bf.ll(r['lat'], r['lon']),
+                        'place': text(r.get('place')), 'result': text(r.get('result')), 'captured': text(r.get('captured')), 'captured_by': text(r.get('captured_by')),
+                        'ships': text(r.get('ships')), 'disputed': True if yes(r.get('disputed')) else None, 'other': other, 'hypothesis': text(r.get('hypothesis_id')),
+                        'method': text(r.get('result_method')), 'confidence': text(r.get('overall_confidence')), 'location': located(r),
+                        'sources': bf.ids(r.get('source_ids')), 'notes': text(r.get('notes')), 'review': text(r.get('review_status'))})
+    changes = {}
+    for r in W.get('Control', []): changes.setdefault(r['cplace_id'], []).append(r)
+    places = []
+    for r in [r for r in W.get('Control places', []) if r.get('playback_id') == name]:
+        ctl = [{'from': when(h['from']), 'held_by': text(h['held_by']), 'basis': text(h.get('basis')), 'event': text(h.get('event_id')), 'method': text(h.get('method')),
+                'confidence': text(h.get('confidence')), 'sources': bf.ids(h.get('source_ids')), 'notes': text(h.get('notes')), 'review': text(h.get('review_status'))}
+               for h in changes.get(r['cplace_id'], [])]
+        ctl.sort(key=lambda h: h['from'] or '')
+        places.append({'id': r['cplace_id'], 'name': r['name'], 'kind': text(r.get('kind')), 'at': bf.ll(r['lat'], r['lon']), 'location': located(r),
+                       'sources': bf.ids(r.get('source_ids')), 'notes': text(r.get('notes')), 'control': ctl})
+    return clashes, places
+
+
 def export(pb, W):
     """One battle file, from the workbook's rows for the playback `pb` (a row of the Playbacks sheet)."""
     name, camp = pb['playback_id'], pb['campaign_id']
@@ -480,7 +514,8 @@ def export(pb, W):
     for sd in sides: sd.update({k: v for k, v in (own.get(sd['code']) or {}).items() if k in ('short', 'name')})
     if 'rear' in S: S['rear']['at'] = bf.ll(S['rear'].pop('lat'), S['rear'].pop('lon'))
     S = in_order(S)
-    base = json.load(open(os.path.join(ROOT, 'data', 'base', name + '.json'), encoding='utf-8'))
+    bp = os.path.join(ROOT, 'data', 'base', name + '.json')   # an orientation without its own cut of today's ground draws the modern map only
+    base = json.load(open(bp, encoding='utf-8')) if os.path.exists(bp) else {'credit': '', 'lines': [], 'areas': []}
     battle = {'id': pb['battle_file_id'], 'title': pb['title'], 'subtitle': text(pb.get('subtitle')),
               'record': {'workbook': os.path.splitext(os.path.basename(WORKBOOK))[0], 'campaign': camp, 'battles': bf.ids(pb.get('record_battles'))},
               'time': {'unit': pb['time_unit'], 'zero': when(pb['time_zero']), 'start': when(pb['time_start']), 'end': when(pb['time_end']),
@@ -491,6 +526,9 @@ def export(pb, W):
               'sides': sides, 'nations': [{k: n[k] for k in ('name', 'short', 'code', 'colour', 'dark', 'paper')} for n in mine(W.get('Nations', []))],
               'units': ulist, 'tracks': tracks, 'events': events, 'labels': labels, 'maps': list(maps.values()), 'base': base}
     if summaries: battle['summaries'] = summaries
+    cl, pl = orientation(pb, W)
+    if cl: battle['clashes'] = cl
+    if pl: battle['places'] = pl
     lk = links(pb, W)
     if lk: battle['links'] = lk
     rc = reconstructions(name, W)

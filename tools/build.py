@@ -28,9 +28,10 @@ def read(path):
 SITE = 'https://mgm9000.github.io/WarMapper/'   # the main page; a page on the site links to it relatively, a single file (offline copy, artifact) to the site itself
 
 
-def page(battle, app, home='../../'):
-    """The page as one HTML document, with the shared files referenced under the path `app` and a link back to the main page at `home`."""
-    d = os.path.join(ROOT, 'playbacks', battle)
+def page(battle, app, home='../../', folder=None):
+    """The page as one HTML document, with the shared files referenced under the path `app` and a link back to the main page at `home`.
+    `folder` is where the battle file is, if not playbacks/<battle> (the orientation test, tests/orientation/demo)."""
+    d = folder or os.path.join(ROOT, 'playbacks', battle)
     src = read(os.path.join(ROOT, 'app', 'page.html'))
     data = read(os.path.join(d, 'battle.json'))
     b = json.loads(data)

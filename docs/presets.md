@@ -30,6 +30,7 @@ says only where it differs, and why.
 | `us-maps` | ground in the United States: Gettysburg, Trenton, Cowpens | The USGS topographic map (the modern map) and the USGS aerial photography (`base.satellite`) |
 | `world-maps` | ground elsewhere: First Ypres, Manila, Luzon 1899 | OpenTopoMap as the modern map |
 | `civil-war` | Gettysburg (and the next Civil War battle) | March pace by branch |
+| `orientation` | orientation playbacks (since 25 Nov 2026; the first is the HIST 340 South Carolina chapter's opening, to come) | Style `orientation`, km scale bar; no pause during play, one stop at the end (Morgan, 25 Nov 2026); the slow ease in, `opening_ease` 0.006 (SR-04); zoom-out limit 0.85 and closest zoom 0.3; about a month a second, plus half a second for each event in the month, at speeds of 2, 1 and ½ seconds a month (Morgan, 25 Nov 2026) |
 
 There is no preset yet for the Revolutionary War, the Philippine War or the First World War: their battles share nothing beyond the presets
 above. The next battle of a war is the time to start one (Guilford Courthouse for the Revolutionary War, say), with what it shares with the
@@ -61,6 +62,10 @@ itself keeps its own.
 
 ## Adding a battle
 
-Give it a `based_on` row (one of `tactical` or `operational`, and one of `us-maps` or `world-maps`, and its war's preset if there is one),
+Give it a `based_on` row (one of `tactical`, `operational` or `orientation`, and one of `us-maps` or `world-maps`, and its war's preset if there is one),
 its Current map as `bases.N.use = current`, and only the rows its data needs (titles, texts, views, Follow box, label zooms, maps).
 Anything else it sets is a difference from the presets and needs a `why`.
+
+An orientation (another state, another war) is data only: its Playbacks row (time unit `day`), `based_on` ["orientation", "us-maps"] (or
+`world-maps`), its Current map, its events, and rows on the Clashes, Control places, Control and Summaries sheets (docs/battle-file.md:
+clashes, places). `tests/orientation/make_demo.py` builds one from made-up rows, as a worked example.
