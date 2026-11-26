@@ -335,7 +335,8 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
   has one (SR-21), and a disputed one cites the other reading's sources; the format check refuses a `won_by` that is not a side.
 - **Status:** built and tested on made-up rows (pull request of 25 Nov 2026). South Carolina data comes in Sessions 2 and 3.
 - **Corrections of 26 Nov 2026 (Morgan, after his first look at the live map):** the key no longer lists the ship mark or the dagger; ships
-  and daggers stay on the map, and the side pane explains the dagger. Month by month, a clash no longer swells and shrinks: it fades in at its
+  and daggers stay on the map, and the side pane explains the dagger. Later the same morning the key also lost "Ring: this month" and
+  "Town, no side on record yet" (Morgan); the ring and the town mark stay on the map. Month by month, a clash no longer swells and shrinks: it fades in at its
   own size and a plain ring marks its month ("the symbols 'pulse' ... that doesn't look good"). Found the same day: on a reconstructed map
   a style rule for its town dots painted every circle of the orientation dark brown, so American circles looked black and the month's ring
   was a dark disc; the orientation's circles are now exempt (class `os`). **Scope:** every orientation (Morgan, 26 Nov 2026, asked "all
@@ -372,6 +373,9 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
   1777 and 1778, with no clash drawn, hold for the same time on their gap notes. The recap stop moves to the end of 1779; from 1780 the map
   runs month by month. The forward and back buttons move a year until 1780. Set in South Carolina's own Playback settings
   (`orientation.reveal`; `orientation.phases` removed). On a phone the bubbles give the date, the name and who won only.
+- **Second correction of 26 Nov 2026, South Carolina (Morgan):** "At the end of 1776, move steadily over 2 secs to 1779": 1777 and 1778 (no
+  clash drawn) get no reveal of their own and are crossed together in 2 seconds (`empty_seconds` 2). "Eliminate the 'continue' button":
+  no recap stop at the end of 1779 (`stop` false); 1780 runs month by month straight on. 1779 is revealed like the years before it.
 - **Scope:** every orientation. **Built in:** preset `orientation` (`day_pause` false, `orientation.month_seconds` 1,
   `orientation.event_seconds` 0.5, `orientation.speeds` [2, 1, 0.5], `opening_ease` 0.006); shared player.
 - **Enforced by:** check: an orientation that pauses during play fails; a year without a summary, or no closing summary, is a warning.
@@ -436,6 +440,13 @@ After his first look at the live orientation.
    discs (SR-28). Fixed.
 Scope: the year reveal is South Carolina's own setting. Towns from the start, the shorter key and the steady month-by-month symbols apply to
 every orientation (Morgan's answer the same morning: "yes" to all future orientations).
+
+Later the same morning (26 Nov 2026):
+- 1777 and 1778 crossed steadily in 2 seconds; no Continue stop at the end of 1779; 1779 revealed like the years before; 1780 month by month (SR-30).
+- The key loses "Ring: this month" and "Town, no side on record yet" (SR-28; all orientations, as his earlier answer).
+- Asked whether clicking a battle showing nothing in the pane was by design: no, a bug. On the reconstructed map the click was taken over
+  by the traced river or road under the symbol, and where a battle sat on a town the town won. Fixed for every orientation: a battle is
+  picked first, then a place, and a traced line only when neither is under the click.
 
 ## Answers from Morgan (24 Nov 2026)
 
