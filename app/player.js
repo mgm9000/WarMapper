@@ -118,9 +118,9 @@ function oInRev(v){return !!O_RV&&v<=O_RV.t1+1e-6}
    are controlled by British with a small Union Jack wavy flag, or the Americans with the original American wavy flag"). At the end of the
    day `from` the map stops: over fade_seconds (2) every clash so far fades to the playback's event_dim (0.7, SR-11) and each town a side holds
    takes that side's flag in place of its small square or circle; the stop holds hold_seconds (3) more. Clashes after it come on at full
-   strength. playback.orientation.flags: {from, fade_seconds?, hold_seconds?, dim?, sides: {side code: union-1606 | stars-stripes-1777}} */
+   strength. playback.orientation.flags: {from, fade_seconds?, hold_seconds?, dim?, scale? (1), sides: {side code: union-1606 | stars-stripes-1777}} */
 var O_FL=OR.flags&&OR.flags.from?{t:B.time(OR.flags.from)+0.995,fade:+(OR.flags.fade_seconds||2),hold:+(OR.flags.hold_seconds!=null?OR.flags.hold_seconds:3),
-  dim:OR.flags.dim!=null?+OR.flags.dim:(P.event_dim!=null?+P.event_dim:0.7),sides:OR.flags.sides||{}}:null;
+  dim:OR.flags.dim!=null?+OR.flags.dim:(P.event_dim!=null?+P.event_dim:0.7),scale:+(OR.flags.scale||1),sides:OR.flags.sides||{}}:null;
 function oFlagF(v,K){if(!O_FL||v<O_FL.t-1e-6)return 0;if(K&&oRev&&oRev.kind==='flags')return K.f;return 1}   // how far the flags have come: 0 before, 1 after
 /* a small wavy flag on a staff, its foot at (0,0): the Union flag of 1606 (the crosses of St George and St Andrew; St Patrick's came in 1801)
    or the Stars and Stripes of the Flag Resolution of 14 June 1777 (13 stripes, 13 stars on blue) */
@@ -238,8 +238,8 @@ function oriSvg(L){ if(!ORI) return ''; O_RT=oRate(t); var h='',hp='',z=mv.size(
     var fk=c&&FL>0?O_FL.sides[c.by]:null;
     if(c){var sd=oSide(c.by),r=4.6,hol=c.by==='contested',so=fk?1-FL:1;hp+='<g transform="translate('+f1(q[0])+' '+f1(q[1])+')">'+(sel?'<circle r="11" fill="none" stroke="var(--m-sel)" stroke-width="3.5"/>':'')+
       (so>0.01?'<g opacity="'+so.toFixed(2)+'">'+oShape(sd.shape,r,'none','var(--u-halo)',3.6)+oShape(sd.shape,r,hol?'var(--u-halo)':sd.col,sd.col,hol?1.8:1)+'</g>':'')+'</g>';
-      if(fk)hf+='<g transform="translate('+f1(q[0])+' '+f1(q[1])+')"><circle r="2.2" fill="var(--u-ink)"/>'+oFlag(fk,1,FL)+'</g>';
-      if(fk){L.keep([q[0]-3,q[1]-22,q[0]+18,q[1]+3]);mv.hits.push({id:'P:'+p.id,r:[q[0]-4,q[1]-23,q[0]+19,q[1]+4]})}}   // a town's flag on a staff, its foot on the town, drawn over the clashes
+      if(fk)hf+='<g transform="translate('+f1(q[0])+' '+f1(q[1])+')"><circle r="2.2" fill="var(--u-ink)"/>'+oFlag(fk,O_FL.scale,FL)+'</g>';
+      if(fk){var fs=O_FL.scale;L.keep([q[0]-3,q[1]-22*fs,q[0]+18*fs,q[1]+3]);mv.hits.push({id:'P:'+p.id,r:[q[0]-4,q[1]-23*fs,q[0]+19*fs,q[1]+4]})}}   // a town's flag on a staff, its foot on the town, drawn over the clashes
     else hp+='<g transform="translate('+f1(q[0])+' '+f1(q[1])+')">'+(sel?'<circle r="10" fill="none" stroke="var(--m-sel)" stroke-width="3.5"/>':'')+oTown()+'</g>';   // no side on record: a plain town mark
     L.keep([q[0]-7,q[1]-7,q[0]+7,q[1]+7]); mv.hits.push({id:'P:'+p.id,r:[q[0]-9,q[1]-9,q[0]+9,q[1]+9]});
     if(placeNames){var nm=p.raw.name,w=nm.length*6.1+4,tries=[[q[0]+8,q[1]-7,'start'],[q[0]-8-w,q[1]-7,'end'],[q[0]-w/2,q[1]-22,'middle'],[q[0]-w/2,q[1]+8,'middle'],[q[0]+24,q[1]-7,'start'],[q[0]-24-w,q[1]-7,'end'],[q[0]-w/2,q[1]-34,'middle'],[q[0]-w/2,q[1]+22,'middle']];   // right of the marker, else left, above, below, then clear of a clash drawn on the place
