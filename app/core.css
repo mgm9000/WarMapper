@@ -399,7 +399,7 @@ details.umd>summary{font-size:13.5px;font-weight:600;color:var(--fg)}
 .obb{position:absolute;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:7px;box-shadow:0 2px 8px rgba(0,0,0,.22);padding:6px 9px 7px;font-size:12px;line-height:1.35;opacity:0;transition:none}
 .obb .obd{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.02em}
 .obb .obn{display:flex;align-items:center;gap:5px;margin:1px 0 2px} .obb .obn b{font-size:12.5px} .obb .obn .oic{flex:none}
-.obb .obr{color:var(--fg)} .obb.sm{font-size:11px;padding:5px 7px 6px} .obb.sm .obn b{font-size:11.5px}
+.obb .obr{color:var(--fg)} .obb.calm{font-size:14px;font-weight:600;text-align:center;padding:10px 16px;border-left-width:1px} .obb.sm{font-size:11px;padding:5px 7px 6px} .obb.sm .obn b{font-size:11.5px}
 .ores{display:flex;align-items:center;gap:6px;margin:6px 0 4px;font-size:14px}
 .oic{flex:none;vertical-align:-4px;overflow:visible}
 .evl .oev{display:flex;gap:6px;align-items:flex-start} .evl .oev .oic{margin-top:-1px}

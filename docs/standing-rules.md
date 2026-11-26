@@ -376,6 +376,12 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
 - **Second correction of 26 Nov 2026, South Carolina (Morgan):** "At the end of 1776, move steadily over 2 secs to 1779": 1777 and 1778 (no
   clash drawn) get no reveal of their own and are crossed together in 2 seconds (`empty_seconds` 2). "Eliminate the 'continue' button":
   no recap stop at the end of 1779 (`stop` false); 1780 runs month by month straight on. 1779 is revealed like the years before it.
+- **Third correction of 26 Nov 2026, South Carolina (Morgan):** month by month from 1780, each month with a clash stops at its end with a
+  bubble on each of its clashes, as the years before (`months` true; the symbols keep their size, so nothing pulses). A stop with three or
+  more bubbles lasts 5 seconds, otherwise 3 (`many` 3, `hold_many_seconds` 5; years and months). 1777-1778: one box on the map, "Relative
+  calm and little military activity on land in South Carolina in 1777-1778", for 3 seconds, then the 2-second crossing to 1779
+  (`empty_text`, `empty_hold_seconds` 3); the map's gap notes give way to it there, the pane keeps them. The main roads are named on the
+  map like the rivers (Labels, kind `road`; short forms of the traced roads' names, approximate), the name set just above its road.
 - **Scope:** every orientation. **Built in:** preset `orientation` (`day_pause` false, `orientation.month_seconds` 1,
   `orientation.event_seconds` 0.5, `orientation.speeds` [2, 1, 0.5], `opening_ease` 0.006); shared player.
 - **Enforced by:** check: an orientation that pauses during play fails; a year without a summary, or no closing summary, is a warning.
