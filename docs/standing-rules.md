@@ -454,6 +454,19 @@ Later the same morning (26 Nov 2026):
   by the traced river or road under the symbol, and where a battle sat on a town the town won. Fixed for every orientation: a battle is
   picked first, then a place, and a traced line only when neither is under the click.
 
+Afternoon (26 Nov 2026): the 1775 base map re-traced and refitted (Morgan: "yes do that job"; run on Opus, project rule 2).
+- Asked why some roads took odd angles (above the Catawba Nation): the tracing was right; Session 4's fit of Mouzon's map folded the ground
+  over on itself there (303 points along the traced lines, 26 on roads). The refit (`pipeline/georef/sc_mouzon_refit_2026_11_26.py`) drops
+  the pairs on 20th-century reservoirs and on the Pee Dee, Little Pee Dee, Waccamaw and Black, stiffens the fit, and adds seven towns as
+  controls and two ties across the eastern gap of the scan. No road turns back on itself now.
+- The trade: every control is held within 0.5 km (Georgetown and Winyah Bay a few km), but left out in turn a control is found again a
+  median 5 km off (Session 4: 1.1 km, folds and all). Roads are now given as good to about 1 km at the towns and 3-5 km between them
+  (`precision_m` 4000, confidence low); the Pee Dee, Little Pee Dee and Waccamaw drop to low.
+- All 13 roads snapped to Mouzon's double lines from end to end (two had followed a river or a creek); road ends joined to the town or road
+  they meet; each river one line across the scan's mounted sections (Lynches Creek was in three pieces).
+- Still open: the Congarees. Mouzon's "Old Fort" lies north-west of the Broad and Saluda's meeting as traced, Fort Granby south of it on the
+  ground; the meeting or the fort is misread, so the Congarees is not a control and the roads there end some 9 km from the workbook's Granby.
+
 ## Answers from Morgan (24 Nov 2026)
 
 Batch 1 (four questions) and a follow-up (three questions), both answered the same evening.
