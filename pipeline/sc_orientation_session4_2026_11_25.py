@@ -171,7 +171,7 @@ def main():
     drop = [r for r in ws.iter_rows(min_row=2) if r[h.index('playback_id')].value == PB and str(r[h.index('setting')].value or '').startswith('bases.')]
     for r in drop[::-1]: ws.delete_rows(r[0].row)
     terrain = {'zoom': 9, 'extent': [-84.9, 30.9, -77.0, 36.2], 'open_m': 300, 'smooth_m': 400, 'relief': 6, 'spots_from': 9.6, 'doubt': False,
-               'steps': [[0, 100, 500], [8.6, 50, 250], [10.2, 20, 100], [11.6, 10, 50]],
+               'steps': [[0, 200, 1000], [8.6, 100, 500], [10.2, 50, 250], [11.6, 20, 100]],
                'about': 'In the United States these tiles come from the USGS\'s National Elevation Dataset, a survey of the bare ground with no buildings or trees in it. Over a whole state they are read at about 250 m a pixel, '
                         'so bumps narrower than about 300 m are taken off and the rest smoothed over about 400 m. This is today\'s ground. The big lakes (Marion, Moultrie, Murray, Wateree, Hartwell, Thurmond, Keowee and others) are '
                         'reservoirs of the 20th century: their flat floors are today\'s water, and in 1775 the rivers ran in their valleys.',
