@@ -247,7 +247,7 @@ def validate(b, folder=None):
         if isinstance(x.get('from'), str) and isinstance(x.get('to'), str) and x['to'] < x['from']: bad.append(w + ': ends before it starts')
     for x in b.get('links', []):   # optional (BP-34): the campaign this battle is part of, or the battles inside this campaign
         w = 'link to %s' % x.get('playback'); need(x, ['kind', 'playback', 'title', 'from', 'to'], w)
-        if x.get('kind') not in ('battle', 'campaign'): bad.append(w + ': kind must be "battle" or "campaign"')
+        if x.get('kind') not in ('battle', 'campaign', 'next', 'previous'): bad.append(w + ': kind must be "battle", "campaign", "next" or "previous"')
         for k in ('from', 'to'): time_ok(x.get(k), w + '.' + k)
         time_ok(x.get('at'), w + '.at', allow_none=True)
         if isinstance(x.get('from'), str) and isinstance(x.get('to'), str) and x['to'][:10] < x['from'][:10]: bad.append(w + ': ends before it starts')

@@ -123,6 +123,26 @@ def validate_course(c, cdir):
         for x in e.get('playbacks', []):
             for k in x.get('children', []) + ([x['parent']] if x.get('parent') else []):
                 assert k in slot_ids, '%s: %s is not a slot' % (x['id'], k)
+    # chapters (since 25 Nov 2026): an ordered group of a day's slots, e.g. orientation, battle, campaign, battle
+    seen = set()
+    for e in c['entries']:
+        own = {x['id']: x for x in e.get('playbacks', [])}; rids = {r['id'] for r in e.get('readings', [])}
+        for ch in e.get('chapters', []):
+            assert ch['id'] not in seen, 'duplicate chapter id %s' % ch['id']; seen.add(ch['id'])
+            for k in ch['order']:
+                assert k in own, '%s, chapter %s: %s is not a slot of this day' % (e['id'], ch['id'], k)
+            for r in ch.get('readings', []):
+                assert r in rids, '%s, chapter %s: %s is not a reading of this day' % (e['id'], ch['id'], r)
+            built = [own[k]['playback'] for k in ch['order'] if own[k].get('playback')]
+            for a, b in zip(ch['order'], ch['order'][1:]):   # two built neighbours must link to each other (Next links sheet)
+                pa, pb = own[a].get('playback'), own[b].get('playback')
+                if pa and pb:
+                    la = json.load(open(os.path.join(ROOT, 'playbacks', pa, 'battle.json'), encoding='utf-8')).get('links', [])
+                    lb = json.load(open(os.path.join(ROOT, 'playbacks', pb, 'battle.json'), encoding='utf-8')).get('links', [])
+                    assert any(x['kind'] == 'next' and x['playback'] == pb for x in la), 'chapter %s: %s does not lead on to %s (add a row on the Next links sheet)' % (ch['id'], pa, pb)
+                    assert any(x['kind'] == 'previous' and x['playback'] == pa for x in lb), 'chapter %s: %s does not lead back to %s' % (ch['id'], pb, pa)
+        ins = [k for ch in e.get('chapters', []) for k in ch['order']]
+        assert len(ins) == len(set(ins)), '%s: a slot is in two chapters' % e['id']
 
 
 def render_reading(r):
@@ -155,6 +175,20 @@ def render_slot(slot, titles):
     return ''.join(out)
 
 
+def render_chapter(ch, e, titles):
+    """A chapter: an ordered group of the day's playbacks (orientation, battle, campaign, battle), with the day's readings for it."""
+    own = {x['id']: x for x in e['playbacks']}; rd = {r['id']: r for r in e.get('readings', [])}
+    out = ['<section class="chapter" id="chapter-%s"><p class="kind">Chapter</p><h4 class="ct">%s</h4>' % (esc(ch['id']), esc(ch['title']))]
+    if ch.get('about'):
+        out.append('<p class="ca">%s</p>' % esc(ch['about']))
+    if ch.get('readings'):
+        out.append('<p class="cr"><b>Readings for this chapter:</b> %s.</p>' % '; '.join('<a href="#%s">%s</a>' % (esc(r), esc(rd[r]['text'].rstrip('.'))) for r in ch['readings']))
+        if ch.get('reading_note'):
+            out.append('<p class="cr">%s</p>' % esc(ch['reading_note']))
+    out.append('<ol class="chain">' + ''.join('<li>%s</li>' % render_slot(own[k], titles) for k in ch['order']) + '</ol></section>')
+    return ''.join(out)
+
+
 def render_entry(e, titles):
     when = '<span>%s</span><time datetime="%s">%s</time>' % (esc(e['weekday']), esc(e['date']), esc(short_date(e['date']).split(' ', 1)[1]))
     if e.get('time'):
@@ -170,7 +204,13 @@ def render_entry(e, titles):
         for n in e.get('syllabus_notes', []):
             out.append('<p class="snote">%s</p>' % esc(t24(n)))
         if e.get('playbacks'):
-            out.append('<h4>Playbacks</h4><div class="slots">' + ''.join(render_slot(s, titles) for s in e['playbacks']) + '</div>')
+            out.append('<h4>Playbacks</h4>')
+            for ch in e.get('chapters', []):
+                out.append(render_chapter(ch, e, titles))
+            inch = {k for ch in e.get('chapters', []) for k in ch['order']}
+            rest = [s for s in e['playbacks'] if s['id'] not in inch]
+            if rest:
+                out.append('<div class="slots">' + ''.join(render_slot(s, titles) for s in rest) + '</div>')
         out.append('<details><summary>The syllabus’s own wording</summary><p>%s</p><p>%s</p></details>' % (esc(e['syllabus_heading']), esc(e['syllabus_reading_line'] or '(no reading)')))
         out.append('</article>')
         return ''.join(out)

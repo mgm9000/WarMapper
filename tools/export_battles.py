@@ -31,7 +31,7 @@ VIRTUAL_NOTE = "Shown leaving its division's last recorded position. Where the u
 IDS = {'Wars': 'war_id', 'Campaigns': 'campaign_id', 'Battles': 'battle_id', 'Phases': 'phase_id', 'Sides': 'side_id', 'Units': 'unit_id',
        'Assignments': 'assign_id', 'Positions': 'pos_id', 'Routes': 'route_id', 'Events': 'event_id', 'Hypotheses': 'hypothesis_id',
        'Gaps': 'gap_id', 'Places': 'place_id', 'Sources': 'source_id', 'Source candidates': 'candidate_id', 'Playbacks': 'playback_id',
-       'Reconstructions': 'recon_id', 'Links': 'link_id', 'Clashes': 'clash_id', 'Control places': 'cplace_id', 'Control': 'control_id'}
+       'Reconstructions': 'recon_id', 'Links': 'link_id', 'Next links': 'link_id', 'Clashes': 'clash_id', 'Control places': 'cplace_id', 'Control': 'control_id'}
 
 
 def workbooks():
@@ -79,6 +79,7 @@ def load():
     for s in ('Tracks', 'Playback settings', 'Labels', 'Maps', 'Summaries', 'Nations', 'Reconstructions', 'Clashes', 'Control places'): test[s] = lambda r: pb.get(r['playback_id'])
     cpl = {r['cplace_id']: pb.get(r['playback_id']) for r in out.get('Control places', [])}
     test['Control'] = lambda r: cpl.get(r['cplace_id'])
+    test['Next links'] = lambda r: pb.get(r['from_playback'])
     for sheet, f in test.items():
         for r in out.get(sheet, []):
             name = whose[id(r)]
@@ -322,6 +323,23 @@ def links(pb, W):
             o = rows[c]
             out.append({'kind': 'campaign', 'playback': c, 'title': o['title'], 'label': text(r.get('campaign_label')), 'from': when(o['time_start']), 'to': when(o['time_end']),
                         'unit': o['time_unit']})
+    # Next links (since 25 Nov 2026, the HIST 340 South Carolina chapter): playbacks that follow one another in a course chapter. The first
+    # one's file names the next one (kind "next"), the next one's names the one before (kind "previous"). `at` is where the other one opens:
+    # the next one on its own opening view when empty (no `at`), the one before at its end.
+    for r in W.get('Next links', []):
+        a, b = text(r.get('from_playback')), text(r.get('to_playback'))
+        assert a in rows and b in rows, 'Next links %s: %s and %s must both be rows on Playbacks' % (r['link_id'], a, b)
+        assert war[camp_of[a]] == war[camp_of[b]], 'Next links %s: %s and %s are not of the same war' % (r['link_id'], a, b)
+        assert a != b, 'Next links %s: a playback cannot follow itself' % r['link_id']
+        if pb['playback_id'] == a:
+            o = rows[b]; x = {'kind': 'next', 'playback': b, 'title': o['title'], 'label': text(r.get('label')), 'from': when(o['time_start']),
+                              'to': when(o['time_end']), 'unit': o['time_unit'], 'chapter': text(r.get('chapter'))}
+            if not blank(r.get('opens_at')): x['at'] = when(r.get('opens_at'))
+            out.append(x)
+        elif pb['playback_id'] == b:
+            o = rows[a]; out.append({'kind': 'previous', 'playback': a, 'title': o['title'], 'label': text(r.get('back_label')), 'from': when(o['time_start']),
+                                     'to': when(o['time_end']), 'at': when(r.get('back_opens_at')) if not blank(r.get('back_opens_at')) else when(o['time_end']),
+                                     'unit': o['time_unit'], 'chapter': text(r.get('chapter'))})
     out.sort(key=lambda x: (x['kind'], x['from']))
     return out
 

@@ -7,6 +7,7 @@ Source: the course syllabus (`HIST_340_US_Mil_Hist_syllabus_winter_2025.docx`, n
 | Battle or campaign | AMH vol. 1 | Syllabus day |
 | --- | --- | --- |
 | Trenton | ch. 3, pp. 70-72 | 14 Jan (class 3) |
+| South Carolina orientation, 1775 to Cowpens | ch. 4, pp. 90-95 (map 10 on p. 91); nothing before late 1778 | 16 Jan (class 4) |
 | Cowpens | ch. 4, pp. 96-98 (map 11 on p. 97) | 16 Jan (class 4) |
 | Greene's Carolina campaign | ch. 4, pp. 95-98 | 16 Jan (class 4) |
 | Guilford Courthouse | ch. 4, p. 98 | 16 Jan (class 4) |
@@ -36,3 +37,7 @@ Only the Cowpens, Greene, Guilford and Atlanta slots were asked for and added. T
 
 - Ward, "Before Cowpens" and "Cowpens," was not supplied, so it was not read (source S92).
 - The "four battles" were read as Cowpens, Greene's campaign, Guilford Courthouse and the Atlanta campaign.
+
+## The South Carolina chapter (25 Nov 2026)
+
+On 16 Jan the four slots form one chapter, "South Carolina: from the orientation to Guilford Courthouse": the orientation (built), Cowpens (built), Greene's campaign and Guilford Courthouse (not built yet), with the day's two readings. The orientation's last frame leads on to Cowpens and Cowpens leads back (the `Next links` sheet of the Revolutionary War workbook, row N01). When Greene's campaign and Guilford Courthouse are built, add rows N02 (Cowpens to the campaign) and N03 (the campaign to Guilford) and fill their slots; the build stops if two built neighbours in the chapter do not link.

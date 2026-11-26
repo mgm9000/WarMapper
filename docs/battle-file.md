@@ -35,7 +35,7 @@ give is `null`.
 | `units` | Every unit in the battle's order of battle, whether or not it is placed (none in an orientation) |
 | `tracks` | One per symbol on the map: a unit and its recorded positions in time order |
 | `events` | The named moments on the timeline |
-| `links` | Optional. The campaign this battle is part of, or the battles inside this campaign (BP-34) |
+| `links` | Optional. The campaign this battle is part of, or the battles inside this campaign (BP-34); the playback before or after this one in a course chapter (since 25 Nov 2026) |
 | `clashes` | Optional. An orientation's clashes and captures, each tied to an event and drawn by who won it (since 25 Nov 2026) |
 | `places` | Optional. Towns, villages, forts and ports, and who held each one when (an orientation's control markers, since 25 Nov 2026) |
 | `sources` | Every source the file cites |
@@ -227,6 +227,17 @@ other: the campaign's file lists its battles, and each battle's file names its c
 - The player shows a battle link on the campaign's timeline as a band over the battle's dates, lists the battles in the side pane, and
   while the clock is on a battle's dates offers to open it there (`#at=` in the address, as a copied link). A campaign link is offered at
   the top of the battle's side pane, and opens the campaign at the date on the battle's clock. A file with no `links` shows none of this.
+- Since 25 Nov 2026 (the HIST 340 South Carolina chapter: the orientation, then Cowpens) two more kinds link playbacks that follow one
+  another in a course chapter, from the `Next links` sheet. `next`, in the first one's file, names the playback that comes next: the
+  player offers it at the top of the pane once the clock reaches the end ("Next in this chapter"), and it opens on its own opening view
+  (wide, nothing drawn until play: SR-02, SR-04) unless the link gives an `at`. `previous`, in the next one's file, names the one before:
+  offered at the top of the pane throughout ("Before this, in the chapter"), opening at its `at`, which the exporter sets to that
+  playback's end unless the sheet gives another. Both carry `chapter`, the course chapter's id (`courses/<course>/course.json`).
+
+```json
+"links": [{"kind": "next", "playback": "cowpens", "title": "Battle of Cowpens, 17 January 1781", "label": "Battle of Cowpens",
+           "from": "1781-01-17T06:00", "to": "1781-01-17T08:30", "unit": "minute", "chapter": "hist-340-sc"}]
+```
 
 ### sources
 
@@ -442,7 +453,7 @@ Every sheet below is on each war's workbook, but for `Sources`, which is in `Sou
 | `summaries` | `Summaries`: one row per day or week, or per year and one `end` for an orientation (`kind`, `from`, `to`, `title`, `text`, `source_ids`) |
 | `clashes` | `Clashes`: one row per clash or capture (`clash_id`, `playback_id`, `event_id`, `kind`, `won_by`, `result_method`, `result`, `captured`, `captured_by`, `ships`, `disputed`, `other_won_by`, `other_reading`, `other_source_ids`, `hypothesis_id`, `place`, `lat`, `lon`, and the coordinate and confidence columns of `Positions`) |
 | `places` | `Control places`: one row per place (`cplace_id`, `playback_id`, `name`, `kind`, `lat`, `lon`, coordinate columns, `source_ids`); `Control`: one row each time a place changes hands (`control_id`, `cplace_id`, `from`, `held_by`, `basis`, `event_id`, `method`, `confidence`, `source_ids`) |
-| `links` | `Links`: one row per campaign playback and battle playback inside it, both of one war (`campaign_playback`, `battle_playback`, `label`, `campaign_label`, `opens_at`). The dates come from each one's `Playbacks` row |
+| `links` | `Links`: one row per campaign playback and battle playback inside it, both of one war (`campaign_playback`, `battle_playback`, `label`, `campaign_label`, `opens_at`). The dates come from each one's `Playbacks` row; and `Next links`: one row per pair of playbacks that follow one another in a course chapter, both of one war (`from_playback`, `to_playback`, `label`, `back_label`, `opens_at`, `back_opens_at`, `chapter`; since 25 Nov 2026) |
 | `sources` | `Sources`: only those the battle cites |
 | `labels` | `Labels` |
 | `maps` | `Maps`: one row per picture; the `iiif_...` columns on a map's first picture |
