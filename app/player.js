@@ -111,17 +111,17 @@ function oOnStop(b){if(oStopKind==='rev'){oStopKind=null;oRevStart(b);return}oSt
    map stops (stop, true unless false) with a recap and who held what; after it, the playback runs month by month.
    playback.orientation.reveal: {until, grow_seconds?, fade_seconds?, hold_seconds?, shrink_seconds?, scale?, stop?, title?} */
 var O_RV=OR.reveal&&OR.reveal.until?{t1:Math.min(T1,B.time(OR.reveal.until)),grow:+(OR.reveal.grow_seconds||1.6),fade:+(OR.reveal.fade_seconds||0.5),hold:+(OR.reveal.hold_seconds!=null?OR.reveal.hold_seconds:3),
-  shrink:+(OR.reveal.shrink_seconds||1.6),scale:+(OR.reveal.scale||2.3),empty:OR.reveal.empty_seconds!=null?+OR.reveal.empty_seconds:null,stop:OR.reveal.stop!==false,title:OR.reveal.title||'',halted:false}:null,O_RA=[],oRev=null,oStopKind=null,oBubKey='',oBubs=[];
-function oEmptyRate(v){var y=oYM(v)[0];if(O_RV.empty==null||O_RA.some(function(a){return a.y===y}))return null;   // years with no clash, crossed together and steadily in empty_seconds (Morgan, 26 Nov 2026: "at the end of 1776, move steadily over 2 secs to 1779")
-  var y0=y,y1=y;while(y0-1>=oYM(T0)[0]&&!O_RA.some(function(a){return a.y===y0-1}))y0--;while(y1+1<=oYM(O_RV.t1)[0]&&!O_RA.some(function(a){return a.y===y1+1}))y1++;
-  return (B.time((y1+1)+'-01-01')-B.time(y0+'-01-01'))/Math.max(0.1,O_RV.empty)}
+  shrink:+(OR.reveal.shrink_seconds||1.6),scale:+(OR.reveal.scale||2.3),empty:OR.reveal.empty_seconds!=null?+OR.reveal.empty_seconds:null,etext:OR.reveal.empty_text||'',ehold:+(OR.reveal.empty_hold_seconds!=null?OR.reveal.empty_hold_seconds:3),
+  months:!!OR.reveal.months,many:+(OR.reveal.many||3),holdMany:+(OR.reveal.hold_many_seconds!=null?OR.reveal.hold_many_seconds:(OR.reveal.hold_seconds!=null?OR.reveal.hold_seconds:3)),stop:OR.reveal.stop!==false,title:OR.reveal.title||'',halted:false}:null,O_RA=[],oRev=null,oStopKind=null,oBubKey='',oBubs=[];
 function oInRev(v){return !!O_RV&&v<=O_RV.t1+1e-6}
-function oRevOf(v){if(!oInRev(v))return null;var y=oYM(v)[0];for(var i=0;i<O_RA.length;i++)if(O_RA[i].y===y)return O_RA[i];return null}   // the reveal year that v falls in
-function oRevDur(){return O_RV.grow+2*O_RV.fade+O_RV.hold+O_RV.shrink}
-function oRevStart(b){var a=oRevOf(b);if(!a)return;oRev={y:a.y,t:a.t,at:Date.now()};oBubKey='';holdUntil=Date.now()+oRevDur()*1000;panelKey='';clk.setPlaying(true);mv.kick()}
+function oRevOf(v){if(!oInRev(v))return null;var y=oYM(v)[0];for(var i=0;i<O_RA.length;i++)if(O_RA[i].kind==='year'&&O_RA[i].y===y)return O_RA[i];return null}   // the reveal year that v falls in
+function oRevHold(a){return a.kind==='calm'?O_RV.ehold:a.n>=O_RV.many?O_RV.holdMany:O_RV.hold}   // 3 or more bubbles: a longer stop (Morgan, 26 Nov 2026: 5 seconds)
+function oRevDur(a){return a.kind==='year'?O_RV.grow+2*O_RV.fade+oRevHold(a)+O_RV.shrink:2*O_RV.fade+oRevHold(a)}
+function oRevStart(b){var a=null;O_RA.forEach(function(x){if(Math.abs(x.t-b)<1e-6)a=x});if(!a)return;oRev={kind:a.kind,y:a.y,t:a.t,at:Date.now(),ids:a.ids,H:oRevHold(a)};oBubKey='';holdUntil=Date.now()+oRevDur(a)*1000;panelKey='';clk.setPlaying(true);$('clockdate').textContent='';mv.kick()}   // no day under the month while it stops
 function oRevK(){   // where the running reveal stands: s, the scale of its symbols; b, its bubbles' opacity; o, the symbols' opacity
   if(!oRev)return null;if(!clk.playing||Math.abs(t-oRev.t)>1e-6){oRev=null;holdUntil=0;return null}   // a pause or a jump ends it; its symbols stay at their standard size
-  var e=(Date.now()-oRev.at)/1000,G=O_RV.grow,F=O_RV.fade,H=O_RV.hold,X=O_RV.shrink,big=O_RV.scale;
+  var e=(Date.now()-oRev.at)/1000,G=O_RV.grow,F=O_RV.fade,H=oRev.H,X=O_RV.shrink,big=O_RV.scale;
+  if(oRev.kind!=='year'){if(e<F)return {s:1,b:oEase(e/F),o:1};e-=F;if(e<H)return {s:1,b:1,o:1};e-=H;if(e<F)return {s:1,b:1-oEase(e/F),o:1};oRev=null;return null}   // a month, or the calm box: no growing, only the bubbles
   if(e<G){var f=oEase(e/G);return {s:0.25+(big-0.25)*f,b:0,o:Math.min(1,0.1+1.4*f)}}e-=G;
   if(e<F)return {s:big,b:oEase(e/F),o:1};e-=F;if(e<H)return {s:big,b:1,o:1};e-=H;if(e<F)return {s:big,b:1-oEase(e/F),o:1};e-=F;
   if(e<X)return {s:big+(1-big)*oEase(e/X),b:0,o:1};oRev=null;return null}
@@ -138,15 +138,23 @@ if(ORI){
   OPL=(raw.places||[]).map(function(p){return {raw:p,id:p.id,p:B.fromLL(p.at),ctl:(p.control||[]).map(function(h){return {raw:h,t:B.time(h.from),by:h.held_by}})}});
   (function(){var a=oYM(T0),y=a[0],m=a[1],v;for(var n=0;n<1200;n++){v=B.time(y+'-'+oP2(m)+'-01');O_MS_T.push(v);if(v>T1)break;m++;if(m>12){m=1;y++}}})();
 }
-if(O_RV){(function(){var y0=oYM(T0)[0],y1=oYM(O_RV.t1)[0],has={};OC.forEach(function(c){has[oYM(c.t)[0]]=1});
-  for(var y=y0;y<=y1;y++)if(O_RV.empty==null||has[y]||y===y1)O_RA.push({y:y,t:Math.min(O_RV.t1,B.time(y+'-12-31'))})})()}   // empty_seconds set: a year with no clash gets no reveal of its own
+if(O_RV){(function(){var y0=oYM(T0)[0],y1=oYM(O_RV.t1)[0],has={},run=false,mk=function(kind,y,t,cs){return {kind:kind,y:y,t:t,ids:cs.map(function(c){return c.id}),n:cs.length}};
+  OC.forEach(function(c){has[oYM(c.t)[0]]=1});
+  for(var y=y0;y<=y1;y++){ if(O_RV.empty==null||has[y]||y===y1){O_RA.push(mk('year',y,Math.min(O_RV.t1,B.time(y+'-12-31')),OC.filter(function(c){return oYM(c.t)[0]===y})));run=false}   // empty_seconds set: a year with no clash gets no reveal of its own
+    else{if(!run&&O_RV.etext)O_RA.push(mk('calm',y,B.time(y+'-01-01'),[]));run=true}}   // a run of years with no clash: one box on the map, at its start (empty_text)
+  if(O_RV.months)for(var i=0;i+1<O_MS_T.length;i++){var a=O_MS_T[i],b=O_MS_T[i+1],at=b-0.01;if(a<O_RV.t1+1e-6||at>=T1-0.5)continue;   // month by month after the reveal: a stop at a month's end with a bubble on each of its clashes
+    var cs=OC.filter(function(c){return c.t>=a-1e-6&&c.t<b-1e-6});if(cs.length)O_RA.push(mk('month',oYM(a)[0],at,cs))}
+  O_RA.sort(function(p,q){return p.t-q.t})})()}
+function oEmptyRate(v){var y=oYM(v)[0],yr=function(y){return O_RA.some(function(a){return a.kind==='year'&&a.y===y})};if(O_RV.empty==null||yr(y))return null;   // years with no clash, crossed together and steadily in empty_seconds (Morgan, 26 Nov 2026: "at the end of 1776, move steadily over 2 secs to 1779")
+  var y0=y,y1=y;while(y0-1>=oYM(T0)[0]&&!yr(y0-1))y0--;while(y1+1<=oYM(O_RV.t1)[0]&&!yr(y1+1))y1++;
+  return (B.time((y1+1)+'-01-01')-B.time(y0+'-01-01'))/Math.max(0.1,O_RV.empty)}
 function oMonth(v){var i=0;while(i+1<O_MS_T.length&&O_MS_T[i+1]<=v+1e-6)i++;return i}
 function oEventsIn(i){var a=O_MS_T[i],b=O_MS_T[i+1];return B.events.filter(function(e){return e.t>=a-1e-6&&e.t<b-1e-6})}
 var O_N=[];if(ORI)for(var oi=0;oi+1<O_MS_T.length;oi++)O_N.push(oEventsIn(oi).length);
 function oRate(v){if(oInRev(v)&&v<O_RV.t1-1e-6){var er=oEmptyRate(v);return er!=null?er:365/0.3}   // the year reveal: the clock passes through a year in a moment
   var ph=oPhase(v);if(ph){var ab=oAround(oMarks(ph),v);return (ab[1]-ab[0])/Math.max(0.05,(O_SP[stepI]/O_MS)*ph.sec)}   // event by event: each step takes the same time
   var i=oMonth(v),days=(O_MS_T[i+1]||T1+30)-O_MS_T[i],k=O_SP[stepI]/O_MS;return days/Math.max(0.05,k*(O_MS+O_ES*(O_N[i]||0)))}   // days a second
-function oStep(dir,v){if(O_RV){var A=O_RA.map(function(a){return a.t}),i;   // the year reveal: back and forward move a year
+function oStep(dir,v){if(O_RV){var A=O_RA.filter(function(a){return a.kind!=='month'}).map(function(a){return a.t}),i;   // the year reveal: back and forward move a year
     if(dir>0&&v<O_RV.t1-1e-6){for(i=0;i<A.length;i++)if(A[i]>v+1e-6)return A[i]}
     if(dir<0&&v<=O_RV.t1+1e-6){for(i=A.length-1;i>=0;i--)if(A[i]<v-1e-6)return A[i];return T0}
     if(dir<0&&v>O_RV.t1+1e-6&&v<=O_MS_T[oMonth(O_RV.t1)+1]+0.5+1e-6)return O_RV.t1}
@@ -184,7 +192,7 @@ function oriSvg(L){ if(!ORI) return ''; O_RT=oRate(t); var h='',hp='',z=mv.size(
   if(ocOn&&!landing){var put=[],OFF=[[0,0],[19,0],[-19,0],[0,-19],[0,19],[14,14],[-14,14],[14,-14],[-14,-14],[30,0],[-30,0]];
     OC.forEach(function(c){ if(v<c.t-1e-6) return; var q=S(c.p); if(q[0]<-60||q[1]<-60||q[0]>z.w+60||q[1]>z.h+60) return;
       var rv=oInRev(c.t)?oRevOf(c.t):null; if(rv&&run&&v<rv.t-1e-6) return;   // a year to be revealed: its clashes wait for the reveal
-      var mine=!!(K&&rv&&oRev&&rv.y===oRev.y),s=mine?K.s:1,o=mine?K.o:1,cur=false,born=1;
+      var mine=!!(K&&oRev&&oRev.ids.indexOf(c.id)>=0),s=mine?K.s:1,o=mine?K.o:1,cur=false,born=1;
       if(!rv){var ph=oPhase(v);cur=ph?(c.t>=oAround(oMarks(ph),v)[0]-1e-6):(c.t>=m0-1e-6&&c.t<m1-1e-6);born=run?oEase((v-c.t)/Math.max(2.5,O_RT*0.35)):1;o=Math.min(1,0.2+born)}   // month by month: a new clash fades in at its own size, and a ring marks its month (no swelling: Morgan, 26 Nov 2026)
       var cx=q[0],cy=q[1],ok=null;for(var j=0;j<OFF.length&&!ok;j++){var x=cx+OFF[j][0],y=cy+OFF[j][1];if(!put.some(function(u){return Math.hypot(u[0]-x,u[1]-y)<17}))ok=[x,y]}if(!ok)ok=[cx,cy];
       put.push(ok); var moved=ok[0]!==cx||ok[1]!==cy,sel=orSel==='C:'+c.id,sd=oSide(c.raw.won_by);
@@ -206,8 +214,11 @@ function oriSvg(L){ if(!ORI) return ''; O_RT=oRate(t); var h='',hp='',z=mv.size(
       for(var ti=0;ti<tries.length;ti++){var T=tries[ti],rr=[T[0],T[1],T[0]+w,T[1]+14];if(L.hit(rr))continue;L.keep(rr);
         hp+='<text class="opl" text-anchor="'+T[2]+'" x="'+f1(T[2]==='start'?T[0]:T[2]==='end'?T[0]+w:T[0]+w/2)+'" y="'+f1(T[1]+11)+'">'+esc(nm)+'</text>';mv.hits.push({id:'P:'+p.id,r:rr});break}}});
   chits.forEach(function(x){mv.hits.push(x)});   // a clash is picked before the place under it: the last hit listed wins (26 Nov 2026)
-  var lead=oBubbles(bubs,K?K.b:0);
+  var lead=(K&&oRev&&oRev.kind==='calm')?oCalm(K.b):oBubbles(bubs,K?K.b:0);
   return (hp+h+lead).replace(/<circle /g,'<circle class="os" ')}   // .os: the orientation's own circles keep their colours on a reconstructed map
+function oCalm(op){var box=$('obub');if(!box)return '';var z=mv.size(),key='calm|'+oRev.y+'|'+z.w+'x'+z.h;   // one box in the middle of the map for a run of years with no clash (reveal.empty_text)
+  if(key!==oBubKey){oBubKey=key;var W=Math.min(z.w-40,z.w<560?260:380);box.innerHTML='<div class="obb calm" id="obb0" style="width:'+W+'px;left:'+f1((z.w-W)/2)+'px;top:'+f1(z.h*0.34)+'px">'+esc(O_RV.etext)+'</div>'}
+  var el=$('obb0');if(el)el.style.opacity=op.toFixed(2);return ''}
 function oTown(){return '<circle r="4.4" fill="var(--u-halo)"/><circle r="3" fill="var(--surface)" stroke="var(--u-ink)" stroke-width="1.5"/>'}
 /* the reveal's bubbles: what happened and when, one beside each clash, set out once a reveal (and again if the view changes), clear of the
    other bubbles, the symbols and the map's own buttons; a thin line runs from the symbol to its bubble. HTML, so the words wrap. */
@@ -234,7 +245,8 @@ function oBubbles(bubs,op){var box=$('obub');if(!box)return '';
   return now.map(function(b){var R=b.R,x=Math.max(R[0],Math.min(R[2],b.at[0])),y=Math.max(R[1],Math.min(R[3],b.at[1])),dx=x-b.at[0],dy=y-b.at[1],d=Math.hypot(dx,dy)||1;
     return '<line x1="'+f1(b.at[0]+dx/d*b.r)+'" y1="'+f1(b.at[1]+dy/d*b.r)+'" x2="'+f1(x)+'" y2="'+f1(y)+'" stroke="var(--u-ink)" stroke-width="1.3" opacity="'+(0.75*op).toFixed(2)+'"/>'}).join('')}
 function oGapAt(v){for(var i=0;i<O_GAPS.length;i++)if(v>=O_GAPS[i].t0-1e-6&&v<=O_GAPS[i].t1+1e-6)return O_GAPS[i];return null}
-function oNote(off){var g=!landing&&oGapAt(t);if(g){off.hidden=false;off.textContent=g.text}else off.hidden=true}
+function oNote(off){var g=!landing&&oGapAt(t);if(g&&O_RV&&O_RV.etext&&oInRev(t))g=null;   // the calm box speaks for those years; the pane keeps the gap note
+  if(g){off.hidden=false;off.textContent=g.text}else off.hidden=true}
 /* the side pane of an orientation */
 function oSumOf(kind,y){var hit=null;SUMS.forEach(function(x){if(x.kind===kind&&(kind==='end'||(String(x.from).slice(0,4)<=y&&String(x.to).slice(0,4)>=y)))hit=x});return hit}
 function oResult(R){var w=oSide(R.won_by);if(R.kind==='capture')return 'Captured by the '+w.name;return R.won_by==='indecisive'?'Indecisive':w.name+' victory'}
@@ -872,7 +884,7 @@ function mapNames(L,cover){
     if(l.k==='road'||l.k==='water'){ // laid along the road or stream; skipped where it would sit on a unit or another name
       var tw=(l.t.length+(l.s?l.s.length+3:0))*5.7,ca=Math.abs(Math.cos(l.a*Math.PI/180)),sa=Math.abs(Math.sin(l.a*Math.PI/180)),bw=(tw*ca+13*sa)/2,bh=(tw*sa+13*ca)/2,r=[q[0]-bw,q[1]-bh,q[0]+bw,q[1]+bh];
       if(r[0]<2||r[1]<2||r[2]>z.w-2||r[3]>z.h-2||L.hit(r)) return; L.keep(r);
-      h+='<text class="sl'+(l.k==='water'?' w':'')+'" text-anchor="middle" transform="translate('+f1(q[0])+' '+f1(q[1])+') rotate('+l.a+')" y="3.5">'+esc(l.t)+(l.s?' <tspan class="old">('+esc(l.s)+')</tspan>':'')+'</text>'; return}
+      h+='<text class="sl'+(l.k==='water'?' w':'')+'" text-anchor="middle" transform="translate('+f1(q[0])+' '+f1(q[1])+') rotate('+l.a+')" y="'+(ORI&&l.k==='road'?'-4':'3.5')+'">'+esc(l.t)+(l.s?' <tspan class="old">('+esc(l.s)+')</tspan>':'')+'</text>'; return}
     if(l.k==='area'||l.k==='town'||l.k==='wood'){
       if(l.k==='area'&&inkNames(l.p)) return;   // close in, the period map's own lettering names the district
       if(l.k==='town'&&Z.towns_until&&sNow>Z.towns_until) return; if(l.k==='wood'&&sNow<(Z.woods_from||0)) return;
