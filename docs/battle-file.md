@@ -298,7 +298,7 @@ reconstruction. Tapping a line shows that line's own record.
   or `interpolated` (not on any map: a closing edge, a join).
 - `confidence` is `high`, `medium` or `low`. A feature is `high` only when a cited source supports it and a person has checked it;
   if unsure it is `low`. Low-confidence shore lines are drawn dashed.
-- `kind` is `sea`, `shore`, `river`, `stream`, `water`, `wall`, `road`, `rail`, `breakwater`, `blockhouse`, `detail` (the period map's
+- `kind` is `sea`, `shore`, `river`, `stream`, `water`, `wall`, `road`, `rail`, `breakwater`, `blockhouse`, `boundary`, `detail` (the period map's
   own fine lines: street and block edges, dykes, field lines, hachures; drawn thin, from the zoom at which they can be read),
   `entrenchment` (field works; `side` is the code of the side that dug them, and they are drawn in a dashed red-brown line) or `ink`.
 - An `ink` feature is a picture, not a line: every dark mark of a period map, kept as printed, with the paper made clear, laid over the
@@ -313,7 +313,14 @@ reconstruction. Tapping a line shows that line's own record.
   first is its outline and the rest are holes), `lines` (several lines under one record: `at` is the list of them) or `areas` (several
   areas under one record: `at` is a list of areas, each a list of packed rings). `lines` and `areas` are for what a program takes
   from a scan by the thousand: one record, with its source, method and confidence, covers a district's worth, and `part` names the
-  district. A `stream` may give `width_m`, its width on the ground; a `road` a `class` (`main` or `minor`).
+  district. A `stream` may give `width_m`, its width on the ground, and `min_px`, the fewest screen pixels it is drawn across however far out the
+  reader is (since 25 Nov 2026: a state's rivers stay visible on a map of the whole state); a `road` a `class` (`main` or `minor`).
+- `boundary` (since 25 Nov 2026): a province line or an Indian boundary, drawn as a dash and dot in the map's ink (South Carolina: the Cherokee
+  boundary as Mouzon draws it, and the lines with North Carolina of 1735-72).
+- **A reconstructed map follows the clock** (Morgan, 25 Nov 2026: every reconstruction). A feature is drawn only on the days its `from` and `to`
+  cover, compared by the day: a fort comes on when it was built, a boundary goes when the land was ceded (South Carolina: the Cherokee boundary
+  until 19 May 1777, the day before the cession at DeWitt's Corner). Manila's and Cowpens's features cover their battles' days, so they
+  look as before.
 - Relief on a reconstructed map is shaded from elevation tiles of zoom 11 at most (`relief_zoom` on the reconstruction changes that),
   enlarged smoothly: finer tiles show today's buildings as bumps on flat ground. A base with `terrain` (see `bases[].terrain`) reads
   finer tiles instead and cleans the buildings out first, then draws its own relief and contour lines.

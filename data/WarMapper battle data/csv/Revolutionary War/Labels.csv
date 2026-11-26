@@ -55,3 +55,38 @@ cowpens,Gilbert Town,,35.40694,-81.94361,,0,town,far,yes
 cowpens,Charlotte,,35.22694,-80.84333,,0,town,far,yes
 cowpens,Winnsborough,,34.37707,-81.08796,,0,town,far,yes
 cowpens,Ninety Six,,34.1452,-82.01985,,0,town,far,yes
+sc-orientation,Augusta,,33.51594,-81.99996,,0,town,recon,yes
+sc-orientation,Savannah,,32.10944,-81.10725,,0,town,recon,yes
+sc-orientation,Purrysburg,,32.36298,-81.16817,,1,town,recon,yes
+sc-orientation,Catawba Town,,35.05226,-81.02195,,1,town,recon,yes
+sc-orientation,NINETY SIX PRECINCT,,34.2294,-81.72782,,0,area,recon,
+sc-orientation,CAMDEN PRECINCT,,34.53122,-81.10582,,0,area,recon,
+sc-orientation,CHERAWS PRECINCT,,34.61824,-80.3294,,0,area,recon,
+sc-orientation,GEORGETOWN PRECINCT,,34.04094,-79.44196,,0,area,recon,
+sc-orientation,ORANGEBURG PRECINCT,,33.50179,-81.32847,,0,area,recon,
+sc-orientation,CHARLESTOWN PRECINCT,,33.00472,-80.42619,,0,area,recon,
+sc-orientation,BEAUFORT PRECINCT,,32.76111,-81.14053,,0,area,recon,
+sc-orientation,CATAWBA NATION,,35.08235,-81.05134,,1,area,recon,
+sc-orientation,NORTH CAROLINA,,35.06175,-80.54971,,0,area,recon,
+sc-orientation,GEORGIA,,33.23514,-82.25842,,0,area,recon,
+sc-orientation,ATLANTIC OCEAN,,32.45,-78.95,,0,area,recon,
+sc-orientation,Santee River,Lake Marion in part,33.456769,-80.164763,8,0,water,recon,
+sc-orientation,Savannah River,,33.322049,-81.892213,51,0,water,recon,
+sc-orientation,Pee Dee River,Great Pee Dee River,33.606006,-79.113984,71,0,water,recon,
+sc-orientation,Congaree River,,33.810463,-80.895525,22,0,water,recon,
+sc-orientation,Wateree River,,34.007638,-80.636304,21,0,water,recon,
+sc-orientation,Broad River,,34.974185,-81.47931,84,0,water,recon,
+sc-orientation,Saluda River,Lake Murray in part,34.141405,-81.638469,37,0,water,recon,
+sc-orientation,Catawba River,,35.026758,-81.030879,49,1,water,recon,
+sc-orientation,Edisto or Ponpon River,Edisto River,33.051336,-80.408172,8,1,water,recon,
+sc-orientation,Cooper River,,32.941437,-79.930875,-76,1,water,recon,
+sc-orientation,Ashley River,,32.91565,-80.113165,45,1,water,recon,
+sc-orientation,Combahee River,,32.767818,-80.798213,28,1,water,recon,
+sc-orientation,Black River,,33.223419,-79.340211,25,1,water,recon,
+sc-orientation,Lynches Creek,Lynches River,34.412395,-80.308103,70,1,water,recon,
+sc-orientation,Little Pee Dee River,,34.616724,-79.506723,-72,1,water,recon,
+sc-orientation,Waccamaw River,,33.818751,-78.98063,-45,1,water,recon,
+sc-orientation,Enoree River,,34.468592,-81.496363,26,1,water,recon,
+sc-orientation,Tyger River,,34.570596,-81.544497,19,1,water,recon,
+sc-orientation,Pacolet River,,35.056604,-81.603294,26,1,water,recon,
+sc-orientation,North Fork of Edisto,,33.578474,-81.051067,19,1,water,recon,

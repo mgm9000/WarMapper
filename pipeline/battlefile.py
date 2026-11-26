@@ -15,7 +15,7 @@ LINE_KINDS = ['road', 'rail', 'water', 'former-water']
 AREA_KINDS = ['wood', 'water']
 LABEL_SHOWS = ['current', 'period', 'both', 'recon', 'far']   # far: a place too far off to zoom out to, named at the edge of the map
 # reconstructed base maps (21 Nov 2026): what a traced feature is, how it was read, and the shapes it can take
-RECON_KINDS = ['sea', 'shore', 'river', 'stream', 'water', 'wall', 'road', 'rail', 'breakwater', 'blockhouse', 'detail', 'entrenchment', 'ink']
+RECON_KINDS = ['sea', 'shore', 'river', 'stream', 'water', 'wall', 'road', 'rail', 'breakwater', 'blockhouse', 'detail', 'entrenchment', 'ink', 'boundary']
 RECON_METHODS = ['traced', 'AI-extracted', 'interpolated']
 RECON_SHAPES = ['point', 'line', 'area', 'lines', 'areas']
 # orientation playbacks (25 Nov 2026, HIST 340 South Carolina chapter): dated clashes drawn by who won, and who held which places
