@@ -11,7 +11,7 @@ def panel(x,y): return ('U' if y<SY else 'L')+('L' if x<SX else 'R')
 P=FIT['pairs']; INV={}
 for pn in ['UL','UR','LL','LR']:
     sel=[p for p in P if panel(*p[0])==pn]
-    INV[pn]=RBFInterpolator(np.array([p[1] for p in sel]),np.array([p[0] for p in sel],float),kernel='thin_plate_spline',smoothing=8.0*np.array([p[2] for p in sel])**2,degree=1)
+    INV[pn]=RBFInterpolator(np.array([p[1] for p in sel]),np.array([p[0] for p in sel],float),kernel='thin_plate_spline',smoothing=FIT.get('smoothing',{}).get(pn,8.0)*np.array([p[2] for p in sel])**2,degree=1)   # the refit of 26 Nov 2026 is stiffer
 W,S,E,N=-83.45,31.95,-78.45,35.3
 def my(lat): return math.log(math.tan(math.pi/4+math.radians(lat)/2))
 w=4096; h=int(round(w*(my(N)-my(S))/math.radians(E-W))); print('size',w,h)
