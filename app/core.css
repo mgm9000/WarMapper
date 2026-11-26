@@ -359,7 +359,7 @@ details.umd>summary{font-size:13.5px;font-weight:600;color:var(--fg)}
 .mapwrap.recon #ov .pl.big{font-size:13px}
 .mapwrap.recon #ov .farr{fill:#33291f;stroke:#efe4c8}
 .mapwrap.recon #ov .wl{font-size:11.5px;font-style:italic;font-weight:400;fill:#5a4a30;stroke-width:2.4px;opacity:.85}   /* the engineer's words for the ground: rice field, woods, open high ground */
-.mapwrap.recon #ov circle{fill:#33291f}
+.mapwrap.recon #ov circle:not(.os){fill:#33291f}   /* the reconstruction's town dots; an orientation's own circles (.os) keep their colours (26 Nov 2026) */
 /* the list of layers in the map details */
 .rcl{list-style:none;margin:6px 0 0;padding:0;display:grid;gap:9px}
 .rcl li{display:grid;gap:2px;padding:7px 9px;border:1px solid var(--line);border-radius:6px}
@@ -395,6 +395,11 @@ details.umd>summary{font-size:13.5px;font-weight:600;color:var(--fg)}
 .orkey .okl{padding:0 10px 8px;display:grid;grid-template-columns:20px 1fr;gap:3px 6px;align-items:center}
 .orkey.shut .okl{display:none}
 .orkey svg{display:block} .orkey .okd{font-weight:700;text-align:center;font-size:14px}
+.obub{position:absolute;inset:0;pointer-events:none;z-index:3;overflow:hidden}   /* the year reveal's bubbles (orientation, 26 Nov 2026) */
+.obb{position:absolute;background:var(--surface);color:var(--fg);border:1px solid var(--line);border-left:4px solid var(--line);border-radius:7px;box-shadow:0 2px 8px rgba(0,0,0,.22);padding:6px 9px 7px;font-size:12px;line-height:1.35;opacity:0;transition:none}
+.obb .obd{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.02em}
+.obb .obn{display:flex;align-items:center;gap:5px;margin:1px 0 2px} .obb .obn b{font-size:12.5px} .obb .obn .oic{flex:none}
+.obb .obr{color:var(--fg)} .obb.sm{font-size:11px;padding:5px 7px 6px} .obb.sm .obn b{font-size:11.5px}
 .ores{display:flex;align-items:center;gap:6px;margin:6px 0 4px;font-size:14px}
 .oic{flex:none;vertical-align:-4px;overflow:visible}
 .evl .oev{display:flex;gap:6px;align-items:flex-start} .evl .oev .oic{margin-top:-1px}
