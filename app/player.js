@@ -828,7 +828,7 @@ var creditTimer=0;
 function flashCredit(){var e=$('credit');e.classList.remove('gone');clearTimeout(creditTimer);creditTimer=setTimeout(function(){e.classList.add('gone')},5000)}
 function draw(){
   sNow=mv.scale(); mv.hits.length=0;
-  var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintModern(H); paintHill(); paintCredit(H); trnTick(); inkTick();
+  var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintModern(H); paintHill(); paintCredit(H); trnTick(); inkTick(); rcDateTick();
   var cover=base.backdrop==='current'?(H||base.m).box:null;
   evf=evFocus();
   var sc=scene(),L=layout(unitsOn&&!landing?sc:[]),oh=ORI?oriSvg(L):'',h=mapNames(L,cover);   // an orientation's places and clashes claim their room before the names   // on landing the map is shown alone; the units come on when the battle is started
@@ -910,23 +910,30 @@ function paperGrain(){ // a small tile of toned paper (soft mottle and a little 
   return {width:n,height:n,data:d}}
 function blockhouseIcon(){var n=28,cv=document.createElement('canvas');cv.width=cv.height=n;var c=cv.getContext('2d');c.fillStyle='#efe4c8';c.strokeStyle='#33291f';c.lineWidth=2.4;c.fillRect(5,5,18,18);c.strokeRect(5,5,18,18);c.lineWidth=1.6;c.strokeRect(10.5,10.5,7,7);
   return {width:n,height:n,data:new Uint8Array(c.getImageData(0,0,n,n).data.buffer)}}
+/* A reconstructed map follows the clock (Morgan, 25 Nov 2026: every reconstruction): a line is drawn only on the days its `from` and `to` cover,
+   so a fort comes on when it was built and a boundary goes when the land was ceded. Dates are compared by the day. */
+var RCFILT={},rcDayNow=null;
+function rcDayNum(v,d){return v?+String(v).slice(0,10).replace(/-/g,''):d}
+function rcToday(){return rcDayNum(B.isoOf(Math.floor(t+1e-6)),0)}
+function rcDated(f,day){var c=['all',['<=',['get','d0'],day],['>=',['get','d1'],day]];return f?['all',f,c]:c}
+function rcDateTick(){if(!base.rc)return;var d=rcToday();if(d===rcDayNow)return;rcDayNow=d;for(var id in RCFILT)if(mv.map.getLayer(id))mv.map.setFilter(id,rcDated(RCFILT[id],d))}
 function buildRecon(R,px){
   var src='rc-'+R.id,f=[],ids=[],sh=R.sheet,is=function(k){return ['==',['get','k'],k]},round={'line-cap':'round','line-join':'round'};
   var inks=R.features.filter(function(x){return x.kind==='ink'&&x.file}),iz=inks.length?Math.min.apply(null,inks.map(function(x){return x.from_zoom||13.5})):99;   // the zoom from which a period map's own ink comes in
   INKS[R.id]=inks.map(function(x,n){var c=unpackLL(x.at[0]).slice(0,4),z0=x.from_zoom||13.5,fl=x.files&&x.files.length?x.files:[[z0,x.file]];return {n:n,id:x.id,corners:c,lv:fl.map(function(q){return {z:q[0],file:q[1]}})}});
-  R.features.forEach(function(x){RCF[x.id]=x;var pr={k:x.kind,id:x.id,cls:x['class']||'',gw:x.width_m||0,lo:x.confidence==='low'?1:0,un:x.under?1:0},g;
+  R.features.forEach(function(x){RCF[x.id]=x;var pr={k:x.kind,id:x.id,cls:x['class']||'',gw:x.width_m||0,mp:x.min_px||0,lo:x.confidence==='low'?1:0,un:x.under?1:0,d0:rcDayNum(x.from,0),d1:rcDayNum(x.to,99999999)},g;
     if(x.shape==='point') g={type:'Point',coordinates:x.at};
     else if(x.shape==='areas') g={type:'MultiPolygon',coordinates:x.at.map(function(a){return a.map(unpackLL)})};   // several areas under one record (the esteros of a district)
     else{var rings=x.at.map(unpackLL);g=x.shape==='line'?{type:'LineString',coordinates:rings[0]}:x.shape==='lines'?{type:'MultiLineString',coordinates:rings}:{type:'Polygon',coordinates:rings}}
     f.push({type:'Feature',properties:pr,geometry:g})});
   if(sh){var o=[[sh[0]-3,sh[1]-3],[sh[2]+3,sh[1]-3],[sh[2]+3,sh[3]+3],[sh[0]-3,sh[3]+3],[sh[0]-3,sh[1]-3]],e=[[sh[0],sh[1]],[sh[0],sh[3]],[sh[2],sh[3]],[sh[2],sh[1]],[sh[0],sh[1]]];
-    f.push({type:'Feature',properties:{k:'off'},geometry:{type:'Polygon',coordinates:[o,e]}});f.push({type:'Feature',properties:{k:'frame'},geometry:{type:'LineString',coordinates:e}})}
+    f.push({type:'Feature',properties:{k:'off',d0:0,d1:99999999},geometry:{type:'Polygon',coordinates:[o,e]}});f.push({type:'Feature',properties:{k:'frame',d0:0,d1:99999999},geometry:{type:'LineString',coordinates:e}})}
   mv.geo(src,f);
   if(!mv.map.hasImage('rc-grain')) mv.map.addImage('rc-grain',paperGrain(),{pixelRatio:1});
   if(!mv.map.hasImage('rc-bh')) mv.map.addImage('rc-bh',blockhouseIcon(),{pixelRatio:2});
-  function add(spec,keep){if(!keep)ids.push(spec.id);spec.source=spec.source||src;spec.layout=spec.layout||{};spec.layout.visibility='none';mv.layer(spec)}
+  function add(spec,keep){if(!keep)ids.push(spec.id);spec.source=spec.source||src;spec.layout=spec.layout||{};spec.layout.visibility='none';if(spec.source===src&&spec.type!=='background'){RCFILT[spec.id]=spec.filter||null;spec.filter=rcDated(spec.filter,rcToday())}mv.layer(spec)}
   var zw=function(w){return ['interpolate',['linear'],['zoom'],10,w*0.45,13,w,16,w*2,19,w*4.5]},   // line widths grow with the zoom, as a map drawn at a larger scale would have them
-      gw=['interpolate',['exponential',2],['zoom'],6,['*',['get','gw'],px(6)],22,['*',['get','gw'],px(22)]];   // a width on the ground, in metres
+      gw=['interpolate',['exponential',2],['zoom']].concat([4,6,8,10,12,14,16,18,20,22].reduce(function(a,z){return a.concat([z,['max',['*',['get','gw'],px(z)],['get','mp']]])},[]));   // a width on the ground, in metres, but never thinner than min_px screen pixels (since 25 Nov 2026: a state's rivers)
   add({id:src+'-paper',type:'background',paint:{'background-pattern':'rc-grain','background-opacity':0.5}});
   /* Relief on a reconstructed map comes from coarser elevation tiles than today's map uses (zoom 11, about 75 m a pixel, enlarged smoothly), so the
      shading shows the lie of the land and not today's buildings, which the fine tiles pick up as bumps on flat ground. */
@@ -945,6 +952,7 @@ function buildRecon(R,px){
   add({id:src+'-detail',type:'line',filter:is('detail'),minzoom:11.4,layout:round,paint:{'line-color':'var(--rc-ink)','line-width':['interpolate',['linear'],['zoom'],11.4,0.3,13,0.55,15,1,17,1.7,19,3],
     'line-opacity':iz<99?['interpolate',['linear'],['zoom'],11.4,0.3,12.5,0.6,iz+0.1,0.72,iz+0.9,giveWay(0.8)]:['interpolate',['linear'],['zoom'],11.4,0.3,12.5,0.6,14,0.8]}});
   add({id:src+'-shore',type:'line',filter:is('shore'),layout:round,paint:{'line-color':'var(--rc-ink)','line-width':zw(1.5),'line-dasharray':['case',['==',['get','lo'],1],['literal',[6,2.2]],['literal',[1,0]]]}});
+  add({id:src+'-bound',type:'line',filter:is('boundary'),layout:{'line-cap':'butt'},paint:{'line-color':'var(--rc-ink)','line-width':['interpolate',['linear'],['zoom'],5,1.1,9,1.6,13,2.4],'line-dasharray':[5,2,1,2],'line-opacity':0.85}});   // a province or Indian boundary (since 25 Nov 2026)
   add({id:src+'-break',type:'line',filter:is('breakwater'),paint:{'line-color':'var(--rc-ink)','line-width':zw(0.9),'line-gap-width':zw(1.3)}});
   var rw=function(m,o){var by=function(i){return ['match',['get','cls'],'main',m[i],o[i]]};return ['interpolate',['linear'],['zoom'],10,by(0),12,by(1),14,by(2),17,by(3)]};   // zoomed out a road is one ink line; closer in it opens into the double line of the engineer's map
   add({id:src+'-roadedge',type:'line',filter:is('road'),layout:round,paint:{'line-color':'var(--rc-ink)','line-width':rw([1,1.5,3.6,8],[0.6,1,2.6,6])}});

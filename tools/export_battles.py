@@ -293,7 +293,7 @@ def reconstructions(name, W):
                       [k for k in ([q for q in (bf.pack(ring) for ring in poly) if whole(q, 3)] for poly in at) if k] if shape == 'areas' else
                       [q for q in (bf.pack(ring) for ring in at) if whole(q, 1)])
             feats.append({'id': p['id'], 'layer': lay, 'kind': p['kind'], 'shape': shape, 'at': packed,
-                          'name': p.get('name'), 'desc': p.get('desc'), 'class': p.get('class'), 'width_m': p.get('width_m'), 'number': p.get('number'), 'side': p.get('side'), 'part': p.get('part'), 'file': p.get('file'), 'from_zoom': p.get('from_zoom'), 'files': p.get('files'), 'under': p.get('under'),
+                          'name': p.get('name'), 'desc': p.get('desc'), 'class': p.get('class'), 'width_m': p.get('width_m'), 'min_px': p.get('min_px'), 'number': p.get('number'), 'side': p.get('side'), 'part': p.get('part'), 'file': p.get('file'), 'from_zoom': p.get('from_zoom'), 'files': p.get('files'), 'under': p.get('under'),
                           'from': bf.iso(p.get('from')), 'to': bf.iso(p.get('to')), 'source': p.get('source_id'), 'method': p.get('method'), 'confidence': p.get('confidence'),
                           'precision_m': p.get('precision_m'), 'basis': p.get('basis'), 'review': p.get('review')})
         for l in layers: l['features'] = sum(1 for f in feats if f['layer'] == l['id'])

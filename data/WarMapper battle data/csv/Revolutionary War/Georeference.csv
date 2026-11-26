@@ -72,3 +72,23 @@ washpost,2170,440,,,40.22855,-74.76367,50,,modern_map
 brunsblk,2660,500,,,40.22753,-74.76199,200,,sketch_read
 fermoy,2800,330,,,40.2283,-74.7608,300,,estimate
 ferry,2930,2310,,,40.2075,-74.763,500,,estimate
+,,,,,,,,,
+"Georeference: South Carolina, Mouzon 1775",,,,,,,,,
+"How Mouzon's map of 1775 (S135) was laid on the ground for the South Carolina reconstruction (pipeline/georef/sc_mouzon_fit.py, sc_mouzon_fit.json)",,,,,,,,,
+"The Library of Congress copy is cut into sections and mounted on cloth. Each section (above and below the gap at crop y 1222, left and right of the seam at crop x 4232) is fitted by a thin-plate spline with a plane, from the point controls below and from Mouzon's rivers, coast and North Carolina line matched seven times over to the same lines in Natural Earth (S136). Pixels are of the half-resolution crop: full scan x = 2 x, y = 3600 + 2 y. Misfit is the distance at which a control is found when it is left out of the fit.",,,,,,,,,
+,,,,,,,,,
+Control point,pixel x,pixel y,lat,lon,misfit left out (m),source,,,
+Ninety Six,2212,1368,34.14694,-82.02444,4400,"workbook SCP05 (S116, S117)",,,
+Fort Charlotte,1762,1638,33.9527111,-82.5399235,270,workbook SCP04,,,
+Monck's Corner,3953,2476,33.19667,-80.00667,3430,workbook SCC17,,,
+Fort Johnson,4080,3068,32.7303256,-79.9331454,4180,workbook SCP02 (S120),,,
+Esseneca (Sennekaw),1200,905,34.666883,-82.845133,26410,workbook SCP06,,,
+Broad and Saluda meet (the Congaree),3125,1590,34.004,-81.056,18220,Natural Earth,,,
+Wateree and Congaree meet (the Santee),3478,1803,33.751,-80.632,1410,Natural Earth,,,
+Lynches Creek meets the Pee Dee,4727,1627,33.837,-79.354,360,Natural Earth,,,
+Little Pee Dee meets the Pee Dee,4790,1700,33.703,-79.189,200,Natural Earth,,,
+Edisto forks,3344,2546,33.264,-80.892,1120,Natural Earth,,,
+Pee Dee at Winyah Bay,4775,2225,33.437,-79.19,410,Natural Earth,,,
+Savannah River mouth,3279,3993,32.032,-80.891,920,Natural Earth,,,
+"NC line at the sea, Little River",5283,1695,33.883,-78.573,570,Natural Earth (state line),,,
+Santee mouth,4767,2517,33.155,-79.339,60,Natural Earth,,,

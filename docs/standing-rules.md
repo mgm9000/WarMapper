@@ -59,6 +59,7 @@ No rule was invented. Where no reason was recorded the entry says so.
 | SR-28 Orientations: clashes by who won, shape and colour, sourced, both readings where disputed | N | N | N | N | N | N | preset (orientation); player; check |
 | SR-29 Orientations: control of places, dated and sourced | N | N | N | N | N | N | player; check |
 | SR-30 Orientations: month by month, busy months slower, one stop at the end | N | N | N | N | N | N | preset (orientation); player; check |
+| SR-31 Reconstructed maps follow the clock (dated lines) | N | N | N | A | N | A | player |
 
 Since 25 Nov 2026 there is a seventh kind of playback, the **orientation** (clashes and places, no units), built for the HIST 340 South
 Carolina chapter and tried so far only on made-up rows (`tests/orientation/make_demo.py`). No orientation is on the site yet, so it has no
@@ -358,12 +359,27 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
   `orientation.event_seconds` 0.5, `orientation.speeds` [2, 1, 0.5], `opening_ease` 0.006); shared player.
 - **Enforced by:** check: an orientation that pauses during play fails; a year without a summary, or no closing summary, is a warning.
 
+## SR-31 Reconstructed maps follow the clock
+
+- **Decided:** 25 Nov 2026 (Morgan's answer, Session 4 of `claude/sc-orientation-prompt.md`: "Yes, every reconstruction (Recommended)").
+- **Rule:** a line of a reconstructed map is drawn only on the days its `from` and `to` cover, compared by the day: a fort comes on when it was
+  built, a boundary goes when the land was ceded, siege lines show only in their year.
+- **Scope:** every reconstruction. Manila's and Cowpens's lines cover their battles' days, so they look as before (screenshots, 25 Nov).
+- **Built in:** shared player (`rcDateTick` in `app/player.js`: the date is added to every layer's filter of a reconstruction).
+- **Check:** open the South Carolina orientation in 1776 and in 1778: the Cherokee boundary shows, then is gone.
+- **Enforced by:** player.
+- **Also decided in Session 4 (South Carolina only):** the Cherokee boundary as Mouzon draws it, to the cession of 20 May 1777, and no inferred
+  settlement line; the close-up ink of a Charleston siege plan, like Manila's 1898 plan, to be added after Morgan has judged the look of the pilot.
+
 ## Orientations: which rules reach them (carry-forward check of 25 Nov 2026)
 
 Checked at the start of Session 1 of `claude/sc-orientation-prompt.md`, and shown to Morgan before his answers.
 
 - **Apply as written:** SR-01 (dates written "21 Apr 1775"), SR-02, SR-03 and SR-26, SR-04, SR-09, SR-12 to SR-14 (for the reconstructed
   base map of Session 4), SR-15, SR-19 to SR-25.
+- **Session 4 (25 Nov 2026, branch `sc-orientation-base-map`):** the reconstructed base map is built as a pilot: it is the main map on the menu and the
+  page opens on it (SR-02, SR-15), with terrain from today's elevation labelled as today's ground (SR-14), no banner (SR-13), credits in the i
+  button (SR-09) and Mouzon's own map, fitted, in the map details. SR-12 (detail at every zoom) is not yet met: only the main lines are traced.
 - **Carried over in a new form:** SR-05 day pauses became SR-30 (one stop at the end); SR-11 (70% strength) became SR-28's full strength for
   past clashes, at Morgan's choice; SR-17 (events tied to units) became events tied to their clash or place (BP-35); SR-08 ships became the
   ship mark of SR-28.
