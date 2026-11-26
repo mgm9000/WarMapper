@@ -353,6 +353,7 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
 - **Rule:** the clock shows the month; the forward and back buttons move a month. Each year has a summary, shown in the pane while that
   year plays; the stop at the end shows the closing summary, the wins by side and year, and who held what. It opens on its own base map,
   zoomed out and with no symbols, and eases in when play is pressed (SR-02, SR-04); the camera stays on the whole state (no Follow, SR-18 N).
+- **Correction of 25 Nov 2026 (afternoon), South Carolina only (Morgan: "South Carolina only"):** 1775 to 1777 plays event by event, each event half a second after the one before; the playback stops at the end of 1777 with a recap of 1775 to 1777 (the year summaries, the gap, who held which places); Continue runs it month by month from 1778. Set in South Carolina's own Playback settings rows (`orientation.phases`, until 1777-12-31), not in the preset, so other orientations stay month by month with one stop at the end.
 - **Scope:** every orientation. **Built in:** preset `orientation` (`day_pause` false, `orientation.month_seconds` 1,
   `orientation.event_seconds` 0.5, `orientation.speeds` [2, 1, 0.5], `opening_ease` 0.006); shared player.
 - **Enforced by:** check: an orientation that pauses during play fails; a year without a summary, or no closing summary, is a warning.
@@ -388,6 +389,7 @@ Two batches and a design approval, Session 1 of `claude/sc-orientation-prompt.md
 - Past clashes stay at full strength. Pause only at the end (replaces "a pause at each year"); busy months slower.
 - Ships: a small ship mark at Sullivan's Island and Charleston.
 - The design approved ("Approve, build it"). Scope of all of the above: every orientation.
+- Correction, the same afternoon: South Carolina plays 1775 to 1777 event by event (half a second each), stops at the end of 1777 with a recap of those years and who held what, then runs month by month. Scope: South Carolina only.
 
 ## Answers from Morgan (24 Nov 2026)
 

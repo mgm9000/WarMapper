@@ -9,7 +9,8 @@ real path: rows -> tools/export_battles.py -> pipeline/battlefile.py -> app/play
 
 What it exercises: a win for each side (red square, blue circle, black triangle), an indecisive clash (grey diamond), captures (flags),
 ships, two disputed results (dagger, both readings), an event with no clash, a busy month (February 1803, five events), a gap year (1802),
-year summaries and the closing summary, and places that change hands (one contested, one held by the Black side until it is lost).
+an event-by-event opening (1801 to 1802, half a second an event) with a stop and a recap at the end of 1802, year summaries
+and the closing summary, and places that change hands (one contested, one held by the Black side until it is lost).
 """
 import copy, contextlib, io, json, os, sys
 
@@ -69,6 +70,7 @@ SUMMARIES = [('year', '1801-01-01', '1801-12-31', '1801: the first year', 'Made-
 SETTINGS = [('based_on', '["orientation", "us-maps"]'), ('page_title', 'Orientation test (made-up events)'), ('clock_title', 'Test: made-up events'),
             ('bases.1.use', 'current'), ('bases.1.id', 'mod'),
             ('orientation.gaps', '[{"from": "1802-01-01", "to": "1802-12-31", "text": "1802: no events in this list (a gap, not a quiet year)."}]'),
+            ('orientation.phases', '[{"until": "1802-12-31", "event_seconds": 0.5, "title": "Where things stood at the end of 1802"}]'),
             ('about', '["A test of the orientation style with made-up events. None of it is history."]')]
 
 

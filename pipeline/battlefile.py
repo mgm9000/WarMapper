@@ -230,6 +230,8 @@ def validate(b, folder=None):
     if P.get('follow', {}).get('empty') and P['follow']['empty'] not in V.get('presets', {}): bad.append('playback.follow.empty: no such preset')
     for tid in P.get('follow', {}).get('exclude', []):
         if tid not in tracks: bad.append('playback.follow.exclude: track %r not found' % tid)
+    for i, ph in enumerate((P.get('orientation') or {}).get('phases') or []):   # an orientation's event-by-event stretches (25 Nov 2026)
+        time_ok(ph.get('until'), 'playback.orientation.phases.%d.until' % (i + 1)); time_ok(ph.get('from'), 'playback.orientation.phases.%d.from' % (i + 1), allow_none=True)
     if P.get('style') and P['style'] not in STYLES: bad.append('playback.style must be one of %s' % ', '.join(STYLES))
     codes = {s.get('code') for s in b['sides']}
     for g in P.get('groups', []):
