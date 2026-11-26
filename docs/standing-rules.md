@@ -467,6 +467,14 @@ Afternoon (26 Nov 2026): the 1775 base map re-traced and refitted (Morgan: "yes 
 - Still open: the Congarees. Mouzon's "Old Fort" lies north-west of the Broad and Saluda's meeting as traced, Fort Granby south of it on the
   ground; the meeting or the fort is misread, so the Congarees is not a control and the roads there end some 9 km from the workbook's Granby.
 
+Midday (26 Nov 2026), after pull request 84 was merged: "At end of 1780. Fade out all the actions to the default fade %. Show which towns
+are controlled by British with a small Union Jack wavy flag, or the Americans with the original American wavy flag."
+- Built as `playback.orientation.flags` (South Carolina's own row, from 1780-12-31). At the end of 1780, after December's bubbles, the map
+  stops: the clashes so far fade to the standard 70% (SR-11's `event_dim`), and each place held by one side takes its flag. The British flag
+  is the Union flag as it was in 1780 (no St Patrick's cross until 1801); the American is the Stars and Stripes of 14 June 1777, 13 stars in a
+  ring. Contested places keep the grey diamond. Forts and posts take flags too, like the towns. Clashes of January 1781 come on at full strength.
+- Scope: South Carolina only for now; asked whether every orientation should do the same at the end of its last full year.
+
 ## Answers from Morgan (24 Nov 2026)
 
 Batch 1 (four questions) and a follow-up (three questions), both answered the same evening.
