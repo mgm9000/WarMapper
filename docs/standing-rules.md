@@ -338,8 +338,8 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
   and daggers stay on the map, and the side pane explains the dagger. Month by month, a clash no longer swells and shrinks: it fades in at its
   own size and a plain ring marks its month ("the symbols 'pulse' ... that doesn't look good"). Found the same day: on a reconstructed map
   a style rule for its town dots painted every circle of the orientation dark brown, so American circles looked black and the month's ring
-  was a dark disc; the orientation's circles are now exempt (class `os`). **Scope:** built in the shared orientation style; Morgan asked
-  "all orientations or just this one?" (answer to record).
+  was a dark disc; the orientation's circles are now exempt (class `os`). **Scope:** every orientation (Morgan, 26 Nov 2026, asked "all
+  future orientations or only South Carolina?": "yes", all). Built in the shared orientation style.
 
 ## SR-29 Orientations: control of places, each change dated and sourced
 
@@ -353,7 +353,8 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
 - **Correction of 26 Nov 2026 (Morgan: "Show towns on map from the beginning"):** towns, villages, ports and settlements show from the
   opening view, with their names, as a plain town mark (no side) until a change of control is on record; a fort or post shows once it is on
   record. This is an exception to SR-02's empty opening field: the towns are part of the map, the clashes still wait for play. A place's
-  marker no longer swells when it changes hands. **Scope:** built in the shared orientation style; "all orientations or just this one?" asked.
+  marker no longer swells when it changes hands. **Scope:** every orientation (Morgan, 26 Nov 2026: "yes", all future orientations); built in
+  the shared orientation style.
 
 ## SR-30 Orientations: month by month, busy months slower, one stop at the end
 
@@ -433,8 +434,8 @@ After his first look at the live orientation.
 5. The key loses the ship and the dagger; the dagger is explained in the side pane (SR-28).
 6. The 1780 symbols "pulse": the month's clashes swelled and shrank each month, and on the reconstructed map their rings were drawn as dark
    discs (SR-28). Fixed.
-Scope: the year reveal is South Carolina's own setting; the rest is in the shared orientation style, with "all orientations or just this
-one?" put to Morgan.
+Scope: the year reveal is South Carolina's own setting. Towns from the start, the shorter key and the steady month-by-month symbols apply to
+every orientation (Morgan's answer the same morning: "yes" to all future orientations).
 
 ## Answers from Morgan (24 Nov 2026)
 
