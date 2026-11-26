@@ -326,7 +326,7 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
   Colour is never the only cue: square British, circle American, triangle Cherokee, and a grey diamond where no side won. A post or stores
   taken with no fight recorded is a small flag in the taker's colour. Where the sources disagree the symbol carries a dagger; the result
   drawn is the one the sources settle on (SR-19) and the pane gives both readings with their sources; grey is only for a result that stays
-  indecisive. A clash stands out (larger, with a ring) in its own month, then stays on the map **at full strength** (Morgan chose this over
+  indecisive. A clash stands out (with a ring; larger until 26 Nov 2026) in its own month, then stays on the map **at full strength** (Morgan chose this over
   70% or fading), so the end shows the whole record. Where a fleet fought (Sullivan's Island 1776, Charleston 1780), a small ship mark in
   that side's colour stands beside the symbol (Morgan, 25 Nov 2026: orientations only; SR-08 is unchanged for battles).
 - **Scope:** every orientation (Morgan, 25 Nov 2026: "Every orientation"). A later one that differs gives a reason, as with presets.
@@ -334,6 +334,12 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
 - **Enforced by:** check (`orientation_rules` in `tools/consistency_check.py`): every result cites a source, a `stated` or `high` result
   has one (SR-21), and a disputed one cites the other reading's sources; the format check refuses a `won_by` that is not a side.
 - **Status:** built and tested on made-up rows (pull request of 25 Nov 2026). South Carolina data comes in Sessions 2 and 3.
+- **Corrections of 26 Nov 2026 (Morgan, after his first look at the live map):** the key no longer lists the ship mark or the dagger; ships
+  and daggers stay on the map, and the side pane explains the dagger. Month by month, a clash no longer swells and shrinks: it fades in at its
+  own size and a plain ring marks its month ("the symbols 'pulse' ... that doesn't look good"). Found the same day: on a reconstructed map
+  a style rule for its town dots painted every circle of the orientation dark brown, so American circles looked black and the month's ring
+  was a dark disc; the orientation's circles are now exempt (class `os`). **Scope:** built in the shared orientation style; Morgan asked
+  "all orientations or just this one?" (answer to record).
 
 ## SR-29 Orientations: control of places, each change dated and sourced
 
@@ -344,6 +350,10 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
   play (Battle options can hide them) and the closing pane lists who held what.
 - **Scope:** every orientation. **Built in:** shared player; battle file `places`; sheets `Control places` and `Control`.
 - **Enforced by:** check: every change of control cites a source; `stated` or `high` needs one (SR-21).
+- **Correction of 26 Nov 2026 (Morgan: "Show towns on map from the beginning"):** towns, villages, ports and settlements show from the
+  opening view, with their names, as a plain town mark (no side) until a change of control is on record; a fort or post shows once it is on
+  record. This is an exception to SR-02's empty opening field: the towns are part of the map, the clashes still wait for play. A place's
+  marker no longer swells when it changes hands. **Scope:** built in the shared orientation style; "all orientations or just this one?" asked.
 
 ## SR-30 Orientations: month by month, busy months slower, one stop at the end
 
@@ -355,6 +365,12 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
   year plays; the stop at the end shows the closing summary, the wins by side and year, and who held what. It opens on its own base map,
   zoomed out and with no symbols, and eases in when play is pressed (SR-02, SR-04); the camera stays on the whole state (no Follow, SR-18 N).
 - **Correction of 25 Nov 2026 (afternoon), South Carolina only (Morgan: "South Carolina only"):** 1775 to 1777 plays event by event, each event half a second after the one before; the playback stops at the end of 1777 with a recap of 1775 to 1777 (the year summaries, the gap, who held which places); Continue runs it month by month from 1778. Set in South Carolina's own Playback settings rows (`orientation.phases`, until 1777-12-31), not in the preset, so other orientations stay month by month with one stop at the end.
+- **Correction of 26 Nov 2026, South Carolina (Morgan):** the event-by-event stretch is replaced by a **year reveal for 1775 to 1779**: all of
+  a year's clashes come on together, grow slowly into a large symbol and ring, the map stops while a bubble beside each gives the date and
+  what happened (3 seconds, between half-second fades), the bubbles fade and the symbols shrink to their standard size; then the next year.
+  1777 and 1778, with no clash drawn, hold for the same time on their gap notes. The recap stop moves to the end of 1779; from 1780 the map
+  runs month by month. The forward and back buttons move a year until 1780. Set in South Carolina's own Playback settings
+  (`orientation.reveal`; `orientation.phases` removed). On a phone the bubbles give the date, the name and who won only.
 - **Scope:** every orientation. **Built in:** preset `orientation` (`day_pause` false, `orientation.month_seconds` 1,
   `orientation.event_seconds` 0.5, `orientation.speeds` [2, 1, 0.5], `opening_ease` 0.006); shared player.
 - **Enforced by:** check: an orientation that pauses during play fails; a year without a summary, or no closing summary, is a warning.
@@ -406,6 +422,19 @@ Two batches and a design approval, Session 1 of `claude/sc-orientation-prompt.md
 - Ships: a small ship mark at Sullivan's Island and Charleston.
 - The design approved ("Approve, build it"). Scope of all of the above: every orientation.
 - Correction, the same afternoon: South Carolina plays 1775 to 1777 event by event (half a second each), stops at the end of 1777 with a recap of those years and who held what, then runs month by month. Scope: South Carolina only.
+
+## Answers from Morgan (26 Nov 2026): corrections to the South Carolina map
+
+After his first look at the live orientation.
+1. Towns show from the beginning (SR-29).
+2. Asked what the black solid and dashed lines are: the solid lines are the main roads of 1775 traced from Mouzon; the dash-dot lines are
+   the boundaries (the Cherokee line of 1766-67, gone after the cession of May 1777, and the lines with North Carolina of 1764 and 1772).
+3. and 4. 1775 to 1779: each year's events at once, growing into a large circle, a 3-second stop with dated bubbles, then shrinking (SR-30).
+5. The key loses the ship and the dagger; the dagger is explained in the side pane (SR-28).
+6. The 1780 symbols "pulse": the month's clashes swelled and shrank each month, and on the reconstructed map their rings were drawn as dark
+   discs (SR-28). Fixed.
+Scope: the year reveal is South Carolina's own setting; the rest is in the shared orientation style, with "all orientations or just this
+one?" put to Morgan.
 
 ## Answers from Morgan (24 Nov 2026)
 
