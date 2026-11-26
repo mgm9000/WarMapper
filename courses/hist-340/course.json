@@ -273,6 +273,15 @@
       ],
       "playbacks": [
         {
+          "id": "sc-orientation",
+          "kind": "orientation",
+          "title": "South Carolina, 1775 to Cowpens: an orientation",
+          "dates": "April 1775 to 17 January 1781",
+          "amh": "American Military History, vol. 1, pp. 90-95 (map 10 on p. 91), from late 1778; the book does not cover the war in South Carolina before then",
+          "playback": "sc-orientation",
+          "parent": null
+        },
+        {
           "id": "cowpens",
           "kind": "battle",
           "title": "Battle of Cowpens",
@@ -301,6 +310,24 @@
           "amh": "American Military History, vol. 1, p. 98",
           "playback": null,
           "parent": "greene-carolina-campaign"
+        }
+      ],
+      "chapters": [
+        {
+          "id": "hist-340-sc",
+          "title": "South Carolina: from the orientation to Guilford Courthouse",
+          "about": "Start with the orientation: who won where, and who held the towns and forts of South Carolina, from April 1775 to the morning of Cowpens. Its last frame leads on to Cowpens, and Cowpens leads back to it. Greene's campaign and Guilford Courthouse follow when they are built.",
+          "order": [
+            "sc-orientation",
+            "cowpens",
+            "greene-carolina-campaign",
+            "guilford-courthouse"
+          ],
+          "readings": [
+            "r-0116-1",
+            "r-0116-2"
+          ],
+          "reading_note": "Both are the syllabus's readings for this day. Ward's chapter 68, \"Before Cowpens,\" goes with the orientation and chapter 69 with Cowpens; in American Military History, pp. 90-95 go with the orientation and pp. 95-98 with Cowpens, the campaign and Guilford Courthouse."
         }
       ]
     },

@@ -31,19 +31,28 @@ var byDay=B.unit==='day',style=P.style||(byDay?'operational':'tactical'),compact
 var T0=B.T0,T1=B.T1;
 /* BP-34: a campaign and the battles inside it link to each other (raw.links: written by the exporter from the Links sheet; a battle file
    with no links has none, and nothing below shows). A campaign lists its battles and marks their dates on the timeline; while the clock is
-   on a battle's dates the pane offers to open it there. A battle offers the way back to its campaign at the date on its clock. */
-var LINKS=(raw.links||[]).map(function(x){return {kind:x.kind,id:x.playback,name:x.label||x.title,from:x.from,to:x.to,at:x.at||x.from,t0:B.time(x.from),t1:B.time(x.to)}});
+   on a battle's dates the pane offers to open it there. A battle offers the way back to its campaign at the date on its clock.
+   Since 25 Nov 2026 (the HIST 340 South Carolina chapter) a playback can also name the one that comes next in a course chapter (kind
+   "next": offered at its end, "Next in this chapter") and the one before it (kind "previous": offered at the top of the pane throughout).
+   The next one opens on its own opening view, wide and with nothing drawn until play (SR-02, SR-04), unless the link gives an `at`; the
+   one before opens at its `at`, its end by default (the exporter fills it in). */
+var LINKS=(raw.links||[]).map(function(x){return {kind:x.kind,id:x.playback,name:x.label||x.title,from:x.from,to:x.to,at:x.at||x.from,at0:x.at||null,t0:B.time(x.from),t1:B.time(x.to)}});
 var LMON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 function lday(s){return (+s.slice(8,10))+' '+LMON[+s.slice(5,7)-1]}
-function lspan(x){var a=x.from.slice(0,10),b=x.to.slice(0,10),y=' '+b.slice(0,4);if(a===b)return lday(a)+y;return (a.slice(5,7)===b.slice(5,7)?(+a.slice(8,10)):lday(a))+' to '+lday(b)+y}
-function linkNow(x){return x.kind==='battle'&&t>=x.t0-1e-6&&t<=x.t1+(byDay?0.999:0)}
+function lspan(x){var a=x.from.slice(0,10),b=x.to.slice(0,10),y=' '+b.slice(0,4);if(a===b)return lday(a)+y;if(a.slice(0,4)!==b.slice(0,4))return a.slice(0,4)+' to '+lday(b)+y;   // over more than a year: "1775 to 17 Jan 1781"
+  return (a.slice(5,7)===b.slice(5,7)?(+a.slice(8,10)):lday(a))+' to '+lday(b)+y}
+function linkNow(x){return (x.kind==='battle'&&t>=x.t0-1e-6&&t<=x.t1+(byDay?0.999:0))||(x.kind==='next'&&!landing&&t>=T1-1e-6)}   // a next link: once the clock is at the end
 function linkAt(x){   // where the other playback opens: the battle at its start, or at the campaign's day if later; the campaign at the battle's day
+  if(x.kind==='next')return x.at0;   // null: on its own opening view
+  if(x.kind==='previous')return x.at0||x.to;
   if(x.kind==='battle'){var d=B.isoOf(Math.floor(t+1e-6)).slice(0,10)+'T00:00';return d>x.at?(d<x.to?d:x.to):x.at}
   var e=B.isoOf(t).slice(0,10);return e<x.from.slice(0,10)?x.from.slice(0,10):e>x.to.slice(0,10)?x.to.slice(0,10):e}
 function openLink(id){var x=LINKS.filter(function(l){return l.id===id})[0];if(!x)return;var h=document.querySelector('a.home'),home=h?h.getAttribute('href'):'../../',
-  url=home+'playbacks/'+encodeURIComponent(x.id)+'/#at='+encodeURIComponent(linkAt(x));clk.setPlaying(false);
+  a=linkAt(x),url=home+'playbacks/'+encodeURIComponent(x.id)+'/'+(a?'#at='+encodeURIComponent(a):'');clk.setPlaying(false);
   if(/^https?:/.test(home))window.open(url,'_blank','noopener');else location.href=url}   // from an offline copy the site opens in a new tab
-function linksHtml(){if(!LINKS.length)return '';var h='',now=LINKS.filter(linkNow),bt=LINKS.filter(function(x){return x.kind==='battle'});
+function linksHtml(){if(!LINKS.length)return '';var h='',now=LINKS.filter(function(x){return x.kind==='battle'&&linkNow(x)}),bt=LINKS.filter(function(x){return x.kind==='battle'});
+  LINKS.forEach(function(x){if(x.kind==='previous')h+='<div class="cbl"><span class="eyebrow">Before this, in the chapter</span><button data-lnk="'+esc(x.id)+'">'+esc(x.name)+' <span class="cbs">'+esc(lspan(x))+'</span><span class="cbg">&larr; Open it '+(linkAt(x)===x.to?'where it ends':'at '+esc(lday(linkAt(x).slice(0,10))))+'</span></button></div>'});
+  LINKS.forEach(function(x){if(x.kind==='next'&&linkNow(x))h+='<div class="cbl on"><span class="eyebrow">Next in this chapter</span><button data-lnk="'+esc(x.id)+'">'+esc(x.name)+' <span class="cbs">'+esc(lspan(x))+'</span><span class="cbg">Open it &rarr;</span></button></div>'});
   LINKS.forEach(function(x){if(x.kind==='campaign')h+='<div class="cbl"><span class="eyebrow">Part of a campaign</span><button data-lnk="'+esc(x.id)+'">'+esc(x.name)+' <span class="cbs">'+esc(lspan(x))+'</span><span class="cbg">Open the campaign at this date &rarr;</span></button></div>'});
   now.forEach(function(x){h+='<div class="cbl on"><span class="eyebrow">A battle on this date</span><button data-lnk="'+esc(x.id)+'">'+esc(x.name)+' <span class="cbs">'+esc(lspan(x))+'</span><span class="cbg">Open the battle &rarr;</span></button></div>'});
   if(bt.length){h+='<details class="evs cbls"'+(lnkOpen?' open':'')+'><summary>Battles in this campaign ('+bt.length+')</summary><ul class="evl">';
