@@ -21,14 +21,15 @@ WarMapper's own code, data and documentation are covered by [LICENSE](LICENSE) (
 | Edwin C. Bearss, National Park Service, *The Battle of Cowpens: Troop Movement Maps*, Plates I to IV (1967) | Morgan's copy; South Carolina State Library | Public domain (US government work; the copy carries no copyright notice) | `playbacks/cowpens/bearss-plate-1.webp` to `-4.webp`; its roads are the roads of the Cowpens base "1781 with terrain" (`data/recon/cowpens-1781.geojson`) |
 | U.S. Geological Survey, *Cowpens, S.C.*, 1:62,500 (1959), and *Cowpens NE, S.C.*, orthophoto map, 1:24,000 (1975) | USGS Historical Topographic Map Collection | Public domain (US government work) | `playbacks/cowpens/usgs-1959.webp` and `usgs-1975.webp` (reprojected and cut) |
 | National Park Service, *Park Map - Cowpens National Battlefield* | National Park Service (NPGallery) | Public domain (US government work) | `playbacks/cowpens/nps-park-map.webp` (reduced) |
+| Charles E. Hatch, Jr., National Park Service, *The Battle of Guilford Courthouse*, troop movement plans Nos. 1 to 5 (drawn 1971; printed 1976) | Internet Archive (`guilfordcourthou00hatc`); Morgan's copy | Public domain (US government work) | `playbacks/guilford-courthouse/hatch-1971-plan-1.webp` to `-5.webp` (reduced, turned north-up) |
 
 ## Modern map data and tiles
 
 | Material | Terms | How it is used |
 |---|---|---|
 | OpenStreetMap data | © OpenStreetMap contributors, [Open Database License](https://www.openstreetmap.org/copyright) | Today's roads, water and names, cut down into `data/base/` and the battle files (the fall-back current map and the place names); at Cowpens also the park's trace of the road, today's Green River Road and the streams of the reconstructed base |
-| USGS Topo base map and aerial photography, The National Map | Public domain (US government work) | Streamed from `basemap.nationalmap.gov` for Gettysburg, Trenton and Cowpens |
-| Mapzen Terrain Tiles on AWS Open Data (elevation) | Open data; see the [attribution](https://github.com/tilezen/joerd/blob/master/docs/attribution.md) | The terrain of the reconstructed bases (Manila 1899, Cowpens 1781) and the terrain shading, read by the page |
+| USGS Topo base map and aerial photography, The National Map | Public domain (US government work) | Streamed from `basemap.nationalmap.gov` for Gettysburg, Trenton, Cowpens and Guilford Courthouse |
+| Mapzen Terrain Tiles on AWS Open Data (elevation) | Open data; see the [attribution](https://github.com/tilezen/joerd/blob/master/docs/attribution.md) | The terrain of the reconstructed bases (Manila 1899, Cowpens 1781, Guilford Courthouse 1781) and the terrain shading, read by the page |
 | Natural Earth (1:10m land, roads, railroads, rivers, lakes) | Public domain, [naturalearthdata.com](https://www.naturalearthdata.com/about/terms-of-use/) | The fall-back current map under Luzon 1899 (`data/base/luzon1899.json`) |
 | OpenTopoMap | Map style CC-BY-SA, opentopomap.org; data © OpenStreetMap contributors, SRTM | Streamed from `tile.opentopomap.org` for First Ypres, Manila and Luzon 1899 |
 

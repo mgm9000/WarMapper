@@ -21,51 +21,51 @@ Run `python3 tools/consistency_check.py --against main` before every pull reques
 the PRD's dated progress notes ("PRD"), the tracker's Summary note ("tracker"), the Project prompts, and pull request descriptions ("PR n").
 No rule was invented. Where no reason was recorded the entry says so.
 
-**Status codes.** A = applied. A* = the rule applies and Morgan has decided to bring the battle in line, but the work is not done yet (see Follow-ups at the end). E = exception (Morgan's reason given). N = not applicable. ? = ask Morgan. Columns: Gettysburg, Trenton, First Ypres, Manila, Luzon 1899, Cowpens.
+**Status codes.** A = applied. A* = the rule applies and Morgan has decided to bring the battle in line, but the work is not done yet (see Follow-ups at the end). E = exception (Morgan's reason given). N = not applicable. ? = ask Morgan. Columns: Gettysburg, Trenton, First Ypres, Manila, Luzon 1899, Cowpens and, since 26 Nov 2026, Guilford Courthouse.
 
 **Answers of 24 Nov 2026.** Morgan answered the batch of questions on 24 Nov. His answers are in each rule's entry and listed under "Answers from Morgan" and "Follow-ups" at the end. Session A changed nothing in the player, the exporter or the workbooks. Session B (branch `presets-and-checks`, the same night) built the presets and the check and carried out F-2 and most of F-3; the matrix below is that branch.
 
-## Matrix (as of 24 Nov 2026, evening: `main` after pull request 72, then the session C audit)
+## Matrix (as of 24 Nov 2026, evening: `main` after pull request 72, then the session C audit; the Guilford Courthouse column added 26 Nov 2026 on branch `guilford-courthouse`)
 
-| Rule | Gettysburg | Trenton | First Ypres | Manila | Luzon 1899 | Cowpens | Enforced by |
-|---|---|---|---|---|---|---|---|
-| SR-01 24-hour time | A | A | A | A | A | A | player (clock); check (texts) |
-| SR-02 Landing view | A | A | A | A | A | A | exporter (reconstruction first); player; check |
-| SR-03 Current map is a modern topographic map | A | A | A | A | A | A | preset (us-maps, world-maps, all); check |
-| SR-04 Open zoomed out, hold on the whole ground, ease in slowly | A | A | A | A | A | A | player; preset (tactical, operational); check |
-| SR-05 Day pauses and summaries | N | N | A | N | A | N | player; check |
-| SR-06 Arrows ahead of long moves (limit scales with the battle) | A | A | A | A | A | A | preset and exporter; check |
-| SR-07 Arrows run ahead of their unit by a time-scale reach | A | A | A | A | A | A | preset and exporter; check |
-| SR-08 Ships (boats at Trenton, naval gunfire at Ypres) | N | A* | A* | A | A | N | document only |
-| SR-09 Map credits in the i button | A | A | A | A | A | A | player; check (every map has a credit) |
-| SR-10 Units visibly move; the enemy is shown | A | A | A | A | A | A | check (both sides); document |
-| SR-11 Symbols stay clearly visible (70%); moves and arrows smooth | A | A | A | A | A | A | preset (all); player; check |
-| SR-12 Reconstructed maps carry detail at every zoom | N | N | N | A | N | A | document only (screenshots) |
-| SR-13 No reconstruction banner on the map | N | N | N | A | N | A | player |
-| SR-14 Elevation-derived terrain labelled, cleaned, never period | N | N | N | A | N | A | player; document |
-| SR-15 One main map on the Type of map menu | A | A | A | A | A | A | check |
-| SR-16 Routes taken: layer on every battle; routes fade | A | A | A* | A | A | A | preset (all) and exporter; player; check |
-| SR-17 Events tied to units on the map | A | A | A* | A | A | A | player; check (warning) |
-| SR-18 Follow camera: smooth, keeps up | A | A | N | A | N | A | player |
-| SR-19 Scholarly history, where it cites the reports, settles dates and names; both readings kept | A* | A* | A* | A* | A | A* | document only |
-| SR-20 Every time and position cross-checked | A | A | A | A | A | A | document only (audit) |
-| SR-21 Never `stated` or `high` without a cited source | A | A | A | A | A | A | check (a source is cited); audit |
-| SR-22 Rights: host only public-domain or open material | A | A | A | A | A | A | check (warning); document |
-| SR-23 The workbook is master; CSV copies current | A | A | A | A | A | A | exporter; check |
-| SR-24 Controls and layout on phones, tablets and desktops | A | A | A | A | A | A | player; check (labels); screenshots |
-| SR-25 No "Times are estimates" note under the clock | A | A | A | A | A | A | check |
-| SR-26 Current-map button reads "Modern" | A | A | A | A | A | A | preset (all); check |
-| SR-27 Tactical battles share their settings unless a reason is recorded | A | A | N | A | N | A | preset (tactical); check (reasons) |
-| SR-28 Orientations: clashes by who won, shape and colour, sourced, both readings where disputed | N | N | N | N | N | N | preset (orientation); player; check |
-| SR-29 Orientations: control of places, dated and sourced | N | N | N | N | N | N | player; check |
-| SR-30 Orientations: month by month, busy months slower, one stop at the end | N | N | N | N | N | N | preset (orientation); player; check |
-| SR-31 Reconstructed maps follow the clock (dated lines) | N | N | N | A | N | A | player |
+| Rule | Gettysburg | Trenton | First Ypres | Manila | Luzon 1899 | Cowpens | Guilford CH | Enforced by |
+|---|---|---|---|---|---|---|---|---|
+| SR-01 24-hour time | A | A | A | A | A | A | A | player (clock); check (texts) |
+| SR-02 Landing view | A | A | A | A | A | A | A | exporter (reconstruction first); player; check |
+| SR-03 Current map is a modern topographic map | A | A | A | A | A | A | A | preset (us-maps, world-maps, all); check |
+| SR-04 Open zoomed out, hold on the whole ground, ease in slowly | A | A | A | A | A | A | A | player; preset (tactical, operational); check |
+| SR-05 Day pauses and summaries | N | N | A | N | A | N | N | player; check |
+| SR-06 Arrows ahead of long moves (limit scales with the battle) | A | A | A | A | A | A | A | preset and exporter; check |
+| SR-07 Arrows run ahead of their unit by a time-scale reach | A | A | A | A | A | A | A | preset and exporter; check |
+| SR-08 Ships (boats at Trenton, naval gunfire at Ypres) | N | A* | A* | A | A | N | N | document only |
+| SR-09 Map credits in the i button | A | A | A | A | A | A | A | player; check (every map has a credit) |
+| SR-10 Units visibly move; the enemy is shown | A | A | A | A | A | A | A | check (both sides); document |
+| SR-11 Symbols stay clearly visible (70%); moves and arrows smooth | A | A | A | A | A | A | A | preset (all); player; check |
+| SR-12 Reconstructed maps carry detail at every zoom | N | N | N | A | N | A | A | document only (screenshots) |
+| SR-13 No reconstruction banner on the map | N | N | N | A | N | A | A | player |
+| SR-14 Elevation-derived terrain labelled, cleaned, never period | N | N | N | A | N | A | A | player; document |
+| SR-15 One main map on the Type of map menu | A | A | A | A | A | A | A | check |
+| SR-16 Routes taken: layer on every battle; routes fade | A | A | A* | A | A | A | A | preset (all) and exporter; player; check |
+| SR-17 Events tied to units on the map | A | A | A* | A | A | A | A | player; check (warning) |
+| SR-18 Follow camera: smooth, keeps up | A | A | N | A | N | A | A | player |
+| SR-19 Scholarly history, where it cites the reports, settles dates and names; both readings kept | A* | A* | A* | A* | A | A* | A* | document only |
+| SR-20 Every time and position cross-checked | A | A | A | A | A | A | A | document only (audit) |
+| SR-21 Never `stated` or `high` without a cited source | A | A | A | A | A | A | A | check (a source is cited); audit |
+| SR-22 Rights: host only public-domain or open material | A | A | A | A | A | A | A | check (warning); document |
+| SR-23 The workbook is master; CSV copies current | A | A | A | A | A | A | A | exporter; check |
+| SR-24 Controls and layout on phones, tablets and desktops | A | A | A | A | A | A | A | player; check (labels); screenshots |
+| SR-25 No "Times are estimates" note under the clock | A | A | A | A | A | A | A | check |
+| SR-26 Current-map button reads "Modern" | A | A | A | A | A | A | A | preset (all); check |
+| SR-27 Tactical battles share their settings unless a reason is recorded | A | A | N | A | N | A | A | preset (tactical); check (reasons) |
+| SR-28 Orientations: clashes by who won, shape and colour, sourced, both readings where disputed | N | N | N | N | N | N | N | preset (orientation); player; check |
+| SR-29 Orientations: control of places, dated and sourced | N | N | N | N | N | N | N | player; check |
+| SR-30 Orientations: month by month, busy months slower, one stop at the end | N | N | N | N | N | N | N | preset (orientation); player; check |
+| SR-31 Reconstructed maps follow the clock (dated lines) | N | N | N | A | N | A | A | player |
 
 Since 25 Nov 2026 there is a seventh kind of playback, the **orientation** (clashes and places, no units), built for the HIST 340 South
 Carolina chapter and tried so far only on made-up rows (`tests/orientation/make_demo.py`). No orientation is on the site yet, so it has no
 column; the section "Orientations" below says which rules reach it.
 
-Notes on the matrix. SR-01: the eight a.m./p.m. texts were converted in the session C audit (24 Nov; Morgan's yes), so all six now pass; SR-16: First Ypres has the layer
+Notes on the matrix. Guilford Courthouse (26 Nov 2026): the carry-forward check before it was built found every rule that reaches a tactical battle already kept by the presets, the exporter or the player; SR-19 is A* because the standard modern study (Babits and Howard, 2009) has not been read, and SR-12 and SR-14 are met by a reconstruction whose lines are Hatch's (1971) on today's terrain. `python3 tools/consistency_check.py --against main` passes with it. SR-01: the eight a.m./p.m. texts were converted in the session C audit (24 Nov; Morgan's yes), so all six now pass; SR-16: First Ypres has the layer
 but no route on record, so it draws nothing and the switch is not offered until routes are entered (F-7). SR-23: the out-of-date Philippine War
 CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the arrow lead time (how long before a unit sets off its arrow appears) is not scaled like the reach: see F-8.
 
@@ -420,6 +420,36 @@ Checked at the start of Session 1 of `claude/sc-orientation-prompt.md`, and show
 - Work on a branch, open a pull request, don't merge. Ask Morgan before stacking on an unmerged branch. Prompt of 24 Nov.
 - Model rule: Sonnet default; Opus or Fable before changing the format, the workbook schema or shared playback rules, or setting a position from conflicting sources; after two failed fixes, move up a tier. Project instructions.
 - Morgan's folder on the Mac is `Documents/Starfishient/WarMapper`; the workbooks are in the repo under `data/WarMapper battle data/`.
+
+## Answers from Morgan (26 Nov 2026): Guilford Courthouse
+
+Session 4 of `claude/hist-340-build-prompt.md` (branch `guilford-courthouse`). Asked before building, as the carry-forward check requires.
+
+- Main map: the reconstructed 1781 map, as at Cowpens (SR-02, SR-15). Scope: Guilford Courthouse; the rule itself is every battle's.
+- Where it starts: with the morning fights near New Garden (Lee against Tarleton), not at the cannonade. Scope: Guilford Courthouse only.
+- The four choices made for Cowpens were each asked again, and all four apply: places far off the map are shown at its edge with an arrow and a
+  distance; the other maps are offered in the map details (the i button), not on the menu; units that break are taken off the map; a column
+  on the march is one symbol until it deploys. Scope: Cowpens and Guilford Courthouse. Ask again for the next battle.
+- The chapter: Cowpens leads on to Guilford Courthouse for now (`Next links` row N02). Morgan also asked for a map of Greene's and the British
+  movements between the two battles: that is the campaign playback, to be built in Session 5 "as planned", when N02 is replaced by two rows.
+- The "pilot report" on Cowpens could not be found (repo, Project, Morgan's folder). Morgan approved a list of its improvements rebuilt from the
+  Cowpens follow-up work, to be used for every battle built for HIST 340 from now on:
+  1. read the National Park Service's troop movement study first, and take positions from its plans where it has them;
+  2. rate cautiously, and audit the ratings and the page citations before the pull request, not after;
+  3. check where each source prints its page numbers (a scan that prints them at the foot shifts every citation by one);
+  4. build the reconstructed map, the other maps, the opening hold and the column settings in the same session as the positions.
+- Sources: Morgan downloaded the copies himself (`Historical Info/History 340/Guilford Courthouse`); Babits and Howard (2009) and Baker
+  (1981) could not be had and were not read.
+
+Decisions the session made and Morgan has not yet confirmed (each is easy to change):
+- Every Guilford position is rated low (the plans are good to about 75 m on today's ground, and none of the accounts fixes a place closer).
+- The retreating Continentals are shown as one symbol on the Reedy Fork road ("a column on the march is one symbol", carried to the retreat).
+- The reconstructed sheet has an empty margin south of New Garden, so its title does not lie on the morning fights.
+
+Notes for whoever builds the next battle:
+- Ids are shared by all the war workbooks: a new battle's phase, event and route ids must not repeat another war's (Gettysburg already uses
+  `PH-G`, `GE` and `RG`; Guilford Courthouse uses `PH-GC`, `GCE` and `RGC`). The exporter stops and says so.
+- `python3 pipeline/checks/quote_check.py` checks every quotation in a battle's script against the texts read, with its page (item 2 above).
 
 ## Answers from Morgan (25 Nov 2026): the South Carolina orientation
 

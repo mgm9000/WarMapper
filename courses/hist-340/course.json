@@ -308,7 +308,7 @@
           "title": "Battle of Guilford Courthouse",
           "dates": "15 March 1781",
           "amh": "American Military History, vol. 1, p. 98",
-          "playback": null,
+          "playback": "guilford-courthouse",
           "parent": "greene-carolina-campaign"
         }
       ],
@@ -316,7 +316,7 @@
         {
           "id": "hist-340-sc",
           "title": "South Carolina: from the orientation to Guilford Courthouse",
-          "about": "Start with the orientation: who won where, and who held the towns and forts of South Carolina, from April 1775 to the morning of Cowpens. Its last frame leads on to Cowpens, and Cowpens leads back to it. Greene's campaign and Guilford Courthouse follow when they are built.",
+          "about": "Start with the orientation: who won where, and who held the towns and forts of South Carolina, from April 1775 to the morning of Cowpens. Its last frame leads on to Cowpens, and Cowpens to Guilford Courthouse, fought eight weeks later; each leads back. Greene's campaign between the two battles (the race to the Dan and the return) follows when it is built, and will then stand between them.",
           "order": [
             "sc-orientation",
             "cowpens",

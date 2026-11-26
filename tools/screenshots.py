@@ -22,7 +22,7 @@ says so.
 import argparse, datetime as dt, functools, html, http.server, json, os, re, subprocess, sys, threading
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-BATTLES = ['gettysburg', 'trenton', 'ypres', 'manila', 'luzon1899', 'cowpens']
+BATTLES = ['gettysburg', 'trenton', 'ypres', 'manila', 'luzon1899', 'cowpens', 'guilford-courthouse']
 SIZES = [('phone', 390, 844), ('desktop', 1440, 900)]
 VIEWS = ['1-opening', '2-mid', '3-close']
 NET = re.compile(r'Failed to load resource|Failed to fetch|CORS policy|net::ERR|AJAXError|NetworkError', re.I)

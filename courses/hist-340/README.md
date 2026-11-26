@@ -23,7 +23,7 @@ Only the Cowpens, Greene, Guilford and Atlanta slots were asked for and added. T
 - Every date is a placeholder marked "update". The syllabus header says Winter 2024; its dates fall on Tuesdays and Thursdays in 2025.
 - Readings: AMH chapters link to the 2009 PDF at the chapter's first page and to the Center of Military History catalog page. Chapters 3 and 4 also link to the older web edition, whose page numbers differ. The Center's catalog page could not be opened from the workspace, so those links are not checked. Everything on Canvas or in a book is named with no link.
 - Rights: AMH "public domain" (U.S. government; to confirm in the register), Ward and the Chambers and Piehler anthology "in copyright" or "not confirmed", the rest "not confirmed".
-- Playback slots: Cowpens, Greene's campaign and Guilford Courthouse on 16 Jan; the Atlanta campaign on 30 Jan. None is built yet.
+- Playback slots: Cowpens, Greene's campaign and Guilford Courthouse on 16 Jan; the Atlanta campaign on 30 Jan. Built so far: the South Carolina orientation, Cowpens and (26 Nov 2026) Guilford Courthouse.
 
 ## Syllabus quirks
 
@@ -41,3 +41,7 @@ Only the Cowpens, Greene, Guilford and Atlanta slots were asked for and added. T
 ## The South Carolina chapter (25 Nov 2026)
 
 On 16 Jan the four slots form one chapter, "South Carolina: from the orientation to Guilford Courthouse": the orientation (built), Cowpens (built), Greene's campaign and Guilford Courthouse (not built yet), with the day's two readings. The orientation's last frame leads on to Cowpens and Cowpens leads back (the `Next links` sheet of the Revolutionary War workbook, row N01). When Greene's campaign and Guilford Courthouse are built, add rows N02 (Cowpens to the campaign) and N03 (the campaign to Guilford) and fill their slots; the build stops if two built neighbours in the chapter do not link.
+
+## Guilford Courthouse (26 Nov 2026)
+
+The Guilford Courthouse slot is filled (`playbacks/guilford-courthouse/`). For now Cowpens leads straight on to it and it leads back (row N02 of the `Next links` sheet): Morgan's decision of 26 Nov 2026. When Greene's campaign is built, replace N02 by two rows, Cowpens to the campaign and the campaign to Guilford Courthouse, and fill the campaign's slot. The textbook gives the battle one paragraph (American Military History, vol. 1, p. 98); the playback's sources are listed in the main README.
