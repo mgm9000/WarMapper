@@ -103,3 +103,28 @@ sc-orientation,King's Highway,,33.68891,-78.94534,-50,0,road,recon,yes
 sc-orientation,Road to the Santee,,33.31861,-79.52037,34,0,road,recon,yes
 sc-orientation,Road to Purrysburg,,32.64601,-80.85478,11,0,road,recon,yes
 sc-orientation,Road from Fort Moore,,33.37324,-81.6524,16,0,road,recon,yes
+guilford-courthouse,Great Salisbury road,New Garden Road,36.13072,-79.852065,-12,0,road,recon,
+guilford-courthouse,Great Salisbury road,New Garden Road,36.132894,-79.843924,-30,1,road,recon,
+guilford-courthouse,Great Salisbury road,New Garden Road,36.112805,-79.880445,-52,0,road,recon,
+guilford-courthouse,Reedy Fork road,,36.136936,-79.835764,82,0,road,recon,
+guilford-courthouse,Hunting Creek,Richland Creek,36.132531,-79.836063,75,0,water,recon,
+guilford-courthouse,Little Horsepen Creek,,36.127832,-79.857176,60,0,water,recon,
+guilford-courthouse,Horsepen Creek,,36.117854,-79.874395,8,1,water,recon,
+guilford-courthouse,Guilford Courthouse,,36.135127,-79.834392,,0,landmark,both,
+guilford-courthouse,Hoskins house,,36.128801,-79.854025,,0,landmark,both,
+guilford-courthouse,New Garden Meeting House,Guilford College,36.090444,-79.889164,,0,landmark,both,yes
+guilford-courthouse,"""The Lane""",New Garden and Hobbs roads,36.113382,-79.880089,,1,place,both,yes
+guilford-courthouse,The cross road,Ballinger Road,36.099388,-79.891833,,1,place,both,yes
+guilford-courthouse,corn fields,,36.129619,-79.851601,,1,area,recon,
+guilford-courthouse,fenced fields,,36.131919,-79.851552,,1,area,recon,
+guilford-courthouse,old fields,,36.13655,-79.84229,,1,area,recon,
+guilford-courthouse,open fields,,36.132991,-79.839293,,1,area,recon,
+guilford-courthouse,woods,,36.12944,-79.848306,,1,wood,recon,yes
+guilford-courthouse,woods,,36.133224,-79.844101,,1,wood,recon,yes
+guilford-courthouse,woods,,36.127788,-79.841872,,1,wood,recon,yes
+guilford-courthouse,"to the Reedy Fork, 3 miles, and the iron works",,36.139073,-79.836096,,1,place,both,yes
+guilford-courthouse,to Hillsborough,,36.13514,-79.830462,,1,place,both,yes
+guilford-courthouse,from Deep River,,36.087992,-79.90073,,1,place,both,yes
+guilford-courthouse,Guilford Courthouse National Military Park,,36.131671,-79.837046,,1,area,current,
+guilford-courthouse,Deep River Friends Meeting House,"Cornwallis's camp, 14 March",36.03139,-79.96528,,0,town,far,yes
+guilford-courthouse,Iron works on Troublesome Creek,"Speedwell Furnace: Greene's camp, 15 March",36.3072,-79.7378,,0,town,far,yes

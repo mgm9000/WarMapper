@@ -1,0 +1,213 @@
+{
+ "what": "Hatch (1971) plates 1 to 5 laid on the ground by the park boundary",
+ "topo_zoom": 16,
+ "topo_origin": [
+  18227,
+  25702
+ ],
+ "plate1_to_topo": {
+  "a": 0.7474859287276796,
+  "b": -0.0030322058338069684,
+  "tx": 637.9798475733166,
+  "ty": 346.9359820079737
+ },
+ "m_per_plate_px": 1.4421,
+ "turn_deg": -0.232,
+ "control": [
+  {
+   "plate1": [
+    1860,
+    421
+   ],
+   "topo": [
+    2034,
+    667
+   ],
+   "what": "north-east corner of the park",
+   "off_m": 22.9
+  },
+  {
+   "plate1": [
+    1871,
+    659
+   ],
+   "topo": [
+    2037,
+    824
+   ],
+   "what": "south-east corner, on Orman Road",
+   "off_m": 19.2
+  },
+  {
+   "plate1": [
+    1373,
+    818
+   ],
+   "topo": [
+    1669.5,
+    954
+   ],
+   "what": "west end of the half-circle on the south boundary",
+   "off_m": 5.3
+  },
+  {
+   "plate1": [
+    1459,
+    820
+   ],
+   "topo": [
+    1730,
+    954
+   ],
+   "what": "east end of the half-circle",
+   "off_m": 3.5
+  },
+  {
+   "plate1": [
+    1005,
+    457
+   ],
+   "topo": [
+    1386,
+    686
+   ],
+   "what": "north-west corner, at Old Battleground Road",
+   "off_m": 8.9
+  }
+ ],
+ "plates": {
+  "1": {
+   "border": [
+    [
+     97.1,
+     108.4
+    ],
+    [
+     2036.3,
+     85.4
+    ],
+    [
+     2053.8,
+     1448.4
+    ],
+    [
+     108.8,
+     1480.2
+    ]
+   ],
+   "to_plate1": [
+    1.0,
+    0.0,
+    0.0,
+    0.0
+   ]
+  },
+  "2": {
+   "border": [
+    [
+     118.0,
+     84.8
+    ],
+    [
+     2060.4,
+     81.3
+    ],
+    [
+     2066.3,
+     1447.7
+    ],
+    [
+     118.0,
+     1458.4
+    ]
+   ],
+   "to_plate1": [
+    0.998292,
+    -0.009814,
+    -22.335464,
+    24.583351
+   ]
+  },
+  "3": {
+   "border": [
+    [
+     87.4,
+     83.4
+    ],
+    [
+     2029.7,
+     69.2
+    ],
+    [
+     2041.5,
+     1436.8
+    ],
+    [
+     93.3,
+     1452.7
+    ]
+   ],
+   "to_plate1": [
+    0.998718,
+    -0.005669,
+    8.083842,
+    27.066964
+   ]
+  },
+  "4": {
+   "border": [
+    [
+     100.6,
+     76.0
+    ],
+    [
+     2041.9,
+     76.0
+    ],
+    [
+     2045.8,
+     1440.6
+    ],
+    [
+     94.7,
+     1447.7
+    ]
+   ],
+   "to_plate1": [
+    0.998435,
+    -0.011976,
+    -4.186209,
+    34.558815
+   ]
+  },
+  "5": {
+   "border": [
+    [
+     136.6,
+     85.0
+    ],
+    [
+     2080.5,
+     85.0
+    ],
+    [
+     2082.4,
+     1453.8
+    ],
+    [
+     130.7,
+     1459.1
+    ]
+   ],
+   "to_plate1": [
+    0.997061,
+    -0.012498,
+    -39.903527,
+    25.965671
+   ]
+  }
+ },
+ "checks": {
+  "note": "Hatch's own features against today's survey (USGS Topo): his Hunting Creek at the road lies about 70 m east of Richland Creek; his road at the park's west boundary of 1971 about 70 m south of today's New Garden Road."
+ }
+}
