@@ -473,7 +473,10 @@ are controlled by British with a small Union Jack wavy flag, or the Americans wi
   stops: the clashes so far fade to the standard 70% (SR-11's `event_dim`), and each place held by one side takes its flag. The British flag
   is the Union flag as it was in 1780 (no St Patrick's cross until 1801); the American is the Stars and Stripes of 14 June 1777, 13 stars in a
   ring. Contested places keep the grey diamond. Forts and posts take flags too, like the towns. Clashes of January 1781 come on at full strength.
-- Scope: South Carolina only for now; asked whether every orientation should do the same at the end of its last full year.
+- Later the same day: "Fade the action symbol more. Make the flags 10% bigger." The clashes now fade to 40% (`dim` 0.4, South Carolina's
+  own value, not the battles' 70%) and the flags are drawn 10% larger (`scale` 1.1).
+- Scope: South Carolina only for now (Morgan: "for now do this just for South Carolina but keep it as an open question").
+- **Open question:** should every orientation fade its clashes and fly flags at the end of its last full year?
 
 ## Answers from Morgan (24 Nov 2026)
 
