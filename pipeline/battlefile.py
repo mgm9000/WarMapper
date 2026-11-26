@@ -18,6 +18,11 @@ LABEL_SHOWS = ['current', 'period', 'both', 'recon', 'far']   # far: a place too
 RECON_KINDS = ['sea', 'shore', 'river', 'stream', 'water', 'wall', 'road', 'rail', 'breakwater', 'blockhouse', 'detail', 'entrenchment', 'ink']
 RECON_METHODS = ['traced', 'AI-extracted', 'interpolated']
 RECON_SHAPES = ['point', 'line', 'area', 'lines', 'areas']
+# orientation playbacks (25 Nov 2026, HIST 340 South Carolina chapter): dated clashes drawn by who won, and who held which places
+CLASH_KINDS = ['fight', 'capture']
+PLACE_KINDS = ['city', 'town', 'village', 'fort', 'port', 'post', 'settlement']
+STYLES = ['tactical', 'operational', 'orientation']
+SUMMARY_KINDS = ['day', 'week', 'year', 'end']   # year and end: an orientation's year summaries and its closing one
 ISO = re.compile(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$')
 
 
@@ -225,7 +230,9 @@ def validate(b, folder=None):
     if P.get('follow', {}).get('empty') and P['follow']['empty'] not in V.get('presets', {}): bad.append('playback.follow.empty: no such preset')
     for tid in P.get('follow', {}).get('exclude', []):
         if tid not in tracks: bad.append('playback.follow.exclude: track %r not found' % tid)
-    if P.get('style') and P['style'] not in ('tactical', 'operational'): bad.append('playback.style must be "tactical" or "operational"')
+    for i, ph in enumerate((P.get('orientation') or {}).get('phases') or []):   # an orientation's event-by-event stretches (25 Nov 2026)
+        time_ok(ph.get('until'), 'playback.orientation.phases.%d.until' % (i + 1)); time_ok(ph.get('from'), 'playback.orientation.phases.%d.from' % (i + 1), allow_none=True)
+    if P.get('style') and P['style'] not in STYLES: bad.append('playback.style must be one of %s' % ', '.join(STYLES))
     codes = {s.get('code') for s in b['sides']}
     for g in P.get('groups', []):
         if g.get('side') not in codes: bad.append('playback group %r: unknown side code' % g.get('label'))
@@ -233,7 +240,9 @@ def validate(b, folder=None):
     last = None
     for x in b.get('summaries', []):   # optional: day and week summaries for the pauses
         w = 'summary %s %s' % (x.get('kind'), x.get('from')); need(x, ['kind', 'from', 'to', 'title', 'text'], w)
-        if x.get('kind') not in ('day', 'week'): bad.append(w + ': kind must be "day" or "week"')
+        if x.get('kind') not in SUMMARY_KINDS: bad.append(w + ': kind must be one of %s' % ', '.join(SUMMARY_KINDS))
+        for sid in x.get('sources', []):
+            if x.get('kind') in ('year', 'end') and sid not in sources: bad.append(w + ': source %r is not in sources' % sid)
         for k in ('from', 'to'): time_ok(x.get(k), w + '.' + k)
         if isinstance(x.get('from'), str) and isinstance(x.get('to'), str) and x['to'] < x['from']: bad.append(w + ': ends before it starts')
     for x in b.get('links', []):   # optional (BP-34): the campaign this battle is part of, or the battles inside this campaign
@@ -254,6 +263,49 @@ def validate(b, folder=None):
             if sid not in step_ids: bad.append(w + ': step %r is not on any track' % sid)
         for sid in e.get('sources', []):
             if sid not in sources: bad.append(w + ': source %r is not in sources' % sid)
+    # optional (25 Nov 2026): an orientation's clashes, each tied to an event and drawn in the colour and shape of the side that won it
+    ev_ids = {e.get('id') for e in b['events']}; won = codes | {'indecisive'}
+    def located(x, w):
+        L = x.get('location') or {}
+        if L.get('confidence') and L['confidence'] not in LEVELS: bad.append(w + ': location.confidence must be one of %s' % ', '.join(LEVELS))
+        if x.get('confidence') and x['confidence'] not in LEVELS: bad.append(w + ': confidence must be one of %s' % ', '.join(LEVELS))
+        if x.get('method') and x['method'] not in METHODS: bad.append(w + ': method must be one of %s' % ', '.join(METHODS))
+        for sid in x.get('sources', []):
+            if sid not in sources: bad.append(w + ': source %r is not in sources' % sid)
+    seen = set()
+    for c in b.get('clashes', []):
+        w = 'clash %s' % c.get('id'); need(c, ['id', 'event', 'kind', 'won_by', 'at'], w)
+        if c.get('id') in seen: bad.append(w + ': listed twice')
+        seen.add(c.get('id'))
+        if c.get('event') not in ev_ids: bad.append(w + ': event %r is not in events' % c.get('event'))
+        if c.get('kind') not in CLASH_KINDS: bad.append(w + ': kind must be one of %s' % ', '.join(CLASH_KINDS))
+        if c.get('won_by') not in won: bad.append(w + ': won_by must be a side code or "indecisive", not %r' % c.get('won_by'))
+        if c.get('kind') == 'capture' and c.get('won_by') == 'indecisive': bad.append(w + ': a capture is won by the side that took the place')
+        for k in ('captured_by', 'ships'):
+            if c.get(k) and c[k] not in codes: bad.append(w + ': %s must be a side code, not %r' % (k, c[k]))
+        if 'at' in c: point_ok(c['at'], w + '.at')
+        if c.get('disputed'):
+            o = c.get('other') or {}
+            if not o.get('text'): bad.append(w + ': disputed, so it needs the other reading (other.text) and its sources')
+            if o.get('won_by') and o['won_by'] not in won: bad.append(w + ': other.won_by must be a side code or "indecisive"')
+            for sid in o.get('sources', []):
+                if sid not in sources: bad.append(w + ': other reading cites %r, which is not in sources' % sid)
+        located(c, w)
+    # optional (25 Nov 2026): places whose holder changes over time (an orientation's control markers)
+    seen = set()
+    for p in b.get('places', []):
+        w = 'place %s' % p.get('id'); need(p, ['id', 'name', 'kind', 'at', 'control'], w)
+        if p.get('id') in seen: bad.append(w + ': listed twice')
+        seen.add(p.get('id'))
+        if p.get('kind') not in PLACE_KINDS: bad.append(w + ': kind must be one of %s' % ', '.join(PLACE_KINDS))
+        if 'at' in p: point_ok(p['at'], w + '.at')
+        located(p, w); last = None
+        for i, h in enumerate(p.get('control', [])):
+            x = '%s control %d' % (w, i + 1); need(h, ['from', 'held_by'], x); time_ok(h.get('from'), x + '.from')
+            if h.get('held_by') not in codes | {'contested'}: bad.append(x + ': held_by must be a side code or "contested", not %r' % h.get('held_by'))
+            if h.get('event') and h['event'] not in ev_ids: bad.append(x + ': event %r is not in events' % h['event'])
+            if last and isinstance(h.get('from'), str) and h['from'] < last: bad.append(x + ': control changes are not in time order')
+            last = h.get('from'); located(h, x)
     for l in b['labels']:
         need(l, ['text', 'at', 'kind'], 'label %r' % l.get('text'))
         if l.get('kind') not in LABEL_KINDS: bad.append('label %r: unknown kind %r' % (l.get('text'), l.get('kind')))
@@ -312,8 +364,9 @@ def write(battle, path):
     """Check the battle and save it. Refuses to write a file that does not meet the format."""
     battle = clean(dict(battle, format=FORMAT))
     # the lists the format always has, even when a battle has nothing to put in them
-    for k in ('events', 'labels', 'maps'): battle.setdefault(k, [])
+    for k in ('units', 'tracks', 'events', 'labels', 'maps'): battle.setdefault(k, [])   # an orientation has no units or tracks
     battle['base'] = dict({'lines': [], 'areas': []}, **battle.get('base', {}))
+    battle['base'].setdefault('credit', '')   # an orientation may have no cut of today's ground
     bad = validate(battle, os.path.dirname(path))
     if bad:
         raise SystemExit('battle file not written, %d problem(s):\n  ' % len(bad) + '\n  '.join(bad[:40]))
@@ -330,16 +383,23 @@ def used_sources(battle, catalogue, extra=()):
     """The sources a battle file needs: every source its steps, events, units and maps cite, taken from `catalogue`
     ({id: {title, citation, type, url}}), plus any listed in `extra`."""
     want = set(extra)
-    for tr in battle['tracks']:
+    for tr in battle.get('tracks', []):
         for st in tr['steps']: want.update(st.get('sources', []))
     for e in battle.get('events', []): want.update(e.get('sources', []))
-    for u in battle['units']:
+    for u in battle.get('units', []):
         want.update(u.get('sources', []))
         for a in u.get('assignments', []): want.update(a.get('sources', []))
     for m in battle.get('maps', []):
         if m.get('source'): want.add(m['source'])
     for r in battle.get('reconstructions', []):
         want.update(l['source'] for l in r['layers'] if l.get('source')); want.update(f['source'] for f in r['features'] if f.get('source'))
+    for c in battle.get('clashes', []):   # an orientation's clashes and places, and its year and closing summaries
+        want.update(c.get('sources', [])); want.update((c.get('other') or {}).get('sources', []))
+    for p in battle.get('places', []):
+        want.update(p.get('sources', []))
+        for h in p.get('control', []): want.update(h.get('sources', []))
+    for x in battle.get('summaries', []):
+        if x.get('kind') in ('year', 'end'): want.update(x.get('sources', []))
     missing = sorted(want - set(catalogue))
     assert not missing, 'cited but not in the source list: %s' % missing
     return {k: catalogue[k] for k in sorted(want)}

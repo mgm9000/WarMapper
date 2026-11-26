@@ -1,3 +1,6 @@
+What changed on 25 November 2026: the preset orientation
+"A preset for orientation playbacks (clashes by who won, places by who held them, played month by month, one stop at the end). No battle uses it yet. Written by pipeline/orientation_2026_11_25.py."
+""
 What changed on 24 November 2026 (night): reasons recorded
 The why column now gives the record's reason for Manila's and Cowpens's arrow limits and the Cowpens aerial photograph text. No setting changes. Written by pipeline/presets_2026_11_24.py reasons.
 ""

@@ -52,3 +52,12 @@ world-maps,modern.link,https://opentopomap.org/about,"The modern map: today's to
 civil-war,rules.pace.infantry,80,"March pace in metres a minute, for rows marked arrive_at_pace: infantry","March pace of Civil War infantry, cavalry and artillery, from the Gettysburg rows."
 civil-war,rules.pace.cavalry,110,"March pace in metres a minute, for rows marked arrive_at_pace: cavalry","March pace of Civil War infantry, cavalry and artillery, from the Gettysburg rows."
 civil-war,rules.pace.artillery,90,"March pace in metres a minute, for rows marked arrive_at_pace: artillery","March pace of Civil War infantry, cavalry and artillery, from the Gettysburg rows."
+orientation,style,orientation,"Draw the playback as an orientation: clashes by who won, places by who held them, no unit detail","Orientation playbacks (Morgan, 25 Nov 2026: HIST 340 South Carolina chapter)."
+orientation,scale_bar,km,The scale bar writes kilometres first,A state-wide map.
+orientation,day_pause,False,"No stop at each day or year end while it plays; it stops once, at the end, with the closing summary","Morgan, 25 Nov 2026: ""pause only at the end""; each year's summary is in the pane while that year plays."
+orientation,opening_ease,0.006,The slow ease in from the wide opening view when play is pressed,"SR-04, as the preset operational."
+orientation,zoom.min_factor,0.85,How far out past the whole ground the reader can zoom,As the preset operational.
+orientation,zoom.max,0.3,"The closest zoom, in screen pixels per metre","An orientation shows towns, not units."
+orientation,orientation.month_seconds,1,Seconds of play for a month at the opening speed,"Morgan, 25 Nov 2026: about a month a second."
+orientation,orientation.event_seconds,0.5,"Seconds of play added to a month for each event in it, so a busy month plays slower","Morgan, 25 Nov 2026: slow down busy months (August 1780 has six events)."
+orientation,orientation.speeds,"[2, 1, 0.5]","The speeds the step button offers, as seconds for a month: slow, normal, fast","Morgan, 25 Nov 2026: adjustable."

@@ -30,12 +30,14 @@ give is `null`.
 | `view` | Where on the earth the battle is |
 | `playback` | How this battle is played back: the settings the shared player reads |
 | `opening` | The text shown before the first event |
-| `sides` | The two sides |
+| `sides` | The sides (two, or more in an orientation: the Cherokee as a third side in South Carolina) |
 | `nations` | Optional: the nations within the sides, where they need their own name or colour |
-| `units` | Every unit in the battle's order of battle, whether or not it is placed |
+| `units` | Every unit in the battle's order of battle, whether or not it is placed (none in an orientation) |
 | `tracks` | One per symbol on the map: a unit and its recorded positions in time order |
 | `events` | The named moments on the timeline |
 | `links` | Optional. The campaign this battle is part of, or the battles inside this campaign (BP-34) |
+| `clashes` | Optional. An orientation's clashes and captures, each tied to an event and drawn by who won it (since 25 Nov 2026) |
+| `places` | Optional. Towns, villages, forts and ports, and who held each one when (an orientation's control markers, since 25 Nov 2026) |
 | `sources` | Every source the file cites |
 | `labels` | Names written on the map |
 | `maps` | Period maps |
@@ -159,6 +161,54 @@ Optional. A summary of a day or a week, shown when the playback stops at the end
 
 `kind` is `day` or `week`; `from` and `to` are the dates it covers (the same date for a day). Where a day has no summary
 the pause shows that day's events, and the units whose record changes that day, instead.
+
+An orientation (since 25 Nov 2026) has two more kinds. `year` covers a year (`from` its first day, `to` its last): the side pane shows it
+while that year plays. `end` (one, `from` and `to` the playback's last day) is the closing summary, shown when the playback reaches its end.
+Their `sources` are listed in the file's `sources`.
+
+### clashes
+
+Optional (since 25 Nov 2026). An **orientation** is a playback with no unit detail: a chapter's opening map of the key events of a
+state or a theatre over years (the HIST 340 South Carolina chapter, 1775 to Cowpens). Its clashes are its symbols.
+
+```json
+{"id": "C25", "event": "T25", "kind": "fight", "won_by": "CR", "at": [-80.5432, 34.3285], "place": "Camden",
+ "result": "Gates badly defeated by Cornwallis", "captured": "...", "captured_by": "CR", "ships": null,
+ "disputed": true, "other": {"won_by": "US", "text": "...", "sources": ["S91"]}, "hypothesis": "SCH04",
+ "method": "stated", "confidence": "medium", "location": {"source": "marker", "basis": "...", "confidence": "high", "precision_m": 300},
+ "sources": ["S90", "S92"], "notes": "...", "review": "Needs review"}
+```
+
+- `event` is the event (in `events`) the clash belongs to: its dates, name and words come from there, and it comes onto the map at the
+  event's `at`. An event with no clash is listed in the pane and on the timeline but draws nothing on the map.
+- `kind` is `fight` (a clash of arms: crossed swords) or `capture` (a post, arms or stores taken with no fight recorded: a small flag).
+- `won_by` is the code of the side that won (for a capture, the side that took it), or `indecisive` (a grey diamond).
+- `ships`, a side's code: that side's ships fought there; a small ship is drawn beside the symbol (Morgan, 25 Nov 2026: orientations only).
+- `disputed` (true): the sources disagree on the date or the result. The symbol carries a dagger. `won_by` is the reading the sources
+  settle on (SR-19); `other` is the other reading, with its sources, and `hypothesis` the Hypotheses row that records it.
+- `method` (`stated` or `inferred`) and `confidence` are how sure the result is; `location` how the place was found, as on a step.
+
+How the player draws them. Each side has a shape as well as a colour, so colour is never the only cue: from the side's colour, red is a
+square, blue a circle, black a triangle (`playback.orientation.shapes` can name others by side code), and a diamond in grey is no side.
+A clash comes on at its event's mark (growing in over a moment while playing), stands out through its calendar month (larger, with a ring),
+then stays on the map at full strength (Morgan, 25 Nov 2026), so the end shows the whole record. Symbols that would sit on one another are
+set a little apart, with a thin line to the true place.
+
+### places
+
+Optional (since 25 Nov 2026). The towns, villages, forts and ports an orientation follows, and who held each one when.
+
+```json
+{"id": "CP01", "name": "Charleston", "kind": "port", "at": [-79.9311, 32.7765], "location": {...}, "sources": ["S90"],
+ "control": [{"from": "1775-04-21", "held_by": "US", "basis": "Patriot committee in control", "method": "stated", "confidence": "medium", "sources": ["S90"]},
+             {"from": "1780-05-12", "held_by": "CR", "basis": "The city surrendered", "event": "T16", "method": "stated", "confidence": "high", "sources": ["S90", "S92"]}]}
+```
+
+- `kind` is `city`, `town`, `village`, `fort`, `port`, `post` or `settlement`.
+- `control` is in time order. `held_by` is a side's code or `contested` (no side firmly holds it). Before the first row the place is not
+  drawn. Each row carries its own `method`, `confidence` and `sources`, and `event` where an event changed it.
+- The player draws a small marker of the side's shape and colour beside the place's name (a hollow grey diamond when contested); it grows
+  for a moment when the place changes hands. Tapping it shows who held it when, with the sources. The closing pane lists who held what.
 
 ### links
 
@@ -309,7 +359,7 @@ defaults.
 
 | Setting | What it does |
 |---|---|
-| `style` | `tactical` for a battlefield (larger symbols, a question mark on a loose position) or `operational` for a front (smaller symbols, thinner roads). Defaults from `time.unit`. |
+| `style` | `orientation` for an orientation (clashes and places, no units: see `clashes`; since 25 Nov 2026), `tactical` for a battlefield (larger symbols, a question mark on a loose position) or `operational` for a front (smaller symbols, thinner roads). Defaults from `time.unit`. |
 | `scale_bar` | `yards` or `km`: the measure the scale bar writes first. The other follows under it, and both change as the reader zooms. |
 | `question_mark` | What marks a unit as doubtful (a question mark, a dashed symbol): `location`, how sure the place is, or `overall` (the default). |
 | `clock_title` | The battle's name in the date box on the map. Defaults to `title`. |
@@ -338,6 +388,7 @@ defaults.
 | `arrows` | Optional. Before a unit sets off on a long move, and while it is on it, an arrow runs from the unit to where the record next puts it, along the step's `via` (straight where there is none). On in every battle unless `on` is false. `min_km`: how long a move earns an arrow (20 unless set). `lead`: how long before the unit sets off the arrow appears, in the battle's time unit (3 days or 45 minutes unless set). The reader can switch the arrows off; the switch is offered only where some move is long enough. | `reach_minutes` (optional, since 24 Nov 2026): the arrow runs only so many minutes of the move ahead of the unit, so its head travels with the unit instead of standing at the far end of a long road (Cowpens: 6).
 | `opening_ease` | Optional, for a battle without Follow (0.03 by default). When play is first pressed from the wide opening view, the camera eases in to the battle's own first view by this share of the way each frame: smaller is slower. Added 24 Nov 2026 (SR-04: First Ypres and Luzon take 0.006 from the preset `operational`, the rate Follow uses on the battlefields). |
 | `day_pause` | Optional. A battle longer than two days can stop at the end of each day (or week) while it plays: the map stays where it is, the text pane shows the summary (`summaries`) and a Continue button goes on. Up to seven days the pauses are on each day; longer, the reader is asked the first time they press play. `false` never pauses; `"day"`, `"week"`, `"off"` or `"ask"` sets the starting choice. Days end at midnight (`time.zero` is a midnight); a battle followed by the day ends each day at nightfall. Battle options: Pause and summary. Battle options also offers *Where units began and ended each day* on any battle longer than a day and a half. |
+| `orientation` | Optional, for a playback of style `orientation` (since 25 Nov 2026). `month_seconds` (1): seconds of play for a month at the opening speed. `event_seconds` (0.5): seconds added to a month for each event in it, so a busy month plays slower (Morgan, 25 Nov 2026). `speeds` ([2, 1, 0.5]): the speeds the step button offers, as seconds for a month; the back and forward buttons and the arrow keys always move a month. `gaps`: `[{from, to, text}]`, stretches where the list has nothing (a gap, not a quiet time): hatched on the timeline and named under the top of the map while the clock is in them. `phases`: `[{from?, until, event_seconds?, stop?, title?}]`, stretches played event by event: each event comes `event_seconds` (0.5) after the one before, however far apart their dates, and the stretch ends with a stop (unless `stop` is false) whose pane recaps the years it covered (their summaries, any gap, who held what) under `title`; Continue goes on month by month (Morgan, 25 Nov 2026, for South Carolina: 1775 to 1777 event by event, a stop at the end of 1777; set in that playback's own rows, not in the preset). The back and forward buttons move an event inside such a stretch. `shapes`: `{side code: square, circle, triangle or diamond}` where the colour's own shape will not do. The clock shows the month ("August 1780"), and the day once stopped ("16 Aug 1780"). An orientation has no pauses during play (`day_pause` false, preset `orientation`): it stops once, at its end, where the pane shows the closing summary, the wins by side and year, and who held what. The pane shows the year's summary and the month's events while it plays; an event in the pane frames its clash on the map, and a symbol on the map opens its event. Battle options: Clashes and captures, Who held each place, Key to the symbols. The key sits above the date box and starts folded on a phone. |
 | `hillshade` | Optional. On a reconstructed base map the same elevation tiles are shaded in the map's own brown ink. Terrain shading drawn over today's map from elevation tiles, outside the muting, so ridges and valleys stay plain. On for every battle by default, from the Mapzen Terrain Tiles on AWS Open Data (Terrarium encoding). `false` turns it off; an object overrides `tiles`, `encoding`, `max_zoom`, `exaggeration` (0 to 1, default 0.8), `credit`, `link`. Layers menu: Terrain shading on today's map. |
 | `arrival` | Optional, for the exporter (not read by the player). A unit first placed after the battle opens gets a stand-in first step `lead` days earlier (1 by default), marked as an approach not recorded: at the middle of its parent formation's line if that formation is already on the map, otherwise `km` (10) behind its own first position, towards the point `<side code>.lat, lon` or along `<side code>.bearing` (degrees from north). Tracks with `starts_from_row`, `part_of_track` or `off_map` are left alone. |
 | `groups` | Zoomed out below `below`, the units of a `side` (but for `except`) are drawn as one symbol with this `label`. |
@@ -381,10 +432,12 @@ Every sheet below is on each war's workbook, but for `Sources`, which is in `Sou
 | steps | `Positions`. `show_from` and `show_to` are when the playback draws the row; left empty, it is drawn from its latest start to its earliest end. Where two rows of one symbol overlap, the earlier gives way. `arrive_at_pace` (yes) is the step's `march` |
 | a step's `via` | `Routes`: a route from one row to the next, where its `playback` column says yes |
 | `events` | `Events`: those of the battles the playback's `record_battles` names. `timeline` is `name`, `dot` or `off`; `playback_at`, `playback_label` and `playback_text` are the playback's moment, short name and wording where they differ from the record's |
-| `summaries` | `Summaries`: one row per day or week (`kind`, `from`, `to`, `title`, `text`, `source_ids`) |
+| `summaries` | `Summaries`: one row per day or week, or per year and one `end` for an orientation (`kind`, `from`, `to`, `title`, `text`, `source_ids`) |
+| `clashes` | `Clashes`: one row per clash or capture (`clash_id`, `playback_id`, `event_id`, `kind`, `won_by`, `result_method`, `result`, `captured`, `captured_by`, `ships`, `disputed`, `other_won_by`, `other_reading`, `other_source_ids`, `hypothesis_id`, `place`, `lat`, `lon`, and the coordinate and confidence columns of `Positions`) |
+| `places` | `Control places`: one row per place (`cplace_id`, `playback_id`, `name`, `kind`, `lat`, `lon`, coordinate columns, `source_ids`); `Control`: one row each time a place changes hands (`control_id`, `cplace_id`, `from`, `held_by`, `basis`, `event_id`, `method`, `confidence`, `source_ids`) |
 | `links` | `Links`: one row per campaign playback and battle playback inside it, both of one war (`campaign_playback`, `battle_playback`, `label`, `campaign_label`, `opens_at`). The dates come from each one's `Playbacks` row |
 | `sources` | `Sources`: only those the battle cites |
 | `labels` | `Labels` |
 | `maps` | `Maps`: one row per picture; the `iiif_...` columns on a map's first picture |
 | `reconstructions` | `Reconstructions`: one row per reconstructed base map (title, label, about, credit, file). `Recon layers`: one row per layer (title, kind, source_id, link, method, confidence, from, to, how_read). The lines are in the GeoJSON the row names (`data/recon/<id>.geojson`), where every feature repeats its own source, method, confidence and dates; the script that wrote it is in `pipeline/recon/` |
-| `base` | Not in the workbook: `data/base/<playback>.json`, cut from OpenStreetMap by `pipeline/basemaps.py` |
+| `base` | Not in the workbook: `data/base/<playback>.json`, cut from OpenStreetMap by `pipeline/basemaps.py`. An orientation with no such file draws the modern map only (its fall-back is empty) |

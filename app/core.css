@@ -382,3 +382,31 @@ details.umd>summary{font-size:13.5px;font-weight:600;color:var(--fg)}
 .cbl .cbg{display:block;color:var(--accent);font-size:12.5px;margin-top:3px}
 .tl .cblb{position:absolute;top:33px;height:4px;min-width:6px;border:0;padding:0;border-radius:2px;background:var(--accent);opacity:.8;cursor:pointer}
 .tl .cblb:hover{opacity:1}
+
+/* ---------- orientation playbacks (25 Nov 2026): clashes by who won, places by who held them, and the key to both ----------
+   Each side has a shape as well as a colour (square British, circle American, triangle Cherokee, diamond for no side), so colour is never
+   the only cue. The key sits above the date box and folds away; on a phone it starts folded. */
+:root{--m-black:#2b2724;--m-grey:#7b776f}
+.odag{font-size:13px;font-weight:700;fill:var(--u-ink);stroke:var(--u-halo);stroke-width:3px}
+.opl{font-size:11px;font-weight:600;fill:var(--u-ink);stroke:var(--u-halo);stroke-width:3.5px}
+.orkey{pointer-events:auto;background:var(--surface);border:1px solid var(--line);border-radius:8px;box-shadow:0 1px 3px rgba(0,0,0,.18);font-size:11.5px;color:var(--fg);max-width:240px}
+.orkey .okb{display:block;width:100%;text-align:left;background:none;border:0;padding:5px 10px;font:inherit;font-weight:600;cursor:pointer;color:inherit}
+.orkey .okb::after{content:" \25BE";color:var(--muted)} .orkey.shut .okb::after{content:" \25B8"}
+.orkey .okl{padding:0 10px 8px;display:grid;grid-template-columns:20px 1fr;gap:3px 6px;align-items:center}
+.orkey.shut .okl{display:none}
+.orkey svg{display:block} .orkey .okd{font-weight:700;text-align:center;font-size:14px}
+.ores{display:flex;align-items:center;gap:6px;margin:6px 0 4px;font-size:14px}
+.oic{flex:none;vertical-align:-4px;overflow:visible}
+.evl .oev{display:flex;gap:6px;align-items:flex-start} .evl .oev .oic{margin-top:-1px}
+.eyebrow.oyr{margin-top:10px}
+.otab{border-collapse:collapse;font-size:12.5px;margin-top:6px;font-variant-numeric:tabular-nums} .otab th,.otab td{padding:3px 8px;border-bottom:1px solid var(--line);text-align:right} .otab th:first-child{text-align:left}
+.otab th .oic{vertical-align:-2px}
+.tl .ogap{position:absolute;top:22px;height:10px;background:repeating-linear-gradient(45deg,var(--muted) 0 1.5px,transparent 1.5px 5px);opacity:.5;pointer-events:none}
+.tl .ev.ori{top:5px;height:16px;width:12px;min-width:0;padding:0}
+.tl .ev.ori::after{display:none}
+.tl .ev.ori i{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;background:var(--c,var(--muted))}
+.tl .ev.ori i.circle{border-radius:50%} .tl .ev.ori i.diamond{transform:rotate(45deg) scale(.8)} .tl .ev.ori i.triangle{clip-path:polygon(50% 0,100% 100%,0 100%)}
+.tl .ev.ori i.none{width:5px;height:5px;margin:-2.5px 0 0 -2.5px;border-radius:50%;background:var(--muted)}
+.tl .ev.ori i.cap{width:6px;height:6px;margin:-3px 0 0 -3px}
+.tl .ev.ori.on i{outline:2px solid var(--fg);outline-offset:1px}
+@media (max-width:860px){ .tl .ev.ori{font-size:0;width:12px} .orkey{font-size:11px;max-width:200px} }

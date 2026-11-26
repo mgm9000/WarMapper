@@ -27,7 +27,7 @@ var ROADS={tactical:{m:[5,3.6],p:[4.4,3],s:[3.8,2.5],t:[3.2,2],u:[2.8,1.7],r:[2.
 WM.play=function(raw){
 var B=WM.battle(raw),P=raw.playback||{},Z=P.zoom||{},RU=P.rules||{};
 var $=WM.$,esc=WM.esc,chip=WM.chip,lerpG=WM.lerpG,cen=WM.cen,plen=WM.plen;
-var byDay=B.unit==='day',style=P.style||(byDay?'operational':'tactical'),compact=style==='operational';
+var byDay=B.unit==='day',style=P.style||(byDay?'operational':'tactical'),compact=style==='operational',ORI=style==='orientation';   // ORI: an orientation (clashes and places, no units; since 25 Nov 2026)
 var T0=B.T0,T1=B.T1;
 /* BP-34: a campaign and the battles inside it link to each other (raw.links: written by the exporter from the Links sheet; a battle file
    with no links has none, and nothing below shows). A campaign lists its battles and marks their dates on the timeline; while the clock is
@@ -70,6 +70,180 @@ function frameEvent(e){   // frame the event's own rows, wherever they are on th
   if(x0>x1)return;var mn=((P.follow||{}).min)||(byDay?[30000,22000]:[900,650]),cx=(x0+x1)/2,cy=(y0+y1)/2,w=Math.max(x1-x0,mn[0]),hh=Math.max(y1-y0,mn[1]);
   setFollow(false);setPreset(null);mv.jump(mv.cameraFor([cx-w/2,cy-hh/2,cx+w/2,cy+hh/2],{t:60,b:40,l:30,r:30}))}
 function setEvh(v){evhOn=v;tick('cEvh',v);remember('evh',v);mv.kick()}
+/* ---------- orientation playbacks (since 25 Nov 2026: the HIST 340 South Carolina chapter) ----------
+   A playback with style "orientation" has no unit detail. Its clashes (battle file: clashes) are crossed-swords symbols in the colour and
+   shape of the side that won: square, circle, triangle by the side's colour (red, blue, black), a grey diamond where no side won. Colour is
+   never the only cue. A capture with no fight recorded is a small flag; a side's ships, where they fought, a small ship beside the symbol;
+   a dagger marks a result the sources dispute. A clash comes on at its event's mark, stands out (larger, with a ring) through its calendar
+   month, then stays at full strength (Morgan, 25 Nov 2026), so the end shows the whole record. Places (battle file: places) carry a small
+   marker of the same shapes for the side that held them then, or a hollow diamond when contested. Time runs month by month: about a
+   second a month, more for a month with more events (playback.orientation.month_seconds, event_seconds, speeds). There is no stop during
+   play; at the end the pane gives the closing summary, the wins by side and year, and who held what. */
+var OR=P.orientation||{},OC=[],OPL=[],OEVR={},orSel=null,ocOn=true,octlOn=true,okeyOn=true;
+var O_MS=OR.month_seconds||1,O_ES=OR.event_seconds!=null?OR.event_seconds:0.5,O_SP=(OR.speeds&&OR.speeds.length)?OR.speeds:[2,1,0.5];
+var O_GAPS=(OR.gaps||[]).map(function(g){return {t0:B.time(g.from),t1:B.time(g.to),text:g.text||''}});
+/* phases (Morgan, 25 Nov 2026, South Carolina): a stretch played event by event, each event a set time after the one before however far
+   apart their dates (event_seconds, 0.5), that can stop at its end (stop, true unless false) with a recap of the years it covered, after
+   which the playback runs month by month. playback.orientation.phases: [{from?, until, event_seconds?, stop?, title?}]. */
+var O_RT=1;
+var O_PH=(OR.phases||[]).map(function(p){return {t0:p.from?B.time(p.from):T0,t1:B.time(p.until),sec:p.event_seconds!=null?+p.event_seconds:0.5,stop:p.stop!==false,title:p.title||''}}),oHalt=null;
+function oPhase(v){for(var i=0;i<O_PH.length;i++)if(v>=O_PH[i].t0-1e-6&&v<O_PH[i].t1-1e-6)return O_PH[i];return null}
+function oMarks(p){var m=[p.t0];B.events.forEach(function(e){if(e.t>p.t0+1e-6&&e.t<p.t1-1e-6&&m.indexOf(e.t)<0)m.push(e.t)});m.push(p.t1);return m.sort(function(a,b){return a-b})}   // the moments an event-by-event stretch steps through
+function oAround(m,v){var a=m[0],b=m[m.length-1];for(var i=0;i<m.length;i++){if(m[i]<=v+1e-6)a=m[i];if(m[i]>v+1e-6){b=m[i];break}}return [a,b]}
+function oStopAt(a,b){for(var i=0;i<O_PH.length;i++){var p=O_PH[i];if(p.stop&&p.t1>a+1e-6&&p.t1<=b+1e-9)return p.t1}return null}
+function oOnStop(b){oHalt=b;orSel=null;panelKey='';$('contTx').textContent='Continue';$('cont').hidden=false;mv.kick()}
+var O_MS_T=[];   // the start of each month the playback runs through, and of the month after
+function oYM(v){var s=B.isoOf(Math.floor(v+1e-6));return [+s.slice(0,4),+s.slice(5,7)]}
+function oP2(n){return (n<10?'0':'')+n}
+function oDay(iso){if(!iso)return '';var p=String(iso).slice(0,10).split('-');return (+p[2])+' '+WM.MONTHS[+p[1]-1].slice(0,3)+' '+p[0]}   // "21 Apr 1775" (SR-01: dates only)
+function oSpan(a,b){if(!b||a.slice(0,10)===b.slice(0,10))return oDay(a);var A=a.slice(0,10).split('-'),Bq=b.slice(0,10).split('-');
+  if(A[0]===Bq[0]&&A[1]===Bq[1])return (+A[2])+'–'+oDay(b);if(A[0]===Bq[0])return (+A[2])+' '+WM.MONTHS[+A[1]-1].slice(0,3)+' – '+oDay(b);return oDay(a)+' – '+oDay(b)}
+if(ORI){
+  (raw.events||[]).forEach(function(e){OEVR[e.id]=e});
+  var oev={};B.events.forEach(function(e){oev[e.id]=e});
+  OC=(raw.clashes||[]).map(function(c){var e=oev[c.event];return {raw:c,id:c.id,ev:e,t:e?e.t:T0,p:B.fromLL(c.at)}}).sort(function(a,b){return a.t-b.t});
+  OPL=(raw.places||[]).map(function(p){return {raw:p,id:p.id,p:B.fromLL(p.at),ctl:(p.control||[]).map(function(h){return {raw:h,t:B.time(h.from),by:h.held_by}})}});
+  (function(){var a=oYM(T0),y=a[0],m=a[1],v;for(var n=0;n<1200;n++){v=B.time(y+'-'+oP2(m)+'-01');O_MS_T.push(v);if(v>T1)break;m++;if(m>12){m=1;y++}}})();
+}
+function oMonth(v){var i=0;while(i+1<O_MS_T.length&&O_MS_T[i+1]<=v+1e-6)i++;return i}
+function oEventsIn(i){var a=O_MS_T[i],b=O_MS_T[i+1];return B.events.filter(function(e){return e.t>=a-1e-6&&e.t<b-1e-6})}
+var O_N=[];if(ORI)for(var oi=0;oi+1<O_MS_T.length;oi++)O_N.push(oEventsIn(oi).length);
+function oRate(v){var ph=oPhase(v);if(ph){var ab=oAround(oMarks(ph),v);return (ab[1]-ab[0])/Math.max(0.05,(O_SP[stepI]/O_MS)*ph.sec)}   // event by event: each step takes the same time
+  var i=oMonth(v),days=(O_MS_T[i+1]||T1+30)-O_MS_T[i],k=O_SP[stepI]/O_MS;return days/Math.max(0.05,k*(O_MS+O_ES*(O_N[i]||0)))}   // days a second
+function oStep(dir,v){var ph=oPhase(v)||(dir<0?oPhase(v-1e-3):null);if(ph){var m=oMarks(ph),ab=oAround(m,v);return dir>0?ab[1]:(ab[0]<v-1e-6?ab[0]:Math.max(T0,m[Math.max(0,m.indexOf(ab[0])-1)]))}   // event by event: back and forward move an event
+  var i=oMonth(v),a=O_MS_T[i];if(dir>0)return Math.min(T1,O_MS_T[i+1]!=null?O_MS_T[i+1]:T1);return Math.max(T0,v>a+0.5?a:O_MS_T[Math.max(0,i-1)])}
+/* the sides as an orientation draws them: colour from the side's frame colour, shape from the colour unless the playback names one */
+var O_COL={red:'var(--m-red)',blue:'var(--m-blue)',black:'var(--m-black)'},O_SHP={red:'square',blue:'circle',black:'triangle'};
+function oSide(code){if(!code||code==='indecisive'||code==='contested')return {col:'var(--m-grey)',shape:'diamond',name:code==='contested'?'Contested':'Indecisive',ui:'var(--muted)'};
+  var s=SIDES[code]||{},f=String(s.colour||'blue').toLowerCase();return {col:O_COL[f]||O_COL.blue,shape:(OR.shapes&&OR.shapes[code])||O_SHP[f]||'circle',name:s.short||code,ui:f==='red'?'var(--ui-red)':f==='black'?'var(--fg)':'var(--ui-blue)'}}
+function oShape(shape,r,fill,stroke,sw,extra){var a=' fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'" stroke-linejoin="round"'+(extra||'');
+  if(shape==='square')return '<rect x="'+f1(-r)+'" y="'+f1(-r)+'" width="'+f1(2*r)+'" height="'+f1(2*r)+'" rx="'+f1(r*0.18)+'"'+a+'/>';
+  if(shape==='triangle')return '<path d="M0 '+f1(-r*1.3)+'L'+f1(r*1.25)+' '+f1(r*0.85)+'H'+f1(-r*1.25)+'Z"'+a+'/>';
+  if(shape==='diamond')return '<path d="M0 '+f1(-r*1.3)+'L'+f1(r*1.3)+' 0L0 '+f1(r*1.3)+'L'+f1(-r*1.3)+' 0Z"'+a+'/>';
+  return '<circle r="'+f1(r*1.08)+'"'+a+'/>'}
+function oSwords(r,dy){var a=r*0.56,g=r*0.3,y=dy||0,q=function(x,yy){return f1(x)+' '+f1(yy+y)};   // two crossed swords: blade, guard, grip
+  return '<path d="M'+q(-a,-a)+'L'+q(a,a)+'M'+q(a,-a)+'L'+q(-a,a)+'M'+q(a*0.45-g,a*0.45+g)+'L'+q(a*0.45+g,a*0.45-g)+'M'+q(-a*0.45+g,a*0.45+g)+'L'+q(-a*0.45-g,a*0.45-g)+'" stroke="#fff" stroke-width="'+f1(Math.max(1.3,r*0.2))+'" stroke-linecap="round" fill="none"/>'}
+function oShip(col){return '<path d="M-7 0H7L4.5 3.6H-4.5ZM-0.6 0V-10H0.6V0ZM0.6 -9.4L6 -2.2H0.6Z" fill="'+col+'" stroke="var(--u-halo)" stroke-width="2.4" paint-order="stroke" stroke-linejoin="round"/>'}
+function oMark(c,s){   // a clash's symbol, at the origin, scale s
+  var R=c.raw,sd=oSide(R.won_by),r=8*s,h='';
+  if(R.kind==='capture'){var fs=oSide(R.won_by),st='M0 '+f1(r*1.2)+'V'+f1(-r*1.6);
+    h+='<path d="'+st+'" stroke="var(--u-halo)" stroke-width="4" fill="none"/><path d="'+st+'" stroke="var(--u-ink)" stroke-width="1.5" fill="none"/>';
+    h+='<path d="M0 '+f1(-r*1.6)+'L'+f1(r*1.55)+' '+f1(-r*1.05)+'L0 '+f1(-r*0.5)+'Z" fill="'+fs.col+'" stroke="var(--u-halo)" stroke-width="1.6" stroke-linejoin="round"/>';
+    h+='<g transform="translate(0 '+f1(r*1.2)+')">'+oShape(fs.shape,r*0.42,fs.col,'var(--u-halo)',1.4)+'</g>'}
+  else{h+=oShape(sd.shape,r,'none','var(--u-halo)',4.5)+oShape(sd.shape,r,sd.col,sd.col,1.2)+oSwords(r,sd.shape==='triangle'?r*0.22:0)}
+  if(R.ships)h+='<g transform="translate('+f1(r*1.45)+' '+f1(r*0.95)+')">'+oShip(oSide(R.ships).col)+'</g>';
+  if(R.disputed)h+='<text class="odag" x="'+f1(r*1.05)+'" y="'+f1(-r*0.75)+'">†</text>';
+  return h}
+function oIcon(c){var R=c&&c.raw;if(!R)return '<svg class="oic" width="16" height="16" viewBox="-8 -8 16 16" aria-hidden="true"><circle r="2.2" fill="var(--muted)"/></svg>';
+  return '<svg class="oic" width="18" height="18" viewBox="-10 -11 20 21" aria-hidden="true">'+oMark(c,0.72)+'</svg>'}
+function oHeld(p,v){var cur=null;p.ctl.forEach(function(h){if(h.t<=v+1e-6)cur=h});return cur}
+function oClashOf(evid){for(var i=0;i<OC.length;i++)if(OC[i].raw.event===evid)return OC[i];return null}
+function oEase(f){return f<=0?0:f>=1?1:f*f*(3-2*f)}
+function oriSvg(L){ if(!ORI||landing) return ''; O_RT=oRate(t); var h='',hp='',z=mv.size(),v=t,mi=oMonth(v),m0=O_MS_T[mi],m1=O_MS_T[mi+1]!=null?O_MS_T[mi+1]:T1+31,run=!!(clk&&clk.playing);   // run: while playing a new clash grows in; stopped, it is shown whole
+  // the clashes claim their room first, so the names of places give way to them; the places are drawn under them
+  if(ocOn){var put=[],OFF=[[0,0],[19,0],[-19,0],[0,-19],[0,19],[14,14],[-14,14],[14,-14],[-14,-14],[30,0],[-30,0]];
+    OC.forEach(function(c){ if(v<c.t-1e-6) return; var q=S(c.p); if(q[0]<-60||q[1]<-60||q[0]>z.w+60||q[1]>z.h+60) return;
+      var ph=oPhase(v),cur=ph?(c.t>=oAround(oMarks(ph),v)[0]-1e-6):(c.t>=m0-1e-6&&c.t<m1-1e-6),born=run?oEase((v-c.t)/Math.max(2.5,O_RT*0.35)):1,after=cur?0:oEase((v-(ph?c.t:m0))/Math.max(3,O_RT*0.35)),s=(0.45+0.55*born)*(cur?1.35:1.35-0.35*after),o=Math.min(1,0.25+born);
+      var cx=q[0],cy=q[1],ok=null;for(var j=0;j<OFF.length&&!ok;j++){var x=cx+OFF[j][0],y=cy+OFF[j][1];if(!put.some(function(u){return Math.hypot(u[0]-x,u[1]-y)<17}))ok=[x,y]}if(!ok)ok=[cx,cy];
+      put.push(ok); var moved=ok[0]!==cx||ok[1]!==cy,sel=orSel==='C:'+c.id,sd=oSide(c.raw.kind==='capture'?c.raw.won_by:c.raw.won_by);
+      h+='<g opacity="'+o.toFixed(2)+'">';
+      if(moved) h+='<line x1="'+f1(cx)+'" y1="'+f1(cy)+'" x2="'+f1(ok[0])+'" y2="'+f1(ok[1])+'" stroke="var(--u-ink)" stroke-width="1" opacity=".7"/><circle cx="'+f1(cx)+'" cy="'+f1(cy)+'" r="2.2" fill="var(--u-ink)"/>';
+      h+='<g transform="translate('+f1(ok[0])+' '+f1(ok[1])+')">';
+      if(cur) h+='<circle r="'+f1(8*s*1.75)+'" fill="none" stroke="var(--u-halo)" stroke-width="4" opacity=".8"/><circle r="'+f1(8*s*1.75)+'" fill="none" stroke="'+sd.col+'" stroke-width="1.6"/>';
+      if(sel) h+='<circle r="'+f1(8*s*2.05)+'" fill="none" stroke="var(--m-sel)" stroke-width="4"/>';
+      h+=oMark(c,s)+'</g></g>'; var rr=8*s*1.6; L.keep([ok[0]-rr,ok[1]-rr,ok[0]+rr,ok[1]+rr]); mv.hits.push({id:'C:'+c.id,r:[ok[0]-rr-2,ok[1]-rr-2,ok[0]+rr+2,ok[1]+rr+2]})})}
+  if(octlOn) OPL.forEach(function(p){var c=oHeld(p,v);if(!c)return;var q=S(p.p);if(q[0]<-40||q[1]<-40||q[0]>z.w+40||q[1]>z.h+40)return;
+    var sd=oSide(c.by),grow=1+0.7*(1-oEase((v-c.t)/4)),r=4.6*grow,hol=c.by==='contested',sel=orSel==='P:'+p.id;
+    hp+='<g transform="translate('+f1(q[0])+' '+f1(q[1])+')">'+(sel?'<circle r="11" fill="none" stroke="var(--m-sel)" stroke-width="3.5"/>':'')+oShape(sd.shape,r,'none','var(--u-halo)',3.6)+oShape(sd.shape,r,hol?'var(--u-halo)':sd.col,sd.col,hol?1.8:1)+'</g>';
+    L.keep([q[0]-7,q[1]-7,q[0]+7,q[1]+7]); mv.hits.push({id:'P:'+p.id,r:[q[0]-9,q[1]-9,q[0]+9,q[1]+9]});
+    if(placeNames){var nm=p.raw.name,w=nm.length*6.1+4,tries=[[q[0]+8,q[1]-7,'start'],[q[0]-8-w,q[1]-7,'end'],[q[0]-w/2,q[1]-22,'middle'],[q[0]-w/2,q[1]+8,'middle'],[q[0]+24,q[1]-7,'start'],[q[0]-24-w,q[1]-7,'end'],[q[0]-w/2,q[1]-34,'middle'],[q[0]-w/2,q[1]+22,'middle']];   // right of the marker, else left, above, below, then clear of a clash drawn on the place
+      for(var ti=0;ti<tries.length;ti++){var T=tries[ti],rr=[T[0],T[1],T[0]+w,T[1]+14];if(L.hit(rr))continue;L.keep(rr);
+        hp+='<text class="opl" text-anchor="'+T[2]+'" x="'+f1(T[2]==='start'?T[0]:T[2]==='end'?T[0]+w:T[0]+w/2)+'" y="'+f1(T[1]+11)+'">'+esc(nm)+'</text>';mv.hits.push({id:'P:'+p.id,r:rr});break}}});
+  return hp+h}
+function oGapAt(v){for(var i=0;i<O_GAPS.length;i++)if(v>=O_GAPS[i].t0-1e-6&&v<=O_GAPS[i].t1+1e-6)return O_GAPS[i];return null}
+function oNote(off){var g=!landing&&oGapAt(t);if(g){off.hidden=false;off.textContent=g.text}else off.hidden=true}
+/* the side pane of an orientation */
+function oSumOf(kind,y){var hit=null;SUMS.forEach(function(x){if(x.kind===kind&&(kind==='end'||(String(x.from).slice(0,4)<=y&&String(x.to).slice(0,4)>=y)))hit=x});return hit}
+function oResult(R){var w=oSide(R.won_by);if(R.kind==='capture')return 'Captured by the '+w.name;return R.won_by==='indecisive'?'Indecisive':w.name+' victory'}
+function oSrc(ids){var sl=WM.srcList(B.sources,(ids||[]).join('; '));return sl?'<ul class="srcs">'+sl+'</ul>':''}
+function oLoc(L){L=L||{};var g=L.precision_m?'good to about '+(L.precision_m>=1000?(L.precision_m/1000)+' km':L.precision_m+' m'):'';
+  return (L.confidence?chip(L.confidence)+' ':'')+esc(L.basis||cap(found[L.source]||L.source||'Not recorded'))+(g?' ('+esc(g)+')':'')}
+function oKey(){return 'ori|'+base.id+'|'+(orSel||'')+'|'+(oHalt!=null?'H'+oHalt:'')+'|'+(landing?'L':'')+'|'+oMonth(t)+'|'+(t>=T1-1e-6?'E':'')+'|'+((curEvent()||{}).id||'')+'|'+LINKS.filter(linkNow).map(function(x){return x.id}).join(',')}
+function oClashHtml(c){var R=c.raw,e=OEVR[R.event]||{},w=oSide(R.won_by),h='<button class="back" id="back">&larr; All events</button>';
+  h+='<div class="eyebrow">'+esc(oSpan(e.start||'',e.end||''))+'</div><h2>'+esc(e.name||R.place||R.id)+'</h2>';
+  h+='<div class="ores">'+oIcon(c)+'<b style="color:'+w.ui+'">'+esc(oResult(R))+'</b>'+(R.method==='inferred'?' <span class="meta">(inferred)</span>':'')+'</div>';
+  if(R.result) h+='<p>'+esc(R.result)+'</p>';
+  if(e.text&&e.text!==R.result) h+='<p class="meta">'+esc(e.text)+'</p>';
+  if(R.captured) h+='<h3>Captured</h3><p>'+esc(R.captured)+(R.captured_by?' <span class="meta">(by the '+esc(oSide(R.captured_by).name)+')</span>':'')+'</p>';
+  if(R.ships) h+='<p class="meta">Ships of the '+esc(oSide(R.ships).name)+' side fought here.</p>';
+  if(R.disputed){var o=R.other||{};h+='<div class="state inferred"><b>† The sources disagree</b>This map shows the reading the sources settle on (SR-19). The other reading is kept on record.</div>';
+    h+='<h3>The reading shown</h3><p><b>'+esc(oResult(R))+'</b></p>'+oSrc(R.sources);
+    h+='<h3>The other reading</h3><p>'+(o.won_by?'<b>'+esc(oResult({kind:R.kind,won_by:o.won_by}))+'.</b> ':'')+esc(o.text||'')+'</p>'+oSrc(o.sources)}
+  h+='<h3>How sure</h3><dl><dt>Place</dt><dd>'+esc(R.place||'')+(R.place?'. ':'')+oLoc(R.location)+'</dd><dt>Overall</dt><dd>'+chip(R.confidence)+'</dd>'+(R.review?'<dt>Review</dt><dd>'+esc(R.review)+'</dd>':'')+'</dl>';
+  if(R.notes) h+='<h3>Notes</h3><p>'+esc(R.notes)+'</p>';
+  if(!R.disputed){var s=oSrc(R.sources);if(s)h+='<h3>Sources</h3>'+s}
+  var ll=R.at;h+='<p style="margin-top:10px"><a href="https://www.openstreetmap.org/?mlat='+ll[1]+'&mlon='+ll[0]+'#map=12/'+ll[1]+'/'+ll[0]+'" target="_blank" rel="noopener">Open this spot on OpenStreetMap</a></p>';
+  return h}
+function oPlaceHtml(p){var R=p.raw,c=oHeld(p,t),h='<button class="back" id="back">&larr; All events</button><div class="eyebrow">'+esc(cap(R.kind||'place'))+'</div><h2>'+esc(R.name)+'</h2>';
+  h+=c?'<div class="ores">'+oPlaceIcon(c.by)+'<b style="color:'+oSide(c.by).ui+'">'+esc(c.by==='contested'?'Contested':'Held by the '+oSide(c.by).name)+'</b> <span class="meta">from '+esc(oDay(c.raw.from))+'</span></div>':'<p class="meta">Not yet on the map at this date.</p>';
+  h+='<h3>Who held it</h3><ul class="evl">';p.ctl.forEach(function(x){var X=x.raw;h+='<li><button data-ort="'+x.t+'"><span class="tm">'+esc(oDay(X.from))+'</span><span>'+oPlaceIcon(x.by)+' '+esc(x.by==='contested'?'Contested':oSide(x.by).name)+(X.basis?': '+esc(X.basis):'')+' '+chip(X.confidence)+'</span></button></li>'});h+='</ul>';
+  var srcs=[];p.ctl.forEach(function(x){(x.raw.sources||[]).forEach(function(s){if(srcs.indexOf(s)<0)srcs.push(s)})});(R.sources||[]).forEach(function(s){if(srcs.indexOf(s)<0)srcs.push(s)});
+  h+='<h3>How sure</h3><dl><dt>Place</dt><dd>'+oLoc(R.location)+'</dd></dl>';if(R.notes)h+='<h3>Notes</h3><p>'+esc(R.notes)+'</p>';
+  var s=oSrc(srcs);if(s)h+='<h3>Sources</h3>'+s;return h}
+function oPlaceIcon(by){var sd=oSide(by);return '<svg class="oic" width="14" height="14" viewBox="-7 -7 14 14" aria-hidden="true">'+oShape(sd.shape,4.6,by==='contested'?'var(--surface)':sd.col,sd.col,by==='contested'?1.6:1)+'</svg>'}
+function oEvItem(e,cur){var c=oClashOf(e.id),R=OEVR[e.id]||{};return '<li><button data-orev="'+esc(e.id)+'"'+(cur?' class="cur"':'')+'><span class="tm">'+esc(oSpan(R.start||'',R.end||'').replace(/ \d{4}$/,''))+'</span><span class="oev">'+oIcon(c)+'<span>'+esc(e.full)+(c&&c.raw.disputed?' †':'')+'</span></span></button></li>'}
+function oHoldings(v){var by={},h='';OPL.forEach(function(p){var c=oHeld(p,v);if(c)(by[c.by]=by[c.by]||[]).push(p)});
+  Object.keys(by).forEach(function(k){h+='<p>'+oPlaceIcon(k)+' <b>'+esc(k==='contested'?'Contested':oSide(k).name)+'</b>: '+by[k].map(function(p){return '<button class="linkish" data-pick="P:'+esc(p.id)+'">'+esc(p.raw.name)+'</button>'}).join(', ')+'</p>'});return h}
+function oHaltHtml(){var p=O_PH.filter(function(x){return Math.abs(x.t1-oHalt)<1e-6})[0]||{t0:T0,t1:oHalt},y0=oYM(p.t0)[0],y1=oYM(p.t1)[0],h='<div class="eyebrow">A stop: '+(y0===y1?y0:y0+' to '+y1)+'</div><h2>'+esc(p.title||('Where things stood at the end of '+y1))+'</h2>';
+  for(var y=y0;y<=y1;y++){var x=oSumOf('year',String(y));h+='<h3>'+y+(x?': '+esc(x.title.replace(new RegExp('^'+y+':\\s*'),'')):'')+'</h3>'+(x?'<p>'+esc(x.text)+'</p>':'<p class="meta">No summary written for this year yet.</p>')}
+  O_GAPS.forEach(function(g){if(g.t1>=p.t0&&g.t0<=p.t1)h+='<div class="state unplaced"><b>A gap in the list</b>'+esc(g.text)+'</div>'});
+  var hd=oHoldings(p.t1);if(hd)h+='<h3>Who held what on '+esc(oDay(B.isoOf(p.t1)))+'</h3>'+hd;
+  return h+'<p style="margin-top:12px"><button class="lnk" id="sumgo">&#9654; Continue</button></p><p class="meta">From here the map runs month by month.</p>'}
+function oEndHtml(){var y0=oYM(T0)[0],y1=oYM(T1)[0],codes=[],has={},x=oSumOf('end'),h='<div class="eyebrow">The end of this orientation</div><h2>'+esc(x?x.title:'Where things stood on '+oDay(B.isoOf(T1)))+'</h2>';
+  if(x) h+='<p class="phase">'+esc(x.text)+'</p>'+oSrc(x.sources);
+  OC.forEach(function(c){if(c.t<=T1+1e-6){var k=c.raw.won_by||'indecisive';if(!has[k]){has[k]=1;codes.push(k)}}});
+  codes.sort(function(a,b){return (a==='indecisive')-(b==='indecisive')});
+  if(codes.length){h+='<h3>Wins, year by year</h3><table class="otab"><tr><th></th>'+codes.map(function(k){return '<th>'+oPlaceIcon(k)+' '+esc(k==='indecisive'?'Indecisive':oSide(k).name)+'</th>'}).join('')+'</tr>';
+    for(var y=y0;y<=y1;y++){var row='<tr><th>'+y+'</th>';codes.forEach(function(k){var n=OC.filter(function(c){return c.t<=T1+1e-6&&oYM(c.t)[0]===y&&(c.raw.won_by||'indecisive')===k}).length;row+='<td>'+(n||'')+'</td>'});h+=row+'</tr>'}
+    h+='</table><p class="meta">Clashes and captures in this list, by the side that won. A capture with no fight counts for the side that took the place.</p>'}
+  var hd=oHoldings(T1);if(hd)h+='<h3>Who held what on '+esc(oDay(B.isoOf(T1)))+'</h3>'+hd;
+  return h}
+function oriPanel(){
+  if(orSel&&orSel.indexOf('C:')===0){var c=OC.filter(function(x){return 'C:'+x.id===orSel})[0];if(c)return oClashHtml(c)}
+  if(orSel&&orSel.indexOf('P:')===0){var p=OPL.filter(function(x){return 'P:'+x.id===orSel})[0];if(p)return oPlaceHtml(p)}
+  var h=linksHtml(),mi=oMonth(t),ym=oYM(O_MS_T[mi]),ev=curEvent();
+  if(oHalt!=null) return h+oHaltHtml()+about();
+  if(landing){h+='<div class="eyebrow">'+esc(B.opening.label||'')+'</div><p class="phase">'+esc(B.opening.text||'')+'</p><p class="meta start">Press play to begin. '+(O_PH.length?'The first years play event by event, then the map stops for a recap and runs month by month.':'The clashes come onto the map month by month.')+'</p>'}
+  else if(t>=T1-1e-6) h+=oEndHtml();
+  else{var ys=oSumOf('year',String(ym[0]));
+    h+='<div class="eyebrow">'+ym[0]+'</div>'+(ys?'<h2>'+esc(ys.title)+'</h2><p class="phase">'+esc(ys.text)+'</p>':'<p class="meta">No summary written for this year yet.</p>');
+    var g=oGapAt(t);if(g)h+='<div class="state unplaced"><b>A gap in the list</b>'+esc(g.text)+'</div>';
+    var es=oEventsIn(mi);h+='<h3>'+esc(WM.MONTHS[ym[1]-1]+' '+ym[0])+'</h3>';
+    h+=es.length?'<ul class="evl">'+es.map(function(e){return oEvItem(e,ev&&ev.id===e.id)}).join('')+'</ul>':'<p class="meta">No events in this list this month.</p>'}
+  if(B.events.length){h+='<details class="evs"'+(evOpen?' open':'')+'><summary>All events: jump to one</summary>';var yy=null;
+    B.events.forEach(function(e){var y=oYM(e.t)[0];if(y!==yy){if(yy!==null)h+='</ul>';h+='<div class="eyebrow oyr">'+y+'</div><ul class="evl">';yy=y}h+=oEvItem(e,ev&&ev.id===e.id)});h+='</ul></details>'}
+  var yl=SUMS.filter(function(x){return x.kind==='year'});
+  if(yl.length){h+='<details class="evs sums"'+(sumsOpen?' open':'')+'><summary>Year by year: summaries</summary><ul class="evl">';yl.forEach(function(x){h+='<li><button data-ory="'+esc(String(x.from).slice(0,4))+'"><span class="tm">'+esc(String(x.from).slice(0,4))+'</span><span>'+esc(x.title)+'</span></button></li>'});h+='</ul></details>'}
+  return h+'<p class="meta" style="margin-top:14px">Tap a symbol on the map for its result, its sources and how sure it is.</p>'+about()}
+function oFrame(c){if(!c||base.own)return;var p=c.p,d=25000,cam=mv.cameraFor([p[0]-d,p[1]-d,p[0]+d,p[1]+d],{t:48,b:22,l:14,r:14});goal=null;setPreset(null);
+  mv.map.easeTo({center:cam.center,zoom:Math.max(mv.map.getZoom(),cam.zoom),duration:800})}
+function oPick(evid){var e=B.events.filter(function(x){return x.id===evid})[0];if(!e)return;clk.setPlaying(false);clk.setTime(e.t);var c=oClashOf(evid);
+  if(c){orSel='C:'+c.id;sel=null;info=false;panelKey='';oFrame(c)}mv.kick()}
+/* the key to the symbols, folded away on a phone */
+function oKeyHtml(){var used={},caps=false,ship=false,dag=false,ind=false,cont=false,rows='';
+  OC.forEach(function(c){var R=c.raw;if(R.won_by&&R.won_by!=='indecisive')used[R.won_by]=1;if(R.won_by==='indecisive')ind=true;if(R.kind==='capture')caps=true;if(R.ships)ship=true;if(R.disputed)dag=true});
+  OPL.forEach(function(p){p.ctl.forEach(function(h){if(h.by==='contested')cont=true;else used[h.by]=1})});
+  var sv=function(inner,vb){return '<svg width="18" height="18" viewBox="'+(vb||'-10 -10 20 20')+'" aria-hidden="true">'+inner+'</svg>'};
+  raw.sides.forEach(function(sd){if(!used[sd.code])return;var o=oSide(sd.code);rows+=sv(oShape(o.shape,6.5,o.col,o.col,1)+oSwords(6.5,o.shape==='triangle'?1.4:0))+'<span>'+esc(o.name)+' ('+o.shape+')</span>'});
+  if(ind) rows+=sv(oShape('diamond',6,'var(--m-grey)','var(--m-grey)',1))+'<span>Indecisive (diamond)</span>';
+  if(caps) rows+=sv('<path d="M-2 8V-9" stroke="var(--u-ink)" stroke-width="1.4"/><path d="M-2 -9L8 -5L-2 -1Z" fill="var(--muted)"/>')+'<span>A post taken, no fight</span>';
+  if(ship) rows+=sv(oShip('var(--muted)'),'-9 -11 18 18')+'<span>Ships fought here</span>';
+  if(dag) rows+='<span class="okd">†</span><span>The sources disagree</span>';
+  rows+=sv('<circle r="8" fill="none" stroke="var(--muted)" stroke-width="1.5"/><circle r="4" fill="var(--muted)"/>')+'<span>Ring: this month</span>';
+  if(OPL.length) rows+=sv(oShape('square',3.6,'var(--muted)','var(--muted)',1,' transform="translate(-4 0)"')+oShape('circle',3.6,'var(--muted)','var(--muted)',1,' transform="translate(5 0)"'))+'<span>Small: who holds a place</span>';
+  if(cont) rows+=sv(oShape('diamond',4.6,'var(--surface)','var(--m-grey)',1.6))+'<span>Contested place</span>';
+  return '<button class="okb" id="okb" aria-expanded="true">Key</button><div class="okl">'+rows+'</div>'}
+function setOKey(v){okeyOn=v;tick('cKey',v);var k=$('orkey');if(k){k.classList.toggle('shut',!v);var b=$('okb');if(b)b.setAttribute('aria-expanded',v?'true':'false')}}
 var BLEND=RU.blend||4,NEAR=RU.near||15,LEAD_IN=RU.lead||0.35,LINGER=RU.linger||2,PACE=RU.pace||null;
 /* march pace in metres a minute (rules.pace: one number, or one per branch). A unit moving to a step marked "march", with nothing on record
    between, leaves when the earlier record ends and moves at that pace, rather than drifting across the whole gap; it then waits there. */
@@ -657,14 +831,15 @@ function draw(){
   var H=base.series?seriesAt():null; if(series.length) showSeries(H); paintModern(H); paintHill(); paintCredit(H); trnTick(); inkTick();
   var cover=base.backdrop==='current'?(H||base.m).box:null;
   evf=evFocus();
-  var sc=scene(),L=layout(unitsOn&&!landing?sc:[]),h=mapNames(L,cover);   // on landing the map is shown alone; the units come on when the battle is started
+  var sc=scene(),L=layout(unitsOn&&!landing?sc:[]),oh=ORI?oriSvg(L):'',h=mapNames(L,cover);   // an orientation's places and clashes claim their room before the names   // on landing the map is shown alone; the units come on when the battle is started
   L.sort(function(a,b){return (a.o.tr.id===sel)-(b.o.tr.id===sel)});   // the selected unit last, so it sits on top
-  h+=trailsSvg()+dayEndsSvg(sc)+arrowsSvg(sc); L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h;
+  h+=trailsSvg()+dayEndsSvg(sc)+arrowsSvg(sc); L.forEach(function(u){h+=unitSvg(u,'line')}); L.forEach(function(u){h+=unitSvg(u,'sym')}); ov.innerHTML=h+oh;
   var su=P.scale_bar||(byDay?'km':'yards'),sk=$('scale');
   if(!base.own) WM.scaleBar(sk,mv.mPerPx(),su);
   else if(base.m.raw.approx_m_per_px) WM.scaleBar(sk,base.m.raw.approx_m_per_px/sNow,su,true,base.m.raw.scale_note||'Roughly: this map is not to scale');   // a sketch: a rough scale where it is nearest to true
   else{var nt='<span class="nts">'+esc(base.m.raw.scale_note||'Not to scale')+'</span>';if(sk._h!==nt){sk._h=nt;sk.innerHTML=nt}}
   var off=$('offnote'),on=base.own&&base.m.raw.off_note; if(on&&t<B.time(on.until)){off.hidden=false;off.textContent=on.text} else off.hidden=true;
+  if(ORI) oNote(off);   // a gap in an orientation's list
   renderPanel(landing?[]:sc); noteView();
 }
 
@@ -672,7 +847,7 @@ function draw(){
 var CUR=[],PICS={};
 var cssNum=function(n,d){return function(c){var v=parseFloat(c(n));return isNaN(v)?d:v}};   // a paint value read from the page's settings, so it follows the theme and the Muted switch
 function buildBase(){
-  var W=ROADS[style],f=[],lat=raw.view.origin[1],minor=!!Z.minor_roads_from,wide=(raw.base&&raw.base.widths)||{},mask=bases.filter(function(b){return b.clip})[0];
+  var W=ROADS[ORI?'operational':style],f=[],lat=raw.view.origin[1],minor=!!Z.minor_roads_from,wide=(raw.base&&raw.base.widths)||{},mask=bases.filter(function(b){return b.clip})[0];
   if(MOD){ // the modern map, under the pictures and over the battle's own drawing of today's ground (which it replaces)
     mv.map.addSource('sur',{type:'raster',tiles:[MOD.tiles],tileSize:MOD.tile_size||256,minzoom:MOD.min_zoom||0,maxzoom:MOD.max_zoom||16});
     mv.map.on('sourcedata',function(e){if(e.sourceId==='sur'&&e.tile&&!modOff)modFail=0})}
@@ -1122,6 +1297,7 @@ function renderPanel(sc){
   if(sumAt!=null){var sk='sum|'+sumAt+'|'+sumMode;if(sk!==panelKey){panelKey=sk;panel.innerHTML=summaryHtml();panel.scrollTop=0}return}
   if(rcSel&&!sel&&base.rc&&RCF[rcSel]){var rk2='rc|'+rcSel;if(rk2!==panelKey){panelKey=rk2;panel.innerHTML=featureHtml();panel.scrollTop=0}return}
   if(info&&!sel){var ik='info|'+base.id+'|'+(seriesShown?seriesShown.id:'')+(hsRc?'r':'');if(ik!==panelKey){panelKey=ik;panel.innerHTML=mapDetails()+aroundNote();panel.scrollTop=0}return}
+  if(ORI&&!sel){var ok=oKey();if(ok!==panelKey){panelKey=ok;panel.innerHTML=oriPanel();if(orSel)panel.scrollTop=0}return}   // an orientation's own pane
   var key=base.id+'|'+(sel?sel+'|'+(me?me.s.k.id+me.s.kind+(byDay?stamp(t):''):'x'):'now|'+(landing?'L':'')+(ev?ev.id:0)+'|'+LINKS.filter(linkNow).map(function(x){return x.id}).join(',')+'|'+sc.map(function(o){return o.tr.id+(o.drawn?1:0)+o.s.kind+o.s.k.id}).join(','));
   if(key===panelKey) return; panelKey=key; var h='';
   if(sel){
@@ -1161,6 +1337,7 @@ function renderPanel(sc){
   panel.innerHTML=h; if(sel) panel.scrollTop=0;
 }
 function select(id){
+  if(ORI){orSel=(id&&/^[CP]:/.test(String(id)))?String(id):null;if(orSel){closeSummary();sel=null;info=false;rcSel=null;panelKey='';if(sheet)sheet.open();if(pane)pane.show();mv.kick();return}}   // an orientation: a clash or a place
   if(id&&String(id).indexOf('F:')===0){ // a formation drawn zoomed out: zoom in on it until it breaks out into its units
     var hit=null;mv.hits.forEach(function(h){if(h.id===id&&h.r)hit=h}); if(hit){setFollow(false);setPreset(null);var W=WORLDS[worldOf(base)],c=mv.map.unproject([(hit.r[0]+hit.r[2])/2,(hit.r[1]+hit.r[3])/2]);
       mv.map.easeTo({center:c,zoom:mv.zoomFor(FM.below*1.15),duration:700})} return }
@@ -1225,11 +1402,15 @@ function mapDetails(){var h='<button class="back" id="back">&larr; All units</bu
   L+='<div class="grp"><button class="lnk" id="bLink">Copy a link to this view</button><span class="ok" id="linkok" hidden>Copied</span></div>';
   $('layers').innerHTML=L;
   // Battle options
+  if(ORI) G+='<div class="grp"><div class="gh">Show</div>'+ck('cClash','Clashes and captures',true)+(OPL.length?ck('cCtl','Who held each place',true):'')+ck('cKey','Key to the symbols',true)+ck('cNarr','The current event, in words, on the map',false)+'<p class="gn">Square: British. Circle: American. Triangle: Cherokee. Diamond: no side won, or a place contested. The colours say the same.</p></div>';
+  else{
   G+='<div class="grp"><div class="gh">Show</div>'+ck('cUnits','Units',true,'U')+ck('cNames','Unit names',true,'N')+((P.fold&&P.fold.label)?ck('cFold',esc(P.fold.label)+' when zoomed in',true):'')+(FM?ck('cForm',esc(FM.label||'Divisions')+' when zoomed out',fmOn):'')+(TRL?ck('cTrail','Routes taken',trlOn):'')+(arrowsAny()?ck('cArrow','Arrows to where units go next',arwOn):'')
     +(DE_OK?ck('cDayEnds','Where units began and ended each day',deOn):'')+ck('cNarr','The current event, in words, on the map',false)+(EVH_OK?ck('cEvh','Highlight the units in the current event',evhOn):'')+(DE_OK?'<p class="gn">Dashed: where a unit began the day. Thin solid: where it ended it.</p>':'')+'</div>';
-  G+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Unit symbols',[sb('fr-none','Neutral',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Choose a side to see the battle from its point of view: the other side&rsquo;s units take the diamond frame of the standard military symbols.</p></div>';
+  G+='<div class="grp"><div class="gh">Unit symbols</div>'+seg('Unit symbols',[sb('fr-none','Neutral',true)].concat(raw.sides.map(function(sd){return sb('fr-'+sd.code,sd.short,false)})))+'<p class="gn">Choose a side to see the battle from its point of view: the other side&rsquo;s units take the diamond frame of the standard military symbols.</p></div>';}
   if(PZ_OK) G+='<div class="grp"><div class="gh">Pause and summary</div>'+seg('Pause and summary',[sb('pz-off','Off',pzMode==='off'),sb('pz-day','Each day',pzMode==='day'),sb('pz-week','Each week',pzMode==='week')])+'<p class="gn">While it plays, the battle stops at the end of each day or week and shows a summary. Press Continue to go on.</p></div>';
   $('pBattle').innerHTML=G;
+  if(ORI){var bl=wrap.querySelector('.bl'),k=document.createElement('div');k.className='orkey';k.id='orkey';k.innerHTML=oKeyHtml();bl.insertBefore(k,bl.firstChild);wrap.classList.add('ori');
+    var narrow=window.matchMedia&&matchMedia('(max-width:860px)').matches,ks=null;try{ks=localStorage.getItem('wm.'+B.id+'.key')}catch(_){ }okeyOn=ks!=null?ks==='1':!narrow}
   var cb=$('clockbattle'); if(cb){cb.textContent=P.clock_title||B.title;cb.hidden=P.clock_title===''}   // the battle's name in the date box
   wrap.classList.toggle('compact',compact); $('when').classList.toggle('date',byDay); $('tl').classList.toggle('days',byDay);
   if(byDay){$('hint').innerHTML=$('hint').innerHTML.replace('to move time','to move through the days')}
@@ -1254,7 +1435,9 @@ function u2t(u){return (LD&&u<=UM)?T0+(TM-T0)*u/UM:TM+(T1-TM)*(u-UM)/(1-UM)}
 function t2u(v){return (LD&&v<=TM)?UM*(v-T0)/(TM-T0):UM+(1-UM)*(v-TM)/(T1-TM)}
 function paintTime(v){if(sumAt!=null&&Math.abs(v-sumAt)>1e-6)closeSummary();t=v; if(landing&&(v!==T0||(clk&&clk.playing))){landing=false;panelKey='';glide=Date.now()+FOL.glide_ms;if(!follow&&OPEN_OUT&&!base.own&&mv){goal=home();goalK=(P.opening_ease!=null?+P.opening_ease:0.03)}}   // without Follow, the camera eases in from the wide opening to the battle's own first view (playback.opening_ease: how fast, a share of the way each frame)   // the battle has been started: the units come on, and Follow takes the camera
 
-  if(byDay){var n=stamp(t),d=B.dateOf(n),night=Math.abs(t-Math.round(t))<0.02;
+  if(ORI&&oHalt!=null&&Math.abs(v-oHalt)>1e-6){oHalt=null;$('cont').hidden=true;panelKey=''}   // an orientation's stop ends once time moves on
+  if(ORI){var ym=oYM(t);$('clock').textContent=WM.MONTHS[ym[1]-1]+' '+ym[0];$('clockdate').textContent=(clk&&clk.playing&&t<T1-1e-6)?'':oDay(B.isoOf(stamp(t)));WM.paintDayNumber(0)}   // an orientation: the month, and the day once stopped
+  else if(byDay){var n=stamp(t),d=B.dateOf(n),night=Math.abs(t-Math.round(t))<0.02;
     $('clock').textContent=d.day+' '+d.mon+' '+d.year;$('clockdate').textContent=d.wd+' · '+(night?'at nightfall':'during the day');WM.paintDayNumber(B.cal.numbered?n+1:0)}
   else{var c=WM.calOf(B.cal,t);$('clock').textContent=c.clock;$('clockdate').textContent=c.date;WM.paintDayNumber(c.n)}
   var tn=P.time_note,ne=$('clocknote'); if(tn){ne.textContent=tn.text;ne.hidden=t<B.time(tn.from)} else ne.hidden=true;
@@ -1275,23 +1458,25 @@ function fitNames(){
 window.addEventListener('resize',fitNames);
 /* the time step: how far one arrow key or one notch of the scroll wheel moves time. Only steps the battle's span can use are offered. */
 /* The same step sets how fast the playback runs: one step of battle time for each second played. */
-var STEPS=(byDay?[[1,'1 day'],[7,'1 week'],[30,'1 month']]:[[1,'1 min'],[5,'5 min'],[15,'15 min'],[60,'1 hour'],[1440,'1 day']]).filter(function(x,i){return i===0||x[0]*3<=T1-T0});
+var STEPS=ORI?O_SP.map(function(x){return [x,(x===0.5?'\u00bd':String(x))+' s a month']}):(byDay?[[1,'1 day'],[7,'1 week'],[30,'1 month']]:[[1,'1 min'],[5,'5 min'],[15,'15 min'],[60,'1 hour'],[1440,'1 day']]).filter(function(x,i){return i===0||x[0]*3<=T1-T0});   // an orientation: the speeds, as seconds of play for a month
 function setStep(i){stepI=(i+STEPS.length)%STEPS.length;wheelAcc=0;var e=$('step'),w=STEPS[stepI][1];e.textContent=w;e.hidden=STEPS.length<2;
   e.title='Step: '+w+'. The back and forward buttons and the arrow keys move '+w+'; playing runs '+w+' a second. Click to change.';
-  var b=$('evprev'),f=$('evnext');if(b){b.title='Back '+w;b.setAttribute('aria-label','Back '+w)}if(f){f.title='Forward '+w;f.setAttribute('aria-label','Forward '+w)}}
+  var b=$('evprev'),f=$('evnext');if(b){b.title='Back '+w;b.setAttribute('aria-label','Back '+w)}if(f){f.title='Forward '+w;f.setAttribute('aria-label','Forward '+w)}
+  if(ORI){e.title='Speed: '+w+', more for a month with more events. The back and forward buttons and the arrow keys move a month. Click to change.';if(b){b.title='Back a month';b.setAttribute('aria-label','Back a month')}if(f){f.title='Forward a month';f.setAttribute('aria-label','Forward a month')}}}
 function stepNear(r){var best=0;STEPS.forEach(function(x,i){if(Math.abs(Math.log(x[0]/r))<Math.abs(Math.log(STEPS[best][0]/r)))best=i});return best}   // the step nearest a play rate
 function stepBy(dir,v){var n=STEPS[stepI][0];
+  if(ORI) return oStep(dir,v);   // an orientation moves a month at a time
   if(byDay) return (dir>0?Math.floor(v+1e-6):Math.ceil(v-1e-6))+dir*n;
   if(stepI===0) return v+dir*((LD&&(dir>0?v<TM:v<=TM))?(LD.step||5):1);
   return Math.round(v)+dir*n}   // always exactly one step, so every press moves time the same amount
 var rng=$('time'); rng.min=0; rng.max=RNG; rng.step=1; rng.value=0; rng.setAttribute('aria-label',byDay?'Day of the battle':'Time of day');
-clk=WM.clock({T0:T0,T1:T1,mv:mv,stopAt:stopAt,onStop:function(b){openSummary(b,b>=T1-1e-6&&pzMode==='week'?'week':pzMode)},
+clk=WM.clock({T0:T0,T1:T1,mv:mv,stopAt:ORI?oStopAt:stopAt,onStop:function(b){if(ORI){oOnStop(b);return}openSummary(b,b>=T1-1e-6&&pzMode==='week'?'week':pzMode)},
   beforePlay:function(){if(PZ_OK&&pzMode==null&&t<T1-1e-6){ask();return false}},toRange:function(v){return Math.round(t2u(v)*RNG)},fromRange:function(v){return u2t(v/RNG)},
-  rate:function(v){var n=STEPS[stepI][0];if(byDay&&stepI===0&&P.rate>0&&P.rate<1)return P.rate;   /* a day battle can play slower than a day a second (Ypres: half a day) */
+  rate:function(v){var n=STEPS[stepI][0];if(ORI)return oRate(v);if(byDay&&stepI===0&&P.rate>0&&P.rate<1)return P.rate;   /* a day battle can play slower than a day a second (Ypres: half a day) */
     return (LD&&v<LDT)?Math.max(LD.rate,n):n},onTime:paintTime,
   snap:byDay?function(v){return Math.round(v)}:null,   // the sources give one position a day, so time settles on nightfall
   arrow:stepBy,
-  wheel:function(dd,v){if(stepI===0)return u2t(Math.max(0,Math.min(1,t2u(v)+dd*0.0002)));   // at the finest step scrolling is smooth; at a coarser one each notch is one step
+  wheel:function(dd,v){if(stepI===0&&!ORI)return u2t(Math.max(0,Math.min(1,t2u(v)+dd*0.0002)));   // at the finest step scrolling is smooth; at a coarser one each notch is one step
     wheelAcc+=dd;if(Math.abs(wheelAcc)<50)return v;var dir=wheelAcc>0?1:-1;wheelAcc=0;return stepBy(dir,v)},
   onKey:function(e){var k=e.key.toLowerCase();
     if(e.key==='['||e.key==='PageUp'){toEvent(-1);e.preventDefault()}else if(e.key===']'||e.key==='PageDown'){toEvent(1);e.preventDefault()}
@@ -1301,7 +1486,9 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,stopAt:stopAt,onStop:function(b){openSummary(b,b
 /* timeline furniture: ticks, the part the data covers best, and the events */
 (function(){var tl=$('tl'),pc=function(m){return (t2u(m)*100)+'%'},h='',m,lg=!byDay&&(T1-TM)>360,fmt=function(v){return WM.fmtClock(v)};
   var win=$('win'); if(B.focus){win.style.left=pc(B.focus[0]);win.style.width=((t2u(B.focus[1])-t2u(B.focus[0]))*100)+'%';if(B.focus[1]>=T1)win.style.borderRadius='0 5px 5px 0'} else win.hidden=true;
-  if(byDay&&(T1-T0)>120){for(m=T0;m<=T1;m++){var dl=B.dateOf(m);   // a campaign of months: a tick at each month's start and middle, the month named at its start
+  if(ORI){O_MS_T.forEach(function(v,i){if(v>T1+1e-6)return;var ym=oYM(v),jan=ym[1]===1;h+='<span class="tick'+(jan?' maj':'')+'" style="left:'+pc(v)+'"></span>';if(jan||i===0)h+='<span class="tk" style="left:'+pc(Math.max(v,T0))+'">'+ym[0]+'</span>'});
+    O_GAPS.forEach(function(g){var a=Math.max(T0,g.t0),b=Math.min(T1,g.t1);if(b>a)h+='<span class="ogap" style="left:'+pc(a)+';width:'+((t2u(b)-t2u(a))*100)+'%" title="'+esc(g.text)+'"></span>'})}
+  else if(byDay&&(T1-T0)>120){for(m=T0;m<=T1;m++){var dl=B.dateOf(m);   // a campaign of months: a tick at each month's start and middle, the month named at its start
       if(dl.day===1){h+='<span class="tick maj" style="left:'+pc(m)+'"></span><span class="tk" style="left:'+pc(m)+'">'+dl.mon.slice(0,3)+'</span>'}
       else if(dl.day===15)h+='<span class="tick" style="left:'+pc(m)+'"></span>'}}
   else if(byDay){var nth=0;for(m=T0;m<=T1;m++){var d=B.dateOf(m),maj=d.day%5===0;h+='<span class="tick'+(maj?' maj':'')+'" style="left:'+pc(m)+'"></span>';
@@ -1311,7 +1498,9 @@ clk=WM.clock({T0:T0,T1:T1,mv:mv,stopAt:stopAt,onStop:function(b){openSummary(b,b
     for(m=Math.ceil(TM/30)*30;m<=T1;m+=st){h+='<span class="tick" style="left:'+pc(m)+'"></span>';if(m%lb===0)h+='<span class="tk'+(m%(lb*2)?' minor':'')+'" style="left:'+pc(m)+'">'+fmt(m)+'</span>'}}
   LINKS.forEach(function(x){if(x.kind!=='battle')return;var a0=Math.max(T0,x.t0),a1=Math.min(T1,x.t1+(byDay?1:0));if(a1<a0)return;
     h+='<button class="cblb" data-t="'+a0+'" style="left:'+pc(a0)+';width:'+((t2u(a1)-t2u(a0))*100)+'%" title="'+esc(x.name+', '+lspan(x))+'" aria-label="'+esc('Go to '+x.name)+'"></button>'});
-  B.events.forEach(function(e){h+='<button class="ev'+(e.quiet?' mute':'')+'" data-id="'+esc(e.id)+'" data-t="'+e.t+'" style="left:'+pc(e.t)+'" title="'+esc(e.name)+'" aria-label="'+esc(e.name)+'">'+esc(e.name)+'</button>'});
+  if(ORI) B.events.forEach(function(e){var c=oClashOf(e.id),sd=c?oSide(c.raw.won_by):null,R=OEVR[e.id]||{},nm=e.full+', '+oSpan(R.start||'',R.end||'')+(c?': '+oResult(c.raw):'');
+    h+='<button class="ev mute ori" data-id="'+esc(e.id)+'" data-t="'+e.t+'" style="left:'+pc(e.t)+(sd?';--c:'+sd.col:'')+'" title="'+esc(nm)+'" aria-label="'+esc(nm)+'"><i class="'+(sd?sd.shape:'none')+(c&&c.raw.kind==='capture'?' cap':'')+'"></i></button>'});
+  else B.events.forEach(function(e){h+='<button class="ev'+(e.quiet?' mute':'')+'" data-id="'+esc(e.id)+'" data-t="'+e.t+'" style="left:'+pc(e.t)+'" title="'+esc(e.name)+'" aria-label="'+esc(e.name)+'">'+esc(e.name)+'</button>'});
   tl.insertAdjacentHTML('afterbegin',h);
   tl.addEventListener('click',function(ev){var b=ev.target.closest('.ev,.cblb');if(b){clk.setPlaying(false);clk.setTime(+b.dataset.t)}});
 })();
@@ -1336,7 +1525,8 @@ bases.forEach(function(b){var e=$('b-'+b.id);if(e)e.addEventListener('click',fun
 (P.views||[]).forEach(function(v){var e=$('v-'+v.preset);if(e)e.addEventListener('click',function(){openPop('pType',false)})});
 function onCheck(id,fn){var e=$(id);if(e)e.addEventListener('change',function(){fn(e.checked)})}
 onCheck('cUnits',setUnits); onCheck('cNames',setNames); onCheck('cFold',setFold); onCheck('cNarr',setNarr); onCheck('cForm',setFormations); onCheck('cTrail',setTrails); onCheck('cArrow',setArrows); onCheck('cMute',setMute); onCheck('cHill',setHill);
-onCheck('cEvh',setEvh); onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
+onCheck('cEvh',setEvh); onCheck('cClash',function(v){ocOn=v;mv.kick()}); onCheck('cCtl',function(v){octlOn=v;mv.kick()}); onCheck('cKey',function(v){setOKey(v);remember('key',v)});
+if(ORI){setOKey(okeyOn);on('okb',function(){setOKey(!okeyOn);remember('key',okeyOn)})} onCheck('cPlaces',function(v){placeNames=v;mv.kick()}); onCheck('cLines',function(v){lineNames=v;mv.kick()});
 on('sy-standard',function(){setSymbols('standard')}); on('sy-period',function(){setSymbols('period')});
 on('fr-none',function(){setSeenFrom('')}); raw.sides.forEach(function(sd){on('fr-'+sd.code,function(){setSeenFrom(sd.code)})});
 var opr=$('opac'); if(opr) opr.addEventListener('input',function(){setOpacity(+opr.value/100)});
@@ -1402,12 +1592,15 @@ var pane=(function(){var st=document.querySelector('.stage'),b=$('bpane');
 (function(){var tmo=0;wrap.addEventListener('touchstart',function(){if(!document.documentElement.classList.contains('wm-playing'))return;wrap.classList.add('peek');clearTimeout(tmo);tmo=setTimeout(function(){wrap.classList.remove('peek')},4000)},{passive:true})})();
 // back and forward one step; [ and ] jump between key events
 on('restart',restart);   // start over: the first moment, the opening map and view, no unit picked
-function restart(){closeSummary();$('ask').hidden=true;clk.setPlaying(false);select(null);setPreset(null);fpause=0;followK=1;glide=0;skipAcc=0;brk={};mrg={};lastW=null;holdUntil=0;
+function restart(){closeSummary();orSel=null;if(ORI){oHalt=null;$('cont').hidden=true}$('ask').hidden=true;clk.setPlaying(false);select(null);setPreset(null);fpause=0;followK=1;glide=0;skipAcc=0;brk={};mrg={};lastW=null;holdUntil=0;
   if(P.follow){follow=true;press('bFollow',true)} landing=true;panelKey='';clk.setTime(T0);setBase(startBase(),true);mv.jump(home());mv.kick()}
 on('evprev',function(){clk.setPlaying(false);clk.setTime(stepBy(-1,t))}); on('evnext',function(){clk.setPlaying(false);clk.setTime(stepBy(1,t))}); on('step',function(){setStep(stepI+1)});
 WM.panelClicks(panel,select);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-ev]');if(!b)return;var ev=B.events.filter(function(x){return x.id===b.getAttribute('data-ev')})[0];if(ev){clk.setPlaying(false);if(b.hasAttribute('data-evu')){sel=null;panelKey=''}clk.setTime(ev.t);frameEvent(ev)}});
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-lnk]');if(b)openLink(b.getAttribute('data-lnk'))});
+if(ORI) panel.addEventListener('click',function(e){var b=e.target.closest('[data-orev]');if(b){oPick(b.getAttribute('data-orev'));return}   // an orientation: an event frames its clash; a year goes to its start; a date in a place's record goes there
+  b=e.target.closest('[data-ory]');if(b){clk.setPlaying(false);orSel=null;panelKey='';clk.setTime(Math.max(T0,B.time(b.getAttribute('data-ory')+'-01-01')));return}
+  b=e.target.closest('[data-ort]');if(b){clk.setPlaying(false);clk.setTime(+b.getAttribute('data-ort'))}});
 panel.addEventListener('toggle',function(e){if(e.target.classList&&e.target.classList.contains('cbls'))lnkOpen=e.target.open},true);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-base]');if(!b)return;setBase(b.getAttribute('data-base'));info=true;rcSel=null;panelKey='';mv.kick()});   // a map offered in the map details
 panel.addEventListener('toggle',function(e){if(!e.target.classList)return;
@@ -1417,7 +1610,7 @@ panel.addEventListener('toggle',function(e){if(!e.target.classList)return;
   if(e.target.classList.contains('umd')){umdOpen=e.target.open;if(!umdOpen&&!nowOpen){var nd=panel.querySelector('details.nowd');nowOpen=true;if(nd)nd.open=true}return}
   if(e.target.classList.contains('sums'))sumsOpen=e.target.open;else if(e.target.classList.contains('evs'))evOpen=e.target.open},true);
 panel.addEventListener('click',function(e){var b=e.target.closest('[data-day]');if(b){jumpToDay(+b.getAttribute('data-day'),'day');return} if(e.target.closest('#sumgo'))goOn()});
-function goOn(){closeSummary();glide=Date.now()+FOL.glide_ms;clk.setPlaying(true)}
+function goOn(){closeSummary();if(ORI&&oHalt!=null){oHalt=null;$('cont').hidden=true;panelKey=''}glide=Date.now()+FOL.glide_ms;clk.setPlaying(true)}
 on('cont',goOn);
 ['off','day','week'].forEach(function(k){on('pz-'+k,function(){setPause(k)})});
 onCheck('cDayEnds',setDayEnds);
@@ -1447,7 +1640,7 @@ try{if(DE_OK&&localStorage.getItem('wm.'+B.id+'.dayends')==='1'){deOn=true;tick(
 try{if(localStorage.getItem('wm.'+B.id+'.arrow')==='0'){arwOn=false;tick('cArrow',false)}}catch(e){}
 try{if(EVH_OK&&localStorage.getItem('wm.'+B.id+'.evh')==='0'){evhOn=false;tick('cEvh',false)}}catch(e){}
 try{if(localStorage.getItem('wm.'+B.id+'.hill')==='0'){hsOn=false;tick('cHill',false)} if(localStorage.getItem('wm.'+B.id+'.mute')==='0'){muteOn=false;tick('cMute',false);wrap.classList.add('vivid')} if(localStorage.getItem('wm.'+B.id+'.names')==='0'){names=false;tick('cNames',false)} if(localStorage.getItem('wm.'+B.id+'.narr')==='1'){narrOn=true;tick('cNarr',true);wrap.classList.add('narr-on')} var fs=localStorage.getItem('wm.'+B.id+'.form'); if(FM&&fs!=null){fmOn=fs==='1';tick('cForm',fmOn)} var ts=localStorage.getItem('wm.'+B.id+'.trail'); if(TRL&&ts!=null){trlOn=ts==='1';tick('cTrail',trlOn)}}catch(_){ }
-setStep(stepNear(P.rate||(byDay?1:5)));
+setStep(ORI?Math.max(0,O_SP.indexOf(O_MS)):stepNear(P.rate||(byDay?1:5)));
 if(P.views) preset=P.views[0].preset;
 base=startBase();
 mv.start(function(){buildBase();paintTime(T0);(P.views||[]).forEach(function(v){press('v-'+v.preset,preset===v.preset)});setBase(base,true);clk.setTime(T0);readLink();WM.hint(mv)});
@@ -1456,7 +1649,8 @@ var api={battle:B,setTime:clk.setTime,select:select,setFollow:setFollow,setBase:
   begin:function(){landing=false;panelKey='';mv.kick()},setFormations:setFormations,setMute:setMute,setHill:setHill,
   scene:function(){var f=evFocus();return scene().map(function(o){return {id:o.tr.id,kind:o.s.kind,row:o.s.k.id,drawn:o.drawn,c:o.s.g?cen(o.s.g):null,dim:!!(f&&!f[o.tr.id])}})}};   // c: where it stands, in the frame's metres; dim: faded by the event focus (BP-32)
 Object.defineProperty(api,'view',{get:function(){return {s:mv.scale()}}}); Object.defineProperty(api,'base',{get:function(){return base.id}}); Object.defineProperty(api,'landing',{get:function(){return landing}}); Object.defineProperty(api,'summary',{get:function(){return sumAt==null?null:{at:sumAt,mode:sumMode}}});
-api.stops=function(m){return stopsFor(m)};api.merging=function(){return Object.keys(mrg)};api.stopAt=stopAt;
+api.stops=function(m){return stopsFor(m)};
+if(ORI) api.orientation={halted:function(){return oHalt!=null},month:function(){var ym=oYM(t);return ym[0]+'-'+oP2(ym[1])},rate:function(){return oRate(t)},shown:function(){return OC.filter(function(c){return !landing&&t>=c.t-1e-6}).map(function(c){return c.id})},held:function(id){var p=OPL.filter(function(x){return x.id===id})[0],c=p&&oHeld(p,t);return c?c.by:null}};api.merging=function(){return Object.keys(mrg)};api.stopAt=stopAt;
 Object.defineProperty(api,'modern',{get:function(){return {on:!!modOn,off:modOff,hill:!!hsVis}}});
 global.__wm=api; return api;
 };
