@@ -30,6 +30,16 @@ control is now held within 0.5 km (Winyah Bay 3.6, Georgetown 1.9) and nothing f
 median 5 km off (0-17 km; Camden 17): between the controls Mouzon's own drawing is out by that much, and the stiffer fit no longer hides
 it. The roads are traced again from end to end on the engraved lines, the rivers are one line each across the sections, and road ends
 are joined where Mouzon has them meet.
+
+North Carolina (SC storyline Session 2, 27 Nov 2026). The sheet now runs north to 36.75 N, where Mouzon draws the Dan and the Roanoke into
+the margin above his neatline (36 37' N), and east to 77 W, so it holds Charlotte, Salisbury, Salem, Guilford Court House, Hillsborough,
+Halifax, the Cape Fear and the Dan; the Neuse and the sounds east of 77 W are not traced and are left outside it. The North Carolina lines
+(pipeline/recon/nc_1775_picks_2026_11_27.py, nc_1775_trace_2026_11_27.py, nc_1775_traced.json) are features of their own, ids NC75-...,
+so that no reviewed South Carolina feature changes: a North Carolina line that carries one on starts on the same point of the ground as
+its end (`joins`, `extends`). The fit is extended by pipeline/georef/sc_mouzon_fit_nc_2026_11_27.py, which moves no South Carolina vertex
+more than 20 m, except where it mends the fold of the 26 Nov fit at the 1772 line (Morgan, 27 Nov 2026: "fix it"): there the Catawba,
+the Broad above the Pacolet, the road from the Catawba Nation to Charlotte, the Cherokee path's east end and the 1772 and 1764 lines move
+onto today's ground, up to 18.6 km (REFIT below). Lines are cut at the sheet's east edge. The sea is closed along the North Carolina coast too.
 """
 import json, math, os, sys
 import numpy as np
@@ -39,7 +49,9 @@ HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(os.pat
 TR = json.load(open(os.path.join(HERE, 'sc_1775_traced.json')))
 FIT = json.load(open(os.path.join(ROOT, 'pipeline', 'georef', 'sc_mouzon_fit.json')))
 OUT = os.path.join(ROOT, 'data', 'recon', 'sc-1775.geojson')
-SHEET = [-83.45, 31.95, -78.45, 35.3]          # west, south, east, north
+SHEET = [-83.45, 31.95, -77.0, 37.6]          # west, south, east, north (27 Nov 2026; South Carolina alone was -78.45 east, 35.3 north)
+MOUZON_TOP = 36.75                              # north of it the lines are Fry and Jefferson's (southern Virginia)
+NC = json.load(open(os.path.join(HERE, 'nc_1775_traced.json')))
 SY, SX = FIT['seam']['y'], FIT['seam']['x']
 KX, KY = 111.32 * math.cos(math.radians(33.5)), 110.9
 
@@ -91,6 +103,7 @@ DATES = {'bnd-cherokee-lower': ('1766-11-01', '1777-05-19'), 'bnd-cherokee-upper
 LAYER = {'river': 'rivers', 'shore': 'coast', 'road': 'roads', 'boundary': 'boundaries'}
 SCAN = 'Mouzon 1775 (S135), Library of Congress g3900.ar139404'
 FEATURES = []
+REFIT = {'riv-catawba': 18.6, 'riv-broad': 6.9, 'riv-pacolet': 1.0, 'road-catawba-charlotte': 18.6, 'road-cherokee-path': 11.1, 'bnd-nc-1772': 10.8, 'bnd-nc-old': 12.3}   # km, 27 Nov 2026
 
 
 def feat(fid, f, coords):
@@ -115,14 +128,21 @@ def feat(fid, f, coords):
         p.update(confidence='low', precision_m=5000 if 'cherokee' in fid else 3000, basis='Mouzon\'s line (%s), picked by hand; the North Carolina lines were fitted to today\'s state line, '
                  'which follows them (Natural Earth, S136). %s' % (SCAN, 'Mouzon draws it from the Savannah at a corner tree, past DeWitt\'s Corner, to a corner tree on the Reedy River and north to the 1772 line. '
                  'The Cherokee ceded the land east of it in 1766-67 and nearly all the rest in South Carolina at DeWitt\'s Corner, 20 May 1777, so it is drawn until then.' if 'cherokee' in fid else ''))
+    fam = fid.rsplit('-', 1)[0] if fid[-1].isdigit() else fid
+    if fam in REFIT: p['basis'] += (' Moved 27 Nov 2026, up to %.1f km where it nears the 1772 line: the fit of 26 Nov turned the ground over there '
+                                    '(it had matched Mouzon\'s Catawba below the line to the river above today\'s state line); the refit '
+                                    '(pipeline/georef/sc_mouzon_fit_nc_2026_11_27.py) holds the Catawba where today\'s state line reaches it.' % REFIT[fam])
     FEATURES.append({'type': 'Feature', 'properties': p, 'geometry': {'type': 'LineString', 'coordinates': coords}})
 
 
-SEAMS = [(0, 99999, 1213, 1229), (4166, 4253, 0, 1229), (4208, 4253, 1213, 99999)]   # the blank strips between the mounted sections of the scan
+SEAMS = [(0, 99999, 1213, 1229), (4166, 4253, 0, 1229), (4208, 4253, 1213, 99999)]   # the blank strips between the mounted sections of the scan (the last: North Carolina, 27 Nov 2026)
 
 
-def off_seams(pts):
-    return [p for p in pts if not any(a <= p[0] <= b and c <= p[1] <= d for a, b, c, d in SEAMS)]
+NCSEAMS = [(0, 99999, 1213, 1229), (4212, 4248, -1900, 1229), (4208, 4253, 1213, 99999)]   # North Carolina's lines: only the blank strips themselves (27 Nov 2026)
+
+
+def off_seams(pts, seams=SEAMS):
+    return [p for p in pts if not any(a <= p[0] <= b and c <= p[1] <= d for a, b, c, d in seams)]
 
 
 def km(a, b): return math.hypot((a[0] - b[0]) * KX, (a[1] - b[1]) * KY)
@@ -253,6 +273,164 @@ def join_rivers(pieces):
     return out
 
 
+NCSCAN = 'Mouzon 1775 (S135), Library of Congress g3900.ar139404; the North Carolina part checked against Collet 1770 (S151, g3900.ar150000)'
+NC_MATCHED = ('riv-catawba-nc', 'riv-broad-nc', 'riv-yadkin', 'riv-peedee-nc', 'riv-haw', 'riv-deep', 'riv-capefear', 'riv-dan', 'riv-roanoke')
+NC_WIDTH = {'Yadkin River': 200, 'Haw River': 80, 'Deep River': 80, 'Cape Fear River': 200, 'Dan River': 120, 'Roanoke River': 200, 'Reedy Fork': 30, 'Troublesome Creek': 30}
+NC_MAIN = {'Yadkin River', 'Cape Fear River', 'Dan River', 'Roanoke River', 'Catawba River', 'Pee Dee River', 'Haw River', 'Deep River', 'Broad River'}
+
+
+VA = json.load(open(os.path.join(HERE, 'va_fry_jefferson_traced.json')))
+VAFIT = json.load(open(os.path.join(ROOT, 'pipeline', 'georef', 'va_fry_jefferson_fit.json')))
+VA_JOINS = {'riv-staunton': 'riv-roanoke', 'riv-banister': 'riv-dan'}   # Virginia rivers kept to their mouth in a river Mouzon draws
+VA_MATCHED = ('riv-staunton', 'riv-meherrin', 'riv-nottoway')
+FJ = ('Fry and Jefferson, A map of the most inhabited part of Virginia (drawn 1751), S152: Library of Congress g3880.ct000370, a printing of 1755; '
+      'the printing of 1775 changes only the date in the title')
+
+
+def va_ground(pts):
+    P = VAFIT['pairs']
+    if 'm' not in VAFIT: VAFIT['m'] = RBFInterpolator(np.array([p[0] for p in P], float), np.array([p[1] for p in P], float), kernel='thin_plate_spline',
+                                                      smoothing=np.array([p[2] for p in P]) ** 2 * VAFIT.get('smoothing', 20.0), degree=1)
+    return [[round(e / KX - 81.0, 6), round(n / KY + 33.5, 6)] for e, n in VAFIT['m'](np.array(pts, float))]
+
+
+def clip_north_of(ll, lat=MOUZON_TOP, east=SHEET[2], top=SHEET[3], least_km=5.0):
+    """The parts of a line between `lat` and `top` and west of `east`, each cut where it crosses; a list of lines, none shorter than `least_km`."""
+    inside = lambda p: lat <= p[1] <= top and p[0] <= east
+    def cut(a, b):   # where a-b crosses the box's edge
+        us = [(v - a[i]) / (b[i] - a[i]) for v, i in ((lat, 1), (top, 1), (east, 0)) if b[i] != a[i] and 0 <= (v - a[i]) / (b[i] - a[i]) <= 1]
+        u = min(us, key=lambda u: abs(u - 0.5)) if us else 0.5
+        return [round(a[0] + (b[0] - a[0]) * u, 6), round(a[1] + (b[1] - a[1]) * u, 6)]
+    out, cur = [], [ll[0]] if inside(ll[0]) else []
+    for a, b in zip(ll, ll[1:]):
+        if inside(a) and inside(b): cur.append(b)
+        elif inside(a): cur.append(cut(a, b)); out.append(cur); cur = []
+        elif inside(b): cur = [cut(a, b), b]
+    if cur: out.append(cur)
+    return [c for c in out if len(c) > 1 and sum(km(p, q) for p, q in zip(c, c[1:])) >= least_km]
+
+
+def virginia(nc):
+    """Southern Virginia, north of Mouzon's edge, from Fry and Jefferson (since 27 Nov 2026, Morgan: "add it"). `nc`: the North Carolina lines as built."""
+    res = VAFIT['result']
+    for fid, f in VA.items():
+        if f.get('fit_only'): continue
+        ll = va_ground(f['line'])
+        if f['kind'] == 'river': ll = smooth(ll)
+        if fid in VA_JOINS:   # kept to its mouth: its end goes onto Mouzon's river
+            q, d = nearest_on(ll[-1], nc[VA_JOINS[fid]]); assert d < 8, '%s ends %.1f km from %s' % (fid, d, VA_JOINS[fid])
+            ll = ll + [[round(q[0], 6), round(q[1], 6)]]; parts = [[p for p in ll if p[0] <= SHEET[2]]]
+        else: parts = clip_north_of(ll)
+        kind = f['kind']; m = fid in VA_MATCHED
+        base = {'layer': LAYER[kind], 'kind': 'stream' if kind == 'river' else kind, 'name': f['name'], 'desc': f['name'], 'from': '1775-01-01', 'to': '1781-12-31',
+                'source_id': 'S152', 'method': 'traced', 'review': 'Needs review'}
+        fit = ('Laid on the ground by a fit of its own (pipeline/georef/va_fry_jefferson_fit_2026_11_27.py): Richmond, Petersburg and City Point at their sites (left out, '
+               'found again %.0f-%.0f km off), the Occoneachey Islands and Lower Saura Town tied to the fitted Mouzon so the maps meet, and the Staunton, Meherrin, Nottoway '
+               'and the dividing line matched to Natural Earth (S136).' % (min(r['left_out_km'] for r in res.values()), max(r['left_out_km'] for r in res.values())))
+        if kind == 'river':
+            base.update(width_m=150 if fid == 'riv-staunton' else 80, min_px=1.6 if fid == 'riv-staunton' else 1.0, confidence='medium' if m else 'low', precision_m=3000 if m else 5000,
+                        basis='Picked by hand along Fry and Jefferson\'s river (%s) and snapped by program to the engraved line. %s%s' % (FJ, fit,
+                              ' It lies a median 0.3-0.5 km from today\'s course.' if m else ' It has no line in Natural Earth: it follows the fit of the rivers round it.'))
+            if fid in VA_JOINS: base['basis'] += ' Its last point is on Mouzon\'s %s, where it flows in.' % ('Roanoke' if VA_JOINS[fid] == 'riv-roanoke' else 'Dan')
+            else: base['basis'] += ' Drawn north of 36.75 N only; south of it Mouzon\'s map is drawn.'
+        else:
+            base.update(confidence='low', precision_m=5000, **({'class': f['cls']} if f.get('cls') else {}),
+                        basis='Fry and Jefferson\'s "Road from the Yadkin", the Great Wagon Road, traced along its double line (%s) and checked by eye. %s Drawn from Looney\'s Ferry on the James '
+                              'to 36.75 N; Fry and Jefferson draw almost no other roads in the southside, and none to the Dan ferries of 1781.' % (FJ, fit))
+        for i, pl in enumerate(parts):
+            p = dict(base, id='VA51-' + fid.upper() + ('-%d' % (i + 1) if len(parts) > 1 else ''))
+            FEATURES.append({'type': 'Feature', 'properties': p, 'geometry': {'type': 'LineString', 'coordinates': pl}})
+
+
+def clip_east(ll, east=SHEET[2]):
+    """The line up to the sheet's east edge (cut where it first crosses it)."""
+    out = [ll[0]]
+    for a, b in zip(ll, ll[1:]):
+        if b[0] > east:
+            if a[0] <= east: u = (east - a[0]) / (b[0] - a[0]); out.append([east, round(a[1] + (b[1] - a[1]) * u, 6)])
+            break
+        out.append(b)
+    return out
+
+
+def nc_feat(fid, f, coords):
+    kind = f['kind']; name = f['name']
+    p = {'id': 'NC75-' + fid.upper(), 'layer': LAYER[kind], 'kind': 'stream' if kind == 'river' else kind, 'name': name, 'desc': name,
+         'from': '1775-01-01', 'to': '1781-12-31', 'source_id': 'S135', 'method': 'traced', 'review': 'Needs review'}
+    fit = ('Laid on the ground by the fit of the map, extended to North Carolina on 27 Nov 2026 (pipeline/georef/sc_mouzon_fit_nc_2026_11_27.py): '
+           'nine towns hold it (Charlotte, Salisbury, Salem, Bethabara, New Garden, Hillsborough, Halifax, Cross Creek, Wilmington), each found again '
+           '1.3-6.6 km from its site when left out, and the rivers, coast and Virginia line matched to Natural Earth (S136).')
+    if kind == 'river':
+        m = fid in NC_MATCHED
+        p.update(width_m=NC_WIDTH.get(name, WIDTH.get(name, 40)), min_px=1.6 if name in NC_MAIN else 1.0, confidence='medium' if m else 'low', precision_m=2500 if m else 4000,
+                 basis='Picked by hand along Mouzon\'s river on the scan (%s) and snapped by program to the engraved line. %s%s' % (NCSCAN, fit,
+                       ' This river lies a median 0.3-0.75 km from today\'s course in Natural Earth.' if m else ' This river has no line in Natural Earth, so it follows the fit of the rivers round it.'))
+        if f.get('joins'): p['basis'] += ' It carries on the South Carolina line of the same river from the point where that line ends.'
+        if fid in JOINS: p['basis'] += (' Its first kilometres turned back on themselves at the join and are left out: it joins the South Carolina end straight, over %.1f km.' % JOINS[fid])
+    elif kind == 'shore':
+        p.update(confidence='low', precision_m=1500, basis='Mouzon\'s outer sea coast (%s), snapped to the engraved line, from Little River past Cape Fear to Bogue; fitted to today\'s coast '
+                 '(Natural Earth, S136), a median 0.4 km from it. %s Inlets, islands and the sounds behind them are not traced yet: the sea is closed across the inlets and the mouth of the Cape Fear. Cut at the sheet\'s edge, 77 W.' % (NCSCAN, fit))
+    elif kind == 'road':
+        p.update(confidence='low', precision_m=4000, basis='Traced along Mouzon\'s double line (%s): snapped by program to the gap between the two engraved lines, within about 2 km of the '
+                 'hand-picked line, and checked by eye on overlays. %s Good to about 1-2 km at the towns that hold the fit, 3-5 km between them. Named by the places Mouzon has it join; '
+                 'which armies used it is for the playbacks to show, from their sources.' % (NCSCAN, fit))
+        if f.get('cls'): p['class'] = f['cls']
+        if f.get('extends'): p['basis'] += ' It carries on a South Carolina road from the point where that road ends.'
+    elif kind == 'boundary':
+        p.update(confidence='low', precision_m=3000, basis='Mouzon\'s line between Virginia and North Carolina (%s), found from the red he colours it, column by column; fitted to today\'s state line, '
+                 'which follows the line run in 1728 and carried west in 1749 (Natural Earth, S136), within about 1 km. Cut at the sheet\'s edge, 77 W.' % NCSCAN)
+    FEATURES.append({'type': 'Feature', 'properties': p, 'geometry': {'type': 'LineString', 'coordinates': coords}})
+
+
+JOINS = {}   # North Carolina lines joined straight across a fold of the fit: km of the straight join
+
+
+def north_carolina(built):
+    """The North Carolina lines: their own features, after South Carolina's. `built`: {SC feature id: its coordinates as written}."""
+    def sc_line(link):   # the built South Carolina feature that `link` (a traced id) became
+        fam = (link.rsplit('-', 1)[0] if link[-1].isdigit() else link).upper()
+        c = [v for k, v in built.items() if k in ('SC75-' + link.upper(), 'SC75-' + fam)]
+        return c[0] if c else None
+    out = {}
+    for fid, f in NC.items():
+        ll = ground(off_seams(f['line'], NCSEAMS) if f['kind'] in ('road', 'river') else f['line'])
+        if f['kind'] in ('river', 'shore'): ll = smooth(ll)
+        if f['kind'] == 'road': ll = no_reversals(ll)
+        link = f.get('joins') or f.get('extends')
+        L = sc_line(link) if link else None
+        if link: assert L, 'no built South Carolina line for %s (%s)' % (link, fid)
+        if L:   # the end nearer the South Carolina line goes onto it: on the point nearest it, or across a seam (up to 8 km) to it
+            (q0, d0), (q1, d1) = nearest_on(ll[0], L), nearest_on(ll[-1], L)
+            end, q, d = (0, q0, d0) if d0 <= d1 else (-1, q1, d1)
+            q = [round(q[0], 6), round(q[1], 6)]; assert d < 8.0, '%s is %.1f km from %s' % (fid, d, link)
+            if d < 1.0: ll[end] = q
+            else: ll = [q] + ll if end == 0 else ll + [q]
+            # Where the 26 Nov fit folds the ground at a South Carolina end (the Catawba at the 1772 line), the first km of the North Carolina line
+            # run back on themselves: they are cut, up to the last point where the line turns back in its first 30 km, and the line joins the end straight.
+            ll = ll if end == 0 else ll[::-1]
+            run, last = 0.0, None
+            for i in range(1, len(ll) - 1):
+                run += km(ll[i - 1], ll[i])
+                if run > 30: break
+                if turn_back(ll[i - 1], ll[i], ll[i + 1]): last = i
+            if last:
+                j = last + 1
+                while j < len(ll) - 1 and turn_back(ll[0], ll[j], ll[j + 1]): j += 1
+                JOINS[fid] = round(km(ll[0], ll[j]), 1); ll = [ll[0]] + ll[j:]
+            ll = ll if end == 0 else ll[::-1]
+        out[fid] = ll
+    # roads that Mouzon has meet a North Carolina road or town meet it on the ground: an end within 1.5 km of another line's point goes to it
+    roads = {k: v for k, v in out.items() if NC[k]['kind'] == 'road'}
+    for k, ll in roads.items():
+        for end in (0, -1):
+            best = min(((nearest_on(ll[end], l2)) for k2, l2 in roads.items() if k2 != k), key=lambda x: x[1], default=(None, 99))
+            if best[1] < 1.5: ll[end] = [round(best[0][0], 6), round(best[0][1], 6)]
+    for fid, ll in out.items():
+        ll = clip_east(ll) if NC[fid]['kind'] in ('shore', 'boundary', 'river', 'road') else ll
+        if len(ll) >= 2: nc_feat(fid, NC[fid], ll)
+    return out
+
+
 def main():
     shores = {}; roads = {}; rivers = {}
     for fid, f in TR.items():
@@ -271,15 +449,19 @@ def main():
             if len(ids) > 1: FEATURES[-1]['properties']['basis'] += (' Traced in %d pieces, one on each mounted section of the scan; joined here across the strip where the sections meet, '
                                                                       'which the scan does not show (a straight line of 2-6 km).' % len(ids))
     for fid, ll in join_roads(roads).items(): feat(fid, TR[fid], no_reversals(ll))
+    built = {f['properties']['id']: f['geometry']['coordinates'] for f in FEATURES if f['geometry']['type'] == 'LineString'}
+    nc = north_carolina(built)   # since 27 Nov 2026
+    virginia(nc)   # since 27 Nov 2026, evening
+    ncshore = clip_east(nc['shore-nc'])
     # the sea: the traced coast from the Savannah to the North Carolina line, closed offshore. The sounds behind the coast are not sea here.
     ring = shores['shore-sw-1'] + shores['shore-sw-2'] + shores['shore-central-1'] + shores['shore-central-2'] + shores['shore-ne']
-    ring = [[-80.75, 31.95]] + ring + [[-78.45, 33.80], [-78.45, 31.95], [-80.75, 31.95]]
+    ring = [[-80.75, 31.95]] + ring + ncshore[1:] + [[SHEET[2], 31.95], [-80.75, 31.95]]   # since 27 Nov 2026 along the North Carolina coast to the sheet's edge
     FEATURES.append({'type': 'Feature', 'properties': {'id': 'SC75-SEA', 'layer': 'coast', 'kind': 'sea', 'name': 'The Atlantic', 'desc': 'The sea, inside the traced coast',
                      'from': '1775-01-01', 'to': '1781-12-31', 'source_id': 'S135', 'method': 'interpolated', 'confidence': 'low', 'precision_m': 1500,
-                     'basis': 'Closed offshore from the traced coast; the inlets and sounds behind the coast are left as land until they are traced.', 'review': 'Needs review'},
+                     'basis': 'Closed offshore from the traced coast, from the Savannah to the sheet\'s east edge at 77 W; the inlets and sounds behind the coast are left as land until they are traced.', 'review': 'Needs review'},
                      'geometry': {'type': 'Polygon', 'coordinates': [ring]}})
-    G = {'type': 'FeatureCollection', 'name': 'sc-1775', 'title': 'South Carolina, 1775-1781: reconstructed base map (WarMapper)',
-         'note': 'A WarMapper reconstruction, not a period map: the main lines of Mouzon\'s map of 1775, fitted to the ground. See pipeline/recon/sc_1775.py. [longitude, latitude], WGS 84.',
+    G = {'type': 'FeatureCollection', 'name': 'sc-1775', 'title': 'The Carolinas, 1775-1781: reconstructed base map (WarMapper)',
+         'note': 'A WarMapper reconstruction, not a period map: the main lines of Mouzon\'s map of 1775, fitted to the ground; South Carolina since 25 Nov 2026, North Carolina to 77 W since 27 Nov 2026. See pipeline/recon/sc_1775.py. [longitude, latitude], WGS 84.',
          'sheet': SHEET, 'features': FEATURES}
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     json.dump(G, open(OUT, 'w'), indent=0)
