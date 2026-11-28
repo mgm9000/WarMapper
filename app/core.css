@@ -415,3 +415,12 @@ details.umd>summary{font-size:13.5px;font-weight:600;color:var(--fg)}
 .tl .ev.ori i.cap{width:6px;height:6px;margin:-3px 0 0 -3px}
 .tl .ev.ori.on i{outline:2px solid var(--fg);outline-offset:1px}
 @media (max-width:860px){ .tl .ev.ori{font-size:0;width:12px} .orkey{font-size:11px;max-width:200px} }
+
+/* 27 Nov 2026 (the South Carolina storyline): the bridge at the end of a closing or end summary, the end summary of a battle, Next on the map,
+   and a force beyond the edge of the screen */
+.bridge{margin:12px 0;padding:4px 0 4px 11px;border-left:3px solid var(--accent);color:var(--fg)}
+.endsum{margin:0 0 12px;padding:0 0 10px;border-bottom:1px solid var(--line)} .endsum h2{margin-top:2px}
+.nextb{bottom:22px} .nextb[hidden]{display:none}
+@media (max-width:860px){ .nextb{bottom:96px} }   /* clear of the date box on a phone */
+.wm-playing .nextb{display:none}
+.oedge text{pointer-events:none}

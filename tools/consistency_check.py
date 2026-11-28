@@ -249,10 +249,61 @@ def orientation_rules(b, fail, warn):
     y0, y1 = int(b['time']['start'][:4]), int(b['time']['end'][:4]); S = b.get('summaries', [])
     have = {y for x in S if x['kind'] == 'year' for y in range(int(x['from'][:4]), int(x['to'][:4]) + 1)}
     miss = [str(y) for y in range(y0, y1 + 1) if y not in have]
-    if miss: warn.append('SR-28 summaries: no year summary for %s' % ', '.join(miss))
+    if miss and not any(x['kind'] == 'leg' for x in S): warn.append('SR-28 summaries: no year summary for %s' % ', '.join(miss))
     if not any(x['kind'] == 'end' for x in S): warn.append('SR-28 summaries: no closing summary (kind end)')
+    if any(x['kind'] == 'end' and not x.get('bridge') for x in S) and any(x['kind'] == 'next' for x in b.get('links', [])):
+        warn.append('Storyline: the closing summary has no bridge to what comes next (Summaries, column bridge)')
+    movement_rules(b, fail, warn)
     for k, s in (b.get('sources') or {}).items():   # SR-22
         if not s.get('rights'): warn.append('SR-22 rights: source %s has no rights recorded' % k)
+
+
+def metres(p, q):
+    """Distance in metres between two [lon, lat] points (an equirectangular approximation: good to well under 1% at these distances)."""
+    import math
+    k = math.cos(math.radians((p[1] + q[1]) / 2))
+    return math.hypot((p[0] - q[0]) * 111320 * k, (p[1] - q[1]) * 110574)
+
+
+def movement_rules(b, fail, warn):
+    """The connection rule (27 Nov 2026, Morgan: "each movement should connect in timing and location with the actions/events currently on
+    the map"). In an orientation every force's symbol (a track) is a movement or a standing pair at a clash, and:
+      - it is tied to at least one event: an event names one of its waypoints (Events pos_ids);
+      - that waypoint is at the event's clash, or at the place whose change of hands the event is: no further from it than the larger of
+        the two precision_m;
+      - and the waypoint's dates overlap the event's (compared by the day).
+    A waypoint at a place with a record of who held it, held then by the force's enemy with no event tying the two, is a warning: the
+    arrival must not contradict the Control row (show Morgan; change neither quietly)."""
+    steps = {s['id']: (tr, s) for tr in b.get('tracks', []) for s in tr['steps']}
+    side = {u['id']: u['side'] for u in b.get('units', [])}; code = {sd['id']: sd['code'] for sd in b.get('sides', [])}
+    clash = {c['event']: c for c in b.get('clashes', [])}; changed = {}
+    for p in b.get('places', []):
+        for h in p.get('control', []):
+            if h.get('event'): changed[h['event']] = p
+    centre = lambda g: [sum(q[0] for q in g) / len(g), sum(q[1] for q in g) / len(g)]
+    tied = {}
+    for e in b['events']:
+        for sid in e.get('steps', []):
+            if sid not in steps: continue
+            tr, st = steps[sid]; tied.setdefault(tr['id'], []).append(e['id'])
+            target = clash.get(e['id']) or changed.get(e['id'])
+            if not target: fail.append('Connection rule: event %s names %s\'s waypoint %s but has no clash or change of hands on the map' % (e['id'], tr['id'], sid)); continue
+            if not st.get('at'): fail.append('Connection rule: %s waypoint %s (event %s) has no place' % (tr['id'], sid, e['id'])); continue
+            d = metres(centre(st['at']), target['at']); lim = max((st.get('location') or {}).get('precision_m') or 0, (target.get('location') or {}).get('precision_m') or 0)
+            if d > lim: fail.append('Connection rule: %s waypoint %s is %.1f km from %s (event %s), more than the precision of either (%.1f km)' % (tr['id'], sid, d / 1000, target['id'], e['id'], lim / 1000))
+            a, z = st['show'][0][:10], st['show'][1][:10]; ea, ez = e['start'][:10], e['end'][:10]
+            if z < ea or a > ez: fail.append('Connection rule: %s waypoint %s (%s to %s) is not on the dates of event %s (%s to %s)' % (tr['id'], sid, a, z, e['id'], ea, ez))
+    for tr in b.get('tracks', []):
+        if tr['id'] not in tied: fail.append('Connection rule: %s (%s) is tied to no event on the map (Events pos_ids)' % (tr['id'], tr.get('label') or tr['unit']))
+        me = code.get(side.get(tr['unit']))
+        for st in tr['steps']:
+            if not st.get('at') or st['id'] in {s for e in b['events'] for s in e.get('steps', [])}: continue
+            for p in b.get('places', []):
+                lim = max((st.get('location') or {}).get('precision_m') or 0, (p.get('location') or {}).get('precision_m') or 0)
+                if metres(centre(st['at']), p['at']) > lim: continue
+                held = [h for h in p.get('control', []) if (h.get('from') or '') <= st['show'][0][:10]]
+                if held and held[-1]['held_by'] not in (me, 'contested'):
+                    warn.append('Connection rule (control): %s waypoint %s is at %s on %s, which the record has held by %s then; check it against the Control row' % (tr['id'], st['id'], p['name'], st['show'][0][:10], held[-1]['held_by']))
 
 
 def main(argv):

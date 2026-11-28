@@ -78,7 +78,7 @@ WM.battle=function(raw){
   /* sides, units, tracks */
   B.sides={}; raw.sides.forEach(function(s){B.sides[s.id]=s});
   B.units={}; raw.units.forEach(function(u){B.units[u.id]=u});
-  var BR={infantry:'inf',cavalry:'cav',artillery:'art',naval:'nav'};
+  var BR={infantry:'inf',cavalry:'cav',artillery:'art',naval:'nav',dragoons:'drg'};   // dragoons: 27 Nov 2026
   function step(s){var loc=s.location||{},g=s.at?s.at.map(B.fromLL):null,mid=null;
     if(s.at){var n=s.at.length,i=n>>1;mid=(n%2)?s.at[i]:[(s.at[i-1][0]+s.at[i][0])/2,(s.at[i-1][1]+s.at[i][1])/2]}
     return {id:s.id,t0:B.time(s.show[0]),t1:B.time(s.show[1]),ts:B.rangeText(s.start),te:B.rangeText(s.end),open:s.end[1]==null?1:0,
@@ -86,7 +86,7 @@ WM.battle=function(raw){
       act:s.activity||'',place:s.place||'',say:s.quote||'',method:s.method,oc:s.confidence,tb:s.time_basis||'',
       basis:loc.basis||'',cb:loc.basis||(g?'':'No position on record'),cs:loc.source||'none',cc:loc.confidence||'',prec:loc.precision_m||null,
       pl:(loc.places||[]).map(function(p){return [p.name||'',p.today||'',p.source,p.precision_m]}),
-      src:(s.sources||[]).join('; '),notes:s.notes||'',status:s.review||'',bat:s.battle||'',virtual:!!s.virtual,shared:!!s.shared,along:!!s.along,march:!!s.march,
+      src:(s.sources||[]).join('; '),notes:s.notes||'',status:s.review||'',bat:s.battle||'',virtual:!!s.virtual,shared:!!s.shared,along:!!s.along,march:!!s.march,co:s.callout||'',vb:s.via_basis||'',
       lat:mid?+mid[1].toFixed(5):null,lon:mid?+mid[0].toFixed(5):null}}
   B.tracks=raw.tracks.map(function(tr){var u=B.units[tr.unit],as=u.assignments||[],a0=as[0]||{};
     return {id:tr.id,unit:tr.unit,name:u.name,label:tr.label||u.label,side:B.sides[u.side].code,nation:u.nation||'',ech:tr.echelon||u.echelon,branch:BR[u.branch]||'inf',
@@ -99,7 +99,7 @@ WM.battle=function(raw){
   B.events=(raw.events||[]).map(function(e){return {id:e.id,t:B.time(e.at),t0:B.time(e.start),t1:B.time(e.end),name:e.label||e.name,full:e.name,text:e.text,quiet:!!e.quiet,steps:e.steps||[]}});   // steps: the position rows the event rests on (BP-32)
   B.eventAt=function(t){var p=null;B.events.forEach(function(e){if(t>=e.t)p=e});return p};   // the latest event to have begun
   /* names on the map: t text, s the other name (the period's, or today's), p place, a angle, l level (0 shows first), k kind, e placed only roughly */
-  B.labels=(raw.labels||[]).map(function(l){return {t:l.text,s:l.alt||'',p:B.fromLL(l.at),a:l.angle||0,l:l.level||0,k:l.kind,e:l.approximate?1:0,show:l.show||'current'}});
+  B.labels=(raw.labels||[]).map(function(l){return {t:l.text,s:l.alt||'',p:B.fromLL(l.at),a:l.angle||0,l:l.level||0,k:l.kind,e:l.approximate?1:0,show:l.show||'current',rc:l.recon||null}});
   /* period maps. One laid on the ground has, for each picture, its four corners (ll) and the box they span in the frame;
      one that is not to scale (own) is a picture with its own pixel grid, and steps carry positions on it (k.on[map id]). */
   B.maps={}; B.mapList=(raw.maps||[]).map(function(m){
