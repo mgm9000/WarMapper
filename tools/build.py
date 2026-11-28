@@ -143,6 +143,32 @@ def validate_course(c, cdir):
                     assert any(x['kind'] == 'previous' and x['playback'] == pa for x in lb), 'chapter %s: %s does not lead back to %s' % (ch['id'], pb, pa)
         ins = [k for ch in e.get('chapters', []) for k in ch['order']]
         assert len(ins) == len(set(ins)), '%s: a slot is in two chapters' % e['id']
+        for ch in e.get('chapters', []):   # a chapter marked "gate": the storyline gate (27 Nov 2026)
+            if ch.get('gate'):
+                bad = chapter_gate(ch, own, lambda pb: json.load(open(os.path.join(ROOT, 'playbacks', pb, 'battle.json'), encoding='utf-8')), c['id'])
+                assert not bad, 'chapter %s, the storyline gate:\n  %s' % (ch['id'], '\n  '.join(bad))
+
+
+def chapter_gate(ch, own, load, course):
+    """The storyline gate (27 Nov 2026, the South Carolina storyline: Morgan, "at the end of 1a to 1d, there should be a summary and have the
+    user click 'next' to move to the next section"). For a chapter marked "gate": true in course.json, every slot has its playback built;
+    every playback ends with an end summary (Summaries kind end) and a bridge (its column bridge); each leads on to the next by a Next link
+    and the next leads back; the last leads on to the course page. Returns the problems found, as a list of lines."""
+    bad = []; order = ch['order']; pbs = [own[k].get('playback') for k in order]
+    for k, pb in zip(order, pbs):
+        if not pb: bad.append('%s: no playback built yet' % k)
+    if bad: return bad
+    files = {pb: load(pb) for pb in pbs}
+    for pb in pbs:
+        end = [x for x in files[pb].get('summaries', []) if x.get('kind') == 'end']
+        if not end: bad.append('%s: no end summary (Summaries, kind end)' % pb)
+        elif not end[0].get('bridge'): bad.append('%s: its end summary has no bridge (Summaries, column bridge)' % pb)
+    for a, b in zip(pbs, pbs[1:]):
+        if not any(x['kind'] == 'next' and x.get('playback') == b for x in files[a].get('links', [])): bad.append('%s does not lead on to %s (Next links)' % (a, b))
+        if not any(x['kind'] == 'previous' and x.get('playback') == a for x in files[b].get('links', [])): bad.append('%s does not lead back to %s (Next links)' % (b, a))
+    if not any(x['kind'] == 'next' and x.get('course') == course for x in files[pbs[-1]].get('links', [])):
+        bad.append('%s, the last of the chapter, does not lead on to the course page (Next links: to_playback course:%s)' % (pbs[-1], course))
+    return bad
 
 
 def render_reading(r):

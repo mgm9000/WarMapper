@@ -60,6 +60,7 @@ No rule was invented. Where no reason was recorded the entry says so.
 | SR-29 Orientations: control of places, dated and sourced | N | N | N | N | N | N | N | player; check |
 | SR-30 Orientations: month by month, busy months slower, one stop at the end | N | N | N | N | N | N | N | preset (orientation); player; check |
 | SR-31 Reconstructed maps follow the clock (dated lines) | N | N | N | A | N | A | A | player |
+| SR-36 A regional map under a battle in a chapter (option B) | N | N | N | N | N | A* | A* | player; exporter (format check) |
 
 Since 25 Nov 2026 there is a seventh kind of playback, the **orientation** (clashes and places, no units), built for the HIST 340 South
 Carolina chapter and tried so far only on made-up rows (`tests/orientation/make_demo.py`). No orientation is on the site yet, so it has no
@@ -398,6 +399,70 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
 - **Also decided in Session 4 (South Carolina only):** the Cherokee boundary as Mouzon draws it, to the cession of 20 May 1777, and no inferred
   settlement line; the close-up ink of a Charleston siege plan, like Manila's 1898 plan, to be added after Morgan has judged the look of the pilot.
 
+## SR-32 Orientations: forces on the move, one symbol a side
+
+- **Decided:** 26 and 27 Nov 2026 (Morgan, 26 Nov: "I don't need to see subordinate units for these movements. Just one unit symbol per side
+  for each of the movements/engagements"; 27 Nov, Session 1 of `claude/sc-storyline-prompt.md`, the design approved the same day).
+- **Rule:** a movement in an orientation is one symbol per side, the force as the sources name it, its commander as the label: the battles'
+  unit frame in the side's colour with its branch mark and an army or detachment mark, so it is never taken for a clash. Mounted riflemen who
+  fought on foot are **Dragoons** (Morgan's words: "use the word 'Dragoons'. Use a infantry cross and inside the rectangle a small horse
+  shoe"). While a force moves the clock runs a day at a time (0.3 s a day) and the date shows; months again once no force moves (five more
+  days first, so the route can fade). All forces on the move are drawn **at full strength** (not the battles' 70%, SR-11). The route follows
+  Mouzon's road where a source names the road, otherwise a straight dashed line; both `inferred` and `low` unless a source describes the
+  road. When a movement reaches its fight in 1a the symbol leaves, the route fades and the clash stays; in a campaign (1c) the armies stay on
+  the map. A force beyond the screen shows at its edge with its name and where it set out from; no new events are added for its start.
+  A reveal year with a force on the move plays its months, and a clash a force marches to comes on as it is reached; the year's reveal follows.
+- **Scope:** every orientation (Morgan, 27 Nov 2026: "Every orientation" for the symbol, Dragoons, routes, full strength and the edge).
+  The choice of movements for South Carolina (M1 to M8, M3 Waxhaws only with a route, M7 as standing pairs) is this chapter's.
+- **Built in:** shared player; preset `orientation` (`event_dim` 1, `orientation.move_day_seconds` 0.3, `move_tail_days` 5, `trails.fade_after`
+  2 and `fade_over` 5 days); exporter (`via_basis`, Routes `along_recon`, a straight route for a force with none on record); format (`dragoons`).
+- **Status:** built and tested on made-up rows (`tests/orientation/make_demo.py`). South Carolina's movements come in Sessions 3 and 5.
+- **Carry-forward:** SR-06, SR-07 and SR-16 (arrows ahead of long moves, their reach, routes taken) now reach orientations through the forces
+  on the move, at campaign scale (arrows only for moves over 20 km); SR-11's 70% is replaced in orientations by full strength.
+
+## SR-33 The connection rule: every movement meets an event on the map
+
+- **Decided:** 26 Nov 2026 (Morgan: "Each movement should connect in timing and location with the actions/events currently on the map");
+  made a check 27 Nov 2026.
+- **Rule:** every force on the move is tied to at least one event: an event names one of its waypoints (Events `pos_ids`); that waypoint is
+  at the event's clash, or at the place whose change of hands the event is, within the larger of the two `precision_m`; and its dates overlap
+  the event's. Waypoints are steps, not new events. Where a waypoint reaches a place with a Control row held then by the other side and no event
+  ties them, the arrival must not contradict the row: shown to Morgan, neither changed quietly.
+- **Scope:** every orientation. **Enforced by:** check (`movement_rules` in `tools/consistency_check.py`: fails; the control case warns). The
+  made-up test moves a waypoint 48 km off its fight and the check catches it.
+
+## SR-34 Campaign orientations play in legs
+
+- **Decided:** 27 Nov 2026 (Morgan: "for 1c use text callouts and symbols like you used for 1a"; the six legs of 1c; the design approved
+  with 0.5 s a day).
+- **Rule:** a campaign orientation plays in named stretches of days (Summaries kind `leg`), 0.5 s a day, each ending in a stop with a bubble on
+  each of its clashes and on each force whose waypoint carries a callout (3 s, 5 s with three or more), then runs on by itself (SR-30: no
+  Continue). The pane shows the leg's summary and its events; back and forward move a leg. At its end the clashes fade and the places fly
+  their flags (SR-28), then the closing summary, the bridge and Next.
+- **Scope:** every orientation that has legs. **Built in:** player; preset `orientation.legs.day_seconds`; format (`leg`, step `callout`).
+- **Status:** built and tested on made-up rows; 1c's legs come in Sessions 4 and 5.
+
+## SR-35 The storyline gate: a summary, a bridge and Next at the end of every section
+
+- **Decided:** 27 Nov 2026 (Morgan: "At the end of 1a to 1d, there should be a summary and have the user click 'next' to move to the next
+  section of the campaign"; Next "on the map and in the pane").
+- **Rule:** every playback in a chapter, battles included, ends with an end summary whose last paragraph (the bridge, "What came next")
+  leads on to the next section; a Next button shows on the map and in the pane once the clock reaches the end; the next playback's opening
+  picks up the thread. The last of a chapter leads back to its course page. The transitions are these, not extra screens.
+- **Scope:** every course chapter. **Enforced by:** player; `tools/build.py` for a chapter marked `"gate": true` (every playback built, an
+  end summary with a bridge, linked both ways, the last to the course page); the South Carolina chapter is marked in Session 5.
+
+## SR-36 A regional map under a battle (option B)
+
+- **Decided:** 27 Nov 2026 (Morgan: "Maps should be able to zoom out so the viewer can see a large scale. For this work it should include South
+  Carolina, North Carolina and Southern Virginia"; he chose option B after seeing the prototype on Cowpens; the window 84.9° W to 75.5° W,
+  30.9° N to 37.6° N).
+- **Rule:** a battle in a chapter with a regional map keeps its own reconstructed battlefield; under it lies the regional map, to which the
+  reader can zoom out. The battlefield fades in as the reader closes on the field, and each side is one symbol when zoomed out. Arriving from
+  Next, the battle opens on the region and eases in (SR-02, SR-04).
+- **Scope:** battles in a chapter that has a regional map (Cowpens and Guilford Courthouse: A*, the data comes with the regional map in
+  Session 2). **Built in:** player (`bases[].region`); exporter (a reconstruction another playback owns, and its names); format check.
+
 ## Orientations: which rules reach them (carry-forward check of 25 Nov 2026)
 
 Checked at the start of Session 1 of `claude/sc-orientation-prompt.md`, and shown to Morgan before his answers.
@@ -421,6 +486,29 @@ Checked at the start of Session 1 of `claude/sc-orientation-prompt.md`, and show
 - Model rule: Sonnet default; Opus or Fable before changing the format, the workbook schema or shared playback rules, or setting a position from conflicting sources; after two failed fixes, move up a tier. Project instructions.
 - Morgan's folder on the Mac is `Documents/Starfishient/WarMapper`; the workbooks are in the repo under `data/WarMapper battle data/`.
 
+## Answers from Morgan (27 Nov 2026): the South Carolina storyline
+
+Session 1 of `claude/sc-storyline-prompt.md` (branch `sc-storyline-design`). Four batches, the prototype of the regional map, then the design
+(`claude/sc-storyline-session1-design.md` in the Project), approved: "Approve, build it".
+
+- The storyline: four sections (1a the orientation to 17 Jan 1781, 1b Cowpens, 1c Greene and Cornwallis to Guilford, 1d Guilford
+  Courthouse); the transitions are the bridge, Next and the next page's opening. Scope: this chapter.
+- 1a's movements: M1, M2, M4, M5, M6 and M8 moving; M3 Waxhaws with a route if the sources give one; M7 as standing pairs. Scope: this chapter.
+- Pacing: a day at a time inside a movement, 0.3 s a day. When it ends: the symbol leaves, the route fades, the clash stays. The symbol:
+  the unit frame with an army or detachment mark. The Overmountain Men: "Dragoons", the infantry cross with a horseshoe inside. Routes:
+  along Mouzon's road where named. Overlaps: all at full strength. Entering: from the edge, with where they came from. Scope: every
+  orientation ("Every orientation", asked for these together) (SR-32).
+- 1c: Greene's army (Morgan's detachment until 30 Jan) and Cornwallis's army; Williams's light corps a second symbol, 8 to 14 Feb; the six
+  legs; Cowpens and Guilford as markers on 1c; control places Cheraw, Salisbury, Hillsborough, Charlotte and Halifax. Scope: 1c.
+- Next: on the map and in the pane; Guilford's returns to the course page. Scope: every chapter (SR-35).
+- The zoom-out: option B, the regional map under the battles; the window 84.9° W to 75.5° W, 30.9° N to 37.6° N (SR-36).
+- Flags at the end: every orientation, at its closing stop (the open question of 26 Nov, closed).
+- Guilford Courthouse: all three choices confirmed (every position low; the retreating Continentals one symbol; the empty margin south of
+  New Garden). The four Cowpens choices "ask again": far places at the edge (now SR-32's edge), other maps in the i button (apply), broken units
+  off the map (not applicable), a column as one symbol (now one symbol per side).
+- Priority of the five new requirements (movement symbols, the connection rule, legs, the storyline gate, the regional base): all P1.
+- Not asked, stated in the design: SR-05's day pauses do not reach orientations (the legs stop by themselves; SR-30).
+
 ## Answers from Morgan (26 Nov 2026): Guilford Courthouse
 
 Session 4 of `claude/hist-340-build-prompt.md` (branch `guilford-courthouse`). Asked before building, as the carry-forward check requires.
@@ -441,7 +529,7 @@ Session 4 of `claude/hist-340-build-prompt.md` (branch `guilford-courthouse`). A
 - Sources: Morgan downloaded the copies himself (`Historical Info/History 340/Guilford Courthouse`); Babits and Howard (2009) and Baker
   (1981) could not be had and were not read.
 
-Decisions the session made and Morgan has not yet confirmed (each is easy to change):
+Decisions the session made, confirmed by Morgan on 27 Nov 2026 (Session 1 of `claude/sc-storyline-prompt.md`):
 - Every Guilford position is rated low (the plans are good to about 75 m on today's ground, and none of the accounts fixes a place closer).
 - The retreating Continentals are shown as one symbol on the Reedy Fork road ("a column on the march is one symbol", carried to the retreat).
 - The reconstructed sheet has an empty margin south of New Garden, so its title does not lie on the morning fights.
@@ -506,7 +594,9 @@ are controlled by British with a small Union Jack wavy flag, or the Americans wi
 - Later the same day: "Fade the action symbol more. Make the flags 10% bigger." The clashes now fade to 40% (`dim` 0.4, South Carolina's
   own value, not the battles' 70%) and the flags are drawn 10% larger (`scale` 1.1).
 - Scope: South Carolina only for now (Morgan: "for now do this just for South Carolina but keep it as an open question").
-- **Open question:** should every orientation fade its clashes and fly flags at the end of its last full year?
+- **Open question:** should every orientation fade its clashes and fly flags at the end of its last full year? **Answered 27 Nov 2026:
+  every orientation, at its closing stop** (South Carolina keeps its stop at the end of 1780). Built in the preset `orientation` (clashes to
+  40%, flags 10% larger); a playback names its sides' flags.
 
 ## Answers from Morgan (24 Nov 2026)
 

@@ -272,12 +272,14 @@ def in_order(o):
     return o
 
 
-def reconstructions(name, W):
+def reconstructions(name, W, shared=()):
     """Reconstructed base maps of a playback (Reconstructions and Recon layers sheets, and the GeoJSON each names): maps WarMapper draws
     itself from traced lines. Every feature keeps its own source, method, confidence and dates; a layer row gives the layer its title and
-    the link to the original map."""
+    the link to the original map. `shared` (since 27 Nov 2026): ids of reconstructions another playback of the war owns that this one's
+    bases name (a regional map under a battlefield): they come first, so the page draws them under the playback's own."""
     out = []
-    for r in [r for r in W.get('Reconstructions', []) if r.get('playback_id') == name]:
+    rows = [r for r in W.get('Reconstructions', []) if r['recon_id'] in shared and r.get('playback_id') != name] + [r for r in W.get('Reconstructions', []) if r.get('playback_id') == name]
+    for r in rows:
         rid = r['recon_id']; G = json.load(open(os.path.join(ROOT, r['file']), encoding='utf-8'))
         rows = sorted([l for l in W.get('Recon layers', []) if l['recon_id'] == rid], key=lambda l: l.get('order') or 0)
         layers = [{'id': l['layer_id'], 'title': l['title'], 'kind': l['kind'], 'source': text(l.get('source_id')), 'link': text(l.get('link')), 'link_label': text(l.get('link_label')),
@@ -301,6 +303,38 @@ def reconstructions(name, W):
         out.append({'id': rid, 'title': r['title'], 'label': text(r.get('label')), 'about': text(r.get('about')), 'note': text(r.get('notes')), 'credit': text(r.get('credit')), 'style': text(r.get('style')),
                     'made': when(r.get('made')), 'review': text(r.get('review_status')), 'file': r['file'], 'sheet': G.get('sheet'), 'layers': layers, 'features': feats})
     return out
+
+
+def recon_lines(W, ids):
+    """{feature id: [[lon, lat], ...]}: the lines of the named reconstructions' GeoJSON, as traced (a route can follow one: Routes along_recon)."""
+    out = {}
+    for r in W.get('Reconstructions', []):
+        if r['recon_id'] not in ids: continue
+        for f in json.load(open(os.path.join(ROOT, r['file']), encoding='utf-8'))['features']:
+            g = f['geometry']
+            if g['type'] == 'LineString': out[f['properties']['id']] = g['coordinates']
+            elif g['type'] == 'MultiLineString': out[f['properties']['id']] = max(g['coordinates'], key=len)
+    return out
+
+
+def along(lines, ids, a, b, route_id):
+    """A route cut from traced roads (27 Nov 2026): the roads named, joined end to end in the order given, from the point nearest `a` to the
+    point nearest `b`, with `a` and `b` themselves at its ends. Points are [lon, lat]."""
+    path = []
+    for fid in ids:
+        assert fid in lines, 'Routes %s: along_recon names %r, which is not a line of the playback\'s reconstructions' % (route_id, fid)
+        L = [list(map(float, q[:2])) for q in lines[fid]]
+        if path:
+            d = lambda q: (q[0] - path[-1][0]) ** 2 + (q[1] - path[-1][1]) ** 2
+            if d(L[-1]) < d(L[0]): L = L[::-1]
+        elif len(ids) == 1:
+            d = lambda q: (q[0] - a[0]) ** 2 + (q[1] - a[1]) ** 2
+            if d(L[-1]) < d(L[0]): L = L[::-1]
+        path += L[1:] if path and L[0] == path[-1] else L
+    near = lambda p: min(range(len(path)), key=lambda i: (path[i][0] - p[0]) ** 2 + (path[i][1] - p[1]) ** 2)
+    i, j = near(a), near(b)
+    cut = path[i:j + 1] if i <= j else path[j:i + 1][::-1]
+    return [bf.ll(a[1], a[0])] + [bf.ll(q[1], q[0]) for q in cut] + [bf.ll(b[1], b[0])]
 
 
 def links(pb, W):
@@ -328,6 +362,15 @@ def links(pb, W):
     # the next one on its own opening view when empty (no `at`), the one before at its end.
     for r in W.get('Next links', []):
         a, b = text(r.get('from_playback')), text(r.get('to_playback'))
+        if b and b.startswith('course:'):   # the last of a chapter leads back to its course page (27 Nov 2026): to_playback "course:<course id>"
+            assert a in rows, 'Next links %s: %s must be a row on Playbacks' % (r['link_id'], a)
+            if pb['playback_id'] == a:
+                cid = b.split(':', 1)[1]; cf = os.path.join(ROOT, 'courses', cid, 'course.json')
+                assert os.path.exists(cf), 'Next links %s: no course %s (courses/%s/course.json)' % (r['link_id'], cid, cid)
+                ch = text(r.get('chapter'))
+                out.append({'kind': 'next', 'course': cid, 'title': json.load(open(cf, encoding='utf-8')).get('code') or cid, 'label': text(r.get('label')),
+                            'url': '../../courses/%s/index.html%s' % (cid, ('#chapter-' + ch) if ch else ''), 'chapter': ch})
+            continue
         assert a in rows and b in rows, 'Next links %s: %s and %s must both be rows on Playbacks' % (r['link_id'], a, b)
         assert war[camp_of[a]] == war[camp_of[b]], 'Next links %s: %s and %s are not of the same war' % (r['link_id'], a, b)
         assert a != b, 'Next links %s: a playback cannot follow itself' % r['link_id']
@@ -340,7 +383,7 @@ def links(pb, W):
             o = rows[a]; out.append({'kind': 'previous', 'playback': a, 'title': o['title'], 'label': text(r.get('back_label')), 'from': when(o['time_start']),
                                      'to': when(o['time_end']), 'at': when(r.get('back_opens_at')) if not blank(r.get('back_opens_at')) else when(o['time_end']),
                                      'unit': o['time_unit'], 'chapter': text(r.get('chapter'))})
-    out.sort(key=lambda x: (x['kind'], x['from']))
+    out.sort(key=lambda x: (x['kind'], x.get('from') or ''))
     return out
 
 
@@ -408,9 +451,14 @@ def export(pb, W):
                 'march': True if yes(p.get('arrive_at_pace')) else None,
                 'activity': text(p['activity']), 'place': text(p['place_description']), 'quote': text(p['source_wording']), 'method': text(p['position_method']),
                 'confidence': text(p['overall_confidence']), 'time_basis': text(p['time_basis']), 'location': loc, 'sources': bf.ids(p['source_ids']), 'notes': text(p['notes']),
-                'review': text(p['review_status']), 'battle': text(p['battle_id']), 'shared': True if p['unit_id'] != tr['unit_id'] else None}
+                'review': text(p['review_status']), 'battle': text(p['battle_id']), 'shared': True if p['unit_id'] != tr['unit_id'] else None,
+                'callout': text(p.get('callout'))}   # one sentence for a bubble on the symbol at a stop (27 Nov 2026; Positions column callout, optional)
 
     S = resolve(mine(W['Playback settings']), W, {'time_unit': pb['time_unit'], 'extent': [float(pb[k]) for k in ('west', 'south', 'east', 'north')]})
+    own_rc = {r['recon_id'] for r in W.get('Reconstructions', []) if r.get('playback_id') == name}
+    shared_rc = [x['recon'] for x in S.get('bases') or [] if x and x.get('recon') and x['recon'] not in own_rc]   # a regional map another playback owns
+    lines = None; ori = S.get('style') == 'orientation'
+    def centre(g): return [sum(q[0] for q in g) / len(g), sum(q[1] for q in g) / len(g)]
     ARR = S.get('arrival')   # units that come into the battle late are drawn coming up, not appearing
     code = {x['side_id']: x['code'] for x in W['Sides']}; T0 = when(pb['time_start'])
     def parent_of(uid, day):   # who the unit answered to on that day, by its assignment records
@@ -458,7 +506,10 @@ def export(pb, W):
         for a, b in zip(steps, steps[1:]):
             if b['show'][0] < a['show'][1]: a['show'][1] = b['show'][0]          # two rows of one symbol cannot overlap: the earlier one gives way
             r = link.get((a['id'], b['id']))
-            if r and a['at'] and b['at']:
+            if r and a['at'] and b['at'] and not blank(r.get('along_recon')):     # the route follows traced roads of the reconstruction (27 Nov 2026)
+                if lines is None: lines = recon_lines(W, own_rc | set(shared_rc))
+                b['via'] = along(lines, bf.ids(r['along_recon']), centre(a['at']), centre(b['at']), r['route_id']); b['via_basis'] = 'road'
+            elif r and a['at'] and b['at']:
                 b['via'] = way(r)                                                   # the record gives the route between the two rows
                 if text(r.get('kind')) == 'escape': b['leaving'] = True   # Follow lets a unit getting away go off the screen
             elif ((a.get('virtual') and not b.get('shared')) or (a.get('shared') and not b.get('shared'))) and not blank(tr.get('start_route')) and b['at']:   # from the stand-in start, or from the last row it shares   # one route, or several in order ("RT01; RT02"); the points cap the last
@@ -468,6 +519,8 @@ def export(pb, W):
                     if i == len(names) - 1 and not blank(tr.get('start_route_points')): w = w[:int(tr['start_route_points'])]
                     via += w[1:] if via and w and w[0] == via[-1] else w
                 b['via'] = via + [b['at'][0]]
+            elif ori and a['at'] and b['at'] and centre(a['at']) != centre(b['at']):   # an orientation's force with no route on record: a straight line, walked
+                b['via'] = [centre(a['at']), centre(b['at'])]; b['via_basis'] = 'straight'   # steadily over the days between the two rows (drawn dashed: inferred, low)
         placed[tr['unit_id']] = steps
         tracks.append({'id': tr['track_id'], 'unit': tr['unit_id'], 'label': text(tr.get('label')), 'echelon': text(tr.get('echelon')), 'parent': text(tr.get('part_of_track')),
                        'hide_after': True if yes(tr.get('hide_after_last_row')) else None, 'hold_until': when(tr.get('hold_until')), 'loose': True if yes(tr.get('loose')) else None,
@@ -507,11 +560,13 @@ def export(pb, W):
                        'steps': [s for s in bf.ids(e['pos_ids']) if s in used], 'sources': bf.ids(e['source_ids']), 'battle': text(e['battle_id'])})
     events.sort(key=lambda e: e['at'])
     # summaries of a day or a week, shown when the playback stops at the end of one (Summaries sheet; optional)
-    summaries = [{'kind': r['kind'], 'from': when(r['from']), 'to': when(r['to']), 'title': r['title'], 'text': r['text'], 'sources': bf.ids(r.get('source_ids'))}
+    summaries = [{'kind': r['kind'], 'from': when(r['from']), 'to': when(r['to']), 'title': r['title'], 'text': r['text'], 'bridge': text(r.get('bridge')), 'sources': bf.ids(r.get('source_ids'))}
                  for r in W.get('Summaries', []) if r['playback_id'] == pb['playback_id']]
     summaries.sort(key=lambda x: (x['from'], x['kind']))
     labels = [{'text': l['text'], 'alt': text(l.get('other_name')), 'at': bf.ll(l['lat'], l['lon']), 'angle': num(l['angle']) if not blank(l.get('angle')) else None,
-               'level': num(l['level']) if not blank(l.get('level')) else None, 'kind': l['kind'], 'show': text(l.get('show')), 'approximate': True if yes(l.get('approximate')) else None} for l in mine(W['Labels'])]
+               'level': num(l['level']) if not blank(l.get('level')) else None, 'kind': l['kind'], 'show': text(l.get('show')), 'approximate': True if yes(l.get('approximate')) else None,
+               'recon': text(l.get('recon'))}
+              for l in [l for l in W['Labels'] if l.get('playback_id') != name and text(l.get('recon')) in shared_rc] + mine(W['Labels'])]   # a regional map's names come with it (27 Nov 2026)
     maps = {}
     for m in mine(W['Maps']):
         mp = maps.setdefault(m['map_id'], {'id': m['map_id'], 'title': m['title'], 'short': text(m.get('short')), 'label': text(m.get('label')), 'credit': m['credit'], 'source': text(m.get('source_id')),
@@ -549,7 +604,7 @@ def export(pb, W):
     if pl: battle['places'] = pl
     lk = links(pb, W)
     if lk: battle['links'] = lk
-    rc = reconstructions(name, W)
+    rc = reconstructions(name, W, shared_rc)
     if rc: battle['reconstructions'] = rc
     catalogue = {s['source_id']: {'title': s['title'], 'author': text(s.get('author')), 'date': str(s['date']) if not blank(s.get('date')) else None, 'citation': text(s['citation']),
                                   'type': text(s['type']), 'url': text(s['url']), 'rights': text(s.get('rights'))} for s in W['Sources']}

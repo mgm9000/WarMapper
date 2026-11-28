@@ -1,0 +1,92 @@
+{
+"type": "FeatureCollection",
+"sheet": [
+-81.14,
+35.28,
+-81.06,
+35.32
+],
+"features": [
+{
+"type": "Feature",
+"properties": {
+"id": "TF-RD1",
+"layer": "froads",
+"kind": "road",
+"from": "1800-01-01",
+"to": "1810-12-31",
+"source_id": "TS1",
+"method": "traced",
+"confidence": "low",
+"precision_m": 100,
+"basis": "Made up for the storyline test",
+"review": "Test data",
+"class": "main"
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.14,
+35.288
+],
+[
+-81.12,
+35.295
+],
+[
+-81.1,
+35.3
+],
+[
+-81.08,
+35.307
+],
+[
+-81.06,
+35.314
+]
+]
+}
+},
+{
+"type": "Feature",
+"properties": {
+"id": "TF-ST1",
+"layer": "fwater",
+"kind": "stream",
+"from": "1800-01-01",
+"to": "1810-12-31",
+"source_id": "TS1",
+"method": "traced",
+"confidence": "low",
+"precision_m": 100,
+"basis": "Made up for the storyline test",
+"review": "Test data",
+"width_m": 8,
+"min_px": 1
+},
+"geometry": {
+"type": "LineString",
+"coordinates": [
+[
+-81.13,
+35.32
+],
+[
+-81.115,
+35.305
+],
+[
+-81.105,
+35.292
+],
+[
+-81.09,
+35.28
+]
+]
+}
+}
+]
+}

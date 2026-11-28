@@ -7,7 +7,7 @@ import json, os, re
 
 FORMAT = 'warmapper-battle/1'
 ECHELONS = ['army', 'corps', 'division', 'brigade', 'regiment', 'battalion', 'squadrons', 'battery', 'company', 'section', 'detachment', 'headquarters']
-BRANCHES = ['infantry', 'cavalry', 'artillery', 'naval']      # naval (ships: transports, gunboats) added 21 Nov 2026
+BRANCHES = ['infantry', 'cavalry', 'artillery', 'naval', 'dragoons']      # naval (ships: transports, gunboats) added 21 Nov 2026; dragoons (mounted riflemen who fought on foot: the infantry cross with a horseshoe inside) 27 Nov 2026
 METHODS = ['stated', 'inferred', 'interpolated']
 LEVELS = ['high', 'medium', 'low']
 LABEL_KINDS = ['road', 'water', 'area', 'town', 'place', 'wood', 'landmark', 'ridge', 'hill']
@@ -22,7 +22,8 @@ RECON_SHAPES = ['point', 'line', 'area', 'lines', 'areas']
 CLASH_KINDS = ['fight', 'capture']
 PLACE_KINDS = ['city', 'town', 'village', 'fort', 'port', 'post', 'settlement']
 STYLES = ['tactical', 'operational', 'orientation']
-SUMMARY_KINDS = ['day', 'week', 'year', 'end']   # year and end: an orientation's year summaries and its closing one
+SUMMARY_KINDS = ['day', 'week', 'year', 'end', 'leg']   # year and end: an orientation's year summaries and its closing one; leg (27 Nov 2026): a named stretch of a campaign orientation; end, since 27 Nov 2026, for any playback
+VIA_BASES = ['road', 'straight']   # how a step's route was drawn (27 Nov 2026): cut from a traced road of a reconstruction, or a straight line between two places
 ISO = re.compile(r'^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2})?)?$')
 
 
@@ -86,10 +87,14 @@ def validate(b, folder=None):
         if v is None and allow_none: return
         if not (isinstance(v, str) and ISO.match(v)): bad.append('%s: not a date or time: %r' % (where, v))
 
-    def point_ok(p, where):
+    # a regional map under a battlefield (27 Nov 2026): its lines and names lie inside the region's terrain extent, not the battle's
+    BS = (b.get('playback') or {}).get('bases') or []
+    REG = {x.get('recon'): (x.get('terrain') or {}).get('extent') for x in BS if any(y.get('region') == x.get('id') for y in BS) and (x.get('terrain') or {}).get('extent')}
+
+    def point_ok(p, where, box=None):
         if not (isinstance(p, list) and len(p) == 2 and all(isinstance(v, (int, float)) for v in p) and -180 <= p[0] <= 180 and -90 <= p[1] <= 90):
             bad.append('%s: not a [longitude, latitude] point: %r' % (where, p)); return
-        w, s, e, n = b['view']['extent']; mx, my = (e - w) * 2, (n - s) * 2
+        w, s, e, n = box or b['view']['extent']; mx, my = ((e - w) * 2, (n - s) * 2) if not box else (0.5, 0.5)
         if not (w - mx <= p[0] <= e + mx and s - my <= p[1] <= n + my): bad.append('%s: point far outside the battle\'s extent (longitude and latitude swapped?): %r' % (where, p))
 
     need(b, ['format', 'id', 'title', 'time', 'view', 'sides', 'units', 'tracks', 'events', 'sources', 'labels', 'maps', 'base'], 'battle')
@@ -173,6 +178,8 @@ def validate(b, folder=None):
                     last = sh[0]
             for p in st.get('at', []): point_ok(p, x + '.at')
             for p in st.get('via', []): point_ok(p, x + '.via')
+            if st.get('via_basis') is not None and st['via_basis'] not in VIA_BASES: bad.append(x + ': via_basis must be one of %s' % ', '.join(VIA_BASES))
+            if st.get('callout') is not None and not isinstance(st['callout'], str): bad.append(x + ': callout must be text')
             for mid in st.get('on', {}):
                 if mid not in maps: bad.append(x + ': drawn on a map that is not in maps: %r' % mid)
             if st.get('method') not in METHODS: bad.append(x + ': unknown method %r' % st.get('method'))
@@ -196,6 +203,10 @@ def validate(b, folder=None):
             if not (isinstance(im, dict) and im.get('credit')): bad.append('playback base %s: imagery needs a credit' % bs.get('id'))
         if not (bs.get('current') or bs.get('map') or bs.get('series') or im or bs.get('recon')): bad.append('playback base %s: needs "current", "map", "series", "imagery" or "recon"' % bs.get('id'))
         if bs.get('recon') and bs['recon'] not in [r.get('id') for r in b.get('reconstructions', [])]: bad.append('playback base %s: reconstruction %r is not in reconstructions' % (bs.get('id'), bs['recon']))
+        if bs.get('region') is not None:   # a battlefield map with a regional map under it (27 Nov 2026): the region must be a terrain base that runs past its sheet
+            rg = [x for x in P.get('bases', []) if x.get('id') == bs['region']]
+            if not bs.get('recon'): bad.append('playback base %s: region needs a reconstruction ("recon") on this base' % bs.get('id'))
+            if not rg or not rg[0].get('recon') or not (rg[0].get('terrain') or {}).get('extent'): bad.append('playback base %s: region %r must name a base with "recon" and terrain.extent' % (bs.get('id'), bs['region']))
         tr = bs.get('terrain')   # the terrain version of a reconstruction (22 Nov 2026): relief and contours worked out in the page
         if tr is not None:
             if not bs.get('recon'): bad.append('playback base %s: terrain needs a reconstruction ("recon")' % bs.get('id'))
@@ -242,10 +253,16 @@ def validate(b, folder=None):
         w = 'summary %s %s' % (x.get('kind'), x.get('from')); need(x, ['kind', 'from', 'to', 'title', 'text'], w)
         if x.get('kind') not in SUMMARY_KINDS: bad.append(w + ': kind must be one of %s' % ', '.join(SUMMARY_KINDS))
         for sid in x.get('sources', []):
-            if x.get('kind') in ('year', 'end') and sid not in sources: bad.append(w + ': source %r is not in sources' % sid)
+            if x.get('kind') in ('year', 'end', 'leg') and sid not in sources: bad.append(w + ': source %r is not in sources' % sid)
         for k in ('from', 'to'): time_ok(x.get(k), w + '.' + k)
         if isinstance(x.get('from'), str) and isinstance(x.get('to'), str) and x['to'] < x['from']: bad.append(w + ': ends before it starts')
+        if x.get('bridge') is not None and not (isinstance(x['bridge'], str) and x['bridge'].strip()): bad.append(w + ': bridge must be text')
     for x in b.get('links', []):   # optional (BP-34): the campaign this battle is part of, or the battles inside this campaign
+        if x.get('kind') == 'next' and x.get('course'):   # the last of a chapter leads back to its course page (27 Nov 2026)
+            w = 'link to course %s' % x['course']; need(x, ['kind', 'course', 'title', 'url'], w)
+            if x.get('playback'): bad.append(w + ': a link to a course names no playback')
+            if not str(x.get('url', '')).startswith(('../', 'https://')): bad.append(w + ': url must be relative (../) or https')
+            continue
         w = 'link to %s' % x.get('playback'); need(x, ['kind', 'playback', 'title', 'from', 'to'], w)
         if x.get('kind') not in ('battle', 'campaign', 'next', 'previous'): bad.append(w + ': kind must be "battle", "campaign", "next" or "previous"')
         for k in ('from', 'to'): time_ok(x.get(k), w + '.' + k)
@@ -309,9 +326,10 @@ def validate(b, folder=None):
     for l in b['labels']:
         need(l, ['text', 'at', 'kind'], 'label %r' % l.get('text'))
         if l.get('kind') not in LABEL_KINDS: bad.append('label %r: unknown kind %r' % (l.get('text'), l.get('kind')))
-        if 'at' in l and l.get('show') != 'far': point_ok(l['at'], 'label %r' % l.get('text'))
+        if 'at' in l and l.get('show') != 'far': point_ok(l['at'], 'label %r' % l.get('text'), REG.get(l.get('recon')))
         elif 'at' in l and not (isinstance(l['at'], list) and len(l['at']) == 2 and -180 <= l['at'][0] <= 180 and -90 <= l['at'][1] <= 90): bad.append('label %r: not a [longitude, latitude] point' % l.get('text'))
         if l.get('show') and l['show'] not in LABEL_SHOWS: bad.append('label %r: show must be one of %s' % (l.get('text'), ', '.join(LABEL_SHOWS)))
+        if l.get('recon') and l['recon'] not in [r.get('id') for r in b.get('reconstructions', [])]: bad.append('label %r: reconstruction %r is not in reconstructions' % (l.get('text'), l['recon']))
     # reconstructed base maps: every feature says what it is, where it came from, how it was read and how sure it is
     packed = re.compile(r'^-?\d+,-?\d+(;-?\d+,-?\d+)+$')
     for r in b.get('reconstructions', []):
@@ -343,14 +361,14 @@ def validate(b, folder=None):
                 if fl is not None and not (isinstance(fl, list) and fl and all(isinstance(q, list) and len(q) == 2 and isinstance(q[0], (int, float)) and isinstance(q[1], str) for q in fl) and [q[0] for q in fl] == sorted(q[0] for q in fl)):
                     bad.append(x + ': files must be [[zoom, file], ...], the smallest picture first')
             if f.get('under') and f['under'] not in [g.get('id') for g in r.get('features', []) if g.get('kind') == 'ink']: bad.append(x + ': under %r names no ink picture' % f.get('under'))
-            if f.get('shape') == 'point': point_ok(f.get('at'), x + '.at')
+            if f.get('shape') == 'point': point_ok(f.get('at'), x + '.at', REG.get(r.get('id')))
             elif f.get('shape') == 'areas':        # several areas: each a list of packed rings, the outline first
                 if not (isinstance(f.get('at'), list) and f['at'] and all(isinstance(a, list) and a and all(isinstance(q, str) and packed.match(q) for q in a) for a in f['at'])): bad.append(x + ': at must be a list of areas, each a list of packed rings')
                 else:
-                    q = f['at'][0][0].split(';')[0].split(','); point_ok([int(q[0]) / 1e5, int(q[1]) / 1e5], x + '.at')
+                    q = f['at'][0][0].split(';')[0].split(','); point_ok([int(q[0]) / 1e5, int(q[1]) / 1e5], x + '.at', REG.get(r.get('id')))
             elif not (isinstance(f.get('at'), list) and f['at'] and all(isinstance(q, str) and packed.match(q) for q in f['at'])): bad.append(x + ': at must be packed lines (lon,lat;dlon,dlat;...)')
             else:
-                q = f['at'][0].split(';')[0].split(','); point_ok([int(q[0]) / 1e5, int(q[1]) / 1e5], x + '.at')
+                q = f['at'][0].split(';')[0].split(','); point_ok([int(q[0]) / 1e5, int(q[1]) / 1e5], x + '.at', REG.get(r.get('id')))
             if f.get('side') and f['side'] not in [sd.get('code') for sd in b.get('sides', [])]: bad.append(x + ': side %r is not a side code' % f.get('side'))
     B = b['base']; need(B, ['credit', 'lines', 'areas'], 'base')
     for l in B.get('lines', []):
@@ -399,7 +417,7 @@ def used_sources(battle, catalogue, extra=()):
         want.update(p.get('sources', []))
         for h in p.get('control', []): want.update(h.get('sources', []))
     for x in battle.get('summaries', []):
-        if x.get('kind') in ('year', 'end'): want.update(x.get('sources', []))
+        if x.get('kind') in ('year', 'end', 'leg'): want.update(x.get('sources', []))
     missing = sorted(want - set(catalogue))
     assert not missing, 'cited but not in the source list: %s' % missing
     return {k: catalogue[k] for k in sorted(want)}
