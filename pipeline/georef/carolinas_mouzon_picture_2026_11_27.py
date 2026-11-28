@@ -26,7 +26,7 @@ def main(north, sc, east, width=5000):
         sel = [p for p in P if panel(*p[0]) == pn]
         INV[pn] = RBFInterpolator(np.array([p[1] for p in sel]), np.array([p[0] for p in sel], float), kernel='thin_plate_spline',
                                   smoothing=FIT.get('smoothing', {}).get(pn, 8.0) * np.array([p[2] for p in sel]) ** 2, degree=1, neighbors=400)
-    W, S, E, N = json.load(open(os.path.join(ROOT, 'data', 'recon', 'sc-1775.geojson')))['sheet']
+    W, S, E, N = json.load(open(os.path.join(ROOT, 'data', 'recon', 'sc-1775.geojson')))['sheet']; N = min(N, 36.75)   # Mouzon's part of the sheet (north of it, Fry and Jefferson)
     my = lambda lat: math.log(math.tan(math.pi / 4 + math.radians(lat) / 2))
     w = width; h = int(round(w * (my(N) - my(S)) / math.radians(E - W))); print('size', w, h)
     step = 16; gx = np.arange(0, w + step, step); gy = np.arange(0, h + step, step)

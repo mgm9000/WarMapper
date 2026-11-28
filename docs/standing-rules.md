@@ -522,10 +522,16 @@ Branch `sc-storyline-regional-base`. No new rule and no answer yet; what was bui
   83.45° W to 77° W, 31.95° N to 36.75° N. Every feature `traced`, `low` or `medium`, with its basis; nothing `high`.
 - South Carolina did not move: the fit is extended with every reviewed South Carolina vertex held where it was (largest move 20 m).
 - Mouzon's neatline (36° 37′) is about 10 km south of the lower Dan ferries; he draws the Dan and Roanoke on into the margin, which is traced.
-  Above the sheet only today's relief and sea are drawn (Session 1's recommendation; no Virginia map of the time used).
-- **Ask Morgan:** the reviewed South Carolina Catawba folds back on itself in its last 15 km at the 1772 line (a fold of the 26 Nov fit, on
-  `main` before this session). Mending it moves that stretch, and the east end of the 1772 line, up to about 8 km: over the 500 m limit, so
-  it is shown, not done.
+- Morgan's answers (27 Nov 2026, evening), scope this chapter's regional map:
+  - **The Catawba fold: "fix it".** Done: the 26 Nov fit had matched Mouzon's Catawba below the 1772 line to the river above today's state
+    line. Refitted with a control where today's state line reaches the Catawba. The Catawba and the road from the Catawba Nation to Charlotte
+    move up to 18.6 km, the Cherokee path's east end 11 km, the 1772 and 1764 lines up to 12 km, and the Broad above the Pacolet 6.8 km.
+    Everywhere else South Carolina moves at most 20 m.
+  - **A Virginia map above Mouzon's edge: "add it".** Done from Fry and Jefferson (S152, drawn 1751; LoC printing of 1755): the Staunton,
+    Banister, Meherrin, Nottoway and Appomattox and the Great Wagon Road, 36.75° N to 37.6° N, fitted on Richmond, Petersburg, City Point,
+    two ties to Mouzon and the rivers matched to today's. Fry and Jefferson draw almost no roads in the southside, and nothing at the Dan
+    ferries of 1781.
+  - **PRD and tracker: "add them".**
 
 ## Answers from Morgan (26 Nov 2026): Guilford Courthouse
 

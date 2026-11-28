@@ -49,7 +49,8 @@ HERE = os.path.dirname(os.path.abspath(__file__)); ROOT = os.path.dirname(os.pat
 TR = json.load(open(os.path.join(HERE, 'sc_1775_traced.json')))
 FIT = json.load(open(os.path.join(ROOT, 'pipeline', 'georef', 'sc_mouzon_fit.json')))
 OUT = os.path.join(ROOT, 'data', 'recon', 'sc-1775.geojson')
-SHEET = [-83.45, 31.95, -77.0, 36.75]          # west, south, east, north (27 Nov 2026; South Carolina alone was -78.45 east, 35.3 north)
+SHEET = [-83.45, 31.95, -77.0, 37.6]          # west, south, east, north (27 Nov 2026; South Carolina alone was -78.45 east, 35.3 north)
+MOUZON_TOP = 36.75                              # north of it the lines are Fry and Jefferson's (southern Virginia)
 NC = json.load(open(os.path.join(HERE, 'nc_1775_traced.json')))
 SY, SX = FIT['seam']['y'], FIT['seam']['x']
 KX, KY = 111.32 * math.cos(math.radians(33.5)), 110.9
@@ -278,6 +279,69 @@ NC_WIDTH = {'Yadkin River': 200, 'Haw River': 80, 'Deep River': 80, 'Cape Fear R
 NC_MAIN = {'Yadkin River', 'Cape Fear River', 'Dan River', 'Roanoke River', 'Catawba River', 'Pee Dee River', 'Haw River', 'Deep River', 'Broad River'}
 
 
+VA = json.load(open(os.path.join(HERE, 'va_fry_jefferson_traced.json')))
+VAFIT = json.load(open(os.path.join(ROOT, 'pipeline', 'georef', 'va_fry_jefferson_fit.json')))
+VA_JOINS = {'riv-staunton': 'riv-roanoke', 'riv-banister': 'riv-dan'}   # Virginia rivers kept to their mouth in a river Mouzon draws
+VA_MATCHED = ('riv-staunton', 'riv-meherrin', 'riv-nottoway')
+FJ = ('Fry and Jefferson, A map of the most inhabited part of Virginia (drawn 1751), S152: Library of Congress g3880.ct000370, a printing of 1755; '
+      'the printing of 1775 changes only the date in the title')
+
+
+def va_ground(pts):
+    P = VAFIT['pairs']
+    if 'm' not in VAFIT: VAFIT['m'] = RBFInterpolator(np.array([p[0] for p in P], float), np.array([p[1] for p in P], float), kernel='thin_plate_spline',
+                                                      smoothing=np.array([p[2] for p in P]) ** 2 * VAFIT.get('smoothing', 20.0), degree=1)
+    return [[round(e / KX - 81.0, 6), round(n / KY + 33.5, 6)] for e, n in VAFIT['m'](np.array(pts, float))]
+
+
+def clip_north_of(ll, lat=MOUZON_TOP, east=SHEET[2], top=SHEET[3], least_km=5.0):
+    """The parts of a line between `lat` and `top` and west of `east`, each cut where it crosses; a list of lines, none shorter than `least_km`."""
+    inside = lambda p: lat <= p[1] <= top and p[0] <= east
+    def cut(a, b):   # where a-b crosses the box's edge
+        us = [(v - a[i]) / (b[i] - a[i]) for v, i in ((lat, 1), (top, 1), (east, 0)) if b[i] != a[i] and 0 <= (v - a[i]) / (b[i] - a[i]) <= 1]
+        u = min(us, key=lambda u: abs(u - 0.5)) if us else 0.5
+        return [round(a[0] + (b[0] - a[0]) * u, 6), round(a[1] + (b[1] - a[1]) * u, 6)]
+    out, cur = [], [ll[0]] if inside(ll[0]) else []
+    for a, b in zip(ll, ll[1:]):
+        if inside(a) and inside(b): cur.append(b)
+        elif inside(a): cur.append(cut(a, b)); out.append(cur); cur = []
+        elif inside(b): cur = [cut(a, b), b]
+    if cur: out.append(cur)
+    return [c for c in out if len(c) > 1 and sum(km(p, q) for p, q in zip(c, c[1:])) >= least_km]
+
+
+def virginia(nc):
+    """Southern Virginia, north of Mouzon's edge, from Fry and Jefferson (since 27 Nov 2026, Morgan: "add it"). `nc`: the North Carolina lines as built."""
+    res = VAFIT['result']
+    for fid, f in VA.items():
+        if f.get('fit_only'): continue
+        ll = va_ground(f['line'])
+        if f['kind'] == 'river': ll = smooth(ll)
+        if fid in VA_JOINS:   # kept to its mouth: its end goes onto Mouzon's river
+            q, d = nearest_on(ll[-1], nc[VA_JOINS[fid]]); assert d < 8, '%s ends %.1f km from %s' % (fid, d, VA_JOINS[fid])
+            ll = ll + [[round(q[0], 6), round(q[1], 6)]]; parts = [[p for p in ll if p[0] <= SHEET[2]]]
+        else: parts = clip_north_of(ll)
+        kind = f['kind']; m = fid in VA_MATCHED
+        base = {'layer': LAYER[kind], 'kind': 'stream' if kind == 'river' else kind, 'name': f['name'], 'desc': f['name'], 'from': '1775-01-01', 'to': '1781-12-31',
+                'source_id': 'S152', 'method': 'traced', 'review': 'Needs review'}
+        fit = ('Laid on the ground by a fit of its own (pipeline/georef/va_fry_jefferson_fit_2026_11_27.py): Richmond, Petersburg and City Point at their sites (left out, '
+               'found again %.0f-%.0f km off), the Occoneachey Islands and Lower Saura Town tied to the fitted Mouzon so the maps meet, and the Staunton, Meherrin, Nottoway '
+               'and the dividing line matched to Natural Earth (S136).' % (min(r['left_out_km'] for r in res.values()), max(r['left_out_km'] for r in res.values())))
+        if kind == 'river':
+            base.update(width_m=150 if fid == 'riv-staunton' else 80, min_px=1.6 if fid == 'riv-staunton' else 1.0, confidence='medium' if m else 'low', precision_m=3000 if m else 5000,
+                        basis='Picked by hand along Fry and Jefferson\'s river (%s) and snapped by program to the engraved line. %s%s' % (FJ, fit,
+                              ' It lies a median 0.3-0.5 km from today\'s course.' if m else ' It has no line in Natural Earth: it follows the fit of the rivers round it.'))
+            if fid in VA_JOINS: base['basis'] += ' Its last point is on Mouzon\'s %s, where it flows in.' % ('Roanoke' if VA_JOINS[fid] == 'riv-roanoke' else 'Dan')
+            else: base['basis'] += ' Drawn north of 36.75 N only; south of it Mouzon\'s map is drawn.'
+        else:
+            base.update(confidence='low', precision_m=5000, **({'class': f['cls']} if f.get('cls') else {}),
+                        basis='Fry and Jefferson\'s "Road from the Yadkin", the Great Wagon Road, traced along its double line (%s) and checked by eye. %s Drawn from Looney\'s Ferry on the James '
+                              'to 36.75 N; Fry and Jefferson draw almost no other roads in the southside, and none to the Dan ferries of 1781.' % (FJ, fit))
+        for i, pl in enumerate(parts):
+            p = dict(base, id='VA51-' + fid.upper() + ('-%d' % (i + 1) if len(parts) > 1 else ''))
+            FEATURES.append({'type': 'Feature', 'properties': p, 'geometry': {'type': 'LineString', 'coordinates': pl}})
+
+
 def clip_east(ll, east=SHEET[2]):
     """The line up to the sheet's east edge (cut where it first crosses it)."""
     out = [ll[0]]
@@ -387,6 +451,7 @@ def main():
     for fid, ll in join_roads(roads).items(): feat(fid, TR[fid], no_reversals(ll))
     built = {f['properties']['id']: f['geometry']['coordinates'] for f in FEATURES if f['geometry']['type'] == 'LineString'}
     nc = north_carolina(built)   # since 27 Nov 2026
+    virginia(nc)   # since 27 Nov 2026, evening
     ncshore = clip_east(nc['shore-nc'])
     # the sea: the traced coast from the Savannah to the North Carolina line, closed offshore. The sounds behind the coast are not sea here.
     ring = shores['shore-sw-1'] + shores['shore-sw-2'] + shores['shore-central-1'] + shores['shore-central-2'] + shores['shore-ne']

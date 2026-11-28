@@ -57,6 +57,19 @@ def get_setting(ws, pb, key):
         if r[h.index('playback_id')] == pb and r[h.index('setting')] == key: return r[h.index('value')]
 
 
+SOURCE_FJ = {'source_id': 'S152', 'title': 'A map of the most inhabited part of Virginia containing the whole province of Maryland with part of Pensilvania, New Jersey and North Carolina',
+             'author': 'Joshua Fry and Peter Jefferson (drawn 1751); engraved and published by Thomas Jefferys', 'date': '1751 (this printing 1755)',
+             'type': 'Period map: printed map of Virginia and Maryland',
+             'citation': 'Joshua Fry and Peter Jefferson, A Map of the Most Inhabited Part of Virginia ... (London: Thos. Jefferys, [1755]). Library of Congress, Geography and Map Division, G3880 1755 .F72 (g3880.ct000370).',
+             'page verified?': 'n/a (a map)', 'url': 'https://www.loc.gov/item/74693166/',
+             'rights': 'Published 1755. Public domain; the Library of Congress gives its digitized maps as free to use and reuse.',
+             'notes': 'Read 27 Nov 2026 from the Library of Congress IIIF service (service:gmd:gmd388:g3880:g3880:ct000370, 15,216 x 9,552). Used for southern Virginia north of '
+                      'Mouzon\'s edge (36.75 N to 37.6 N): the Staunton, Banister, Meherrin, Nottoway and Appomattox, and the Great Wagon Road, traced and fitted (pipeline/georef/'
+                      'va_fry_jefferson_fit_2026_11_27.py). The Library of Congress holds a printing of 1775 too (item 74693168, Sayer), whose scan was not found; by the Huntingfield '
+                      'Collection\'s list of the states of the map, the 1775 state changes the date in the title, so the ground drawn is the same. Fry and Jefferson draw almost no roads in the '
+                      'southside and nothing at the Dan ferries of 1781 (Halifax Court House, Virginia, came after the survey).',
+             'used_for': 'SC-ORI (the regional map: southern Virginia)', 'kind': 'map', 'war': 'ARW', 'rights_status': 'public domain', 'may_host': 'yes', 'rights_checked': '2026-11-27', 'site': 'loc.gov'}
+
 SOURCE = {'source_id': 'S151', 'title': 'A compleat map of North-Carolina from an actual survey', 'author': 'John Collet; engraved by John Abraham Bayly; published by Samuel Hooper',
           'date': '1770', 'type': 'Period map: printed map of North Carolina at about nine miles to the inch',
           'citation': 'John Collet, A Compleat Map of North-Carolina from an Actual Survey (London: S. Hooper, 1 May 1770). Library of Congress, Geography and Map Division, G3900 1770 .C6, copy 1 (g3900.ar150000).',
@@ -71,12 +84,14 @@ SOURCE = {'source_id': 'S151', 'title': 'A compleat map of North-Carolina from a
 ABOUT = ("This is a WarMapper reconstruction, not a period map. Its lines are those of Henry Mouzon's map of the two Carolinas (1775), laid on today's ground: the rivers and "
          "the sea coast fitted to today's courses, which they keep, and the main roads and boundary lines carried with them. Mouzon's map was made for the colonies' trade and land "
          "grants, not as a survey: his roads are good to a few kilometres, his up-country less. South Carolina is traced at the level of its main lines; North Carolina (since 27 Nov 2026) "
-         "only for the ground of the campaign of 1781, from Charlotte and Salisbury to Guilford, Hillsborough, Halifax and the Dan. Nothing here has been checked by a historian.")
+         "only for the ground of the campaign of 1781, from Charlotte and Salisbury to Guilford, Hillsborough, Halifax and the Dan; north of the Dan (36.75 N to 37.6 N) the lines are Fry and Jefferson's map of Virginia (1751): its main rivers and the Great Wagon Road. Nothing here has been checked by a historian.")
 NOTE = ("Rivers and coast good to about 1-2 km where today's river is in Natural Earth; roads and boundaries to 3-5 km; the far north-west to no better than 10 km. In North Carolina "
         "nine towns hold the fit, each found again 1.3-6.6 km from its site when left out. Not yet traced: inlets, islands and sounds, swamps, the lesser roads, ferries and fords; in "
         "North Carolina the Neuse, the Tar and the sounds (east of 77 W, beyond the sheet), the rivers and roads of the mountains and of the east, and Mouzon's towns other than those named. "
-        "Guilford Court House is not on Mouzon's map (it was built in 1774): its name is placed where the battle's playback has it.")
-CREDIT = 'WarMapper reconstruction from Mouzon, 1775 (Library of Congress), fitted with Natural Earth; North Carolina checked against Collet, 1770 (Library of Congress)'
+        "Guilford Court House is not on Mouzon's map (it was built in 1774): its name is placed where the battle's playback has it. Southern Virginia: Fry and Jefferson's rivers are good to about 1-3 km where today's river is in Natural Earth (the Staunton, Meherrin, Nottoway), the Banister, the Appomattox and the Great Wagon Road to about 5 km; they draw almost no other roads there, and nothing at the Dan ferries of 1781.")
+CREDIT = 'WarMapper reconstruction from Mouzon, 1775 (Library of Congress), fitted with Natural Earth; North Carolina checked against Collet, 1770, and southern Virginia from Fry and Jefferson, 1751 (Library of Congress)'
+HOW_VA = {'rivers': ' Southern Virginia (27 Nov 2026, evening): the Staunton, Banister, Meherrin, Nottoway and Appomattox from Fry and Jefferson (S152), north of 36.75 N, picked and snapped the same way; the Staunton, Meherrin and Nottoway matched to Natural Earth.',
+          'roads': ' Southern Virginia (27 Nov 2026, evening): the Great Wagon Road, Fry and Jefferson\'s "Road from the Yadkin" (S152), from Looney\'s Ferry to 36.75 N.'}
 HOW_NC = {'rivers': ' North Carolina (27 Nov 2026): the Catawba and Broad above the 1772 line, the Yadkin to the Pee Dee, the Haw with Reedy Fork and Troublesome Creek, the Deep, the Cape Fear, the Dan and the Roanoke, picked and snapped the same way and matched to Natural Earth (Reedy Fork and Troublesome Creek, which it lacks, follow the fit and are low).',
           'coast': ' North Carolina (27 Nov 2026): the outer coast from Little River past Cape Fear to Bogue, to the sheet\'s edge at 77 W; the sea is closed across the inlets and the mouth of the Cape Fear.',
           'roads': ' North Carolina (27 Nov 2026): ten roads of the 1781 campaign\'s ground, snapped the same way: Charlotte and Camden to Salisbury, the Trading Path to Hillsborough, the road by the Quaker meeting houses to Guilford and the Haw, Salem towards the Dan, the Shallow Ford road, Hillsborough to Halifax and north towards the Dan, Salisbury to Oliphant\'s Mill. Checked against Collet 1770 (S151).',
@@ -86,11 +101,13 @@ TOWNS = [  # text, other name, M on the scan, level  (names as Mouzon spells the
     ('Charlotte', None, (3112, -79), 0), ('Salisbury', None, (3483, -588), 0), ('Salem', 'Old Salem, Winston-Salem', (3743, -1068), 2),
     ('Bethabara', None, (3717, -1135), 2), ('Bethania', None, (3632, -1155), 2), ('Hillsborough', None, (4772, -1057), 0),
     ('Halifax', None, (6094, -1235), 0), ('Cross Creek', 'Fayetteville', (4940, 70), 1), ('Wilmington', None, (5738, 1300), 0)]
+VA_TOWNS = [('Richmond', 37.53139, -77.41972, 0), ('Petersburg', 37.22583, -77.38778, 0)]   # St. John's and Blandford churches (NRHP), as the fit holds them
+VA_RIVERS = [('Staunton River', 0), ('Banister River', 2), ('Nottoway River', 1), ('Appomattox River', 1)]
 RIVERS = [('Yadkin River', 0), ('Dan River', 0), ('Cape Fear River', 0), ('Roanoke River', 1), ('Haw River', 1), ('Deep River', 1), ('Reedy Fork', 2), ('Troublesome Creek', 2)]
 
 
-def river_label(name, level, feats):
-    F = [f for f in feats if f['properties'].get('kind') == 'stream' and f['properties'].get('name') == name and f['properties']['id'].startswith('NC75')]
+def river_label(name, level, feats, prefix='NC75'):
+    F = [f for f in feats if f['properties'].get('kind') == 'stream' and f['properties'].get('name') == name and f['properties']['id'].startswith(prefix)]
     if not F: return None
     c = max(F, key=lambda f: len(f['geometry']['coordinates']))['geometry']['coordinates']; i = len(c) // 2
     a, b = c[max(0, i - 3)], c[min(len(c) - 1, i + 3)]
@@ -122,22 +139,23 @@ def terrain_json(old, zoom):
                   "they are read at about %d m a pixel, so bumps narrower than about %d m are taken off and the rest smoothed. This is today's ground. The big lakes (Marion, Moultrie, "
                   "Murray, Wateree, Hartwell, Thurmond and Keowee in South Carolina; Norman, High Rock, Badin, Tillery, Jordan, Falls, Kerr and Gaston further north) are reservoirs of the "
                   "20th century: their flat floors are today's water, and in 1775 the rivers ran in their valleys." % (px, max(300, px + 50)))
-    t['beyond'] = ("Beyond the dotted line Mouzon's map stops (north at the Dan, east at 77 W, and the west edge of his South Carolina): only today's relief and sea are drawn there, so "
-                   "the map fills the window.")
+    t['beyond'] = ("Inside the dotted line the lines are Mouzon's map of the two Carolinas (1775) and, north of the Dan (36.75 N), Fry and Jefferson's map of Virginia (1751), which "
+                   "draws only the main rivers and the Great Wagon Road there. Beyond the dotted line (east of 77 W, and north of 37.6 N) only today's relief and sea are drawn, so the "
+                   "map fills the window.")
     return json.dumps(t)
 
 
 def main():
     wb = openpyxl.load_workbook(SHARED)
-    print('Sources S151', upsert(wb['Sources'], ['source_id'], SOURCE))
+    print('Sources S151', upsert(wb['Sources'], ['source_id'], SOURCE)); print('Sources S152', upsert(wb['Sources'], ['source_id'], SOURCE_FJ))
     rm = wb['Read me']
     if not str(rm.cell(1, 1).value or '').startswith('What changed on 27 November 2026: the regional base map'): rm.insert_rows(1, 3)
     rm.cell(1, 1).value = 'What changed on 27 November 2026: the regional base map (SC storyline, Session 2)'
-    rm.cell(2, 1).value = ('Revolutionary War.xlsx: the reconstruction sc-1775 now holds North Carolina to 77 W and the Dan (data/recon/sc-1775.geojson, 67 features: 23 new, NC75-...; '
-                           'no South Carolina line moves more than 22 m). Labels gain a recon column; the North Carolina towns and rivers are named. sc-orientation\'s terrain covers the '
+    rm.cell(2, 1).value = ('Revolutionary War.xlsx: the reconstruction sc-1775 now holds North Carolina to 77 W and the Dan, and southern Virginia to 37.6 N from Fry and Jefferson (data/recon/sc-1775.geojson, 73 features: 23 new NC75-, 6 VA51-); '
+                           'the fold of 26 Nov at the 1772 line mended (the Catawba and the lines near it moved onto today\'s ground, up to 18.6 km); elsewhere no South Carolina line moves more than 20 m. Labels gain a recon column; the North Carolina towns and rivers are named. sc-orientation\'s terrain covers the '
                            'chapter\'s window (84.9 W to 75.5 W, 30.9 N to 37.6 N) at tile zoom %d (the battles\' regional map at %d). Cowpens and Guilford Courthouse open on the regional map and ease in to the field '
-                           '(bases.1.region, a hidden base rgn, groups, opening_zoom_out 4). Mouzon fitted (the map details) covers both Carolinas. Sources: S151 Collet 1770. Scripts: '
-                           'pipeline/recon/nc_1775_*_2026_11_27.py, pipeline/georef/sc_mouzon_fit_nc_2026_11_27.py, pipeline/georef/carolinas_mouzon_picture_2026_11_27.py, '
+                           '(bases.1.region, a hidden base rgn, groups, opening_zoom_out 4). Mouzon fitted (the map details) covers both Carolinas. Sources: S151 Collet 1770, S152 Fry and Jefferson 1751. Scripts: '
+                           'pipeline/recon/nc_1775_*_2026_11_27.py, pipeline/recon/va_fry_jefferson_*_2026_11_27.py, pipeline/georef/sc_mouzon_fit_nc_2026_11_27.py, pipeline/georef/va_fry_jefferson_fit_2026_11_27.py, pipeline/georef/carolinas_mouzon_picture_2026_11_27.py, '
                            'pipeline/sc_storyline_session2_2026_11_27.py.' % (ZOOM, REGION_ZOOM))
     wb.save(SHARED)
 
@@ -149,6 +167,8 @@ def main():
         lid = r[h.index('layer_id')].value
         if r[h.index('recon_id')].value == RID and lid in HOW_NC and 'North Carolina (27 Nov 2026)' not in (r[h.index('how_read')].value or ''):
             r[h.index('how_read')].value = (r[h.index('how_read')].value or '') + HOW_NC[lid]
+        if r[h.index('recon_id')].value == RID and lid in HOW_VA and 'Southern Virginia (27 Nov 2026' not in (r[h.index('how_read')].value or ''):
+            r[h.index('how_read')].value = (r[h.index('how_read')].value or '') + HOW_VA[lid]
     # Labels: a recon column; the names of a reconstruction say so
     ws = wb['Labels']; h = headers(ws)
     if 'recon' not in h: ws.cell(1, len(h) + 1).value = 'recon'; h = headers(ws)
@@ -171,6 +191,14 @@ def main():
     for nm, lvl in RIVERS:
         r = river_label(nm, lvl, feats)
         if r: upsert(ws, ['playback_id', 'text', 'show'], r)
+    for t, lat, lon, lvl in VA_TOWNS:
+        upsert(ws, ['playback_id', 'text', 'show'], {'playback_id': PB, 'text': t, 'other_name': None, 'lat': lat, 'lon': lon, 'angle': None, 'level': lvl, 'kind': 'town', 'show': 'recon', 'approximate': None, 'recon': RID})
+    for nm, lvl in VA_RIVERS:
+        r = river_label(nm, lvl, feats, 'VA51')
+        if r: upsert(ws, ['playback_id', 'text', 'show'], r)
+    road = [f for f in feats if f['properties']['id'] == 'VA51-ROAD-GREAT-WAGON'][0]['geometry']['coordinates']
+    lat, lon, ang = label_point(road)
+    upsert(ws, ['playback_id', 'text', 'show'], {'playback_id': PB, 'text': 'Great Wagon Road', 'other_name': None, 'lat': lat, 'lon': lon, 'angle': ang, 'level': 1, 'kind': 'road', 'show': 'recon', 'approximate': None, 'recon': RID})
     # Playback settings: 1a's terrain over the window; the battles' regional hand-off
     ws = wb['Playback settings']
     old = get_setting(ws, PB, 'bases.1.terrain'); terr = terrain_json(old, ZOOM); rterr = terrain_json(old, REGION_ZOOM)
@@ -190,7 +218,7 @@ def main():
         setting(ws, pb, 'opening_zoom_out', 4, 'The page opens this many zoom levels wider than its first view, on the regional map, then eases in', 'SR-02, SR-04; SC storyline Session 1 (27 Nov 2026)')
         print(pb, 'region base', k)
     # Maps: Mouzon fitted, both Carolinas
-    W_, S_, E_, N_ = G['sheet']
+    W_, S_, E_, N_ = G['sheet']; N_ = min(N_, 36.75)   # the picture is Mouzon's part of the sheet
     F = json.load(open(os.path.join(ROOT, 'pipeline', 'georef', 'sc_mouzon_fit.json')))
     loo = {p['name']: p.get('loo_m') for p in F['PC'] if p.get('added') == '2026-11-27' and p.get('loo_m')}
     print('Maps', upsert(wb['Maps'], ['playback_id', 'map_id'], {'playback_id': PB, 'map_id': 'mouzon-1775-fitted',
@@ -211,6 +239,14 @@ def main():
         ws.append([]); ws.append(['Control point', 'pixel x', 'pixel y', 'lat', 'lon', 'misfit left out (m)', 'source'])
         for p in F['PC']:
             if p.get('added') == '2026-11-27': ws.append([p['name'], p['m'][0], p['m'][1], p['lonlat'][1], p['lonlat'][0], p.get('loo_m'), p['source']])
+    if not any(str(c.value or '').startswith('Georeference: southern Virginia, Fry and Jefferson') for c in ws['A']):
+        VF = json.load(open(os.path.join(ROOT, 'pipeline', 'georef', 'va_fry_jefferson_fit.json')))
+        ws.append([]); ws.append(['Georeference: southern Virginia, Fry and Jefferson 1751 (27 Nov 2026)'])
+        ws.append(['One thin-plate spline with a plane (pipeline/georef/va_fry_jefferson_fit_2026_11_27.py) from three sites, two ties to the fitted Mouzon, and the Staunton, Meherrin, '
+                   'Nottoway and dividing line matched to Natural Earth (S136). Pixels of the half-resolution strip: full scan x = 2000 + 2 x, y = 5400 + 2 y.'])
+        ws.append([]); ws.append(['Control point', 'pixel x', 'pixel y', 'lat', 'lon', 'misfit left out (m)', 'source'])
+        for c in VF['controls']: ws.append([c['name'], c['v'][0], c['v'][1], c['lonlat'][1], c['lonlat'][0], round(VF['result'][c['name']]['left_out_km'] * 1000), c['source']])
+        for c in VF['ties']: ws.append([c['name'], c['v'][0], c['v'][1], c['lonlat'][1], c['lonlat'][0], round(VF['result'][c['name']]['left_out_km'] * 1000), c['source']])
     wb.save(WAR); print('saved')
 
 
