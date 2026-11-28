@@ -37,7 +37,9 @@ Halifax, the Cape Fear and the Dan; the Neuse and the sounds east of 77 W are no
 (pipeline/recon/nc_1775_picks_2026_11_27.py, nc_1775_trace_2026_11_27.py, nc_1775_traced.json) are features of their own, ids NC75-...,
 so that no reviewed South Carolina feature changes: a North Carolina line that carries one on starts on the same point of the ground as
 its end (`joins`, `extends`). The fit is extended by pipeline/georef/sc_mouzon_fit_nc_2026_11_27.py, which moves no South Carolina vertex
-more than 22 m. Lines are cut at the sheet's east edge. The sea is closed along the North Carolina coast too.
+more than 20 m, except where it mends the fold of the 26 Nov fit at the 1772 line (Morgan, 27 Nov 2026: "fix it"): there the Catawba,
+the Broad above the Pacolet, the road from the Catawba Nation to Charlotte, the Cherokee path's east end and the 1772 and 1764 lines move
+onto today's ground, up to 18.6 km (REFIT below). Lines are cut at the sheet's east edge. The sea is closed along the North Carolina coast too.
 """
 import json, math, os, sys
 import numpy as np
@@ -100,6 +102,7 @@ DATES = {'bnd-cherokee-lower': ('1766-11-01', '1777-05-19'), 'bnd-cherokee-upper
 LAYER = {'river': 'rivers', 'shore': 'coast', 'road': 'roads', 'boundary': 'boundaries'}
 SCAN = 'Mouzon 1775 (S135), Library of Congress g3900.ar139404'
 FEATURES = []
+REFIT = {'riv-catawba': 18.6, 'riv-broad': 6.9, 'riv-pacolet': 1.0, 'road-catawba-charlotte': 18.6, 'road-cherokee-path': 11.1, 'bnd-nc-1772': 10.8, 'bnd-nc-old': 12.3}   # km, 27 Nov 2026
 
 
 def feat(fid, f, coords):
@@ -124,6 +127,10 @@ def feat(fid, f, coords):
         p.update(confidence='low', precision_m=5000 if 'cherokee' in fid else 3000, basis='Mouzon\'s line (%s), picked by hand; the North Carolina lines were fitted to today\'s state line, '
                  'which follows them (Natural Earth, S136). %s' % (SCAN, 'Mouzon draws it from the Savannah at a corner tree, past DeWitt\'s Corner, to a corner tree on the Reedy River and north to the 1772 line. '
                  'The Cherokee ceded the land east of it in 1766-67 and nearly all the rest in South Carolina at DeWitt\'s Corner, 20 May 1777, so it is drawn until then.' if 'cherokee' in fid else ''))
+    fam = fid.rsplit('-', 1)[0] if fid[-1].isdigit() else fid
+    if fam in REFIT: p['basis'] += (' Moved 27 Nov 2026, up to %.1f km where it nears the 1772 line: the fit of 26 Nov turned the ground over there '
+                                    '(it had matched Mouzon\'s Catawba below the line to the river above today\'s state line); the refit '
+                                    '(pipeline/georef/sc_mouzon_fit_nc_2026_11_27.py) holds the Catawba where today\'s state line reaches it.' % REFIT[fam])
     FEATURES.append({'type': 'Feature', 'properties': p, 'geometry': {'type': 'LineString', 'coordinates': coords}})
 
 
@@ -295,8 +302,7 @@ def nc_feat(fid, f, coords):
                  basis='Picked by hand along Mouzon\'s river on the scan (%s) and snapped by program to the engraved line. %s%s' % (NCSCAN, fit,
                        ' This river lies a median 0.3-0.75 km from today\'s course in Natural Earth.' if m else ' This river has no line in Natural Earth, so it follows the fit of the rivers round it.'))
         if f.get('joins'): p['basis'] += ' It carries on the South Carolina line of the same river from the point where that line ends.'
-        if fid in JOINS: p['basis'] += (' There the fit of 26 Nov 2026 folds the ground (it puts the end of the South Carolina line some 8 km off today\'s river), so the first '
-                                        'kilometres of this line are left out and it joins that end straight, over %.1f km.' % JOINS[fid])
+        if fid in JOINS: p['basis'] += (' Its first kilometres turned back on themselves at the join and are left out: it joins the South Carolina end straight, over %.1f km.' % JOINS[fid])
     elif kind == 'shore':
         p.update(confidence='low', precision_m=1500, basis='Mouzon\'s outer sea coast (%s), snapped to the engraved line, from Little River past Cape Fear to Bogue; fitted to today\'s coast '
                  '(Natural Earth, S136), a median 0.4 km from it. %s Inlets, islands and the sounds behind them are not traced yet: the sea is closed across the inlets and the mouth of the Cape Fear. Cut at the sheet\'s edge, 77 W.' % (NCSCAN, fit))

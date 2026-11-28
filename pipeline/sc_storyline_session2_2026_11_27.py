@@ -100,6 +100,21 @@ def river_label(name, level, feats):
             'show': 'recon', 'approximate': None, 'recon': RID}
 
 
+def label_point(c):
+    """The middle of the line by length, and its direction there as the map's text angle (as pipeline/sc_orientation_month_bubbles_2026_11_26.py)."""
+    k = math.cos(math.radians(34)); seg = []; tot = 0
+    for a, b in zip(c, c[1:]):
+        d = math.hypot((b[0] - a[0]) * k, b[1] - a[1]); seg.append((a, b, d)); tot += d
+    half = tot / 2; run = 0
+    for a, b, d in seg:
+        if run + d >= half:
+            f = (half - run) / d if d else 0; x, y = a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f
+            ang = math.degrees(math.atan2(-(b[1] - a[1]), (b[0] - a[0]) * k))
+            ang = ang - 180 if ang > 90 else ang + 180 if ang < -90 else ang
+            return round(y, 5), round(x, 5), round(ang)
+        run += d
+
+
 def terrain_json(old, zoom):
     t = json.loads(old); t['extent'] = WINDOW; t['zoom'] = zoom
     px = {8: 500, 9: 250}[zoom]
@@ -147,6 +162,12 @@ def main():
                                                      'kind': 'town', 'show': 'recon', 'approximate': 'yes', 'recon': RID})
     upsert(ws, ['playback_id', 'text', 'show'], {'playback_id': PB, 'text': 'Guilford Court House', 'other_name': None, 'lat': 36.135127, 'lon': -79.834392, 'angle': None, 'level': 0,
                                                  'kind': 'town', 'show': 'recon', 'approximate': None, 'recon': RID})   # not on Mouzon: where the battle's playback has it
+    # names on the ground the refit moved (the fold at the 1772 line): placed again from the new fit
+    for t, m in [('Catawba Town', (3120, 365)), ('CATAWBA NATION', (3060, 320))]:
+        lon, lat = RC.ground([m])[0]; print('moved name', t, upsert(ws, ['playback_id', 'text', 'show'], {'playback_id': PB, 'text': t, 'show': 'recon', 'lat': round(lat, 5), 'lon': round(lon, 5)}))
+    road = [f for f in feats if f['properties']['id'] == 'SC75-ROAD-CATAWBA-CHARLOTTE'][0]['geometry']['coordinates']
+    lat, lon, ang = label_point(road)
+    print('moved name Road to Charlotte', upsert(ws, ['playback_id', 'text', 'show'], {'playback_id': PB, 'text': 'Road to Charlotte', 'show': 'recon', 'lat': round(lat, 5), 'lon': round(lon, 5), 'angle': ang}))
     for nm, lvl in RIVERS:
         r = river_label(nm, lvl, feats)
         if r: upsert(ws, ['playback_id', 'text', 'show'], r)

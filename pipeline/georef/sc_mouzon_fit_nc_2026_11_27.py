@@ -17,12 +17,14 @@ How, so that nothing Morgan has reviewed moves:
     from its site (Mouzon draws the lower Cape Fear out of true with itself);
   - the traced North Carolina rivers, coast and Virginia line matched to the same lines in Natural Earth, seven times over (as
     sc_mouzon_fit.py did), pairs held to 10 km so that none folds the ground. Pairs on 20th-century reservoirs are dropped (RES); so are
-    those on the first 25 km of the Catawba and Broad above the 1772 line, which the reviewed South Carolina ends hold (see below).
-Result (printed when run): every South Carolina vertex moves at most 22 m (median 0). The North Carolina towns are held within 0.2 km
-; left out in turn, each is found again 1.3-6.6 km from its site (median 2.0; Charlotte 5.8, Cross Creek 6.6). The rivers lie a median 0.3-0.75 km from
-today's courses (90% within 1-2 km). No North Carolina line folds the ground. Inherited, not new: the 26 Nov fit already folds the ground
-at the north ends of the reviewed Catawba and Broad (crop y 27-99), where it put the Catawba's crossing of the 1772 line about 8 km
-north-west of today's; that end is held as reviewed.
+    those inside ZONES, where the fold of the 26 Nov fit is mended (below).
+Result (printed when run): outside the fold zones every South Carolina vertex moves at most 20 m (median 0). Inside them (Morgan asked
+for the fold to be fixed, 27 Nov 2026) the South Carolina lines move onto today's ground: the Catawba up to 18.6 km (its stretch from the
+1772 line to below the Catawba Nation had been matched to the river north of the state line), the road from the Catawba Nation to Charlotte
+up to 18.6 km, the Cherokee path's east end 11 km, the east end of the 1772 line 10.8 km, the 1764 line's middle vertex 12.3 km, the
+Broad above the Pacolet 6.9 km and the Pacolet's mouth 1 km. One grid point still folds, at crop (2600, 475) where the Pacolet meets the
+Broad, a small fold the 26 Nov fit already had. The North Carolina towns are held within 0.2 km; left out in turn, each is found again
+0.3-6.6 km from its site. The rivers lie a median 0.1-0.75 km from today's courses (90% within 1-2 km). No North Carolina line folds.
 """
 import json, math, os, sys, time
 import numpy as np
@@ -53,13 +55,20 @@ def apply(M,pts):
         s=pn==k
         if s.any(): out[s]=f(pts[s])
     return out
-BASE=FIT.get('pairs_refit_2026_11_26',FIT['pairs'])
-OLD=models(BASE,FIT['smoothing'])
+BASE0=FIT.get('pairs_refit_2026_11_26',FIT['pairs'])
+# The fold (Morgan, 27 Nov 2026, evening: "fix it"). The 26 Nov fit turns the ground over where the Broad and the Catawba cross the 1772 line
+# (crop x 2675-3200, y 0-185; and two small patches): with the Lake Wylie pairs dropped nothing held the Catawba there, and it put Mouzon's
+# Catawba at the line 8.7 km north-west of today's. Inside ZONES the South Carolina vertices are not held, the 26 Nov pairs are dropped, and
+# FIXES (where today's Broad and Catawba cross the state line, which follows the 1772 line there) and the rivers matched to today's hold the map.
+ZONES=[(2300,-80,2650,330),(2650,-80,3200,440),(3425,455,3550,525)]
+def inzone(m,pad=0): return any(a-pad<=m[0]<=b+pad and c-pad<=m[1]<=d+pad for a,c,b,d in ZONES)
+BASE=[p for p in BASE0 if not inzone(p[0])]
+OLD=models(BASE0,FIT['smoothing'])
 # anchors: every 4th point of every reviewed South Carolina line, mapped by the 26 Nov fit
 scpts=[tuple(p) for v in SC.values() for p in v['line']]
 scpts=list(dict.fromkeys(scpts))
 anch_g=apply(OLD,scpts)
-ANCH=[[list(map(float,m)),[round(float(a),4),round(float(b),4)],0.25] for m,(a,b) in zip(scpts,anch_g)]
+ANCH=[[list(map(float,m)),[round(float(a),4),round(float(b),4)],0.25] for m,(a,b) in zip(scpts,anch_g) if not inzone(m,40)]
 TOWNS=[ # name, M, (lon, lat), sd_km, source
  ('Charlotte (the court house crossroads)',(3112,-79),(-80.84333,35.22694),1.5,'workbook Labels (cowpens: Charlotte)'),
  ('Salisbury (the court house)',(3483,-588),(-80.46885,35.66848),1.5,'Rowan County Courthouse marker, HMdb 34278'),
@@ -74,8 +83,10 @@ TOWNS=[ # name, M, (lon, lat), sd_km, source
 # Seam tie (as the refit of 26 Nov tied the Pee Dee across the horizontal gap): Mouzon's two upper sections do not meet on the Pee Dee, so
 # its last point above the vertical gap (crop x 4232) is tied to where the reviewed South Carolina Pee Dee begins below it, on the ground as
 # sc-1775 had it before this extension; the North Carolina side takes up the difference (its last 13 km are left out of the matching).
+FIXES=[('Catawba at the 1772 line',(2905,92),(-81.0384,35.1304),2.0,'Natural Earth (S136): the Catawba where the state line (the line of 1772) reaches it'),
+      ]   # the Broad's crossing was tried as a control too and left out: held with the Broad matched to today's, it folded the ground beside it
 TIES=[('Pee Dee at the vertical seam (tie)',(4216,282),(-79.919936,34.973568),2.5,'the start of the South Carolina Pee Dee (SC75-RIV-PEEDEE), as built on 26 Nov 2026')]
-TP=[[list(map(float,m)),[round(xy(g)[0],4),round(xy(g)[1],4)],sd] for _,m,g,sd,_ in TOWNS+TIES]
+TP=[[list(map(float,m)),[round(xy(g)[0],4),round(xy(g)[1],4)],sd] for _,m,g,sd,_ in TOWNS+TIES+FIXES]
 # Natural Earth targets
 NE=os.environ.get('NE_DIR','natural-earth')+'/'
 def lines(f,filt=None):
@@ -94,7 +105,7 @@ for f in ['ne_10m_rivers_north_america','ne_10m_rivers_lake_centerlines']:
     for k,v in lines(f).items(): R.setdefault(k,[]).extend(v)
 COAST=[l for v in lines('ne_10m_coastline').values() for l in v]
 VANC=[l for v in lines('ne_10m_admin_1_states_provinces_lines',lambda p:'Virginia' in ' '.join(str(x) for x in p.values() if isinstance(x,str)) and 'North Carolina' in ' '.join(str(x) for x in p.values() if isinstance(x,str))).values() for l in v]
-MATCH={'riv-catawba-nc':['Catawba'],'riv-broad-nc':['Broad'],'riv-yadkin':['Yadkin','Great Pee Dee'],'riv-peedee-nc':['Great Pee Dee','Yadkin'],'riv-haw':['Haw'],'riv-deep':['Deep'],
+MATCH={'riv-catawba-1':['Catawba'],'riv-broad-1':['Broad'],'riv-catawba-nc':['Catawba'],'riv-broad-nc':['Broad'],'riv-yadkin':['Yadkin','Great Pee Dee'],'riv-peedee-nc':['Great Pee Dee','Yadkin'],'riv-haw':['Haw'],'riv-deep':['Deep'],
        'riv-capefear':['Cape Fear'],'riv-dan':['Dan'],'riv-roanoke':['Roanoke'],'shore-nc':'COAST','bnd-va':'VANC'}
 RES={'James':(-82.0,-81.8,35.7,35.8),'Rhodhiss-Hickory-Lookout':(-81.6,-81.0,35.7,35.85),'Norman':(-81.0,-80.85,35.4,35.65),'Mountain Island':(-81.0,-80.92,35.3,35.42),
      'High Rock':(-80.4,-80.15,35.55,35.75),'Tuckertown-Badin-Tillery':(-80.15,-79.98,35.25,35.6),'W Kerr Scott':(-81.3,-81.15,36.1,36.15),'Blewett Falls':(-79.95,-79.85,35.0,35.15),
@@ -122,7 +133,8 @@ TREES={k:seg_tree(tgt(k)) for k in MATCH}
 def samples(step=12):
     out=[]
     for fid in MATCH:
-        pts=NC[fid]['line']; acc=0
+        pts=(NC.get(fid) or SC[fid])['line']; acc=0
+        if fid in SC: pts=[q for q in pts if inzone(q)]
         for a,b in zip(pts,pts[1:]):
             L=math.hypot(b[0]-a[0],b[1]-a[1]); n=max(1,int(L/step))
             for j in range(1,n+1):
@@ -149,7 +161,18 @@ if __name__=='__main__':
     M,base,pairs=run()
     allsc=[tuple(p) for v in SC.values() for p in v['line']]
     a=apply(OLD,allsc); b=apply(M,allsc); d=np.hypot(*(a-b).T)
-    print('South Carolina vertices',len(d),'moved: median %.0f m, 95%% %.0f m, max %.0f m'%(np.median(d)*1000,np.percentile(d,95)*1000,d.max()*1000))
+    z=np.array([inzone(q,40) for q in allsc])
+    print('South Carolina vertices outside the fold zones',int((~z).sum()),'moved: median %.0f m, max %.0f m'%(np.median(d[~z])*1000,d[~z].max()*1000))
+    print('inside the fold zones',int(z.sum()),'moved: median %.1f km, max %.1f km'%(np.median(d[z]),d[z].max()))
+    for k,v in SC.items():
+        q=[tuple(p) for p in v['line']]; dd=np.hypot(*(apply(OLD,q)-apply(M,q)).T)
+        if dd.max()>0.5: print('   %-28s moves up to %.1f km (median %.1f)'%(k,dd.max(),np.median(dd)))
+    nf=0
+    for y in range(-50,900,25):
+        for x in range(2200,3600,25):
+            pq=np.array([x,y],float); a3=apply(M,[pq,pq+[2,0],pq+[0,2]])
+            if np.linalg.det(np.array([a3[1]-a3[0],a3[2]-a3[0]]).T)>=0: nf+=1
+    print('folded grid points (crop x 2200-3600, y -50 to 900):',nf)
     full=base+pairs; loo={}
     for (nm,m,g,sd,src) in TOWNS:
         e=math.hypot(*(apply(M,[m])[0]-np.array(xy(g))))
@@ -157,10 +180,10 @@ if __name__=='__main__':
         print('%-62s held within %.2f km, left out %.1f km'%(nm,e,l))
     F=json.load(open(f'{ROOT}/pipeline/georef/sc_mouzon_fit.json'))
     F.setdefault('pairs_refit_2026_11_26',F['pairs']); F.setdefault('PC_refit_2026_11_26',F['PC'])
-    F['PC']=F['PC_refit_2026_11_26']+[{'name':n,'m':list(m),'lonlat':list(g),'sd_km':sd,'source':src,'added':'2026-11-27','loo_m':loo[n]} for n,m,g,sd,src in TOWNS]+[{'name':n,'m':list(m),'lonlat':list(g),'sd_km':sd,'source':src,'added':'2026-11-27'} for n,m,g,sd,src in TIES]
+    F['PC']=F['PC_refit_2026_11_26']+[{'name':n,'m':list(m),'lonlat':list(g),'sd_km':sd,'source':src,'added':'2026-11-27','loo_m':loo[n]} for n,m,g,sd,src in TOWNS]+[{'name':n,'m':list(m),'lonlat':list(g),'sd_km':sd,'source':src,'added':'2026-11-27'} for n,m,g,sd,src in TIES+FIXES]
     F['pairs']=full
     F['extend_nc']={'date':'2026-11-27','anchors':len(ANCH),'towns':len(TP),'pairs_nc':len(pairs),'sd_nc_km':NCSD,'reservoirs':sorted(RES),
-                    'sc_moved_m':{'median':round(float(np.median(d))*1000),'max':round(float(d.max())*1000)},
+                    'sc_moved_m_outside_zones':{'median':round(float(np.median(d[~z]))*1000),'max':round(float(d[~z].max())*1000)},'zones':ZONES,
                     'why':'North Carolina for the regional map; see pipeline/georef/sc_mouzon_fit_nc_2026_11_27.py'}
     json.dump(F,open(f'{ROOT}/pipeline/georef/sc_mouzon_fit.json','w'))
     print('pairs',len(F['pairs_refit_2026_11_26']),'->',len(full))
