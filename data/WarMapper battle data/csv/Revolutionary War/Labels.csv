@@ -1,130 +1,148 @@
-playback_id,text,other_name,lat,lon,angle,level,kind,show,approximate
-trenton,Warren St,King St,40.224,-74.76527,-80,1,road,,
-trenton,Broad St,Queen St,40.2239,-74.76445,-88,1,road,,
-trenton,State St,Second St,40.22022,-74.76505,5,1,road,,
-trenton,E Hanover St,Third St,40.22118,-74.7629,-8,1,road,,
-trenton,Front St,,40.21912,-74.7651,5,1,road,,
-trenton,Perry St,,40.22345,-74.7618,-18,1,road,,
-trenton,Pennington Ave,Pennington road,40.2276,-74.7668,43,1,road,,
-trenton,Brunswick Ave,road to Princeton,40.2274,-74.76225,-50,1,road,,
-trenton,Montgomery St,,40.2245,-74.76277,-78,1,road,,
-trenton,W State St,River Road,40.2215,-74.7715,-18,1,road,,
-trenton,Assunpink Creek,,40.2187,-74.76,-25,1,road,,
-trenton,Delaware River,,40.262,-74.854,-48,0,road,,
-trenton,Bear Tavern Rd,,40.28,-74.833,45,0,road,,
-trenton,Scotch Rd,,40.27,-74.799,60,0,road,,
-trenton,Sullivan Way,River Road,40.248,-74.8125,50,0,road,,
-trenton,Pennington Rd,,40.253,-74.777,75,0,road,,
-trenton,Delaware River,,40.208,-74.77,20,1,road,,
-trenton,McKonkey's Ferry landing,,40.29672,-74.86753,,0,landmark,,
-trenton,Bear Tavern,,40.30918,-74.84857,,0,landmark,,
-trenton,Jacobs Creek,,40.2908,-74.84043,,0,landmark,,
-trenton,Birmingham,,40.26605,-74.81902,,0,landmark,,
-trenton,Trenton,,40.2203,-74.765,,0,town,,
-trenton,Battle Monument,,40.22575,-74.76478,,1,landmark,,
-trenton,Rall's headquarters,,40.22248,-74.76587,,1,landmark,,
-trenton,Old Barracks,,40.21948,-74.7685,,1,landmark,,
-trenton,Friends' Meeting House,,40.22124,-74.76206,,1,landmark,,
-trenton,The Hermitage,,40.2277,-74.7834,,1,landmark,,
-cowpens,Green River Road,Mill Gap Road,35.13352,-81.81145,28,0,road,,
-cowpens,Green River Road,Mill Gap Road,35.1383,-81.8169,60,1,road,,
-cowpens,Washington Light Infantry monument (1856),,35.135021,-81.814875,,0,landmark,,
-cowpens,U.S. Monument (1932) and visitor centre,,35.136816,-81.818138,,1,landmark,,
-cowpens,"Morgan's camp, night of 16 January",,35.137797,-81.81176,,1,place,,yes
-cowpens,Head of Tarleton's column comes onto the field,,35.13285,-81.80985,,1,place,,yes
-cowpens,Island Creek,,35.12961,-81.82589,-26,1,water,,
-cowpens,Long Branch,,35.12539,-81.8076,42,1,water,,
-cowpens,Zekial Creek,,35.1191,-81.79299,-34,1,water,,
-cowpens,"to the Broad River, about 6 miles",,35.14215,-81.8202,,1,place,,yes
-cowpens,from Thicketty Creek and the Pacolet,,35.1148,-81.7833,,1,place,,yes
-cowpens,Chesnee Highway (SC 11),,35.13249,-81.79914,36,1,road,,
-cowpens,Mill Gap road,Green River Road,35.1337,-81.81189,28,0,road,recon,
-cowpens,Mill Gap road,Green River Road,35.14024,-81.81827,60,1,road,recon,
-cowpens,"Mill Gap road, to Cherokee Ford",,35.13232,-81.79482,3,1,road,recon,
-cowpens,to the Pacolet and Spartanburg,,35.12222,-81.81987,-62,1,road,recon,
-cowpens,to Island Ford,,35.14633,-81.81909,-75,1,road,recon,
-cowpens,"Mill Gap road, to the mountains",,35.14518,-81.82716,29,1,road,recon,
-cowpens,"Green River road, from Thicketty Creek",,35.11789,-81.7859,44,1,road,recon,
-cowpens,Hannah's Cowpens,,35.1345,-81.8135,,0,place,recon,yes
-cowpens,"Morgan's camp, night of 16 January (Bearss)",,35.137807,-81.812438,,1,place,recon,yes
-cowpens,Militia horses picketed (Bearss),,35.141702,-81.818163,,2,place,recon,yes
-cowpens,Island Creek,,35.12961,-81.82589,-26,1,water,recon,
-cowpens,Long Branch,,35.12539,-81.8076,42,1,water,recon,
-cowpens,Zekial Creek,,35.1191,-81.79299,-34,1,water,recon,
-cowpens,Gilbert Town,,35.40694,-81.94361,,0,town,far,yes
-cowpens,Charlotte,,35.22694,-80.84333,,0,town,far,yes
-cowpens,Winnsborough,,34.37707,-81.08796,,0,town,far,yes
-cowpens,Ninety Six,,34.1452,-82.01985,,0,town,far,yes
-sc-orientation,Augusta,,33.51594,-81.99996,,0,town,recon,yes
-sc-orientation,Savannah,,32.10944,-81.10725,,0,town,recon,yes
-sc-orientation,Purrysburg,,32.36298,-81.16817,,1,town,recon,yes
-sc-orientation,Catawba Town,,35.05226,-81.02195,,1,town,recon,yes
-sc-orientation,NINETY SIX PRECINCT,,34.2294,-81.72782,,0,area,recon,
-sc-orientation,CAMDEN PRECINCT,,34.53122,-81.10582,,0,area,recon,
-sc-orientation,CHERAWS PRECINCT,,34.61824,-80.3294,,0,area,recon,
-sc-orientation,GEORGETOWN PRECINCT,,34.04094,-79.44196,,0,area,recon,
-sc-orientation,ORANGEBURG PRECINCT,,33.50179,-81.32847,,0,area,recon,
-sc-orientation,CHARLESTOWN PRECINCT,,33.00472,-80.42619,,0,area,recon,
-sc-orientation,BEAUFORT PRECINCT,,32.76111,-81.14053,,0,area,recon,
-sc-orientation,CATAWBA NATION,,35.08235,-81.05134,,1,area,recon,
-sc-orientation,NORTH CAROLINA,,35.06175,-80.54971,,0,area,recon,
-sc-orientation,GEORGIA,,33.23514,-82.25842,,0,area,recon,
-sc-orientation,ATLANTIC OCEAN,,32.45,-78.95,,0,area,recon,
-sc-orientation,Santee River,Lake Marion in part,33.456769,-80.164763,8,0,water,recon,
-sc-orientation,Savannah River,,33.322049,-81.892213,51,0,water,recon,
-sc-orientation,Pee Dee River,Great Pee Dee River,33.606006,-79.113984,71,0,water,recon,
-sc-orientation,Congaree River,,33.810463,-80.895525,22,0,water,recon,
-sc-orientation,Wateree River,,34.007638,-80.636304,21,0,water,recon,
-sc-orientation,Broad River,,34.974185,-81.47931,84,0,water,recon,
-sc-orientation,Saluda River,Lake Murray in part,34.141405,-81.638469,37,0,water,recon,
-sc-orientation,Catawba River,,35.026758,-81.030879,49,1,water,recon,
-sc-orientation,Edisto or Ponpon River,Edisto River,33.051336,-80.408172,8,1,water,recon,
-sc-orientation,Cooper River,,32.941437,-79.930875,-76,1,water,recon,
-sc-orientation,Ashley River,,32.91565,-80.113165,45,1,water,recon,
-sc-orientation,Combahee River,,32.767818,-80.798213,28,1,water,recon,
-sc-orientation,Black River,,33.223419,-79.340211,25,1,water,recon,
-sc-orientation,Lynches Creek,Lynches River,34.412395,-80.308103,70,1,water,recon,
-sc-orientation,Little Pee Dee River,,34.616724,-79.506723,-72,1,water,recon,
-sc-orientation,Waccamaw River,,33.818751,-78.98063,-45,1,water,recon,
-sc-orientation,Enoree River,,34.468592,-81.496363,26,1,water,recon,
-sc-orientation,Tyger River,,34.570596,-81.544497,19,1,water,recon,
-sc-orientation,Pacolet River,,35.056604,-81.603294,26,1,water,recon,
-sc-orientation,North Fork of Edisto,,33.578474,-81.051067,19,1,water,recon,
-sc-orientation,Cherokee Path,,34.82646,-81.71982,-5,0,road,recon,yes
-sc-orientation,Road to Charlotte,,35.21724,-81.08713,-42,0,road,recon,yes
-sc-orientation,Road to Camden,,34.69245,-80.74131,73,0,road,recon,yes
-sc-orientation,Ninety Six Road,,34.08776,-81.55187,8,0,road,recon,yes
-sc-orientation,Road to Nelson's Ferry,,33.40249,-80.39207,74,0,road,recon,yes
-sc-orientation,Road to the Cheraws,,34.39268,-80.47022,-82,0,road,recon,yes
-sc-orientation,Road to Orangeburg,,33.75779,-80.96285,75,0,road,recon,yes
-sc-orientation,Orangeburg Road,,33.57374,-81.24103,27,0,road,recon,yes
-sc-orientation,Road to Charleston,,33.06679,-80.44261,7,0,road,recon,yes
-sc-orientation,King's Highway,,33.68891,-78.94534,-50,0,road,recon,yes
-sc-orientation,Road to the Santee,,33.31861,-79.52037,34,0,road,recon,yes
-sc-orientation,Road to Purrysburg,,32.64601,-80.85478,11,0,road,recon,yes
-sc-orientation,Road from Fort Moore,,33.37324,-81.6524,16,0,road,recon,yes
-guilford-courthouse,Great Salisbury road,New Garden Road,36.13072,-79.852065,-12,0,road,recon,
-guilford-courthouse,Great Salisbury road,New Garden Road,36.132894,-79.843924,-30,1,road,recon,
-guilford-courthouse,Great Salisbury road,New Garden Road,36.112805,-79.880445,-52,0,road,recon,
-guilford-courthouse,Reedy Fork road,,36.136936,-79.835764,82,0,road,recon,
-guilford-courthouse,Hunting Creek,Richland Creek,36.132531,-79.836063,75,0,water,recon,
-guilford-courthouse,Little Horsepen Creek,,36.127832,-79.857176,60,0,water,recon,
-guilford-courthouse,Horsepen Creek,,36.117854,-79.874395,8,1,water,recon,
-guilford-courthouse,Guilford Courthouse,,36.135127,-79.834392,,0,landmark,both,
-guilford-courthouse,Hoskins house,,36.128801,-79.854025,,0,landmark,both,
-guilford-courthouse,New Garden Meeting House,Guilford College,36.090444,-79.889164,,0,landmark,both,yes
-guilford-courthouse,"""The Lane""",New Garden and Hobbs roads,36.113382,-79.880089,,1,place,both,yes
-guilford-courthouse,The cross road,Ballinger Road,36.099388,-79.891833,,1,place,both,yes
-guilford-courthouse,corn fields,,36.129619,-79.851601,,1,area,recon,
-guilford-courthouse,fenced fields,,36.131919,-79.851552,,1,area,recon,
-guilford-courthouse,old fields,,36.13655,-79.84229,,1,area,recon,
-guilford-courthouse,open fields,,36.132991,-79.839293,,1,area,recon,
-guilford-courthouse,woods,,36.12944,-79.848306,,1,wood,recon,yes
-guilford-courthouse,woods,,36.133224,-79.844101,,1,wood,recon,yes
-guilford-courthouse,woods,,36.127788,-79.841872,,1,wood,recon,yes
-guilford-courthouse,"to the Reedy Fork, 3 miles, and the iron works",,36.139073,-79.836096,,1,place,both,yes
-guilford-courthouse,to Hillsborough,,36.13514,-79.830462,,1,place,both,yes
-guilford-courthouse,from Deep River,,36.087992,-79.90073,,1,place,both,yes
-guilford-courthouse,Guilford Courthouse National Military Park,,36.131671,-79.837046,,1,area,current,
-guilford-courthouse,Deep River Friends Meeting House,"Cornwallis's camp, 14 March",36.03139,-79.96528,,0,town,far,yes
-guilford-courthouse,Iron works on Troublesome Creek,"Speedwell Furnace: Greene's camp, 15 March",36.3072,-79.7378,,0,town,far,yes
+playback_id,text,other_name,lat,lon,angle,level,kind,show,approximate,recon
+trenton,Warren St,King St,40.224,-74.76527,-80,1,road,,,
+trenton,Broad St,Queen St,40.2239,-74.76445,-88,1,road,,,
+trenton,State St,Second St,40.22022,-74.76505,5,1,road,,,
+trenton,E Hanover St,Third St,40.22118,-74.7629,-8,1,road,,,
+trenton,Front St,,40.21912,-74.7651,5,1,road,,,
+trenton,Perry St,,40.22345,-74.7618,-18,1,road,,,
+trenton,Pennington Ave,Pennington road,40.2276,-74.7668,43,1,road,,,
+trenton,Brunswick Ave,road to Princeton,40.2274,-74.76225,-50,1,road,,,
+trenton,Montgomery St,,40.2245,-74.76277,-78,1,road,,,
+trenton,W State St,River Road,40.2215,-74.7715,-18,1,road,,,
+trenton,Assunpink Creek,,40.2187,-74.76,-25,1,road,,,
+trenton,Delaware River,,40.262,-74.854,-48,0,road,,,
+trenton,Bear Tavern Rd,,40.28,-74.833,45,0,road,,,
+trenton,Scotch Rd,,40.27,-74.799,60,0,road,,,
+trenton,Sullivan Way,River Road,40.248,-74.8125,50,0,road,,,
+trenton,Pennington Rd,,40.253,-74.777,75,0,road,,,
+trenton,Delaware River,,40.208,-74.77,20,1,road,,,
+trenton,McKonkey's Ferry landing,,40.29672,-74.86753,,0,landmark,,,
+trenton,Bear Tavern,,40.30918,-74.84857,,0,landmark,,,
+trenton,Jacobs Creek,,40.2908,-74.84043,,0,landmark,,,
+trenton,Birmingham,,40.26605,-74.81902,,0,landmark,,,
+trenton,Trenton,,40.2203,-74.765,,0,town,,,
+trenton,Battle Monument,,40.22575,-74.76478,,1,landmark,,,
+trenton,Rall's headquarters,,40.22248,-74.76587,,1,landmark,,,
+trenton,Old Barracks,,40.21948,-74.7685,,1,landmark,,,
+trenton,Friends' Meeting House,,40.22124,-74.76206,,1,landmark,,,
+trenton,The Hermitage,,40.2277,-74.7834,,1,landmark,,,
+cowpens,Green River Road,Mill Gap Road,35.13352,-81.81145,28,0,road,,,
+cowpens,Green River Road,Mill Gap Road,35.1383,-81.8169,60,1,road,,,
+cowpens,Washington Light Infantry monument (1856),,35.135021,-81.814875,,0,landmark,,,
+cowpens,U.S. Monument (1932) and visitor centre,,35.136816,-81.818138,,1,landmark,,,
+cowpens,"Morgan's camp, night of 16 January",,35.137797,-81.81176,,1,place,,yes,
+cowpens,Head of Tarleton's column comes onto the field,,35.13285,-81.80985,,1,place,,yes,
+cowpens,Island Creek,,35.12961,-81.82589,-26,1,water,,,
+cowpens,Long Branch,,35.12539,-81.8076,42,1,water,,,
+cowpens,Zekial Creek,,35.1191,-81.79299,-34,1,water,,,
+cowpens,"to the Broad River, about 6 miles",,35.14215,-81.8202,,1,place,,yes,
+cowpens,from Thicketty Creek and the Pacolet,,35.1148,-81.7833,,1,place,,yes,
+cowpens,Chesnee Highway (SC 11),,35.13249,-81.79914,36,1,road,,,
+cowpens,Mill Gap road,Green River Road,35.1337,-81.81189,28,0,road,recon,,cowpens-1781
+cowpens,Mill Gap road,Green River Road,35.14024,-81.81827,60,1,road,recon,,cowpens-1781
+cowpens,"Mill Gap road, to Cherokee Ford",,35.13232,-81.79482,3,1,road,recon,,cowpens-1781
+cowpens,to the Pacolet and Spartanburg,,35.12222,-81.81987,-62,1,road,recon,,cowpens-1781
+cowpens,to Island Ford,,35.14633,-81.81909,-75,1,road,recon,,cowpens-1781
+cowpens,"Mill Gap road, to the mountains",,35.14518,-81.82716,29,1,road,recon,,cowpens-1781
+cowpens,"Green River road, from Thicketty Creek",,35.11789,-81.7859,44,1,road,recon,,cowpens-1781
+cowpens,Hannah's Cowpens,,35.1345,-81.8135,,0,place,recon,yes,cowpens-1781
+cowpens,"Morgan's camp, night of 16 January (Bearss)",,35.137807,-81.812438,,1,place,recon,yes,cowpens-1781
+cowpens,Militia horses picketed (Bearss),,35.141702,-81.818163,,2,place,recon,yes,cowpens-1781
+cowpens,Island Creek,,35.12961,-81.82589,-26,1,water,recon,,cowpens-1781
+cowpens,Long Branch,,35.12539,-81.8076,42,1,water,recon,,cowpens-1781
+cowpens,Zekial Creek,,35.1191,-81.79299,-34,1,water,recon,,cowpens-1781
+cowpens,Gilbert Town,,35.40694,-81.94361,,0,town,far,yes,
+cowpens,Charlotte,,35.22694,-80.84333,,0,town,far,yes,
+cowpens,Winnsborough,,34.37707,-81.08796,,0,town,far,yes,
+cowpens,Ninety Six,,34.1452,-82.01985,,0,town,far,yes,
+sc-orientation,Augusta,,33.51594,-81.99996,,0,town,recon,yes,sc-1775
+sc-orientation,Savannah,,32.10944,-81.10725,,0,town,recon,yes,sc-1775
+sc-orientation,Purrysburg,,32.36298,-81.16817,,1,town,recon,yes,sc-1775
+sc-orientation,Catawba Town,,35.05226,-81.02195,,1,town,recon,yes,sc-1775
+sc-orientation,NINETY SIX PRECINCT,,34.2294,-81.72782,,0,area,recon,,sc-1775
+sc-orientation,CAMDEN PRECINCT,,34.53122,-81.10582,,0,area,recon,,sc-1775
+sc-orientation,CHERAWS PRECINCT,,34.61824,-80.3294,,0,area,recon,,sc-1775
+sc-orientation,GEORGETOWN PRECINCT,,34.04094,-79.44196,,0,area,recon,,sc-1775
+sc-orientation,ORANGEBURG PRECINCT,,33.50179,-81.32847,,0,area,recon,,sc-1775
+sc-orientation,CHARLESTOWN PRECINCT,,33.00472,-80.42619,,0,area,recon,,sc-1775
+sc-orientation,BEAUFORT PRECINCT,,32.76111,-81.14053,,0,area,recon,,sc-1775
+sc-orientation,CATAWBA NATION,,35.08235,-81.05134,,1,area,recon,,sc-1775
+sc-orientation,NORTH CAROLINA,,35.06175,-80.54971,,0,area,recon,,sc-1775
+sc-orientation,GEORGIA,,33.23514,-82.25842,,0,area,recon,,sc-1775
+sc-orientation,ATLANTIC OCEAN,,32.45,-78.95,,0,area,recon,,sc-1775
+sc-orientation,Santee River,Lake Marion in part,33.456769,-80.164763,8,0,water,recon,,sc-1775
+sc-orientation,Savannah River,,33.322049,-81.892213,51,0,water,recon,,sc-1775
+sc-orientation,Pee Dee River,Great Pee Dee River,33.606006,-79.113984,71,0,water,recon,,sc-1775
+sc-orientation,Congaree River,,33.810463,-80.895525,22,0,water,recon,,sc-1775
+sc-orientation,Wateree River,,34.007638,-80.636304,21,0,water,recon,,sc-1775
+sc-orientation,Broad River,,34.974185,-81.47931,84,0,water,recon,,sc-1775
+sc-orientation,Saluda River,Lake Murray in part,34.141405,-81.638469,37,0,water,recon,,sc-1775
+sc-orientation,Catawba River,,35.026758,-81.030879,49,1,water,recon,,sc-1775
+sc-orientation,Edisto or Ponpon River,Edisto River,33.051336,-80.408172,8,1,water,recon,,sc-1775
+sc-orientation,Cooper River,,32.941437,-79.930875,-76,1,water,recon,,sc-1775
+sc-orientation,Ashley River,,32.91565,-80.113165,45,1,water,recon,,sc-1775
+sc-orientation,Combahee River,,32.767818,-80.798213,28,1,water,recon,,sc-1775
+sc-orientation,Black River,,33.223419,-79.340211,25,1,water,recon,,sc-1775
+sc-orientation,Lynches Creek,Lynches River,34.412395,-80.308103,70,1,water,recon,,sc-1775
+sc-orientation,Little Pee Dee River,,34.616724,-79.506723,-72,1,water,recon,,sc-1775
+sc-orientation,Waccamaw River,,33.818751,-78.98063,-45,1,water,recon,,sc-1775
+sc-orientation,Enoree River,,34.468592,-81.496363,26,1,water,recon,,sc-1775
+sc-orientation,Tyger River,,34.570596,-81.544497,19,1,water,recon,,sc-1775
+sc-orientation,Pacolet River,,35.056604,-81.603294,26,1,water,recon,,sc-1775
+sc-orientation,North Fork of Edisto,,33.578474,-81.051067,19,1,water,recon,,sc-1775
+sc-orientation,Cherokee Path,,34.82646,-81.71982,-5,0,road,recon,yes,sc-1775
+sc-orientation,Road to Charlotte,,35.21724,-81.08713,-42,0,road,recon,yes,sc-1775
+sc-orientation,Road to Camden,,34.69245,-80.74131,73,0,road,recon,yes,sc-1775
+sc-orientation,Ninety Six Road,,34.08776,-81.55187,8,0,road,recon,yes,sc-1775
+sc-orientation,Road to Nelson's Ferry,,33.40249,-80.39207,74,0,road,recon,yes,sc-1775
+sc-orientation,Road to the Cheraws,,34.39268,-80.47022,-82,0,road,recon,yes,sc-1775
+sc-orientation,Road to Orangeburg,,33.75779,-80.96285,75,0,road,recon,yes,sc-1775
+sc-orientation,Orangeburg Road,,33.57374,-81.24103,27,0,road,recon,yes,sc-1775
+sc-orientation,Road to Charleston,,33.06679,-80.44261,7,0,road,recon,yes,sc-1775
+sc-orientation,King's Highway,,33.68891,-78.94534,-50,0,road,recon,yes,sc-1775
+sc-orientation,Road to the Santee,,33.31861,-79.52037,34,0,road,recon,yes,sc-1775
+sc-orientation,Road to Purrysburg,,32.64601,-80.85478,11,0,road,recon,yes,sc-1775
+sc-orientation,Road from Fort Moore,,33.37324,-81.6524,16,0,road,recon,yes,sc-1775
+guilford-courthouse,Great Salisbury road,New Garden Road,36.13072,-79.852065,-12,0,road,recon,,guilford-1781
+guilford-courthouse,Great Salisbury road,New Garden Road,36.132894,-79.843924,-30,1,road,recon,,guilford-1781
+guilford-courthouse,Great Salisbury road,New Garden Road,36.112805,-79.880445,-52,0,road,recon,,guilford-1781
+guilford-courthouse,Reedy Fork road,,36.136936,-79.835764,82,0,road,recon,,guilford-1781
+guilford-courthouse,Hunting Creek,Richland Creek,36.132531,-79.836063,75,0,water,recon,,guilford-1781
+guilford-courthouse,Little Horsepen Creek,,36.127832,-79.857176,60,0,water,recon,,guilford-1781
+guilford-courthouse,Horsepen Creek,,36.117854,-79.874395,8,1,water,recon,,guilford-1781
+guilford-courthouse,Guilford Courthouse,,36.135127,-79.834392,,0,landmark,both,,guilford-1781
+guilford-courthouse,Hoskins house,,36.128801,-79.854025,,0,landmark,both,,guilford-1781
+guilford-courthouse,New Garden Meeting House,Guilford College,36.090444,-79.889164,,0,landmark,both,yes,guilford-1781
+guilford-courthouse,"""The Lane""",New Garden and Hobbs roads,36.113382,-79.880089,,1,place,both,yes,guilford-1781
+guilford-courthouse,The cross road,Ballinger Road,36.099388,-79.891833,,1,place,both,yes,guilford-1781
+guilford-courthouse,corn fields,,36.129619,-79.851601,,1,area,recon,,guilford-1781
+guilford-courthouse,fenced fields,,36.131919,-79.851552,,1,area,recon,,guilford-1781
+guilford-courthouse,old fields,,36.13655,-79.84229,,1,area,recon,,guilford-1781
+guilford-courthouse,open fields,,36.132991,-79.839293,,1,area,recon,,guilford-1781
+guilford-courthouse,woods,,36.12944,-79.848306,,1,wood,recon,yes,guilford-1781
+guilford-courthouse,woods,,36.133224,-79.844101,,1,wood,recon,yes,guilford-1781
+guilford-courthouse,woods,,36.127788,-79.841872,,1,wood,recon,yes,guilford-1781
+guilford-courthouse,"to the Reedy Fork, 3 miles, and the iron works",,36.139073,-79.836096,,1,place,both,yes,guilford-1781
+guilford-courthouse,to Hillsborough,,36.13514,-79.830462,,1,place,both,yes,guilford-1781
+guilford-courthouse,from Deep River,,36.087992,-79.90073,,1,place,both,yes,guilford-1781
+guilford-courthouse,Guilford Courthouse National Military Park,,36.131671,-79.837046,,1,area,current,,
+guilford-courthouse,Deep River Friends Meeting House,"Cornwallis's camp, 14 March",36.03139,-79.96528,,0,town,far,yes,
+guilford-courthouse,Iron works on Troublesome Creek,"Speedwell Furnace: Greene's camp, 15 March",36.3072,-79.7378,,0,town,far,yes,
+sc-orientation,Charlotte,,35.2269,-80.84349,,0,town,recon,yes,sc-1775
+sc-orientation,Salisbury,,35.66845,-80.46882,,0,town,recon,yes,sc-1775
+sc-orientation,Salem,"Old Salem, Winston-Salem",36.08542,-80.24195,,2,town,recon,yes,sc-1775
+sc-orientation,Bethabara,,36.1544,-80.29846,,2,town,recon,yes,sc-1775
+sc-orientation,Bethania,,36.17818,-80.36777,,2,town,recon,yes,sc-1775
+sc-orientation,Hillsborough,,36.07352,-79.09563,,0,town,recon,yes,sc-1775
+sc-orientation,Halifax,,36.32876,-77.58817,,0,town,recon,yes,sc-1775
+sc-orientation,Cross Creek,Fayetteville,35.05313,-78.8799,,1,town,recon,yes,sc-1775
+sc-orientation,Wilmington,,34.23565,-77.95028,,0,town,recon,yes,sc-1775
+sc-orientation,Guilford Court House,,36.135127,-79.834392,,0,town,recon,,sc-1775
+sc-orientation,Yadkin River,,35.73989,-80.42183,50,0,water,recon,,sc-1775
+sc-orientation,Dan River,,36.55916,-79.40244,20,0,water,recon,,sc-1775
+sc-orientation,Cape Fear River,,34.75536,-78.7846,58,0,water,recon,,sc-1775
+sc-orientation,Roanoke River,,36.42312,-77.58328,21,1,water,recon,,sc-1775
+sc-orientation,Haw River,,35.82829,-79.19893,52,1,water,recon,,sc-1775
+sc-orientation,Deep River,,35.49786,-79.57137,53,1,water,recon,,sc-1775
+sc-orientation,Reedy Fork,,36.17458,-79.84374,1,2,water,recon,,sc-1775
+sc-orientation,Troublesome Creek,,36.20197,-79.68353,16,2,water,recon,,sc-1775

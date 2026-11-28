@@ -462,6 +462,10 @@ CSV was exported on this branch (Morgan's "Accepted" review marks). SR-07: the a
   Next, the battle opens on the region and eases in (SR-02, SR-04).
 - **Scope:** battles in a chapter that has a regional map (Cowpens and Guilford Courthouse: A*, the data comes with the regional map in
   Session 2). **Built in:** player (`bases[].region`); exporter (a reconstruction another playback owns, and its names); format check.
+- **Data (Session 2, 27 Nov 2026):** the regional map is `sc-1775`, extended to North Carolina (to 77° W and the Dan). Cowpens and Guilford
+  Courthouse: `bases.1.region` = `rgn`, a hidden base `rgn` (recon `sc-1775`, terrain over the window at tile zoom 8), `groups` one symbol a
+  side ("Morgan's detachment" and "Tarleton's detachment"; "Greene's army" and "Cornwallis's army"), `opening_zoom_out` 4. 1a's terrain covers
+  the same window at zoom 9. Measured on an emulated phone: 1a 30.8 s and 17 MB to the relief (main: 22.5 s, 12 MB); Cowpens 15.4 s, 10 MB.
 
 ## Orientations: which rules reach them (carry-forward check of 25 Nov 2026)
 
@@ -508,6 +512,20 @@ Session 1 of `claude/sc-storyline-prompt.md` (branch `sc-storyline-design`). Fou
   off the map (not applicable), a column as one symbol (now one symbol per side).
 - Priority of the five new requirements (movement symbols, the connection rule, legs, the storyline gate, the regional base): all P1.
 - Not asked, stated in the design: SR-05's day pauses do not reach orientations (the legs stop by themselves; SR-30).
+
+## Session 2 of the SC storyline (27 Nov 2026): the regional base map, for Morgan to look at
+
+Branch `sc-storyline-regional-base`. No new rule and no answer yet; what was built, and what is asked.
+
+- `sc-1775` now holds North Carolina: 23 new features (ids NC75-), the rivers Catawba, Broad, Yadkin to the Pee Dee, Haw, Reedy Fork,
+  Troublesome Creek, Deep, Cape Fear, Dan and Roanoke; the coast to 77° W; the Virginia line; ten roads of the 1781 campaign's ground. Sheet
+  83.45° W to 77° W, 31.95° N to 36.75° N. Every feature `traced`, `low` or `medium`, with its basis; nothing `high`.
+- South Carolina did not move: the fit is extended with every reviewed South Carolina vertex held where it was (largest move 20 m).
+- Mouzon's neatline (36° 37′) is about 10 km south of the lower Dan ferries; he draws the Dan and Roanoke on into the margin, which is traced.
+  Above the sheet only today's relief and sea are drawn (Session 1's recommendation; no Virginia map of the time used).
+- **Ask Morgan:** the reviewed South Carolina Catawba folds back on itself in its last 15 km at the 1772 line (a fold of the 26 Nov fit, on
+  `main` before this session). Mending it moves that stretch, and the east end of the 1772 line, up to about 8 km: over the 500 m limit, so
+  it is shown, not done.
 
 ## Answers from Morgan (26 Nov 2026): Guilford Courthouse
 
